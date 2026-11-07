@@ -31,7 +31,22 @@ bash scripts/build.sh
 
 This clones upstream Kiln into the ignored `.kiln-upstream/`, checks out commit `9b9adada835c5f0a68b36567f939dc645cc1ef94`, packages its SDK and services into the ignored `.kiln-mdk/nuget/`, builds this project and invokes `KilnPack`. The SDK package version is pinned to `0.2.0-dev.local.20261107.62100`.
 
-Alternatively download the **survival-qol** artifact from the GitHub Actions build; it contains the ZIP produced by KilnPack.
+Alternatively open **Actions → Package Survival QoL**, choose a successful run and download the **survival-qol-package** artifact. The artifact download contains the installable `survival-qol-<version>.zip` made by KilnPack.
+
+## CI packaging and releases
+
+The [packaging workflow](../.github/workflows/build.yml) runs on mod or build-script changes to `main`, for pull requests, and on demand via **Actions → Package Survival QoL → Run workflow**. It rebuilds the pinned Kiln SDK, compiles the mod, and retains the installable ZIP as a GitHub Actions artifact for 90 days.
+
+To publish a versioned GitHub Release from the current `main` revision, push a tag that matches the `<Version>` in `SurvivalQoL.csproj`:
+
+```bash
+git checkout main
+git pull --ff-only
+git tag v0.1.0
+git push origin v0.1.0
+```
+
+A `v*` tag triggers the same package build, checks the tag matches the project version, and attaches `survival-qol-0.1.0.zip` directly to the GitHub Release. For subsequent releases, first update the project version and then tag `v<new-version>`. No tag is needed to download packages from successful Actions runs.
 
 ## Install and configure
 
@@ -53,4 +68,4 @@ Build success does **not** prove functionality in Enshrouded. Test in a backup o
 - Dive and enter a freezing environment: verify **approximately doubled** limits, not infinity.
 - Edit the configuration live, then unload the mod; verify the world's normal durability/diving/heat settings return.
 
-No real-client or dedicated-server validation has been performed by this repository yet.
+Informal in-game testing has reported the six fully implemented features working. The actual 2× oxygen and body-heat limits have not been independently measured in the game UI, and dedicated-server and unload/reload behaviour have not received formal validation.
