@@ -37,7 +37,7 @@ public sealed class EndlessChestsMod : Mod
         _catalogFile = Path.Combine(Context.DataDirectory, "endless-chests.ini");
         LoadSettings();
         _command = Commands.Register("echest", HandleCommand, CommandPermission.Admin,
-            usage: "<bind|name|empty|unbind|status|list|groups|refill|reload> [selection]",
+            usage: "<bind|name|empty|unbind|status|list|groups|nameprobe|refill|reload> [selection]",
             description: "Bind a nearby chest to a name from the original Endless Chests catalogue.");
         Context.Tick.Pre += Tick;
         Log.Info("Endless Chests (Kiln) loaded: name catalog available. In-world chest name detection is not supported yet.");
@@ -165,7 +165,7 @@ public sealed class EndlessChestsMod : Mod
         switch (verb)
         {
             case "help":
-                c.Reply("echest bind <group/item> | bind Empty | empty confirm | unbind | groups [search] | list | status | refill | reload. " +
+                c.Reply("echest bind <group/item> | bind Empty | empty confirm | unbind | groups [search] | list | status | nameprobe | refill | reload. " +
                     "The name is a Kiln binding, not the chest's game UI name. Empty is destructive only after a preview and confirmation.");
                 break;
             case "reload":
@@ -244,6 +244,10 @@ public sealed class EndlessChestsMod : Mod
                 else
                     PreviewEmpty(c);
                 break;
+            case "nameprobe":
+            case "probe":
+                ProbeChestName(c);
+                break;
             case "refill":
                 _elapsed = 999;
                 c.Reply("Refill check requested for the next world step.");
@@ -251,6 +255,38 @@ public sealed class EndlessChestsMod : Mod
             default:
                 throw c.Usage($"Unknown action '{verb}'");
         }
+    }
+
+    // Read-only investigation of the CustomPlayerString ECS component identified
+    // in Greeneye0/enshrouded-quick-deposit. The server-side component may be
+    // missing, or its 8-byte value may not resolve against a client-only store.
+    // Never decode arbitrary pointers, walk private string tables or change
+    // game state here. This command is restricted to Kiln admins.
+    private void ProbeChestName(CommandContext c)
+    {
+        var (chest, at) = Nearest(c);
+        const string component = "CustomPlayerString";
+        var bytes = World.ComponentSize(chest, component);
+        string candidate;
+        if (bytes == 0)
+            candidate = "component absent on this server-world entity";
+        else if (bytes != sizeof(ulong))
+            candidate = "not interpreted: unexpected component layout";
+        else if (World.TryRead<ulong>(chest, component, out var rawId))
+            candidate = rawId == 0
+                ? "0 (no string reference observed)"
+                : $"0x{rawId:X16} (candidate string ID, NOT decoded text)";
+        else
+            candidate = "component found but read failed";
+
+        var template = Spawn.Inspect(chest)?.TemplateName ?? "unknown";
+        var world = Saves.WorldId;
+        var binding = world is null ? null : BoundAt(world, at)?.Selection;
+        c.Reply($"NAME PROBE [read-only, server ECS]: chest={chest}, " +
+            $"template={template}, position={at.X:F2},{at.Y:F2},{at.Z:F2}, " +
+            $"CustomPlayerString.size={bytes}, reference={candidate}; " +
+            $"Kiln binding={binding ?? "(none)"}. " +
+            "The visible in-game chest name cannot yet be resolved by this SDK. No inventory or binding changes.");
     }
 
     // Empty is NEVER activated automatically by old metadata, or merely because
