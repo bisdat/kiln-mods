@@ -1,107 +1,99 @@
-# Endless Chests (Kiln) — v0.3.0 (experimental)
+# Endless Chests (Kiln) — v0.4.0 (experimental)
 
-An independent C# implementation of Endless Chests using Kiln's Items, World, Spawn and Saves services. It does **not** load or redistribute the ShroudForge DLL. The original ShroudForge mod is attributed to HipShot808.
+An independent Kiln-native C# implementation of the Endless Chests behaviour, without the original ShroudForge DLL or undocumented game-memory offsets. The original ShroudForge mod is attributed to HipShot808.
 
-**v0.3.0 automatically recognizes exact chest names set in Enshrouded's in-game Rename UI**, including the **195 original groups**, the original **3 aliases**, and individual item names found in the defaults. No extra console binding is required for an **unbound** renamed chest.
+**WARNING — DESTRUCTIVE BEHAVIOUR:** The world owner's requested defaults in **v0.4.0** change how renamed chests behave. A chest's **existing items are permanently deleted whenever the mod observes an in-game name change**, even if the new name is not a recognised item/group. After deleting the previous contents, it refills the new recognised selection. Naming a chest **`Empty`** (or `empty`, regardless of ASCII letter case) **deletes all its contents automatically, without any confirmation**, and will clear anything put into it again on subsequent checks. **Back up the Enshrouded world before installing this release.** Test on a disposable chest first.
 
-The previous versions' basic refill (v0.1.0) and confirmed `Empty` command (v0.2.0) worked in the user's hosted game. The v0.3.0 automatic matcher is **CI-tested but still needs an in-game refill check**. Back up your world and use a test chest before relying on it.
+## Status
 
-## Why game-UI chest names now work
+- **Confirmed in-game:** basic Kiln refills (v0.1.0), manual preview/confirm deletion (v0.2.0), automatic in-game name recognition and refill for **Tools**, **Starter Blocks** and **Animals** (v0.3.0; reported 7 November 2026).
+- **New in v0.4.0 — not yet gameplay tested:** automatic clear on rename and automatic clear on `Empty`; CI compiling and static checks do not demonstrate reliable live deletion. Keep [PR #3](https://github.com/bisdat/kiln-mods/pull/3) in draft until you test a throwaway chest.
 
-On 7 November 2026, three read-only `echest nameprobe` calls to one 56-slot chest (`Prop_Decoration_T4_Storage_56`, entity 1353) returned the game's 8-byte `CustomPlayerString` IDs:
+## Automatic rename behaviour (new in v0.4.0)
 
-| Game-UI chest name | Observed ECS value | Local FNV-1a64 UTF-8 test |
-|---|---|---|
-| Starter Blocks | `0x35F105E7ECC53E32` | Exact match |
-| Tools | `0xC26501E3ADE7DA3C` | Exact match |
+1. Install the new ZIP in the host's Kiln profile; enter your saved world.
+2. Stand beside a test chest and use Enshrouded's **built-in Rename** interface (no `echest bind` command necessary).
+3. When a name change is observed, the mod **removes all items already in that chest**, through the game's own `Kiln.Items.TakeSlot` transactions.
+4. **Only when deletion has completed** does it refill the chest if the new name is an original group, alias, or item label (for example `Starter Blocks`, `Animals` or `Tools`). Renames to unknown names still clear items but **do not refill**.
+5. Rename a chest to `Empty` (any capitalization such as `empty` or `EMPTY`): the mod deletes all current contents and does not refill them. It rechecks periodically, clearing any new items while that name remains.
 
-These are exactly the **FNV-1a 64-bit fingerprints** of the two strings. The mod hashes all original names once when the INI loads and compares their fingerprints with the chest's component **read-only** through `World.ComponentSize` and `World.TryRead<ulong>`. This requires **no native pointer walking, undocumented memory offsets, client-only DLL, or private string-store access**. The exact original spelling, spaces, case and Unicode punctuation matter. Unrecognized names are ignored safely. FNV collisions among candidate names are detected and excluded.
+**If you rename Tools → Starter Blocks → Animals, each detected rename wipes the previous selection before refilling the next one.** It does not merge each selection's items as v0.3.0 did. Refills and clears run every 4 seconds by default (`recheckSeconds` in `chests.json`). A transaction already submitted when a rename occurs may finish before the subsequent clear; each later removal/give checks the current name.
 
-[Greeneye0's Quick Deposit](https://github.com/Greeneye0/enshrouded-quick-deposit/blob/main/src/inventory.cpp) inspired the component search; the Kiln-native hash recognition is independently implemented.
+### First observation, restart and manual bindings
 
-## Automatic name-based refills (NEW)
+- The first time v0.4.0 sees an ordinary named chest in a loaded world, it records the name **without clearing**. It cannot prove a rename happened before the mod started observing. Normal chests with existing contents therefore **do not get wiped merely because you installed, upgraded or restarted Kiln**.
+- **Exception: a chest already named `Empty` is cleared on the first scan**, without any confirmation. It continues clearing on subsequent scans while the name stays `Empty`.
+- On an observed game-UI name change, existing `echest bind` assignments for that chest are automatically dropped, letting the game name take over. Prior manual bindings otherwise remain intact.
+- The mod only observes chests that are loaded as compatible storage entities. If a chest is unloaded during a rename, the mod cannot necessarily detect the missed transition. It never guesses an absent/invalid name to trigger deletion.
+- The snapshot-based clear checks the chest's world ID, entity ID, position, name hash, and each item's slot/quantity/entity ID between transactions. A second rename, world exit or inventory conflict stops further deletion; pending renames are retried on later checks. **Partial deletion cannot be undone.**
 
-1. Install v0.3.0 and enter your hosted world.
-2. Place an **ordinary empty storage chest** (24/32/40/56 slots), or select an existing one with free slots. A magic chest is included only if the template/slot checks and `AllowMagicChests` permit it.
-3. Use Enshrouded's **Rename** interface to name the chest **exactly** `Starter Blocks`, `Tools`, `Stone Blocks`, `Crafting A-C`, or any original group/item/alias name. The game may use an existing nonempty chest; the mod **does not delete unrelated items**.
-4. The chest automatically receives one normal stack of each supported item, where room exists. Withdraw items and the mod refills the missing quantities (every 4 seconds by default).
-5. **To stop** automatic refills, rename the chest to something *not* in the original group/item/alias list (or remove it). To change groups, rename to the exact new group name. Old items are **not** automatically removed.
+### Configuration: opt out of destructive actions
 
-A manually bound chest from v0.1/v0.2 retains its explicit `echest bind <name>` selection **ahead of** the game-UI name. Use `echest unbind` beside that chest to switch to automatic name-based behaviour; the contents are preserved. All old `chests.json` bindings are retained during upgrades.
+The mod's active data file is `kiln/data/endless-chests-kiln/chests.json` (or the mod data folder Kiln reports). These settings are **true by default**:
 
-To disable automatic names, set `"autoNames": false` in the mod's active `chests.json` and run `echest reload`. Manual binding remains functional.
-
-### Important: `Empty` is destructive, and still requires confirmation
-
-**Renaming a chest to `Empty` never deletes anything automatically.** It suspends refilling and requires an administrator to preview and confirm the exact chest contents. This deliberately differs from the ShroudForge edition to prevent irreversible losses from an accidental rename.
-
-In Kiln's command interface, while standing next to the intended chest:
-
-```text
-echest bind Empty
-echest empty confirm
+```json
+{
+  "enabled": true,
+  "autoNames": true,
+  "clearOnRename": true,
+  "autoEmpty": true,
+  "recheckSeconds": 4,
+  "positionToleranceMeters": 0.75,
+  "chests": []
+}
 ```
 
-The first command **only previews** the occupied slot count and total items. The second must be issued within 60 seconds by the same player, at the same chest in the same world, with the exact contents unchanged. It then deletes the previewed slots through `Kiln.Items.TakeSlot` and unbinds the chest before deleting. If any slot changes during deletion, further deletion stops. There is **no undo**. Back up your world and test with disposable items. You can also preview with `echest empty`.
+**Edit only the relevant fields in your existing file; do not replace the entire file above**, because `chests` contains any saved manual bindings. `echest reload` applies edits in a running world.
 
-## Original catalogue and configuration
+- `clearOnRename=false` stops automatic deletion caused by ordinary name changes.
+- `autoEmpty=false` stops repeated clearing on a chest already named `Empty`. If `clearOnRename=true`, changing a name *to* `Empty` still causes a one-time rename clear.
+- `autoNames=false` disables both automatic name-based actions and refills; manual `echest bind` still works.
 
-The bundled [endless-chests.defaults.ini](defaults/endless-chests.defaults.ini) is the supplied original default set, containing **195 groups**, **3,464 group entries**, **3 aliases**, and **45 disabled-item entries**. On first launch the mod copies it to `Context.DataDirectory/endless-chests.ini` (typically `kiln/data/endless-chests-kiln/endless-chests.ini`); an existing active file is **never overwritten**. All original group names are retained exactly.
+### Legacy console commands
 
-The active INI supports `[Groups]`, `[Aliases]`, `[DisabledGroups]`, `[DisabledItems]` and `[Options]`. Disabled groups prohibit their member items in other groups as well. Unavailable game item labels are skipped and logged, rather than invented or replaced. A catalogue group is limited to the chest's available storage slots.
+All `echest` commands remain admin-only; on a locally hosted solo world you can create `kiln/control/console/*.cmd` after entering the running world. A command naming a nearby chest works **only** when the character is inside a world and within 4 metres of a compatible chest.
 
-The original INI options `EnableGemLevels` and `FullyUpgradeGear` remain **unimplemented**, as they need specialised item construction APIs beyond the current normal transaction service. Magic chest support needs a live test.
+| Command | Effect |
+|---|---|
+| `echest nameprobe` | Read-only: report the nearest chest's `CustomPlayerString` hash, known-name match and any manual binding |
+| `echest status` | Show settings, world, service and catalogue state |
+| `echest groups [search]` | Find exact original group names |
+| `echest bind Starter Blocks` | Manually bind the nearest **empty** chest; existing binding takes precedence until in-game rename or unbind |
+| `echest unbind` | Remove a manual binding without deleting contents |
+| `echest empty` / `echest bind Empty` | Legacy console path: preview nearby items (does not clear until confirmed) |
+| `echest empty confirm` | Complete the legacy console deletion from its matching preview |
+| `echest refill` | Request an immediate refill check |
+| `echest reload` | Reload the INI and JSON configuration |
 
-`chests.json` stores `enabled`, `autoNames` (defaults true), `recheckSeconds` (2..120), `positionToleranceMeters` (0.25..2) and any manual chest bindings. Broken configuration disables refills instead of overwriting user data.
+**For automatic deletion, use the game's Rename UI**. Naming a chest `Empty` there now requires **no console commands**. The optional legacy console `echest empty` path retains its original preview/confirm procedure and is separate from automatic game-UI actions.
 
-## Installation
-
-1. Use a compatible Kiln runtime (this repo pins the published `v0.2.0-dev.15` SDK source).
-2. Open [Package Endless Chests (Kiln) workflow](https://github.com/bisdat/kiln-mods/actions/workflows/endless-chests.yml) and download `endless-chests-kiln-package` from a **successful** run.
-3. Extract that GitHub artifact, and import the enclosed **`endless-chests-kiln-0.3.0.zip`** into Kiln Library. Enable it in your game profile.
-4. Restart Enshrouded and enter a world. Do not install the original ShroudForge DLL.
-
-## Kiln console commands
-
-In an **offline solo / locally hosted world**, Kiln runs console files as your player after you enter the game. Open a terminal **in the game's installation folder**, where `kiln/` exists:
+To issue a diagnostic command in the Enshrouded installation directory:
 
 ```bash
 mkdir -p kiln/control/console
-printf 'echest nameprobe\n' > kiln/control/console/nameprobe.tmp
-mv kiln/control/console/nameprobe.tmp kiln/control/console/nameprobe.cmd
-cat kiln/control/console/nameprobe.result.json
+printf 'echest nameprobe\n' > kiln/control/console/myprobe.tmp
+mv kiln/control/console/myprobe.tmp kiln/control/console/myprobe.cmd
+# The result file appears only after Kiln processes the command in a loaded world.
+cat kiln/control/console/myprobe.result.json
 ```
 
-If the result is not present immediately, the game has not polled the file yet. Create a new `.cmd` file for each new command and read its matching `.result.json`. For chat-enabled multiplayer, admins can use `/echest nameprobe`.
+## Original catalogue and known limitations
 
-| Command | Purpose |
-|---|---|
-| `echest nameprobe` | **Read-only**: show nearest chest's ECS hash, matched original name, and any manual binding |
-| `echest status` | Show services, group and hash-map counts, autoNames status, active world |
-| `echest groups [search]` | Find names in the full original group catalogue |
-| `echest bind Starter Blocks` | Explicitly bind an empty nearby chest (overrides game-UI name until unbound) |
-| `echest unbind` | Remove manual binding and leave items untouched; game-name matching takes over |
-| `echest bind Empty` / `echest empty` | Preview one-time irreversible deletion of nearby chest's contents |
-| `echest empty confirm` | Confirm exact preview within 60 seconds; deletes content and removes manual binding |
-| `echest refill` | Ask for a refill scan next world step |
-| `echest reload` | Reload active INI and JSON config |
+The shipped original [`endless-chests.defaults.ini`](defaults/endless-chests.defaults.ini) contains **195 groups**, **3,464 group entries**, **3 aliases** and **45 disabled-item entries**. The active `endless-chests.ini` is created once in the mod data directory, never overwritten on upgrade. `[Groups]`, `[Aliases]`, `[DisabledGroups]`, `[DisabledItems]` and supported `[Options]` work; owner restrictions exclude blocked entries globally. Unavailable items are skipped and logged.
 
-All commands are administrator-only. On dedicated servers a console with no player position cannot use commands requiring the *nearest* chest; use an authorised player instead.
+The custom player string reference in Kiln's server ECS is exactly the **FNV-1a 64-bit hash of the original UTF-8 name** for two tested labels. The mod hashes its known names and compares them directly to the ECS value, without native memory access. Arbitrary names are **not decoded** (but a change to their non-zero hash is observed). Only names in the catalogue can select refill items; the special name `Empty` accepts any ASCII capitalization. Hashes are not cryptographically collision-resistant; matches among the known catalogue are checked for collisions.
 
-### Limitations and safety
+Enhancing gear rarity/perks, named level variants and gem-level creation from the original ShroudForge implementation remain unsupported by ordinary Kiln Items transactions. Magic storage chests and dedicated server name replication have not yet been validated. Large groups may exceed chest capacity.
 
-- Exact known-name matching has been observed for **two names** on one hosted chest; it is not a general-purpose decoder for arbitrary chest text.
-- The hash is not cryptographic. The mod refuses collisions among names in its configured catalogue; a deliberately chosen unknown collision is theoretically possible, but this path only **gives** items, never automatically removes them.
-- The source uses only Kiln's read-only component API for names, and transactional `Items.Give` / confirmed `Items.TakeSlot` for inventory operations.
-- A name change stops subsequent automatic refill transactions as soon as the next hash check detects it. Already-submitted transactions may finish.
-- Magic chests, equipment levels, custom spelling variants, aliases with Unicode punctuation, dedicated-server name replication, and name persistence after restart need field testing before we mark full parity.
-- **Never assume renaming to `Empty` will clear a chest without confirmation.**
+## Install and build
 
-## Development / CI
+1. Back up your Enshrouded world/save.
+2. Install a compatible Kiln release. This repo builds against the published Kiln `v0.2.0-dev.15` SDK commit.
+3. Download the successful `endless-chests-kiln-package` artifact from [Package Endless Chests (Kiln)](https://github.com/bisdat/kiln-mods/actions/workflows/endless-chests.yml).
+4. Extract the artifact and import its internal **`endless-chests-kiln-0.4.0.zip`** into Kiln's Library. Enable this version in the active profile, then restart Enshrouded.
+5. Test `Tools → Starter Blocks → Empty` using disposable chest contents before using real supplies.
 
-The workflow verifies the bundled INI counts, checks the observed FNV fingerprints against `Starter Blocks` and `Tools`, checks all known candidate names for collisions, and builds against a **pinned** official Kiln SDK commit. Both mods have separate CI workflows.
-
-Local Linux build:
+CI checks the complete INI and all known FNV hashes for collisions. Local Linux build:
 
 ```bash
 KILN_UPSTREAM_SHA=eba9a5e1e0e0044a9146fdd53021a751e2957030 \
@@ -109,4 +101,4 @@ KILN_SDK_VERSION=0.2.0-dev.local.20261107.61500 \
 bash scripts/build.sh EndlessChests
 ```
 
-Output: `bin/Release/endless-chests-kiln-0.3.0.zip`. A GitHub release can be published by pushing tag `endless-chests-v0.3.0`. Development remains in draft [PR #3](https://github.com/bisdat/kiln-mods/pull/3); remaining parity work is in [issue #4](https://github.com/bisdat/kiln-mods/issues/4).
+Output `bin/Release/endless-chests-kiln-0.4.0.zip`. A version-tagged release uses `endless-chests-v0.4.0`. Development continues in [PR #3](https://github.com/bisdat/kiln-mods/pull/3); parity tests are tracked in [issue #4](https://github.com/bisdat/kiln-mods/issues/4).
