@@ -31,7 +31,7 @@ dotnet build SurvivalQoL/SurvivalQoL.csproj --configuration Release --no-restore
 
 # KilnPack derives the archive name from the project version. Keep this in sync
 # automatically when a new version is released.
-mod_version="$(sed -n 's:^[[:space:]]*<Version>\\([^<]*\\)</Version>.*:\\1:p' "$repo/SurvivalQoL/SurvivalQoL.csproj")"
+mod_version="$(awk -F'[<>]' '/<Version>/ { print $3; exit }' "$repo/SurvivalQoL/SurvivalQoL.csproj")"
 [[ -n "$mod_version" ]] || { echo "Cannot read mod version from csproj" >&2; exit 1; }
 package="$repo/bin/Release/survival-qol-$mod_version.zip"
 [[ -s "$package" ]] || { echo "KilnPack did not produce $package" >&2; exit 1; }
