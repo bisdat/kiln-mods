@@ -12,6 +12,37 @@ internal sealed class IniCatalog
     public Dictionary<string, string> Aliases { get; } = new(StringComparer.OrdinalIgnoreCase);
     public HashSet<string> DisabledGroups { get; } = new(StringComparer.OrdinalIgnoreCase);
     public HashSet<string> DisabledItems { get; } = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<ulong, string> _gameNameByHash = new();
+    public int RecognizedNames => _gameNameByHash.Count;
+
+    // Exact, case-sensitive UTF-8 names as typed into the game's Rename UI;
+    // group / alias comparisons remain case-insensitive after lookup.
+    public bool TryGameName(ulong hash, out string selection) =>
+        _gameNameByHash.TryGetValue(hash, out selection!);
+
+    private void BuildGameNames()
+    {
+        // Collision prevention: FNV-1a is a fingerprint, not a cryptographic
+        // proof of identity. Never choose a selection for an ambiguous hash.
+        var collision = new HashSet<ulong>();
+        foreach (var name in Groups.Keys.Concat(Aliases.Keys)
+                     .Concat(Groups.Values.SelectMany(x => x))
+                     .Concat(DisabledItems)
+                     .Append("Empty"))
+        {
+            var hash = ChestNames.Hash(name);
+            if (collision.Contains(hash)) continue;
+            if (_gameNameByHash.TryGetValue(hash, out var previous))
+            {
+                if (string.Equals(previous, name, StringComparison.Ordinal)) continue;
+                _gameNameByHash.Remove(hash);
+                collision.Add(hash);
+                continue;
+            }
+            _gameNameByHash.Add(hash, name);
+        }
+    }
+
     public bool AllowMagicChests { get; private set; }
 
     // The original file includes settings that require engine APIs not yet present
@@ -75,6 +106,7 @@ internal sealed class IniCatalog
             }
         }
         if (c.Groups.Count == 0) throw new InvalidDataException("The catalogue has no groups.");
+        c.BuildGameNames();
         return c;
     }
 
