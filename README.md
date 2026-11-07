@@ -18,5 +18,5 @@ See the mod README for limitations, installation, SDK pin and testing instructio
 
 [Endless Chests README](EndlessChests/README.md) | [Packaging workflow](.github/workflows/endless-chests.yml)
 
-A separate, independently implemented Kiln-native chest refill mod. It uses `Kiln.Items` to refill ordinary storage chests; bind an **empty** nearby chest using `echest bind Starter Blocks` from Kiln's command interface (offline players use the control/console folder). This is a useful first working subset, **not yet full parity** with the ShroudForge edition: in-game chest rename recognition and the original large group catalog are not supported yet. It never ships or executes the original ShroudForge DLL.
+An independent Kiln-native storage refill mod. Version 0.2.0 uses the **complete 195-group original INI defaults**, aliases and disabled item/group policies. Bind an empty chest with `echest bind Starter Blocks` or any original group name, using Kiln's console folder in offline play. `echest bind Empty` previews a **one-time, irreversible clear** that requires `echest empty confirm` within 60 seconds. **Automatic recognition of names entered through Enshrouded's chest Rename UI is still unavailable** in the published Kiln SDK; this port does not claim feature parity or load the original ShroudForge DLL.
 
