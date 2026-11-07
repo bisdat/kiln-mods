@@ -38,8 +38,8 @@ dotnet build "$project" --configuration Release --no-restore -t:KilnPack
 
 # KilnPack derives the archive name from the project version. Keep this in sync
 # automatically when a new version is released.
-mod_version="$(awk -F'[<>]' '/<Version>/ { print $3; exit }' "$repo/"$project"")"
+mod_version="$(awk -F'[<>]' '/<Version>/ { print $3; exit }' "$project")"
 [[ -n "$mod_version" ]] || { echo "Cannot read mod version from csproj" >&2; exit 1; }
 package="$repo/bin/Release/$mod_id-$mod_version.zip"
 [[ -s "$package" ]] || { echo "KilnPack did not produce $package" >&2; exit 1; }
-echo "Survival QoL package: $package"
+echo "$mod package: $package"
