@@ -59,6 +59,8 @@ public sealed class SurvivalQoLMod : Mod
         {
             MinStamina = options.InfiniteStamina ? 1.0 : null,
             MinMana = options.InfiniteMana ? 1.0 : null,
+            // Also prevent a Kiln-enabled glider from disengaging due to stamina costs.
+            UnlimitedGliding = options.InfiniteStamina ? true : null,
         };
 
         if (_resources is null)
