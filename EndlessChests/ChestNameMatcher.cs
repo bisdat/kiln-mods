@@ -38,7 +38,7 @@ internal sealed class ChestNameMatcher
     public void Add(string name)
     {
         var entry = new Candidate(name);
-        _byLow5[ChestNames.Hash(name) & 31].Add(entry);
+        _byLow5[(int)(ChestNames.Hash(name) & 31)].Add(entry);
 
         // Common spellings are resolved in O(1) on the hot game thread,
         // including for very long item names and Unicode text.
@@ -83,7 +83,7 @@ internal sealed class ChestNameMatcher
         // five low hash bits across all ASCII capitalization variants.
         // Limit the search to that bucket instead of every catalogue name.
         string? recognized = null;
-        foreach (var candidate in _byLow5[fingerprint & 31])
+        foreach (var candidate in _byLow5[(int)(fingerprint & 31)])
         {
             if (candidate.LetterCount > MaxMixedCaseLetters ||
                 !MatchesAsciiCase(candidate.Bytes, candidate.LetterCount, fingerprint))
