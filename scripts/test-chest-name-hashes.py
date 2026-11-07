@@ -45,4 +45,17 @@ for name in all_names:
 assert by_hash[0x35F105E7ECC53E32] == "Starter Blocks"
 assert by_hash[0xC26501E3ADE7DA3C] == "Tools"
 assert by_hash[fnv1a64("Empty")] == "Empty"
+
+# The destructive Empty command accepts any capitalization, without accepting
+# a fingerprint that matches an original item/group/alias by accident.
+empty_variants = {
+    "".join(c.upper() if mask & (1 << i) else c for i, c in enumerate("empty"))
+    for mask in range(1 << 5)
+}
+empty_hashes = {fnv1a64(name) for name in empty_variants}
+assert len(empty_hashes) == 32
+assert all(h not in by_hash or by_hash[h] == "Empty" for h in empty_hashes)
+assert fnv1a64("empty") in empty_hashes
+assert fnv1a64("EMPTY") in empty_hashes
+print("PASS: all 32 Empty case variants are distinct from named catalogue selections")
 print(f"PASS: observed game chest IDs match FNV-1a64; {len(all_names)} exact names with no collisions")
