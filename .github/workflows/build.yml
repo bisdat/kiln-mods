@@ -1,0 +1,42 @@
+name: Build Survival QoL
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'SurvivalQoL/**'
+      - 'scripts/**'
+      - 'NuGet.Config'
+      - '.github/workflows/build.yml'
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Avoid duplicate expensive SDK rebuilds on successive PR updates.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout mods repository
+        uses: actions/checkout@v4
+
+      - name: Install .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Pack pinned Kiln SDK and build mod
+        run: bash scripts/build.sh
+
+      - name: Upload ready-to-install Kiln mod
+        uses: actions/upload-artifact@v4
+        with:
+          name: survival-qol
+          path: '**/survival-qol-0.1.0.zip'
+          if-no-files-found: error

@@ -1,0 +1,12 @@
+# Local Kiln SDK checkout and generated MDK packages
+.kiln-upstream/
+.kiln-mdk/
+
+# .NET build products
+**/bin/
+**/obj/
+**/artifacts/
+*.user
+
+# Packaged mods (uploaded as CI artifacts instead)
+*.zip

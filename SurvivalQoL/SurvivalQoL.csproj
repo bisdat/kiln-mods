@@ -1,0 +1,14 @@
+<Project Sdk="Kiln.Sdk/0.2.0-dev.local.20261107.62100">
+  <PropertyGroup>
+    <KilnModId>survival-qol</KilnModId>
+    <KilnModName>Survival QoL</KilnModName>
+    <Version>0.1.0</Version>
+    <Authors>bisdat</Authors>
+    <Description>Configurable player stamina, mana, regeneration, fall protection and durability using Kiln services.</Description>
+    <PackageProjectUrl>https://github.com/bisdat/kiln-mods</PackageProjectUrl>
+    <KilnSide>server</KilnSide>
+    <KilnClients>none</KilnClients>
+    <KilnServices>Rules;Combat;Abilities;Players;Settings</KilnServices>
+    <KilnGameIds>None</KilnGameIds>
+  </PropertyGroup>
+</Project>
