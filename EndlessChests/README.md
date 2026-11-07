@@ -1,10 +1,10 @@
-# Endless Chests (Kiln) — v0.4.1 (experimental)
+# Endless Chests (Kiln) — v0.4.2 (experimental)
 
 An independent C# implementation through the Kiln SDK, using the original Endless Chests group defaults (attributed to HipShot808). It does **not** load or redistribute the Windows ShroudForge DLL or use undocumented native memory offsets.
 
-**v0.4.1 changes:** automatic game-UI name matching now accepts different capitalisation, and renaming to an **unrecognised** name **preserves every existing item** and stops automatic refills. A recognised name still clears the old selection before refilling. The special name `Empty` still **clears automatically without confirmation**, including on startup and when new items are deposited.
+**v0.4.2 changes:** The original catalogue is now **alphabetically sorted by key within each INI section** for easier browsing. Group membership and the order of items *inside each group* are unchanged. GitHub Releases also supply a **separate downloadable `endless-chests.defaults.ini`** alongside the installable mod ZIP. The name matching, refill and automatic Empty behaviour from v0.4.1 are unchanged.
 
-The owner confirmed v0.4.0's automatic rename clearing works in-game; v0.4.1 requires a gameplay acceptance test.
+The owner confirmed v0.4.1 works in-game. v0.4.2 changes the bundled catalogue's presentation and release assets, not inventory behaviour.
 
 ## Name-change behaviour
 
@@ -35,7 +35,9 @@ No private string-store reads or Windows-client DLLs are required. The original 
 
 ## Original catalogue and settings
 
-The bundled [`endless-chests.defaults.ini`](defaults/endless-chests.defaults.ini) contains **195 original groups**, **3,464 item entries**, **3 aliases** and **45 disabled-item entries**. It is copied to the active mod's `endless-chests.ini` on first run only, never overwritten on upgrade. Edit `[Groups]`, `[Aliases]`, `[DisabledGroups]`, `[DisabledItems]` or `[Options]` in that active copy, then run `echest reload`. Disabled items and members of disabled groups are excluded globally. Missing game items are skipped and logged.
+The bundled [`endless-chests.defaults.ini`](defaults/endless-chests.defaults.ini) contains **195 original groups**, **3,464 item entries**, **3 aliases** and **45 disabled-item entries**. Entries are now **sorted alphabetically by their left-hand-side names within each section** (`[Options]`, `[DisabledItems]`, `[Groups]`, `[Aliases]`; `[DisabledGroups]` has no active entries). Item names on each group's right-hand side retain their original order. The INI is copied to the active mod's `endless-chests.ini` on first run only, **never overwritten on upgrade**. Edit `[Groups]`, `[Aliases]`, `[DisabledGroups]`, `[DisabledItems]` or `[Options]` in that active copy, then run `echest reload`. Disabled items and members of disabled groups are excluded globally. Missing game items are skipped and logged.
+
+The **tagged GitHub Release** publishes both `endless-chests-kiln-0.4.2.zip` (installable Kiln mod) and **`endless-chests.defaults.ini` (standalone sorted catalogue)** under Assets. You can [view the sorted catalogue in the repository](defaults/endless-chests.defaults.ini) without downloading. The standalone file is for reference or manual editing; **do not import the INI as a Kiln mod**. If you want to replace an existing active INI, back up your custom edits and copy its contents deliberately; installation does not overwrite it.
 
 The active `chests.json` file (typically in `kiln/data/endless-chests-kiln/`) stores existing manual chest bindings and settings:
 
@@ -63,8 +65,8 @@ Gear level/rarity/perk upgrades and gem-level special items from ShroudForge are
 
 1. **Back up the world**, especially chests with valuables.
 2. Use a compatible Kiln runtime (this repo pins published Kiln `v0.2.0-dev.15`).
-3. From a successful [Endless Chests packaging run](https://github.com/bisdat/kiln-mods/actions/workflows/endless-chests.yml), download the `endless-chests-kiln-package` artifact.
-4. Extract it and import the enclosed **`endless-chests-kiln-0.4.1.zip`** into Kiln's Library. Enable v0.4.1 in the active profile and restart Enshrouded.
+3. From a successful [Endless Chests packaging run](https://github.com/bisdat/kiln-mods/actions/workflows/endless-chests.yml), download the `endless-chests-kiln-package` artifact, or use the [tagged GitHub Releases](https://github.com/bisdat/kiln-mods/releases) page for the individual ZIP and sorted INI assets.
+4. Extract the Actions artifact (if downloaded) and import the enclosed **`endless-chests-kiln-0.4.2.zip`** into Kiln's Library. Enable v0.4.2 in the active profile and restart Enshrouded. The accompanying `endless-chests.defaults.ini` is a separate reference/download, **not** an installable Kiln package.
 5. Try **`TOOLS → starter blocks → My Storage → Empty`** on a throwaway chest. The unrecognised name must **not** delete the blocks; Empty **must** clear them without confirmation.
 
 ## Kiln console commands (optional)
@@ -97,7 +99,7 @@ cat kiln/control/console/probe.result.json
 
 ## CI and development
 
-The GitHub Actions workflow validates all 195 original groups, the 3,464 item entries, all 32 case variants of Empty, the observed chest-name FNV hashes, mixed-case matching for all original group labels and the collision-safe catalogue lookup. It builds against the released/pinned Kiln SDK source.
+The GitHub Actions workflow validates all 195 original groups, the 3,464 item entries, alphabetical key order within every INI section, all 32 case variants of Empty, the observed chest-name FNV hashes, mixed-case matching for all original group labels and the collision-safe catalogue lookup. It builds against the released/pinned Kiln SDK source and stages the sorted standalone INI with the mod ZIP for download and tagged releases.
 
 Local Linux build:
 
@@ -107,4 +109,4 @@ KILN_SDK_VERSION=0.2.0-dev.local.20261107.61500 \
 bash scripts/build.sh EndlessChests
 ```
 
-Output: `bin/Release/endless-chests-kiln-0.4.1.zip`. The version tag `endless-chests-v0.4.1` can publish a release. Development remains in draft [PR #3](https://github.com/bisdat/kiln-mods/pull/3); remaining parity checks are tracked in [issue #4](https://github.com/bisdat/kiln-mods/issues/4).
+Output: `bin/Release/endless-chests-kiln-0.4.2.zip`. After merging this change into `main`, publishing tag **`endless-chests-v0.4.2`** triggers both release assets automatically. The original v0.4.1 release remains unchanged; the remaining parity checks are tracked in [issue #4](https://github.com/bisdat/kiln-mods/issues/4).

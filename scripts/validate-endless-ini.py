@@ -18,6 +18,19 @@ aliases = dict(config.items("Aliases"))
 disabled = {k for k, v in config.items("DisabledItems") if v.strip() == "1"}
 entries = sum(len(v) for v in groups.values())
 
+# Every active key is ordered alphabetically within its own section.
+# Original item lists on the right-hand side retain their exact order, and
+# symbolic group names (such as $$) are placed after alphabetic names.
+def entry_sort_key(name: str) -> tuple[int, str, str]:
+    return (0 if name[0].isalnum() else 1, name.casefold(), name)
+
+
+for section in config.sections():
+    keys = list(config.options(section))
+    assert keys == sorted(keys, key=entry_sort_key), (
+        f"[{section}] keys must be sorted alphabetically within the section"
+    )
+
 assert len(groups) == 195, f"expected 195 groups; found {len(groups)}"
 assert entries == 3464, f"expected 3464 group entries; found {entries}"
 assert len(aliases) == 3, f"expected 3 aliases; found {len(aliases)}"
