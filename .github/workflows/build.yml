@@ -1,8 +1,9 @@
-name: Build Survival QoL
+name: Package Survival QoL
 
 on:
   push:
     branches: [main]
+    tags: ['v*']
     paths:
       - 'SurvivalQoL/**'
       - 'scripts/**'
@@ -14,13 +15,14 @@ on:
 permissions:
   contents: read
 
-# Avoid duplicate expensive SDK rebuilds on successive PR updates.
+# A new commit supersedes an older package run on the same branch or pull request.
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
-  build:
+  package:
+    name: Build and package mod
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout mods repository
@@ -31,12 +33,44 @@ jobs:
         with:
           dotnet-version: '10.0.x'
 
-      - name: Pack pinned Kiln SDK and build mod
+      - name: Check release tag matches mod version
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: bash
+        run: |
+          mod_version="$(sed -n 's:.*<Version>\([^<]*\)</Version>.*:\1:p' SurvivalQoL/SurvivalQoL.csproj)"
+          if [[ -z "$mod_version" || "$GITHUB_REF_NAME" != "v$mod_version" ]]; then
+            echo "::error::Tag $GITHUB_REF_NAME must match the mod project version v$mod_version"
+            exit 1
+          fi
+
+      - name: Pack pinned Kiln SDK and compile the mod
         run: bash scripts/build.sh
 
-      - name: Upload ready-to-install Kiln mod
+      - name: Upload installable Kiln package
         uses: actions/upload-artifact@v4
         with:
-          name: survival-qol
-          path: '**/survival-qol-0.1.0.zip'
+          name: survival-qol-package
+          path: bin/Release/survival-qol-*.zip
           if-no-files-found: error
+          retention-days: 90
+
+  release:
+    name: Publish GitHub Release
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: package
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - name: Download packaged mod
+        uses: actions/download-artifact@v4
+        with:
+          name: survival-qol-package
+          path: dist
+
+      - name: Attach installable ZIP to versioned GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/survival-qol-*.zip
+          fail_on_unmatched_files: true
+          generate_release_notes: true
