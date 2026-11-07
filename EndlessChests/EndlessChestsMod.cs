@@ -11,7 +11,9 @@ public sealed class EndlessChestsMod : Mod
     private string _settingsFile = "";
     private string _catalogFile = "";
     private CommandRegistration? _command;
-    private readonly HashSet<ChestBinding> _busy = [];
+    private readonly HashSet<EntityId> _busy = [];
+    private readonly Dictionary<EntityId, ulong> _nameSeen = [];
+    private string? _lastWorldId;
     private readonly HashSet<string> _warned = new(StringComparer.OrdinalIgnoreCase);
     private PendingEmpty? _pendingEmpty;
     private double _elapsed;
@@ -40,7 +42,7 @@ public sealed class EndlessChestsMod : Mod
             usage: "<bind|name|empty|unbind|status|list|groups|nameprobe|refill|reload> [selection]",
             description: "Bind a nearby chest to a name from the original Endless Chests catalogue.");
         Context.Tick.Pre += Tick;
-        Log.Info("Endless Chests (Kiln) loaded: name catalog available. In-world chest name detection is not supported yet.");
+        Log.Info("Endless Chests (Kiln): exact game-UI name fingerprinting is enabled for original names. Empty still requires confirmation.");
     }
 
     public override void OnUnload()
@@ -50,6 +52,7 @@ public sealed class EndlessChestsMod : Mod
         _pendingEmpty = null;
         _command?.Dispose();
         _busy.Clear();
+        _nameSeen.Clear();
     }
 
     private void LoadSettings()
@@ -72,9 +75,11 @@ public sealed class EndlessChestsMod : Mod
             _settings = state;
             _pendingEmpty = null;
             _warned.Clear();
+            _nameSeen.Clear();
             _generation++;
             Log.Info($"Endless Chests: {catalogue.Groups.Count} default/custom groups, {catalogue.Aliases.Count} aliases, " +
-                $"{catalogue.DisabledItems.Count} disabled items, {state.Chests.Count} persisted chests; magic={catalogue.AllowMagicChests}");
+                $"{catalogue.DisabledItems.Count} disabled items, {state.Chests.Count} persisted chests; " +
+                $"hashNames={catalogue.RecognizedNames}, autoNames={state.AutoNames}, magic={catalogue.AllowMagicChests}");
             if (catalogue.EnableGemLevels || catalogue.FullyUpgradeGear)
                 Log.Info("Endless Chests: original EnableGemLevels/FullyUpgradeGear options are retained in INI but unsupported by Kiln.Items");
         }
@@ -155,6 +160,14 @@ public sealed class EndlessChestsMod : Mod
         _settings.Chests.FirstOrDefault(b => b.WorldId == world &&
             Distance2(At(b), at) <= _settings.PositionToleranceMeters * _settings.PositionToleranceMeters);
 
+    private bool TryGameSelection(EntityId chest, out string selection, out ulong fingerprint)
+    {
+        selection = "";
+        fingerprint = 0;
+        return ChestNames.TryReadHash(chest, out fingerprint) &&
+            _catalog.TryGameName(fingerprint, out selection);
+    }
+
     private static string Fingerprint(InventoryContents inv) =>
         string.Join(";", inv.Slots.Where(s => !s.IsEmpty).OrderBy(s => s.Slot.Value)
             .Select(s => $"{s.Slot.Value:x}/{s.Item.Value:x}/{s.Count}/{s.ItemEntity.Value:x}"));
@@ -175,9 +188,11 @@ public sealed class EndlessChestsMod : Mod
                 break;
             case "status":
                 c.Reply($"Endless Chests: enabled={_settings.Enabled}, groups={_catalog.Groups.Count}, " +
-                    $"aliases={_catalog.Aliases.Count}, blocked items={_catalog.DisabledItems.Count}, " +
+                    $"aliases={_catalog.Aliases.Count}, known hashes={_catalog.RecognizedNames}, " +
+                    $"autoNames={_settings.AutoNames}, blocked items={_catalog.DisabledItems.Count}, " +
                     $"items={Items.Available}, world={World.Available}, spawn={Spawn.Available}, " +
-                    $"GUID={Saves.WorldId ?? "not ready"}, bindings={_settings.Chests.Count}. In-game rename reading: unavailable.");
+                    $"GUID={Saves.WorldId ?? "not ready"}, bindings={_settings.Chests.Count}. " +
+                    "Original-name matching available (exact FNV-1a UTF-8 hash).");
                 break;
             case "groups":
             {
@@ -282,11 +297,12 @@ public sealed class EndlessChestsMod : Mod
         var template = Spawn.Inspect(chest)?.TemplateName ?? "unknown";
         var world = Saves.WorldId;
         var binding = world is null ? null : BoundAt(world, at)?.Selection;
+        var known = TryGameSelection(chest, out var matched, out _) ? matched : "(unrecognized)";
         c.Reply($"NAME PROBE [read-only, server ECS]: chest={chest}, " +
             $"template={template}, position={at.X:F2},{at.Y:F2},{at.Z:F2}, " +
             $"CustomPlayerString.size={bytes}, reference={candidate}; " +
-            $"Kiln binding={binding ?? "(none)"}. " +
-            "The visible in-game chest name cannot yet be resolved by this SDK. No inventory or binding changes.");
+            $"known-name={known}, Kiln binding={binding ?? "(none)"}. " +
+            "Known names matched by verified FNV-1a hashes; game string store not accessed. No inventory or binding changes.");
     }
 
     // Empty is NEVER activated automatically by old metadata, or merely because
@@ -299,7 +315,7 @@ public sealed class EndlessChestsMod : Mod
         var (chest, at) = Nearest(c);
         var world = WorldId();
         var bound = BoundAt(world, at);
-        if (bound != null && _busy.Contains(bound))
+        if (_busy.Contains(chest))
             c.Fail("A refill is in progress. Wait a moment, then preview again.");
         var inv = Items.Read(chest) ?? throw new CommandException("The chest's inventory is unavailable.");
         var slots = inv.Slots.Where(s => !s.IsEmpty).ToArray();
@@ -326,7 +342,7 @@ public sealed class EndlessChestsMod : Mod
             c.Fail("Chest contents changed since preview. Nothing was deleted; preview again.");
         }
         var bound = BoundAt(world, at);
-        if (bound != null && _busy.Contains(bound))
+        if (_busy.Contains(chest))
             c.Fail("A refill is still in progress; preview again after it finishes.");
         _pendingEmpty = null;
         // Stop future refills BEFORE any asynchronous item removal is submitted.
