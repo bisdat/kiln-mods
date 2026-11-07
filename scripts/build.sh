@@ -29,6 +29,10 @@ dotnet restore SurvivalQoL/SurvivalQoL.csproj
 dotnet build SurvivalQoL/SurvivalQoL.csproj --configuration Release --no-restore
 dotnet build SurvivalQoL/SurvivalQoL.csproj --configuration Release --no-restore -t:KilnPack
 
-package="$repo/bin/Release/survival-qol-0.1.0.zip"
+# KilnPack derives the archive name from the project version. Keep this in sync
+# automatically when a new version is released.
+mod_version="$(sed -n 's:^[[:space:]]*<Version>\\([^<]*\\)</Version>.*:\\1:p' "$repo/SurvivalQoL/SurvivalQoL.csproj")"
+[[ -n "$mod_version" ]] || { echo "Cannot read mod version from csproj" >&2; exit 1; }
+package="$repo/bin/Release/survival-qol-$mod_version.zip"
 [[ -s "$package" ]] || { echo "KilnPack did not produce $package" >&2; exit 1; }
 echo "Survival QoL package: $package"
