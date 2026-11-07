@@ -29,5 +29,6 @@ dotnet restore SurvivalQoL/SurvivalQoL.csproj
 dotnet build SurvivalQoL/SurvivalQoL.csproj --configuration Release --no-restore
 dotnet build SurvivalQoL/SurvivalQoL.csproj --configuration Release --no-restore -t:KilnPack
 
-echo "Survival QoL package:"
-find "$repo/SurvivalQoL" -name 'survival-qol-*.zip' -print
+package="$repo/bin/Release/survival-qol-0.1.0.zip"
+[[ -s "$package" ]] || { echo "KilnPack did not produce $package" >&2; exit 1; }
+echo "Survival QoL package: $package"
