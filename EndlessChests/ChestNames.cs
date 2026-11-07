@@ -25,6 +25,27 @@ internal static class ChestNames
         return hash;
     }
 
+    // "Empty" is intentionally case-insensitive, unlike other original
+    // catalogue labels. Cover every ASCII capitalization directly because
+    // FNV-1a hashes cannot be folded to lower case after hashing.
+    private static readonly HashSet<ulong> EmptyHashes = BuildEmptyHashes();
+
+    private static HashSet<ulong> BuildEmptyHashes()
+    {
+        var result = new HashSet<ulong>();
+        const string text = "empty";
+        for (var mask = 0; mask < (1 << text.Length); mask++)
+        {
+            var name = text.ToCharArray();
+            for (var i = 0; i < name.Length; i++)
+                if ((mask & (1 << i)) != 0) name[i] = char.ToUpperInvariant(name[i]);
+            result.Add(Hash(new string(name)));
+        }
+        return result;
+    }
+
+    public static bool IsEmptyHash(ulong hash) => EmptyHashes.Contains(hash);
+
     // A missing, differently sized or unreadable component must never be
     // treated as a known name. This only returns a possible hash, not text.
     public static bool TryReadHash(EntityId chest, out ulong hash)
