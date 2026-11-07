@@ -1,16 +1,36 @@
-# Endless Chests (Kiln) — 0.2.0 (experimental)
+# Endless Chests (Kiln) — 0.2.1 (experimental)
 
 A new C# implementation of Endless Chests using the **supported Kiln SDK**. No ShroudForge DLL is loaded or redistributed. The original ShroudForge mod is attributed to HipShot808.
 
-**Status:** The initial 0.1.0 chest binding and replenishment worked in an actual solo game. The expanded 0.2.0 group catalogue, magic-chest handling and destructive `Empty` flow are **not yet gameplay tested**. Use a test world and back up its save.
+**Status:** The initial 0.1.0 chest binding and replenishment worked in an actual solo game. The original 0.2.0 `Empty` preview and confirmation were successfully used in-game on 7 Nov 2026 (chest 1353, 3 occupied slots, 751 units). The name-probe feature in 0.2.1 and magic-chest behaviour are **not yet gameplay tested**. Use a test world and back up its save.
 
-## What's new in 0.2.0
+## What's new since 0.1.0
 
 - Ships the **exact user-provided [endless-chests.defaults.ini](defaults/endless-chests.defaults.ini)** containing **195 original named groups, 3,464 group entries, 3 original aliases and 45 default disabled items**. There are intentionally no renamed or invented group names.
 - On first launch copies the defaults to `Context.DataDirectory/endless-chests.ini` (usually `kiln/data/endless-chests-kiln/endless-chests.ini`). Edit that **active** INI for owner settings, custom groups, aliases, disabled groups and items. `echest reload` applies changes. Existing INI files are never overwritten.
 - `[DisabledGroups]` blocks the named group and every one of its items across **all** groups and aliases; `[DisabledItems]` blocks exact item names everywhere. Missing or out-of-version catalog items are skipped with a log warning rather than crashing the refill.
 - Group sizes up to the chest's available slots, including original groups containing more than 16 items. `[Options] AllowMagicChests=1` enables matching placed storage templates that contain "Magic", up to 72 slots; this path needs an in-game test.
 - Special selection **`Empty`**: preview the nearest chest's contents, then explicitly confirm deletion of exactly those item slots. The mod **unbinds the chest before deleting**, so it does not refill again. No other chest's contents are deleted. Item changes use `Items.TakeSlot` with exact slot and item-entity validation.
+
+### Read-only chest-name probe (0.2.1)
+
+Greeneye's [Quick Deposit](https://github.com/Greeneye0/enshrouded-quick-deposit/blob/main/src/inventory.cpp) identifies the game component `CustomPlayerString`, containing what appears to be a 64-bit reference to a separately managed player-assigned text string. Kiln's `World.ComponentSize` and `World.TryRead<ulong>` can **safely check whether that component and value are visible on the host's ECS**. They **cannot resolve the text string yet**.
+
+When in a solo game, stand within 4 metres of the chest you want to inspect (preferably with no other chest just as close) and issue:
+
+```text
+echest nameprobe
+```
+
+Use Kiln's usual console folder for offline play (example below). The reply reports the chest entity ID, template, position, `CustomPlayerString.size` and—only if the size is exactly 8 bytes—a **candidate string ID**, plus the current Kiln binding, if any. The command does **not** modify an inventory, invoke `Empty`, change an assignment, or print the user-visible chest name.
+
+**Suggested experiment:**
+
+1. With the same chest in front of you, run `echest nameprobe` before assigning it a game-UI name. Save the output.
+2. Rename the chest **inside Enshrouded's Rename UI** to `Starter Blocks`, then close the chest UI; run `echest nameprobe` again and compare.
+3. Rename that same chest to `Tools`, then probe again. Also probe another chest left unnamed. Record whether the component appears and whether the ID changes. An unchanged ID does **not** prove the label stayed unchanged: the game might update the string under that ID.
+
+This is only a server-side component visibility test. If the ID is visible, we still need an upstream Kiln-side resolver for the custom string store; Quick Deposit's Windows client-specific memory offsets are not copied into this mod. **Do not expect renaming the chest to refill it automatically** in 0.2.1.
 
 ### Kiln SDK limitation: in-game chest names
 
@@ -24,7 +44,7 @@ The defaults also contain `EnableGemLevels=1` and `FullyUpgradeGear=1`; Kiln's o
 
 1. Install a compatible Kiln release in the **host** game (this mod builds against the published Kiln `v0.2.0-dev.15` commit).
 2. Open [GitHub Actions — Package Endless Chests (Kiln)](https://github.com/bisdat/kiln-mods/actions/workflows/endless-chests.yml), then a successful run. Download its `endless-chests-kiln-package` artifact.
-3. Extract the outer artifact archive and import its **`endless-chests-kiln-0.2.0.zip`** into Kiln's Library. Add the mod to the active profile. Never install the original ShroudForge DLL alongside it.
+3. Extract the outer artifact archive and import its **`endless-chests-kiln-0.2.1.zip`** into Kiln's Library. Add the mod to the active profile. Never install the original ShroudForge DLL alongside it.
 4. Enter a saved world, stand within **4 metres** of an **empty** ordinary storage chest and run a command.
 
 The mod saves position/world-ID-based bindings in `chests.json` and retains them when upgrading from 0.1.0. **The old `Groups` field inside `chests.json` is now ignored:** groups and owner policy live in `endless-chests.ini`. Copy any custom 0.1.0 groups to the INI's `[Groups]` section before upgrading.
@@ -55,6 +75,7 @@ An admin can type `/echest bind Stone Blocks` in the game's chat when chat is en
 | `echest groups [search]` | List matching names from the complete group catalogue |
 | `echest list` | Show bindings for the current saved world |
 | `echest status` | Show Kiln services, world ID, group counts and bindings |
+| `echest nameprobe` (or `echest probe`) | Read-only inspect `CustomPlayerString` on the nearest chest; reports candidate ID, not the name text |
 | `echest unbind` | Stop refilling nearest bound chest, **preserving contents** |
 | `echest bind Empty` or `echest empty` | **Preview** occupied slots in the nearest chest; deletes nothing |
 | `echest empty confirm` | Within 60 seconds, if the same character/chest and exact contents match, **permanently delete the previewed items**, then leave the chest unbound |
@@ -101,4 +122,4 @@ KILN_SDK_VERSION=0.2.0-dev.local.20261107.61500 \
 bash scripts/build.sh EndlessChests
 ```
 
-Output: `bin/Release/endless-chests-kiln-0.2.0.zip`. Version tags `endless-chests-v0.2.0` publish release ZIPs. CI compilation and the first 0.1.0 in-game report do not substitute for a 0.2.0 validation of normal vs magic chests, aliases, owner blocks and `Empty` on a backed-up test world.
+Output: `bin/Release/endless-chests-kiln-0.2.1.zip`. Version tags `endless-chests-v0.2.1` publish release ZIPs. CI compilation and the successful 0.2.0 `Empty` confirmation do not substitute for a 0.2.1 validation of normal vs magic chests, aliases, owner blocks and `Empty` on a backed-up test world.
