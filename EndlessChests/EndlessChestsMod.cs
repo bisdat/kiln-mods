@@ -12,7 +12,16 @@ public sealed class EndlessChestsMod : Mod
     private string _catalogFile = "";
     private CommandRegistration? _command;
     private readonly HashSet<EntityId> _busy = [];
-    private readonly Dictionary<EntityId, ulong> _nameSeen = [];
+    private readonly Dictionary<EntityId, ObservedChest> _nameSeen = [];
+
+    private sealed class ObservedChest(WorldPosition at, ulong hash)
+    {
+        public WorldPosition At { get; } = at;
+        public ulong Hash { get; set; } = hash;
+        public bool NeedsClear { get; set; }
+    }
+
+    private static readonly ulong EmptyHash = ChestNames.Hash("Empty");
     private string? _lastWorldId;
     private readonly HashSet<string> _warned = new(StringComparer.OrdinalIgnoreCase);
     private PendingEmpty? _pendingEmpty;
@@ -42,7 +51,7 @@ public sealed class EndlessChestsMod : Mod
             usage: "<bind|name|empty|unbind|status|list|groups|nameprobe|refill|reload> [selection]",
             description: "Bind a nearby chest to a name from the original Endless Chests catalogue.");
         Context.Tick.Pre += Tick;
-        Log.Info("Endless Chests (Kiln): exact game-UI name fingerprinting is enabled for original names. Empty still requires confirmation.");
+        Log.Warn("Endless Chests: CLEAR ON RENAME and automatic Empty are enabled by default. Chest contents are permanently deleted on game-UI renames.");
     }
 
     public override void OnUnload()
@@ -79,7 +88,8 @@ public sealed class EndlessChestsMod : Mod
             _generation++;
             Log.Info($"Endless Chests: {catalogue.Groups.Count} default/custom groups, {catalogue.Aliases.Count} aliases, " +
                 $"{catalogue.DisabledItems.Count} disabled items, {state.Chests.Count} persisted chests; " +
-                $"hashNames={catalogue.RecognizedNames}, autoNames={state.AutoNames}, magic={catalogue.AllowMagicChests}");
+                $"hashNames={catalogue.RecognizedNames}, autoNames={state.AutoNames}, " +
+                $"clearOnRename={state.ClearOnRename}, autoEmpty={state.AutoEmpty}, magic={catalogue.AllowMagicChests}");
             if (catalogue.EnableGemLevels || catalogue.FullyUpgradeGear)
                 Log.Info("Endless Chests: original EnableGemLevels/FullyUpgradeGear options are retained in INI but unsupported by Kiln.Items");
         }
@@ -179,7 +189,8 @@ public sealed class EndlessChestsMod : Mod
         {
             case "help":
                 c.Reply("echest bind <group/item> | bind Empty | empty confirm | unbind | groups [search] | list | status | nameprobe | refill | reload. " +
-                    "The name is a Kiln binding, not the chest's game UI name. Empty is destructive only after a preview and confirmation.");
+                    "Game-UI rename deletes existing chest contents before any new refill. Renaming to Empty clears without confirmation. " +
+                    "For a manual console clear, 'echest empty' still previews and 'echest empty confirm' confirms.");
                 break;
             case "reload":
                 LoadSettings();
@@ -189,7 +200,8 @@ public sealed class EndlessChestsMod : Mod
             case "status":
                 c.Reply($"Endless Chests: enabled={_settings.Enabled}, groups={_catalog.Groups.Count}, " +
                     $"aliases={_catalog.Aliases.Count}, known hashes={_catalog.RecognizedNames}, " +
-                    $"autoNames={_settings.AutoNames}, blocked items={_catalog.DisabledItems.Count}, " +
+                    $"autoNames={_settings.AutoNames}, clearOnRename={_settings.ClearOnRename}, " +
+                    $"autoEmpty={_settings.AutoEmpty}, blocked items={_catalog.DisabledItems.Count}, " +
                     $"items={Items.Available}, world={World.Available}, spawn={Spawn.Available}, " +
                     $"GUID={Saves.WorldId ?? "not ready"}, bindings={_settings.Chests.Count}. " +
                     "Original-name matching available (exact FNV-1a UTF-8 hash).");
@@ -305,9 +317,9 @@ public sealed class EndlessChestsMod : Mod
             "Known names matched by verified FNV-1a hashes; game string store not accessed. No inventory or binding changes.");
     }
 
-    // Empty is NEVER activated automatically by old metadata, or merely because
-    // a real chest is renamed in the game UI. Confirm against a fresh inventory
-    // snapshot of the exact nearby chest before deleting anything.
+    // Legacy console preview remains an explicitly confirmed operation.
+    // In-game Rename UI has separate, automatic clear-on-rename/Empty handling
+    // in Tick, as requested by the world owner.
     private void PreviewEmpty(CommandContext c)
     {
         if (!_settings.Enabled) c.Fail("Endless Chests is disabled.");
@@ -352,6 +364,7 @@ public sealed class EndlessChestsMod : Mod
             SaveSettings();
         }
         var generation = _generation;
+        _busy.Add(chest);
         _ = ClearSnapshot(chest, pending.Slots, generation);
         c.Reply($"Clearing {pending.Slots.Length} previously previewed chest slots using Kiln.Items, then leaving chest unbound. " +
             "See kiln.log for the final count. Items added after this confirmation are NOT automatically deleted.");
@@ -384,6 +397,62 @@ public sealed class EndlessChestsMod : Mod
         }
         catch (Exception ex) { Log.Warn($"Endless Chests: empty failed after {removed} slots: {ex.Message}"); }
         Log.Info($"Endless Chests: empty chest {chest}: {removed}/{expected.Length} previously confirmed slots cleared.");
+        _busy.Remove(chest);
+    }
+
+    // World-scoped, runtime-only rename observation. First observation of a
+    // normal named chest is a baseline, not a rename: this prevents destructive
+    // clears merely because the world or new mod version just loaded.
+    private void ObserveNames(string world, List<(EntityId Id, WorldPosition At)> candidates)
+    {
+        if (!_settings.AutoNames) return;
+        foreach (var (id, at) in candidates)
+        {
+            if (!ChestNames.TryReadHash(id, out var hash))
+                continue; // Never mistake a temporarily unavailable component for a rename.
+
+            if (!_nameSeen.TryGetValue(id, out var seen) || Distance2(seen.At, at) > 0.01)
+            {
+                _nameSeen[id] = new ObservedChest(at, hash);
+                if (hash == EmptyHash)
+                    Log.Info($"Endless Chests: chest {id} is named Empty; automatic deletion is enabled.");
+                // An existing Empty label is intentional and always has clearing semantics.
+            }
+            else if (seen.Hash != hash)
+            {
+                var previous = seen.Hash;
+                seen.Hash = hash;
+                seen.NeedsClear = _settings.ClearOnRename;
+                _pendingEmpty = null;
+                var from = _catalog.TryGameName(previous, out var priorName) ? priorName : $"0x{previous:X16}";
+                var to = _catalog.TryGameName(hash, out var nextName) ? nextName : $"0x{hash:X16}";
+                Log.Warn($"Endless Chests: game-UI rename on chest {id}: '{from}' -> '{to}'; " +
+                    (seen.NeedsClear ? "old contents scheduled for permanent deletion." : "clearOnRename disabled."));
+
+                // A manual binding would refill its old selection following the
+                // rename. Drop it when game-UI rename control takes over.
+                var binding = BoundAt(world, at);
+                if (binding is not null)
+                {
+                    _settings.Chests.Remove(binding);
+                    SaveSettings();
+                    Log.Info($"Endless Chests: detached manual binding '{binding.Selection}' after in-game rename.");
+                }
+            }
+
+            // Empty always overrides any existing manual assignment, even if
+            // it was already named Empty before this process began.
+            if (hash == EmptyHash)
+            {
+                var binding = BoundAt(world, at);
+                if (binding is not null)
+                {
+                    _settings.Chests.Remove(binding);
+                    SaveSettings();
+                    Log.Info($"Endless Chests: removed manual binding because chest {id} is named Empty.");
+                }
+            }
+        }
     }
 
     private void Tick(in TickInfo tick)
@@ -404,52 +473,126 @@ public sealed class EndlessChestsMod : Mod
             }
 
             var candidates = StorageChests();
+            ObserveNames(world, candidates);
             var tolerance2 = _settings.PositionToleranceMeters * _settings.PositionToleranceMeters;
             var generation = _generation;
 
-            // Keep existing manual assignments intact. An in-game name of
-            // "Empty" always pauses refills, but never deletes items.
-            foreach (var b in _settings.Chests)
+            foreach (var (id, at) in candidates)
             {
-                if (b.WorldId != world ||
-                    string.Equals(b.Selection, "Empty", StringComparison.OrdinalIgnoreCase))
-                    continue;
-                var matched = candidates.Where(chest => Distance2(chest.At, At(b)) <= tolerance2).Take(2).ToArray();
-                if (matched.Length != 1 || _busy.Contains(matched[0].Id)) continue;
-                var chest = matched[0].Id;
-                if (TryGameSelection(chest, out var label, out _) &&
-                    string.Equals(label, "Empty", StringComparison.OrdinalIgnoreCase))
-                    continue;
-                _busy.Add(chest);
-                _ = Refill(b.Selection, chest, generation, expectedHash: null);
-            }
+                if (_busy.Contains(id)) continue;
 
-            // An ordinary unbound chest named for an original group, alias
-            // or item now replenishes from that exact in-game name, automatically.
-            if (!_settings.AutoNames) return;
-            foreach (var chest in candidates)
-            {
-                if (_busy.Contains(chest.Id) || BoundAt(world, chest.At) is not null) continue;
-                if (!TryGameSelection(chest.Id, out var label, out var hash)) continue;
-                if (!_nameSeen.TryGetValue(chest.Id, out var priorHash) || priorHash != hash)
+                var binding = _settings.Chests.FirstOrDefault(b => b.WorldId == world &&
+                    Distance2(At(b), at) <= tolerance2);
+
+                var observed = _settings.AutoNames && _nameSeen.TryGetValue(id, out var o) ? o : null;
+                var isEmpty = observed?.Hash == EmptyHash;
+
+                // A hash change requires clearing before ANY new refill.
+                // The pending state is retained while another transaction is busy.
+                // The Empty name also clears contents observed on startup and any
+                // items deposited into it later, without a second command.
+                if (observed is not null &&
+                    (observed.NeedsClear || (isEmpty && _settings.AutoEmpty)))
                 {
-                    _nameSeen[chest.Id] = hash;
-                    Log.Info($"Endless Chests: matched in-game name '{label}' on chest {chest.Id}");
-                    if (string.Equals(label, "Empty", StringComparison.OrdinalIgnoreCase))
-                        Log.Info("Endless Chests: Empty does NOT auto-delete; use echest empty then echest empty confirm at this chest.");
+                    var inventory = Items.Read(id);
+                    if (inventory is not { Initialized: true }) continue;
+                    if (inventory.UsedSlots > 0)
+                    {
+                        _busy.Add(id);
+                        _ = ClearOnName(id, at, world, observed, generation);
+                        continue;
+                    }
+
+                    observed.NeedsClear = false;
+                    // The chest is already empty. It can receive its renamed
+                    // selection immediately if the name is not "Empty".
                 }
-                if (string.Equals(label, "Empty", StringComparison.OrdinalIgnoreCase))
+
+                if (isEmpty) continue; // No refill while named Empty.
+
+                if (binding is not null &&
+                    !string.Equals(binding.Selection, "Empty", StringComparison.OrdinalIgnoreCase))
+                {
+                    _busy.Add(id);
+                    _ = Refill(binding.Selection, id, generation, expectedHash: observed?.Hash);
                     continue;
-                _busy.Add(chest.Id);
-                // Each item operation rechecks its name ID. Renaming the chest
-                // immediately stops subsequent auto refills.
-                _ = Refill(label, chest.Id, generation, expectedHash: hash);
+                }
+
+                if (!_settings.AutoNames || observed is null ||
+                    !_catalog.TryGameName(observed.Hash, out var selection) ||
+                    string.Equals(selection, "Empty", StringComparison.OrdinalIgnoreCase))
+                    continue;
+
+                _busy.Add(id);
+                _ = Refill(selection, id, generation, expectedHash: observed.Hash);
             }
         }
         catch (Exception ex) { Log.Warn($"Endless Chests: chest scan failed: {ex.Message}"); }
     }
 
+    private bool SameChest(EntityId chest, WorldPosition at, string world, ulong expectedHash)
+    {
+        return !_stopping && _settings.Enabled && string.Equals(Saves.WorldId, world, StringComparison.Ordinal) &&
+            ChestNames.TryReadHash(chest, out var hash) && hash == expectedHash &&
+            World.Position(chest) is { } current && Distance2(current, at) < 0.01;
+    }
+
+    // Exactly the inventory that was present when this rename was observed is
+    // removed, slot by slot, using the same vetted Kiln transaction path as
+    // the previous confirmed Empty command. If the name, entity identity,
+    // world or slot contents change while asynchronous operations are running,
+    // stop; a future scan will retry any pending clearing.
+    private async Task ClearOnName(
+        EntityId chest, WorldPosition at, string world, ObservedChest seen, int generation)
+    {
+        var hash = seen.Hash;
+        var cleared = 0;
+        try
+        {
+            if (!SameChest(chest, at, world, hash)) return;
+            var inventory = Items.Read(chest);
+            if (inventory is not { Initialized: true }) return;
+            var snapshot = inventory.Slots.Where(s => !s.IsEmpty).ToArray();
+            foreach (var slot in snapshot)
+            {
+                if (generation != _generation || !SameChest(chest, at, world, hash))
+                    return;
+                var now = Items.Read(chest)?.Slots.FirstOrDefault(s => s.Slot == slot.Slot);
+                if (now is null || now.IsEmpty || now.Item != slot.Item ||
+                    now.Count != slot.Count || now.ItemEntity != slot.ItemEntity)
+                {
+                    Log.Warn($"Endless Chests: rename clear paused for chest {chest}: slot {slot.Slot} changed during deletion.");
+                    return;
+                }
+                var result = await Items.TakeSlot(chest, slot);
+                if (result.Status != ItemsStatus.Done)
+                {
+                    Log.Warn($"Endless Chests: rename clear failed for chest {chest}: {result}");
+                    return;
+                }
+                cleared++;
+            }
+            if (generation != _generation || !SameChest(chest, at, world, hash) || seen.Hash != hash)
+                return;
+
+            seen.NeedsClear = false;
+            var label = _catalog.TryGameName(hash, out var name) ? name : "(unknown name)";
+            Log.Warn($"Endless Chests: auto-cleared {cleared}/{snapshot.Length} slots in chest {chest} after name '{label}'.");
+
+            if (hash != EmptyHash && _catalog.TryGameName(hash, out var selection))
+                await GiveSelection(selection, chest, generation, expectedHash: hash);
+        }
+        catch (Exception ex) { Log.Warn($"Endless Chests: automatic clearing on chest {chest} failed: {ex.Message}"); }
+        finally { _busy.Remove(chest); }
+    }
+
     private async Task Refill(string selection, EntityId chest, int generation, ulong? expectedHash)
+    {
+        try { await GiveSelection(selection, chest, generation, expectedHash); }
+        finally { _busy.Remove(chest); }
+    }
+
+    private async Task GiveSelection(string selection, EntityId chest, int generation, ulong? expectedHash)
     {
         try
         {
@@ -485,6 +628,5 @@ public sealed class EndlessChestsMod : Mod
             }
         }
         catch (Exception ex) { Log.Warn($"Endless Chests: refill of '{selection}' failed: {ex.Message}"); }
-        finally { _busy.Remove(chest); }
     }
 }
