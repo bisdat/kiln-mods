@@ -397,36 +397,79 @@ public sealed class EndlessChestsMod : Mod
         if (Items.Status() is not { Transactions: true, Catalog: true }) return;
         try
         {
+            if (!string.Equals(_lastWorldId, world, StringComparison.Ordinal))
+            {
+                _lastWorldId = world;
+                _nameSeen.Clear();
+            }
+
             var candidates = StorageChests();
             var tolerance2 = _settings.PositionToleranceMeters * _settings.PositionToleranceMeters;
             var generation = _generation;
+
+            // Keep existing manual assignments intact. An in-game name of
+            // "Empty" always pauses refills, but never deletes items.
             foreach (var b in _settings.Chests)
             {
-                if (b.WorldId != world || _busy.Contains(b)) continue;
-                // "Empty" is only an explicit, confirmed one-shot command.
-                if (string.Equals(b.Selection, "Empty", StringComparison.OrdinalIgnoreCase)) continue;
+                if (b.WorldId != world ||
+                    string.Equals(b.Selection, "Empty", StringComparison.OrdinalIgnoreCase))
+                    continue;
                 var matched = candidates.Where(chest => Distance2(chest.At, At(b)) <= tolerance2).Take(2).ToArray();
-                if (matched.Length != 1) continue;
-                _busy.Add(b);
-                _ = Refill(b, matched[0].Id, generation);
+                if (matched.Length != 1 || _busy.Contains(matched[0].Id)) continue;
+                var chest = matched[0].Id;
+                if (TryGameSelection(chest, out var label, out _) &&
+                    string.Equals(label, "Empty", StringComparison.OrdinalIgnoreCase))
+                    continue;
+                _busy.Add(chest);
+                _ = Refill(b.Selection, chest, generation, expectedHash: null);
+            }
+
+            // An ordinary unbound chest named for an original group, alias
+            // or item now replenishes from that exact in-game name, automatically.
+            if (!_settings.AutoNames) return;
+            foreach (var chest in candidates)
+            {
+                if (_busy.Contains(chest.Id) || BoundAt(world, chest.At) is not null) continue;
+                if (!TryGameSelection(chest.Id, out var label, out var hash)) continue;
+                if (!_nameSeen.TryGetValue(chest.Id, out var priorHash) || priorHash != hash)
+                {
+                    _nameSeen[chest.Id] = hash;
+                    Log.Info($"Endless Chests: matched in-game name '{label}' on chest {chest.Id}");
+                    if (string.Equals(label, "Empty", StringComparison.OrdinalIgnoreCase))
+                        Log.Info("Endless Chests: Empty does NOT auto-delete; use echest empty then echest empty confirm at this chest.");
+                }
+                if (string.Equals(label, "Empty", StringComparison.OrdinalIgnoreCase))
+                    continue;
+                _busy.Add(chest.Id);
+                // Each item operation rechecks its name ID. Renaming the chest
+                // immediately stops subsequent auto refills.
+                _ = Refill(label, chest.Id, generation, expectedHash: hash);
             }
         }
         catch (Exception ex) { Log.Warn($"Endless Chests: chest scan failed: {ex.Message}"); }
     }
 
-    private async Task Refill(ChestBinding b, EntityId chest, int generation)
+    private async Task Refill(string selection, EntityId chest, int generation, ulong? expectedHash)
     {
         try
         {
             var first = Items.Read(chest);
             if (first is not { Initialized: true }) return;
-            var plan = _catalog.Resolve(b.Selection, Math.Min(first.GenericSlots, 72));
-            if ((plan.Unknown.Count != 0 || plan.Blocked.Count != 0) && _warned.Add(b.Selection))
-                Log.Warn($"Endless Chests: '{b.Selection}': {plan.Unknown.Count} unavailable item names, " +
+            var plan = _catalog.Resolve(selection, Math.Min(first.GenericSlots, 72));
+            if ((plan.Unknown.Count != 0 || plan.Blocked.Count != 0) && _warned.Add(selection))
+                Log.Warn($"Endless Chests: '{selection}': {plan.Unknown.Count} unavailable item names, " +
                     $"{plan.Blocked.Count} items blocked by owner settings; {plan.Items.Count} valid types.");
             foreach (var item in plan.Items)
             {
                 if (_stopping || generation != _generation || !_settings.Enabled) break;
+                if (expectedHash is ulong wantedHash)
+                {
+                    if (!ChestNames.TryReadHash(chest, out var currentHash) || currentHash != wantedHash)
+                        break;
+                }
+                else if (TryGameSelection(chest, out var changedName, out _) &&
+                    string.Equals(changedName, "Empty", StringComparison.OrdinalIgnoreCase))
+                    break;
                 var inv = Items.Read(chest);
                 if (inv is not { Initialized: true }) break;
                 var wanted = item.IsGear ? 1 : Math.Clamp(item.MaxStack, 1, 250);
@@ -436,12 +479,12 @@ public sealed class EndlessChestsMod : Mod
                 if (!result.Succeeded)
                 {
                     if (result.Status is not (ItemsStatus.NoRoom or ItemsStatus.NoInventory))
-                        Log.Warn($"Endless Chests: '{b.Selection}' item {item.Label}: {result}");
+                        Log.Warn($"Endless Chests: '{selection}' item {item.Label}: {result}");
                     break;
                 }
             }
         }
-        catch (Exception ex) { Log.Warn($"Endless Chests: refill of '{b.Selection}' failed: {ex.Message}"); }
-        finally { _busy.Remove(b); }
+        catch (Exception ex) { Log.Warn($"Endless Chests: refill of '{selection}' failed: {ex.Message}"); }
+        finally { _busy.Remove(chest); }
     }
 }
