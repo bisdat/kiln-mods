@@ -2,7 +2,7 @@ name: Build Survival QoL
 
 on:
   push:
-    branches: [main, feature/enshrouded-survival-qol]
+    branches: [main]
     paths:
       - 'SurvivalQoL/**'
       - 'scripts/**'
@@ -13,6 +13,11 @@ on:
 
 permissions:
   contents: read
+
+# Avoid duplicate expensive SDK rebuilds on successive PR updates.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build:
