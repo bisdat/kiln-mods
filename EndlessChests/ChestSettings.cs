@@ -8,6 +8,12 @@ public sealed class ChestSettings
     // When enabled, unbound chests named with an exact default group/alias/item
     // replenish automatically using their ECS CustomPlayerString hash.
     public bool AutoNames { get; set; } = true;
+    // Destructive by owner request: a game-UI rename clears old contents
+    // before refilling the new group's items, including unknown names.
+    public bool ClearOnRename { get; set; } = true;
+    // A chest already named exactly "Empty" keeps clearing contents on
+    // every scheduled scan, without a console preview/confirmation.
+    public bool AutoEmpty { get; set; } = true;
     public int RecheckSeconds { get; set; } = 4;
     public double PositionToleranceMeters { get; set; } = 0.75;
     public List<ChestBinding> Chests { get; set; } = [];
