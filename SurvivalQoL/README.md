@@ -6,7 +6,7 @@ A configurable, server-authoritative C# mod for Enshrouded built with **Kiln.Sdk
 
 | Requested effect | Implementation | Status |
 | --- | --- | --- |
-| Infinite Stamina | `Rules.Apply` with `MinStamina = 1` | Implemented |
+| Infinite Stamina | `Rules.Apply` with `MinStamina = 1` and `UnlimitedGliding` | Implemented; glider-specific protection requires a Kiln client |
 | Infinite Mana | `Rules.Apply` with `MinMana = 1` | Implemented |
 | Infinite Underwater Breath | `playerDivingTimeFactor = 2.0` (maximum supported) | **Only 2× breath, NOT infinite** |
 | Infinite Frost Timer | `playerBodyHeatFactor = 2.0` (maximum supported) | **Only 2× body heat, NOT infinite** |
