@@ -57,6 +57,9 @@ jobs:
       - name: Test in-game FNV-1a64 name fingerprints and collisions
         run: python3 scripts/test-chest-name-hashes.py
 
+      - name: Test case-insensitive FNV name matching
+        run: python3 scripts/test-chest-case.py
+
       - name: Build Kiln SDK and package mod
         run: bash scripts/build.sh EndlessChests
 
