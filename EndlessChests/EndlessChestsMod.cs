@@ -21,7 +21,6 @@ public sealed class EndlessChestsMod : Mod
         public bool NeedsClear { get; set; }
     }
 
-    private static readonly ulong EmptyHash = ChestNames.Hash("Empty");
     private string? _lastWorldId;
     private readonly HashSet<string> _warned = new(StringComparer.OrdinalIgnoreCase);
     private PendingEmpty? _pendingEmpty;
@@ -174,8 +173,13 @@ public sealed class EndlessChestsMod : Mod
     {
         selection = "";
         fingerprint = 0;
-        return ChestNames.TryReadHash(chest, out fingerprint) &&
-            _catalog.TryGameName(fingerprint, out selection);
+        if (!ChestNames.TryReadHash(chest, out fingerprint)) return false;
+        if (ChestNames.IsEmptyHash(fingerprint))
+        {
+            selection = "Empty";
+            return true;
+        }
+        return _catalog.TryGameName(fingerprint, out selection);
     }
 
     private static string Fingerprint(InventoryContents inv) =>
@@ -414,7 +418,7 @@ public sealed class EndlessChestsMod : Mod
             if (!_nameSeen.TryGetValue(id, out var seen) || Distance2(seen.At, at) > 0.01)
             {
                 _nameSeen[id] = new ObservedChest(at, hash);
-                if (hash == EmptyHash)
+                if (ChestNames.IsEmptyHash(hash))
                     Log.Info($"Endless Chests: chest {id} is named Empty; automatic deletion is enabled.");
                 // An existing Empty label is intentional and always has clearing semantics.
             }
@@ -442,7 +446,7 @@ public sealed class EndlessChestsMod : Mod
 
             // Empty always overrides any existing manual assignment, even if
             // it was already named Empty before this process began.
-            if (hash == EmptyHash)
+            if (ChestNames.IsEmptyHash(hash))
             {
                 var binding = BoundAt(world, at);
                 if (binding is not null)
@@ -485,7 +489,7 @@ public sealed class EndlessChestsMod : Mod
                     Distance2(At(b), at) <= tolerance2);
 
                 var observed = _settings.AutoNames && _nameSeen.TryGetValue(id, out var o) ? o : null;
-                var isEmpty = observed?.Hash == EmptyHash;
+                var isEmpty = observed is not null && ChestNames.IsEmptyHash(observed.Hash);
 
                 // A hash change requires clearing before ANY new refill.
                 // The pending state is retained while another transaction is busy.
@@ -579,7 +583,7 @@ public sealed class EndlessChestsMod : Mod
             var label = _catalog.TryGameName(hash, out var name) ? name : "(unknown name)";
             Log.Warn($"Endless Chests: auto-cleared {cleared}/{snapshot.Length} slots in chest {chest} after name '{label}'.");
 
-            if (hash != EmptyHash && _catalog.TryGameName(hash, out var selection))
+            if (!ChestNames.IsEmptyHash(hash) && _catalog.TryGameName(hash, out var selection))
                 await GiveSelection(selection, chest, generation, expectedHash: hash);
         }
         catch (Exception ex) { Log.Warn($"Endless Chests: automatic clearing on chest {chest} failed: {ex.Message}"); }
