@@ -426,12 +426,21 @@ public sealed class EndlessChestsMod : Mod
             {
                 var previous = seen.Hash;
                 seen.Hash = hash;
-                seen.NeedsClear = _settings.ClearOnRename;
+                // Only a recognised destination is permitted to destroy
+                // inventory. An unknown label means STOP refilling and LEAVE
+                // every existing item untouched, including after a prior
+                // clear that was interrupted by another rename.
+                var recognized = ChestNames.IsEmptyHash(hash) ||
+                    _catalog.TryGameName(hash, out _);
+                seen.NeedsClear = _settings.ClearOnRename && recognized;
                 _pendingEmpty = null;
                 var from = _catalog.TryGameName(previous, out var priorName) ? priorName : $"0x{previous:X16}";
-                var to = _catalog.TryGameName(hash, out var nextName) ? nextName : $"0x{hash:X16}";
-                Log.Warn($"Endless Chests: game-UI rename on chest {id}: '{from}' -> '{to}'; " +
-                    (seen.NeedsClear ? "old contents scheduled for permanent deletion." : "clearOnRename disabled."));
+                var to = ChestNames.IsEmptyHash(hash) ? "Empty" :
+                    _catalog.TryGameName(hash, out var nextName) ? nextName : "(unrecognized)";
+                Log.Info($"Endless Chests: game-UI rename on chest {id}: '{from}' -> '{to}'; " +
+                    (!recognized ? "unknown destination; contents preserved and no auto refill." :
+                    seen.NeedsClear ? "old contents scheduled for permanent deletion." :
+                    "clearOnRename disabled; existing contents preserved."));
 
                 // A manual binding would refill its old selection following the
                 // rename. Drop it when game-UI rename control takes over.
