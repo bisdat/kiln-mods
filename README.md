@@ -13,3 +13,10 @@ Implements infinite stamina, infinite mana, fast health regeneration, fast mana 
 Build with `bash scripts/build.sh` (requires git, .NET 10 and internet access), or use **Actions → Package Survival QoL** to download the `survival-qol-package` artifact from a successful run. Pushing a matching version tag (e.g. `v0.1.0`) also attaches the ready-to-install ZIP to a GitHub Release. Configuration is hot-reloadable.
 
 See the mod README for limitations, installation, SDK pin and testing instructions.
+
+## Endless Chests (Kiln) — experimental port
+
+[Endless Chests README](EndlessChests/README.md) | [Packaging workflow](.github/workflows/endless-chests.yml)
+
+A separate, independently implemented Kiln-native chest refill mod. It uses `Kiln.Items` to refill ordinary storage chests; bind an **empty** nearby chest using `echest bind Starter Blocks` from Kiln's command interface (offline players use the control/console folder). This is a useful first working subset, **not yet full parity** with the ShroudForge edition: in-game chest rename recognition and the original large group catalog are not supported yet. It never ships or executes the original ShroudForge DLL.
+
