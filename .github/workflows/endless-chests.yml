@@ -51,6 +51,9 @@ jobs:
             exit 1
           fi
 
+      - name: Verify the original 195 named groups and disabled defaults
+        run: python3 scripts/validate-endless-ini.py
+
       - name: Build Kiln SDK and package mod
         run: bash scripts/build.sh EndlessChests
 
