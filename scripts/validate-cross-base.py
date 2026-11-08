@@ -32,7 +32,10 @@ assert "BuildEvent e)" in src
 assert "case \"plan\":" in src
 assert "case \"lastcraft\":" in src
 assert "case \"lastbuild\":" in src
-assert project.findtext("./PropertyGroup/Version") == "0.1.0-alpha.2"
+assert "No craft request was recorded" in src
+assert "cbstore recipes [output name]" in src
+assert project.findtext("./PropertyGroup/Version") == "0.1.3"
+assert re.fullmatch(r"0\.1\.\d+", project.findtext("./PropertyGroup/Version") or "")
 
 # This phase is explicitly non-mutating: no give, take, teleport, mutate,
 # vanilla recipe injection, or raw component writes.
@@ -47,5 +50,5 @@ for token in (
 for text in ("read-only", "not", "building", "crafting", "loaded", "magic"):
     assert text in guide.lower(), f"README must explain limitation: {text}"
 
-print("PASS: Cross-base Storage alpha.2 has read-only chest/recipe diagnostics, " +
+print("PASS: Cross-base Storage 0.1.3 has read-only chest/recipe diagnostics, " +
       "native craft/build event observation and no inventory mutation calls")
