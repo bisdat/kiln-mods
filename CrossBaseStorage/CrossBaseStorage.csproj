@@ -1,0 +1,14 @@
+<Project Sdk="Kiln.Sdk/0.2.0-dev.local.20261107.61500">
+  <PropertyGroup>
+    <KilnModId>cross-base-storage</KilnModId>
+    <KilnModName>Cross-base Storage (Kiln)</KilnModName>
+    <Version>0.1.0-alpha.1</Version>
+    <Authors>bisdat</Authors>
+    <Description>Read-only discovery prototype for magic chest inventory across loaded Enshrouded bases; cross-base crafting requires a new Kiln engine bridge.</Description>
+    <PackageProjectUrl>https://github.com/bisdat/kiln-mods</PackageProjectUrl>
+    <KilnSide>server</KilnSide>
+    <KilnClients>none</KilnClients>
+    <KilnServices>Items;World;Spawn;Saves</KilnServices>
+    <KilnGameIds>None</KilnGameIds>
+  </PropertyGroup>
+</Project>
