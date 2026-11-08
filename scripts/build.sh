@@ -7,6 +7,7 @@ mod="${1:-SurvivalQoL}"
 case "$mod" in
   SurvivalQoL) mod_id="survival-qol" ;;
   EndlessChests) mod_id="endless-chests-kiln" ;;
+  CrossBaseStorage) mod_id="cross-base-storage" ;;
   *) echo "Unknown mod: $mod" >&2; exit 2 ;;
 esac
 project="$repo/$mod/$mod.csproj"
