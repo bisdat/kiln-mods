@@ -80,6 +80,18 @@ The ShroudForge transaction report independently warns that the original invento
 
 **Best next engineering target:** keep the existing recipe costs intact, add Kiln's missing reflected ingredient/category metadata as a safe read-only API, then extend the game's **client material-source resolver** and the **host's original transaction** so cross-base Magic Chests participate as genuine sources. This is an upstream Kiln engine/API enhancement, not a change to the existing managed read-only scanner. Do not port ShroudForge's free-crafting cost-zeroing behavior as the cross-base solution.
 
+## Prototyped Kiln SDK recipe-input inspection extension (8 November 2026)
+
+The next step has a source-level implementation in [`sdk-proposals/recipe-input-probe`](../sdk-proposals/recipe-input-probe/README.md), based on the pinned `frostdev-ops/kiln` revision. These scripts patch a **disposable source checkout** (not the user's installed game or Kiln runtime) and add:
+
+- A **new optional tail** on the `kiln.gameplay` v1 native table, checked by its size. The `recipe_raw_inputs` entry copies at most eight **48-byte native RecipeInfo input records** through Kiln's existing SEH-protected lookup and simulation-thread guard into a **400-byte** C ABI value. The existing `Gameplay.Recipe` and public table entries remain unchanged.
+- A managed `Gameplay.RawRecipe(id)` API that returns detached `ReadOnlyMemory<byte>` inputs; it fails closed if the matched native DLL lacks the optional function.
+- [Isolated GitHub Actions checks](https://github.com/bisdat/kiln-mods/actions/workflows/kiln-recipe-probe.yml): **Linux managed build, C ABI size check and Windows x64 `kiln-gameplay.dll` build passed** on 8 November 2026. [Successful run](https://github.com/bisdat/kiln-mods/actions/runs/42527820064).
+
+The tool only exports *opaque bytes* at this stage. This **does not interpret a category ID, the category quantity or water charges**; its purpose is to avoid guessing unverified native offsets. The raw record could contain internal pointers, so it should not be published in a diagnostic log or exposed over a network. Do **not** deploy either custom DLL to a normal Kiln installation or add the experimental API to the shipping Cross-base Storage mod. No version bump from `0.1.4` is warranted.
+
+For a production-ready upstream change, first validate the exact native category input layout for the known game build against the authoritative `RecipeRegistryResource` fields and replace opaque bytes with **typed**, validated descriptors. Following that, the client source resolver and atomic server material payment still need their own native implementation and end-to-end tests.
+
 ## Proposed contract for future upstream service (API sketch, not executable)
 
 A future optional Kiln native service might expose:
