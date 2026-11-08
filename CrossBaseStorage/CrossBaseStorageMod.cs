@@ -270,6 +270,16 @@ public sealed class CrossBaseStorageMod : Mod
     {
         EnsureGameplay();
         if (c.Count < 2) throw c.Usage("cbstore plan <recipeId|last> [quantity]");
+        if (c.Arg(1).Equals("last", StringComparison.OrdinalIgnoreCase) &&
+            (c.Source.Player.IsNone || !_craftRequests.ContainsKey(c.Source.Player.Value)))
+        {
+            c.Reply("No craft request was recorded. When the game's crafting UI disables the " +
+                    "craft button, no request reaches Kiln. This is expected without local " +
+                    "craftable materials; it does not mean this mod enables remote crafting. " +
+                    "Use 'cbstore recipes [output name]' to discover a hand-crafting recipe, " +
+                    "then 'cbstore plan 0x<recipeId> 1' to examine its ingredients without crafting.");
+            return;
+        }
         var id = RecipeIdFromCommand(c, c.Arg(1));
         var quantity = c.Count > 2 ? c.Int(2) : 1;
         if (quantity is < 1 or > 100)
@@ -353,7 +363,9 @@ public sealed class CrossBaseStorageMod : Mod
                     $"station={request.Station}, canceled={request.Canceled}, injected={request.Injected}. " +
                     $"Try cbstore plan 0x{request.Recipe:x8}");
         else
-            c.Reply("No native craft request recorded yet (the client UI may disable crafting before it sends a request).");
+            c.Reply("No native craft request recorded. The client may have disabled the " +
+                    "craft button before submitting any action. Use 'cbstore recipes' to " +
+                    "find a recipe ID, then 'cbstore plan <recipeId>' without crafting.");
 
         if (_craftOutcomes.TryGetValue(player, out var outcome))
             c.Reply($"LAST native CRAFT outcome UTC={outcome.When:O}, " +
