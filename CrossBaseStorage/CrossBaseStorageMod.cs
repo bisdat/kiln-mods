@@ -28,7 +28,7 @@ public sealed class CrossBaseStorageMod : Mod
     {
         _commands = Commands.Register(
             "cbstore", HandleCommand, CommandPermission.Admin,
-            usage: "<status|scan|templates|near|stock item name|top|recipes [filter]|plan <recipe> [count]|lastcraft|lastbuild>",
+            usage: "<status|scan|templates|near|stock item name|quote <amount> <item>|top|recipes [filter]|plan <recipe> [count]|lastcraft|lastbuild>",
             description: "Inspect loaded magic chest inventory and native craft/build requests (read-only).");
         if (Gameplay.Available && !Gameplay.Enable())
             Log.Warn("Cross-base Storage: kiln.gameplay present but events are not ready.");
@@ -209,6 +209,70 @@ public sealed class CrossBaseStorageMod : Mod
             c.Reply($"{count} x {item.Label} @ {Where(chest)}, entity={chest.Entity}");
         if (chests.Length > MaxShown)
             c.Reply($"... plus {chests.Length - MaxShown} other candidate chests.");
+    }
+
+    // A hypothetical exact-item allocation, not an inventory transaction.
+    // The engine has NOT approved any of these sources for crafting. There
+    // is no reservation, world save or stock mutation.
+    private static void Quote(CommandContext c)
+    {
+        if (c.Count < 3)
+            throw c.Usage("cbstore quote <units> <exact item name or item ID>");
+        var required = c.Int(1);
+        if (required < 1 || required > 1_000_000)
+            throw new CommandException("Quote units must be between 1 and 1,000,000.");
+        var query = string.Join(" ", c.Args.Skip(2)).Trim();
+        var item = Items.Lookup(query) ??
+            throw new CommandException($"Unknown catalogued item '{query}'.");
+        if (c.Source.Player.IsNone)
+            throw new CommandException("Enter the world as a player before quoting sources.");
+
+        var player = c.Source.Player;
+        var playerStock = Items.Read(player)?.Count(item.Id) ?? 0;
+        var pos = World.Position(player);
+        var chests = ScanLoaded().Where(x => x.MagicByName).ToArray();
+        var candidates = new List<QuoteSource>
+        {
+            new(player.Value, playerStock, 0, true)
+        };
+        foreach (var chest in chests)
+        {
+            var stock = chest.Contents.Count(item.Id);
+            if (stock <= 0) continue;
+            candidates.Add(new QuoteSource(chest.Entity.Value, stock,
+                pos is { } p ? DistanceSquared(chest.Position, p) : double.PositiveInfinity, false));
+        }
+
+        var quote = MaterialQuotePlanner.QuoteExact(required, candidates);
+        c.Reply($"READ-ONLY, NON-RESERVING source quote: {required} x {item.Label}; " +
+                $"player={playerStock}, visibleSources={candidates.Count}, totalVisible={quote.Visible}, " +
+                $"state={quote.Status}, shortage={quote.Missing}. " +
+                "Sources are TEMPLATE GUESSES, not vanilla engine-eligible inventory providers.");
+        if (quote.Status == QuoteStatus.InvalidSources)
+        {
+            c.Reply("REJECTED: duplicate identities or invalid counts/positions. No allocation is usable.");
+            return;
+        }
+        if (quote.Status == QuoteStatus.Insufficient)
+        {
+            c.Reply("NO ALLOCATION: available stock is insufficient; partial debits are forbidden.");
+            return;
+        }
+        foreach (var debit in quote.Debits.Take(MaxShown))
+        {
+            if (debit.IsPlayer)
+            {
+                c.Reply($"  PROPOSE {debit.Units} x {item.Label} from PLAYER entity={debit.EntityId}");
+                continue;
+            }
+            var chest = chests.FirstOrDefault(x => x.Entity.Value == debit.EntityId);
+            c.Reply($"  PROPOSE {debit.Units} x {item.Label} from CHEST entity={debit.EntityId}" +
+                    (chest is null ? "" : $" @ {Where(chest)}"));
+        }
+        if (quote.Debits.Count > MaxShown)
+            c.Reply($"... and {quote.Debits.Count - MaxShown} other candidate allocations.");
+        c.Reply("PROPOSAL ONLY. No game crafting, transaction, reservation or stock mutation was performed; " +
+                "remote source permissions, category choices and actual payment remain unsupported.");
     }
 
     private static void Top(CommandContext c)
@@ -401,7 +465,7 @@ public sealed class CrossBaseStorageMod : Mod
         {
             case "help":
                 c.Reply("cbstore status | scan | templates | near | stock <item> | top | " +
-                        "recipes [output filter] | plan <recipeId|last> [count] | lastcraft | lastbuild. " +
+                        "quote <units> <item> | recipes [output filter] | plan <recipeId|last> [count] | lastcraft | lastbuild. " +
                         "Read-only diagnostics; no cross-base crafting/building yet.");
                 break;
             case "status": Status(c); break;
@@ -409,6 +473,7 @@ public sealed class CrossBaseStorageMod : Mod
             case "templates": Templates(c); break;
             case "near": Nearest(c); break;
             case "stock": Stock(c); break;
+            case "quote": Quote(c); break;
             case "top": Top(c); break;
             case "recipes": Recipes(c); break;
             case "plan": Plan(c); break;
