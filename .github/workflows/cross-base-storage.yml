@@ -1,0 +1,87 @@
+name: Package Cross-base Storage (Kiln)
+
+on:
+  push:
+    branches: [main]
+    tags: ['cross-base-storage-v*']
+    paths:
+      - 'CrossBaseStorage/**'
+      - 'scripts/build.sh'
+      - 'scripts/validate-cross-base.py'
+      - 'NuGet.Config'
+      - '.github/workflows/cross-base-storage.yml'
+  pull_request:
+    paths:
+      - 'CrossBaseStorage/**'
+      - 'scripts/build.sh'
+      - 'scripts/validate-cross-base.py'
+      - 'NuGet.Config'
+      - '.github/workflows/cross-base-storage.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  package:
+    name: Build Cross-base Storage
+    runs-on: ubuntu-24.04
+    env:
+      KILN_UPSTREAM_SHA: eba9a5e1e0e0044a9146fdd53021a751e2957030
+      KILN_SDK_VERSION: 0.2.0-dev.local.20261107.61500
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Check release tag matches project version
+        if: startsWith(github.ref, 'refs/tags/cross-base-storage-v')
+        shell: bash
+        run: |
+          version="$(awk -F'[<>]' '/<Version>/ {print $3; exit}' CrossBaseStorage/CrossBaseStorage.csproj)"
+          if [[ -z "$version" || "$GITHUB_REF_NAME" != "cross-base-storage-v$version" ]]; then
+            echo "::error::Tag must be cross-base-storage-v$version"
+            exit 1
+          fi
+
+      - name: Check prototype's read-only boundaries
+        run: python3 scripts/validate-cross-base.py
+
+      - name: Build pinned Kiln SDK and package mod
+        run: bash scripts/build.sh CrossBaseStorage
+
+      - name: Upload prototype Kiln package
+        uses: actions/upload-artifact@v4
+        with:
+          name: cross-base-storage-kiln-package
+          path: bin/Release/cross-base-storage-*.zip
+          if-no-files-found: error
+          retention-days: 90
+
+  release:
+    name: Publish version-tagged alpha
+    needs: package
+    if: startsWith(github.ref, 'refs/tags/cross-base-storage-v')
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: cross-base-storage-kiln-package
+          path: dist
+
+      - name: Attach alpha Kiln ZIP to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/cross-base-storage-*.zip
+          prerelease: true
+          generate_release_notes: true
+          fail_on_unmatched_files: true
