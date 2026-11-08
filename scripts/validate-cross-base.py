@@ -15,13 +15,24 @@ project = ET.parse(root / "CrossBaseStorage/CrossBaseStorage.csproj").getroot()
 assert project.findtext("./PropertyGroup/KilnModId") == "cross-base-storage"
 assert project.findtext("./PropertyGroup/KilnSide") == "server"
 assert project.findtext("./PropertyGroup/KilnClients") == "none"
-assert project.findtext("./PropertyGroup/KilnServices") == "Items;World;Spawn;Saves;Chat"
+assert project.findtext("./PropertyGroup/KilnServices") == "Items;World;Spawn;Saves;Chat;Gameplay"
 
 assert "CommandPermission.Admin" in src
 assert "Items.FindInventories(InventoryKinds.Containers)" in src
 assert "Items.Read(" in src
 assert "Spawn.Inspect(" in src
 assert "Saves.WorldId" in src
+assert "Gameplay.Recipe(" in src
+assert "Gameplay.WorkshopRecipes(0)" in src
+assert "Gameplay.Enable()" in src
+assert "[Subscribe(EventPriority.Monitor" in src
+assert "CraftEvent e)" in src
+assert "ItemCraftedEvent e)" in src
+assert "BuildEvent e)" in src
+assert "case \"plan\":" in src
+assert "case \"lastcraft\":" in src
+assert "case \"lastbuild\":" in src
+assert project.findtext("./PropertyGroup/Version") == "0.1.0-alpha.2"
 
 # This phase is explicitly non-mutating: no give, take, teleport, mutate,
 # vanilla recipe injection, or raw component writes.
@@ -36,4 +47,5 @@ for token in (
 for text in ("read-only", "not", "building", "crafting", "loaded", "magic"):
     assert text in guide.lower(), f"README must explain limitation: {text}"
 
-print("PASS: Cross-base Storage alpha has admin-only, read-only chest diagnostics and no stock mutation calls")
+print("PASS: Cross-base Storage alpha.2 has read-only chest/recipe diagnostics, " +
+      "native craft/build event observation and no inventory mutation calls")
