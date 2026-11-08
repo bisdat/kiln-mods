@@ -32,12 +32,15 @@ assert "BuildEvent e)" in src
 assert "case \"plan\":" in src
 assert "case \"lastcraft\":" in src
 assert "case \"lastbuild\":" in src
+assert "case \"quote\":" in src
+assert "MaterialQuotePlanner.QuoteExact(" in src
+assert (root / "CrossBaseStorage/MaterialQuotePlanner.cs").exists()
 assert "No craft request was recorded" in src
 assert "UNRESOLVED CATEGORY/PLACEHOLDER ingredient" in src
 assert "A raw count of 0 does NOT establish zero material cost" in src
 assert "INCOMPLETE RECIPE INPUT DATA" in src
 assert "cbstore recipes [output name]" in src
-assert project.findtext("./PropertyGroup/Version") == "0.1.4"
+assert project.findtext("./PropertyGroup/Version") == "0.1.5"
 assert re.fullmatch(r"0\.1\.\d+", project.findtext("./PropertyGroup/Version") or "")
 
 # This phase is explicitly non-mutating: no give, take, teleport, mutate,
@@ -53,5 +56,5 @@ for token in (
 for text in ("read-only", "not", "building", "crafting", "loaded", "magic"):
     assert text in guide.lower(), f"README must explain limitation: {text}"
 
-print("PASS: Cross-base Storage 0.1.4 has read-only chest/recipe diagnostics, " +
+print("PASS: Cross-base Storage 0.1.5 has read-only chest/recipe diagnostics, " +
       "native craft/build event observation and no inventory mutation calls")
