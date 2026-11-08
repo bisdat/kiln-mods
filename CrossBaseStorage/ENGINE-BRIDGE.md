@@ -66,17 +66,29 @@ The resolver should avoid double-counting a Magic Chest already present in the g
 - **Do not** assume distant chests are permanently loaded; read their current state at the moment of payment. Investigate lifecycle under cold restarts, dedicated servers and chunk streaming.
 - **Do not** run deduction tests while Endless Chests is refilling the source containers; auto-refill would obscure whether remote payment actually happened. Disable its auto refill for the test or use unbound Magic Chests.
 
-## Reproducible read-only tests using current alpha.2
+## Observed missing craft requests and client gating (8 November 2026)
 
-In Enshrouded, enter a world, craft one normal inexpensive recipe through the vanilla UI, then use a console command file:
+Live test of the native event diagnostic prototype (then versioned `0.1.0-alpha.2`) at 21:14:39 UTC showed:
+- `cbstore status`: `gameplay=True`, `craftEventHook=True`, `buildEventHook=True`.
+- `cbstore lastcraft`: no recorded craft request and no native crafting outcome.
+- `cbstore plan last`: no recorded native request, so no recipe ID was available; the earlier version returned a command error.
+- `cbstore lastbuild`: no observed native build outcome.
+
+This is **consistent with** a client-side crafting button being disabled before sending a request; it is **not conclusive proof** that the client's material-source resolver alone blocked crafting. Recipe unlocks, station state, missing local materials and other mod state weren't isolated in that test. The client crafting research describes this as a possible gate, but diagnosing why requires a native client trace or comparing with a normal craft with all inputs in the player backpack.
+
+**0.1.3 diagnostic improvement:** `cbstore plan last` now returns a non-error explanatory message if no request exists. `cbstore recipes [output-filter]` can enumerate hand-crafting recipe IDs without performing a craft, and `cbstore plan <recipeId> [count]` can compare inputs against Magic Chest stock without relying on a craft request. This is read-only and cannot activate a disabled game UI control.
+
+## Reproducible read-only tests using current 0.1.3
+
+In Enshrouded, enter a world, and first try the **zero-crafting** recipe discovery path. This works even when the client craft button is disabled:
 
 ```bash
-printf 'cbstore lastcraft\ncbstore plan last\ncbstore lastbuild\n' > kiln/control/console/cbbridge.tmp
+printf 'cbstore recipes\ncbstore lastcraft\ncbstore plan last\ncbstore lastbuild\n' > kiln/control/console/cbbridge.tmp
 mv kiln/control/console/cbbridge.tmp kiln/control/console/cbbridge.cmd
 cat kiln/control/console/cbbridge.result.json
 ```
 
-`lastcraft` should report an actual craft request and success/failure when the game's engine sees one. `plan last` displays the recipe's exact native inputs and aggregated item supply across loaded Magic Chests, with a warning for ingredient categories. `lastbuild` reports only native build attempts seen in the same world session; client-side rejections may not emit events. Use `cbstore recipes <output-name>` to find available hand crafting IDs.
+`lastcraft` reports a craft request and its outcome **only if the engine received one**. If it recorded none, `plan last` explains why the ID is unavailable rather than failing. Select a hand-crafting recipe ID shown by `recipes` and run `cbstore plan 0xRECIPEID` as another console command to inspect exact native inputs and aggregated loaded Magic Chest supplies without crafting. `lastbuild` reports only native build attempts seen in the same world session; client-side rejections may not emit events. Use `cbstore recipes <output-name>` to find available hand crafting IDs.
 
 All these operations are **read-only**. If tests show a client never submits a craft/build request when remote stock is the only stock, that's evidence the client source resolver must change, not a problem with server inventory scanning.
 
@@ -90,4 +102,4 @@ All these operations are **read-only**. If tests show a client never submits a c
 6. Repeat after disconnect/reconnect, server world save/restart, long-distance travel and chunk streaming.
 7. Repeat with the relevant Kiln runtime and both client-side/Kiln host parts installed; fail closed if mismatched.
 
-As of alpha.2, **none of these actual native craft/build acceptance criteria has been met**.
+As of 0.1.3, **none of these actual native craft/build acceptance criteria has been met**.
