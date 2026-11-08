@@ -106,6 +106,18 @@ The newly identified payment hooks **make a transaction-aligned solution more pl
 
 **Proposed next code investigation:** trace the genuine native `InventoryPay` and `RecipePayAlt` source enumerator and the `ApplyMaterials` building payer in an exact supported executable; determine where the engine collects eligible chest inventory IDs before it mutates the payment journal. Only add a remote-source provider **at that point** with explicit Magic Chest authority, per-world eligibility, one-transaction debits and fail-closed fallback. Do not use the existing `FREE_CRAFTING` flag or an unconditional craftable amount to simulate success.
 
+## Read-only exact-item source allocation prototype (Cross-base Storage 0.1.5)
+
+A separate pure [`MaterialQuotePlanner.cs`](MaterialQuotePlanner.cs) proposes **one exact item's** withdrawal across a candidate source set. It never touches a game transaction or inventory, and runs independently of Kiln so its logic can be tested by [`tests/material-quote`](../tests/material-quote/Program.cs). The server-side admin `cbstore quote <units> <exact item>` command currently feeds it a snapshot of player stock and all loaded template-matched Magic Chests. This **does not** claim base membership or native source eligibility.
+
+Current proposed ranking is: (1) player's own inventory, (2) other candidate chests by increasing 3D distance from player, (3) stable entity ID to break ties. This is a **fallback prototype**, not the engine's local-base-first policy; the game may choose a different source order for its normal local magic access. The production bridge must use an **authoritative Flame Altar/base membership and Magic Chest flag** before computing true local/remote precedence.
+
+Fail-closed quote rules: duplicate source entity IDs, negative quantities or invalid distances reject the proposal; total shortage yields no partial allocations; a satisfied quote allocates *exactly* the requested count and never invents stock; inputs are immutable snapshots; input order does not affect the deterministic result. Unit tests model the live Workbench ingredient (need **3 String**, player **0**, chest **1412** contains **466**, chest **1081** contains **250**), a 500-String split, shortage 717>716, duplicate IDs, source order and overflow-safe totals. **No item is removed**, and no transaction reservation is claimed.
+
+The native payment research still controls the next step. Before a gameplay-enabled release, a source quote must be validated **inside the original game payment transaction** and applied only through original engine journalled mutations with the same craft/build success/rollback semantics. A free-crafting payer return of `0` followed by an independent `Items.Take` is **not** an atomic substitute. Multiparty concurrent crafting, server reloads, categories and water costs require separately verified behavior.
+
+The additional safety test `python3 scripts/validate-cross-base.py` still disallows all inventory mutations in the shipping mod. The CI material quote test can run on Linux with .NET 10; no Windows native patch is installed or used by this version.
+
 ## Proposed contract for future upstream service (API sketch, not executable)
 
 A future optional Kiln native service might expose:
@@ -172,4 +184,4 @@ All these operations are **read-only**. If tests show a client never submits a c
 6. Repeat after disconnect/reconnect, server world save/restart, long-distance travel and chunk streaming.
 7. Repeat with the relevant Kiln runtime and both client-side/Kiln host parts installed; fail closed if mismatched.
 
-As of 0.1.4, **none of these actual native craft/build acceptance criteria has been met**.
+As of 0.1.5, **none of these actual native craft/build acceptance criteria has been met**.
