@@ -1,0 +1,51 @@
+name: Experimental Kiln recipe-input ABI probe
+
+on:
+  push:
+    branches: ['feature/cross-base-storage-kiln']
+    paths:
+      - 'sdk-proposals/recipe-input-probe/**'
+      - '.github/workflows/kiln-recipe-probe.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Apply proposal and compile managed ABI
+    runs-on: ubuntu-24.04
+    env:
+      PINNED_KILN_SHA: eba9a5e1e0e0044a9146fdd53021a751e2957030
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Fetch exact Kiln revision
+        shell: bash
+        run: |
+          git init .kiln-probe
+          git -C .kiln-probe remote add origin https://github.com/frostdev-ops/kiln.git
+          git -C .kiln-probe fetch --depth=1 origin "$PINNED_KILN_SHA"
+          git -C .kiln-probe checkout --detach "$PINNED_KILN_SHA"
+      - name: Apply native and managed read-only proposal
+        run: |
+          python3 sdk-proposals/recipe-input-probe/native.py .kiln-probe
+          python3 sdk-proposals/recipe-input-probe/managed.py .kiln-probe
+          git -C .kiln-probe diff --check
+      - name: Verify C ABI size without building Windows DLL
+        shell: bash
+        run: |
+          printf '#include "services/kiln_gameplay.h"\n#include <cstddef>\nstatic_assert(sizeof(KilnGameplayRawRecipe) == 400);\nint main() { return 0; }\n' | \
+            c++ -std=c++20 -Wall -Wextra -Werror -x c++ -fsyntax-only -I .kiln-probe/native/core/abi -
+      - name: Build matching managed Kiln.Gameplay service
+        run: dotnet build .kiln-probe/managed/services/Kiln.Gameplay/Kiln.Gameplay.csproj -c Release
+      - name: Report scope
+        run: |
+          echo "PASS: source patch applied, C ABI sizeof verified, managed service compiled."
+          echo "NOT tested: Windows kiln-gameplay.dll build or in-game category semantics."
