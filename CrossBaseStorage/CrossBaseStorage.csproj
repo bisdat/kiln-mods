@@ -8,7 +8,7 @@
     <PackageProjectUrl>https://github.com/bisdat/kiln-mods</PackageProjectUrl>
     <KilnSide>server</KilnSide>
     <KilnClients>none</KilnClients>
-    <KilnServices>Items;World;Spawn;Saves</KilnServices>
+    <KilnServices>Items;World;Spawn;Saves;Chat</KilnServices>
     <KilnGameIds>None</KilnGameIds>
   </PropertyGroup>
 </Project>
