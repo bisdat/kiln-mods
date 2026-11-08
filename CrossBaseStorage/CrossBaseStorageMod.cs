@@ -300,8 +300,10 @@ public sealed class CrossBaseStorageMod : Mod
             if (ingredient.ItemId == 0)
             {
                 unknownCategory = true;
-                c.Reply($"CATEGORY ingredient x{(long)ingredient.Count * quantity}: " +
-                        "game-specific category choices not exposed by the recipe snapshot; no stock conclusion.");
+                c.Reply($"UNRESOLVED CATEGORY/PLACEHOLDER ingredient (itemId=0, rawCount={ingredient.Count}): " +
+                        "Kiln.Gameplay exposes only item ID and count, not the category choice or its true " +
+                        "quantity. A raw count of 0 does NOT establish zero material cost; " +
+                        "this ingredient cannot be evaluated from the current API.");
                 continue;
             }
 
@@ -325,7 +327,9 @@ public sealed class CrossBaseStorageMod : Mod
                 string.Join(", ", recipe.Outputs.Select(item =>
                     $"{item.Count * (long)quantity} x {Label(item.ItemId)}")));
         c.Reply(unknownCategory
-            ? "INSUFFICIENT INFORMATION: category ingredient selection is not resolved; vanilla UI still determines craftability."
+            ? "INCOMPLETE RECIPE INPUT DATA: at least one native category/placeholder is unresolved. " +
+              "Exact-item counts above are real, but full recipe cost and native craftability " +
+              "cannot be determined without upstream category metadata."
             : remoteOk
                 ? "ALL EXACT INGREDIENTS VISIBLE in player + scanned magic stock. Native UI requirements and resource deduction are not changed."
                 : "SOME INGREDIENTS MISSING in player + scanned magic stock. Native UI and permissions not changed.");
