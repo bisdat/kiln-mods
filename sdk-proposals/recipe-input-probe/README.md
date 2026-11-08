@@ -10,11 +10,11 @@ At Base B, `cbstore plan 0x23c98255 1` could read 716 String in distant Magic Ch
 
 ## Implemented research-only probe
 
-This pair of idempotence-guarded source scripts extends **a disposable checkout of the exact known Kiln commit** `eba9a5e1e0e0044a9146fdd53021a751e2957030`:
+This pair of anchor-guarded source scripts extends **a disposable checkout of the exact known Kiln commit** `eba9a5e1e0e0044a9146fdd53021a751e2957030`:
 
 - `native.py`: adds `KilnGameplayRawRecipe` to the C ABI (size 400 bytes), and appends an optional, tick-thread-only `recipe_raw_inputs` function to the **end** of the existing `kiln.gameplay` v1 function table. It uses the existing game recipe lookup and SEH guard, copies up to eight **48-byte input records**, and returns **no native engine-owned pointers**. Existing API members and the regular recipe reader remain unchanged.
 - `managed.py`: adds matching `Gameplay.RawRecipe(uint id)` returning detached byte copies and an API-size check. If the native runtime lacks the optional function, the managed method fails closed with `NotSupportedException`.
-- [CI](../../.github/workflows/kiln-recipe-probe.yml) verifies exact source anchors, `git diff --check`, C ABI struct size, and the managed service compile. **Native Windows DLL compilation and live game behavior are separate checks** until a matching Windows build runs.
+- [CI](../../.github/workflows/kiln-recipe-probe.yml) verifies exact source anchors, `git diff --check`, C ABI struct size, and the managed service compile. **A matching Windows x64 native `kiln-gameplay.dll` build now passes** in the separate Windows CI job, alongside the managed build and C ABI size check; [successful run](https://github.com/bisdat/kiln-mods/actions/runs/42527820064). **No in-game integration, native category field semantics or atomic crafting behavior has been tested.**
 
 Because the bytes are **opaque**, this API cannot decide whether an input is category-based, what category it names, how many items are required after scaling/rounding, or whether water is consumed. Do not use the raw bytes to add, remove, pay for, or waive items. Do not publish raw memory snapshots; a native input record may contain internal addresses or implementation details.
 
