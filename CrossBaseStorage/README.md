@@ -1,4 +1,4 @@
-# Cross-base Storage (Kiln) — 0.1.0-alpha.2
+# Cross-base Storage (Kiln) — 0.1.3
 
 **Status: read-only inventory + vanilla craft/build observation prototype — not a working cross-base crafting mod.**
 
@@ -6,7 +6,7 @@
 
 > Magic Chests across all your Enshrouded bases act as one crafting supply network. Building blocks, the crafting menu and crafting stations should see the combined materials, while **actual resources are consumed once** from their original storage. Magic Chests in your current base take priority over other bases. Ordinary storage chests are not pooled.
 
-This is the intended feature, **not what this alpha currently delivers**.
+This is the intended feature, **not what this development preview currently delivers**.
 
 The detailed [client/server crafting and building integration design](ENGINE-BRIDGE.md) records the upstream APIs, proposed resolver/transaction contract, and acceptance test matrix.
 
@@ -25,7 +25,7 @@ The pinned public Kiln SDK `v0.2.0-dev.15` offers:
 
 Even a complete live server scan does **not** include unloaded distant bases. The game may represent magically upgraded chests using flags or components other than a template name containing "Magic"; until verified, detecting magic by template name is only a **heuristic**.
 
-For these reasons, the alpha **never moves, gives, takes, consumes, creates or duplicates any item**. It cannot make the normal crafting/building interfaces use other bases' Magic Chests. Enabling it does not alter vanilla storage behaviour.
+For these reasons, the development preview **never moves, gives, takes, consumes, creates or duplicates any item**. It cannot make the normal crafting/building interfaces use other bases' Magic Chests. Enabling it does not alter vanilla storage behaviour.
 
 ## What we verified in a live Enshrouded world (8 November 2026)
 
@@ -35,7 +35,7 @@ For these reasons, the alpha **never moves, gives, takes, consumes, creates or d
 
 **Important:** These are real server inventory reads. They are **not** proof that the normal build and craft menus accept those resources, or that unloaded areas would behave the same after restarting a world.
 
-## Newly investigated native craft/build integration (alpha.2)
+## Newly investigated native craft/build integration (0.1.3)
 
 The pinned Kiln.Gameplay SDK exposes the native game recipe registry and two read-only event families:
 
@@ -46,7 +46,7 @@ The pinned Kiln.Gameplay SDK exposes the native game recipe registry and two rea
 
 These interfaces make **observation and planning** possible, not cross-base crafting. Kiln's documented [Creative Mode research](https://github.com/frostdev-ops/kiln/blob/main/docs/re/creative-mode-146.md) identifies a client-side `UiCraftableAmount` lookup that can disable craft actions before a server `CraftEvent` is ever sent. Its building research also distinguishes client material previews and server-side resource payments. A proper native resolver extension must include both sides. No game offsets or native hooks have been added to this mod.
 
-## What this alpha does
+## What this development preview does
 
 It installs as a **server-side Kiln mod** and exposes administrator-only commands for investigating the inventory and template information required to implement the actual feature.
 
@@ -90,7 +90,23 @@ cat kiln/control/console/cbnear.result.json
 
 Kiln processes the console command with your character context only while you are in a world; at the title screen, commands needing an in-world character may not work. The first command is read-only and can run without chest proximity.
 
-### Recipe and building diagnostics (alpha.2)
+### When the game will not let you craft
+
+The in-game test on **8 November 2026 at 21:14 UTC** returned `gameplay=True`, `craftEventHook=True` and `buildEventHook=True`, but `cbstore lastcraft` found **no request or outcome** and `cbstore lastbuild` found **no event**. This means Kiln exposes the hooks but no native action reached the observer in that test. It is **consistent** with the client refusing a button/action because its ordinary material-source list doesn't include remote Magic Chests; it is not proof that a native craft ran or that server-side permissions were checked. The `cbstore plan last` command originally raised an error because no recipe could be inferred from an absent event.
+
+From **0.1.3**, `cbstore plan last` instead gives a useful explanation and returns a successful diagnostic response when no craft request has occurred. **You do not need to craft anything to inspect recipes.** Run:
+
+```bash
+printf 'cbstore recipes\n' > kiln/control/console/cbrecipes.tmp
+mv kiln/control/console/cbrecipes.tmp kiln/control/console/cbrecipes.cmd
+cat kiln/control/console/cbrecipes.result.json
+```
+
+This lists up to 12 registered **hand-crafting** recipes. Select one of the `0x...` recipe IDs from the output and run `cbstore plan 0xRECIPEID 1` using a new console command filename. Alternatively, use `cbstore recipes <output-name>` to filter recipes. `plan` compares exact ingredient amounts with local player items and all server-visible Magic Chests **without creating anything**. Some recipes have category inputs (e.g. “any wood”), which are reported as unresolved.
+
+If **even a normal vanilla craft with all ingredients in your backpack** cannot be performed, that would be a different potential issue, worth checking separately. The current mod does not cancel or inject crafting actions, and cannot tell from an absent event whether the UI, recipe unlock, station requirement or another mod blocked the attempted action.
+
+### Recipe and building diagnostics (0.1.3)
 
 To inspect the real crafting pipeline **without modifying inventory**, perform one ordinary vanilla craft in-game (a cheap one using materials you already have), then run:
 
@@ -100,7 +116,7 @@ mv kiln/control/console/cbcraft.tmp kiln/control/console/cbcraft.cmd
 cat kiln/control/console/cbcraft.result.json
 ```
 
-The result may appear a few seconds after Kiln processes the command file. `lastcraft` reports the latest request and engine outcome, and `plan last` shows actual recipe requirements versus all scanned Magic Chest quantities. If you have not sent a craft request, use `cbstore recipes <search>` to find the ID of a hand-crafting recipe, then `cbstore plan 0x... 1`.
+The result may appear a few seconds after Kiln processes the command file. `lastcraft` reports a request/outcome **only if the game sent one**; `plan last` estimates ingredients only when such a request has been recorded. Without a request, `plan last` now suggests the standalone recipe lookup commands instead. If you have not sent a craft request, use `cbstore recipes <search>` to find the ID of a hand-crafting recipe, then `cbstore plan 0x... 1`.
 
 Use `cbstore lastbuild` **after a normal build action**. It reports only the post-action result. Some material shortages are blocked in the game client before any build/craft event reaches Kiln; missing events are meaningful diagnostic evidence, not proof of an inactive mod.
 
@@ -111,9 +127,9 @@ Use `cbstore lastbuild` **after a normal build action**. It reports only the pos
 
 1. Open [Cross-base Storage GitHub Actions](https://github.com/bisdat/kiln-mods/actions/workflows/cross-base-storage.yml).
 2. Download `cross-base-storage-kiln-package` from a successful build.
-3. Extract the Actions artifact. Import `cross-base-storage-0.1.0-alpha.2.zip` into Kiln Library and enable it in the active profile.
+3. Extract the Actions artifact. Import `cross-base-storage-0.1.3.zip` into Kiln Library and enable it in the active profile.
 4. Restart Enshrouded, enter a world, run `cbstore scan` and `cbstore near` beside an existing Magic Chest, then use `cbstore lastcraft` / `cbstore plan last` after a normal craft to inspect the game's native recipe handling.
-5. This package **does not yet enable cross-base crafting**. If you only want the finished gameplay effect, do not install this diagnostic alpha.
+5. This package **does not yet enable cross-base crafting**. If you only want the finished gameplay effect, do not install this diagnostic development preview.
 
 The mod is built against the released Kiln SDK source `eba9a5e1e0e0044a9146fdd53021a751e2957030` with SDK package version `0.2.0-dev.local.20261107.61500`, as used by Endless Chests.
 
@@ -137,4 +153,4 @@ KILN_SDK_VERSION=0.2.0-dev.local.20261107.61500 \
 bash scripts/build.sh CrossBaseStorage
 ```
 
-Output: `bin/Release/cross-base-storage-0.1.0-alpha.2.zip`. The workflow builds and uploads this prototype on pull requests and optionally publishes a GitHub pre-release for a matching `cross-base-storage-v0.1.0-alpha.2` tag. **It should not be presented as a playable cross-base storage release.**
+Output: `bin/Release/cross-base-storage-0.1.3.zip`. The workflow builds and uploads this prototype on pull requests and optionally publishes a GitHub **development pre-release** for a matching **numeric** `cross-base-storage-v0.1.3` tag. Future versions use `0.1.4`, `0.1.5`, etc., without an `-alpha.n` suffix. **It should not be presented as a playable cross-base storage release.**
