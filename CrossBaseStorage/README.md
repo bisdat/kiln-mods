@@ -8,6 +8,8 @@
 
 This is the intended feature, **not what this alpha currently delivers**.
 
+The detailed [client/server crafting and building integration design](ENGINE-BRIDGE.md) records the upstream APIs, proposed resolver/transaction contract, and acceptance test matrix.
+
 The existing independent [Cross-Base Storage (Beta) by CharosDX on Nexus Mods](https://www.nexusmods.com/enshrouded/mods/245) reports this behaviour using a native client DLL. Its page states that all files belong to its author and prohibits redistribution or modification without permission. **No files, code, DLLs or game offsets from that mod are used here.** This is a separate Kiln SDK project.
 
 ## Why the full feature is not implemented yet
