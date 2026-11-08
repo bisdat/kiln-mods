@@ -1,4 +1,4 @@
-# Cross-base Storage (Kiln) — 0.1.4
+# Cross-base Storage (Kiln) — 0.1.5
 
 **Status: read-only inventory + vanilla craft/build observation prototype — not a working cross-base crafting mod.**
 
@@ -58,6 +58,7 @@ It installs as a **server-side Kiln mod** and exposes administrator-only command
 | `cbstore near` | Inspect nearest storage chest (within 5m), its template, position and tentative magic flag |
 | `cbstore stock Wood Logs` | Show how many Wood Logs are in **loaded magic-by-template candidates**, and their positions |
 | `cbstore top` | List the 12 most abundant items in those candidate magic chests |
+| `cbstore quote 3 String` | Show a **read-only, non-reserving** allocation of exactly 3 String across the player and currently loaded candidate Magic Chests; never charges anything |
 | `cbstore recipes [filter]` | Search **hand-crafting** recipes by output name and show native recipe IDs; no station recipes included |
 | `cbstore plan 0x1234abcd [count]` | Read a native recipe and compare exact ingredient needs against **player stock + all currently loaded magic-by-template chests**; warns for category inputs |
 | `cbstore plan last` | Same estimate for your latest **observed vanilla craft request** |
@@ -89,6 +90,24 @@ cat kiln/control/console/cbnear.result.json
 ```
 
 Kiln processes the console command with your character context only while you are in a world; at the title screen, commands needing an in-world character may not work. The first command is read-only and can run without chest proximity.
+
+### Deterministic exact-item source quote (0.1.5)
+
+The command `cbstore quote <amount> <item name>` gives a **hypothetical** allocation for one **specific, catalogued item**. For example, `cbstore quote 3 String` attempts to cover a cost of three String from the player's backpack first and then loaded Magic Chests in distance/ID order. Each source ID can appear only once; invalid or duplicate identities are rejected, and shortages produce **no partial allocation**. Zero real inventory changes are made.
+
+The pure C# [`MaterialQuotePlanner`](MaterialQuotePlanner.cs) uses a separate [ten-case test harness](../tests/material-quote/Program.cs) checking the real observed 716 String across two chests (466+250), backpack precedence, deterministic ordering, exact totals, invalid source counts, insufficient stock and overflow-safe totals. The CI workflow executes the tests before packaging.
+
+This is **not** the native game's source resolver: “nearby” means geometric player proximity and is **not** a verified Flame Altar membership check; `Magic` in a template name is **not** the game's authoritative Magic Chest classification. It does not resolve category inputs, workshop access, server permissions, missing UI materials, output capacity or player-specific eligibility. It holds no locks or reservations; another player may change the stock immediately after a quote. The engine must perform source selection and debit **inside the original craft/build payment transaction**, with validation and atomic failure when stock changes.
+
+Example from the Enshrouded folder, once 0.1.5 is installed:
+
+```bash
+printf 'cbstore quote 3 String\n' > kiln/control/console/string-quote.tmp
+mv kiln/control/console/string-quote.tmp kiln/control/console/string-quote.cmd
+cat kiln/control/console/string-quote.result.json
+```
+
+The command is optional research tooling, **not** a request to craft; no need to run it repeatedly if the game-side transaction hooks are not yet available.
 
 ### Verified Workbench ingredient check (8 November 2026)
 
@@ -139,7 +158,7 @@ Use `cbstore lastbuild` **after a normal build action**. It reports only the pos
 
 1. Open [Cross-base Storage GitHub Actions](https://github.com/bisdat/kiln-mods/actions/workflows/cross-base-storage.yml).
 2. Download `cross-base-storage-kiln-package` from a successful build.
-3. Extract the Actions artifact. Import `cross-base-storage-0.1.4.zip` into Kiln Library and enable it in the active profile.
+3. Extract the Actions artifact. Import `cross-base-storage-0.1.5.zip` into Kiln Library and enable it in the active profile.
 4. Restart Enshrouded, enter a world, run `cbstore scan` and `cbstore near` beside an existing Magic Chest, then use `cbstore lastcraft` / `cbstore plan last` after a normal craft to inspect the game's native recipe handling.
 5. This package **does not yet enable cross-base crafting**. If you only want the finished gameplay effect, do not install this diagnostic development preview.
 
@@ -165,4 +184,4 @@ KILN_SDK_VERSION=0.2.0-dev.local.20261107.61500 \
 bash scripts/build.sh CrossBaseStorage
 ```
 
-Output: `bin/Release/cross-base-storage-0.1.4.zip`. The workflow builds and uploads this prototype on pull requests and optionally publishes a GitHub **development pre-release** for a matching **numeric** `cross-base-storage-v0.1.4` tag. Future versions use `0.1.4`, `0.1.5`, etc., without an `-alpha.n` suffix. **It should not be presented as a playable cross-base storage release.**
+Output: `bin/Release/cross-base-storage-0.1.5.zip`. The workflow builds and uploads this prototype on pull requests and optionally publishes a GitHub **development pre-release** for a matching **numeric** `cross-base-storage-v0.1.5` tag. Future versions use `0.1.6`, `0.1.7`, etc., without an `-alpha.n` suffix. **It should not be presented as a playable cross-base storage release.**
