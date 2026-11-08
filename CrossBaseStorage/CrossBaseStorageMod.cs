@@ -378,7 +378,7 @@ public sealed class CrossBaseStorageMod : Mod
                 "The event is POST action; it does not expose the original crafting/building source list.");
     }
 
-    private static void HandleCommand(CommandContext c)
+    private void HandleCommand(CommandContext c)
     {
         var verb = c.ArgOrDefault(0, "help")!.ToLowerInvariant();
         switch (verb)
