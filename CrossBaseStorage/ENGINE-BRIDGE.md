@@ -118,6 +118,14 @@ The native payment research still controls the next step. Before a gameplay-enab
 
 The additional safety test `python3 scripts/validate-cross-base.py` still disallows all inventory mutations in the shipping mod. The CI material quote test can run on Linux with .NET 10; no Windows native patch is installed or used by this version.
 
+## Engine inventory-link traversal: another potential payment seam
+
+Kiln's original [`docs/re/items.md`, sections 4 and 7](https://github.com/frostdev-ops/kiln/blob/77e525888ac0d5f4f6b16103e945ed7ac049b50e/docs/re/items.md) and the [`kiln.items` C ABI](https://github.com/frostdev-ops/kiln/blob/77e525888ac0d5f4f6b16103e945ed7ac049b50e/native/core/abi/services/kiln_items.h) document the game's existing `InventorySetup` graph. An owner has at most 16 primary links (`linksEntities[16]` and `linksCategories[16]`), where each linked `Inventory` has eight slots, and category `Virtual` can expand nested links. The regular `InventoryRemoveItems` implementation first considers the player's held slot and then traverses inventory links, including virtual links. It queues journal entries per underlying inventory slot; **committing** only on a fully satisfied request is a higher-level responsibility. A storage chest can own many linked inventory entities (e.g. a 72-slot chest), so its owner ID is **not the same** as a single source slot ID.
+
+**Implication for Cross-base Storage:** We should investigate whether the game's native **recipe and building payment consumers** can accept a *transaction-scoped* set of additional eligible inventory owners/slots and let the **existing link traversal and journalled debit** handle source updates. A potential native provider would map each candidate chest owner to its actual underlying linked slot IDs, filter the authoritative Magic Chest/base eligibility, and deduplicate slots before creating the transaction. It must avoid the 16-link bound and preserve the original player inventory links.
+
+**Important constraints:** These observations do **not** authorize writing into a player's persistent/replicated `InventorySetup` to append remote chest links. Such a change may affect equipment, loot, other item actions and saves, violate the fixed 16-link capacity, or persist outside a craft. A safe implementation must be scoped to the actual original payment transaction and prove that its mutable ECS accessors and rollback journal cover the additional chest owners. The current `cbstore quote` represents **owner-level candidate amounts only**, not authoritative per-slot debits.
+
 ## Proposed contract for future upstream service (API sketch, not executable)
 
 A future optional Kiln native service might expose:
