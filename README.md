@@ -22,3 +22,8 @@ An independent Kiln-native storage refill mod. Version **0.4.2** uses the comple
 
 The original [`endless-chests.defaults.ini`](EndlessChests/defaults/endless-chests.defaults.ini) has **195 group names sorted alphabetically** within `[Groups]`, with the other INI sections sorted by their keys too. Each group's item list and all original settings are unchanged. Starting with the **`endless-chests-v0.4.2` GitHub Release**, download the **standalone `endless-chests.defaults.ini`** directly from the release's Assets alongside the installable `endless-chests-kiln-0.4.2.zip`. The INI is a readable reference/customization template, not a Kiln-installable mod; upgrading does not overwrite an existing user-modified `endless-chests.ini`.
 
+## Cross-base Storage (Kiln) — discovery prototype, not yet a crafting mod
+
+[Cross-base Storage technical guide](CrossBaseStorage/README.md) | [CI workflow](.github/workflows/cross-base-storage.yml)
+
+**Goal:** let Magic Chests in different Enshrouded bases supply the game's usual building and crafting interfaces, with actual ingredients consumed only once. **Not implemented yet:** the pinned Kiln SDK can read loaded chest inventories but does not expose the engine's vanilla crafting/building material-source resolver or a supported cross-base consumer for remote Magic Chests. The `0.1.0-alpha.1` package therefore offers only safe, **read-only** administrator diagnostics (`cbstore scan`, `cbstore near`, `cbstore stock Wood Logs`, `cbstore templates`) to identify magic storage and loaded inventory contents. No items are moved or duplicated, and no gameplay effect is claimed. Completion requires an upstream client/server integration API and live tests.
