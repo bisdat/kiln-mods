@@ -15,7 +15,7 @@ project = ET.parse(root / "CrossBaseStorage/CrossBaseStorage.csproj").getroot()
 assert project.findtext("./PropertyGroup/KilnModId") == "cross-base-storage"
 assert project.findtext("./PropertyGroup/KilnSide") == "server"
 assert project.findtext("./PropertyGroup/KilnClients") == "none"
-assert project.findtext("./PropertyGroup/KilnServices") == "Items;World;Spawn;Saves"
+assert project.findtext("./PropertyGroup/KilnServices") == "Items;World;Spawn;Saves;Chat"
 
 assert "CommandPermission.Admin" in src
 assert "Items.FindInventories(InventoryKinds.Containers)" in src
