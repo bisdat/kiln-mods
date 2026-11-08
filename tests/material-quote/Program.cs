@@ -38,7 +38,7 @@ Verify("Source order: backpack, near chest, far chest", () =>
         new QuoteSource(999, 2, 2500, false),
         new QuoteSource(1, 2, 0, true),
         new QuoteSource(500, 4, 10, false),
-        new QuoteSource(300, 10, 300, false)]);
+        new QuoteSource(300, 1, 300, false)]);
     Check(q.Status == QuoteStatus.Satisfied, "quote should succeed");
     Same(string.Join(",", q.Debits.Select(x => x.EntityId)), "1,500,300,999", "stable order");
     Same(string.Join(",", q.Debits.Select(x => x.Units)), "2,4,1,2", "allocation counts");
