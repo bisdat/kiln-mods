@@ -2,9 +2,9 @@
   <PropertyGroup>
     <KilnModId>cross-base-storage</KilnModId>
     <KilnModName>Cross-base Storage (Kiln)</KilnModName>
-    <Version>0.1.4</Version>
+    <Version>0.1.5</Version>
     <Authors>bisdat</Authors>
-    <Description>Read-only magic chest stock discovery, native craft/build event tracing and recipe requirement planning; vanilla cross-base crafting is not yet supported.</Description>
+    <Description>Read-only magic chest stock discovery, native craft/build event tracing and recipe requirement and read-only source quote planning; vanilla cross-base crafting is not yet supported.</Description>
     <PackageProjectUrl>https://github.com/bisdat/kiln-mods</PackageProjectUrl>
     <KilnSide>server</KilnSide>
     <KilnClients>none</KilnClients>
