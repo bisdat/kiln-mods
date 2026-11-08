@@ -48,6 +48,38 @@ The pinned [native Kiln.Gameplay recipe copier](https://github.com/frostdev-ops/
 
 The local **0.1.4** diagnostic changes the output from `CATEGORY ingredient x0` to `UNRESOLVED CATEGORY/PLACEHOLDER ingredient (itemId=0, rawCount=0)` and explicitly declines to infer the missing cost.
 
+## ShroudForge `sf-crafting-essentials` 1.7.9 — source review (8 November 2026)
+
+Reviewed the [original source at tag `1.7.9`](https://github.com/bonsaibauer/shroudforge/tree/1.7.9/mods/sf-crafting-essentials), particularly [`src/mod.lua`](https://github.com/bonsaibauer/shroudforge/blob/1.7.9/mods/sf-crafting-essentials/src/mod.lua), [`README.md`](https://github.com/bonsaibauer/shroudforge/blob/1.7.9/mods/sf-crafting-essentials/README.md), the [manifest](https://github.com/bonsaibauer/shroudforge/blob/1.7.9/mods/sf-crafting-essentials/extended.mod.json), and ShroudForge's detailed [native transaction investigation](https://github.com/bonsaibauer/shroudforge/blob/1.7.9/docs/evidence/runtime/2026-10-18-crafting-native-transactions.en.md).
+
+### What their free-crafting implementation actually does
+
+In **pregame** phase (requires the declared `patch` capability and restart), it reads typed `keen::RecipeRegistryResource` assets using `game.types.get` and `game.assets.get_resources_by_type`. For every recipe it sets the following existing data fields to **zero**:
+
+```lua
+recipe.input[j].itemStack.count = 0
+recipe.input[j].inputItemCategory.count = 0
+recipe.waterCharges = 0
+```
+
+The source writes each changed `resource.data` after preparing the batch. The mod's `extended.mod.json` declares `targets: ["client", "server"]` and `noResourceCost` as an **opt-in** setting (default `false`); the source's fallback `true` is not the setting's configured default when the manifest value is supplied. The mod also changes recipe duration and item-usage event flags for independent settings. Its README explicitly excludes **building, storage upgrades and other shared inventory costs** from free recipe costs, and says it uses typed resource edits rather than function-hook offsets. **This is not cross-base source selection.**
+
+ShroudForge's native investigation traces `CraftRecipeEvent → handle_crafting_events → recipe transaction`. Its evidence states direct ingredient counts originate from `itemStack.count`, category counts from `inputItemCategory.count` (with category scaling / rounding), and water from `RecipeInfo.waterCharges`. Its October 2026 capture recorded zeroed costs across 2,536 recipes and the user reported a recipe worked without ingredients. These are **ShroudForge's reported validation data**, not reproduced in our Kiln environment.
+
+### Direct link to our Workbench anomaly
+
+Our `cbstore plan 0x23c98255 1` reported **String x3** and a second native input with `itemId=0, rawCount=0`. ShroudForge's source gives a **specific plausible reason** for the unexplained zero: category-based requirements are recorded in a **distinct `inputItemCategory.count` field**, while the pinned Kiln.Gameplay recipe copier exports only `item` and `count` from each 48-byte input record. `itemId=0, count=0` is therefore **not enough to infer zero category cost**. We have not confirmed that this specific Workbench input is in fact a category input versus another placeholder; the missing typed fields must be read before concluding.
+
+**Actionable upstream Kiln enhancement:** extend `Gameplay.Recipe` with a version-safe descriptor per native ingredient: explicit direct item ID/count, category ID/count (and resolution/scaling rules where applicable), plus water charges. Inspect `keen::RecipeRegistryResource.recipes[].input[].itemStack`, `inputItemCategory` and `waterCharges` as the authoritative reflected model. Preserve existing `GameplayRecipe.Inputs` compatibility if possible; make unresolved fields explicit, not zero-cost defaults. Test on known recipes including the Workbench's second input.
+
+### Why this does not yet solve cross-base crafting
+
+**Zeroing costs changes the recipe's meaning.** The normal game does not consume resources from any chest when the recipe requirements are zero. It may also change UI requirement counts, automated station input filling and cancellation refunds. This cannot implement the requested “materials stored at Base A pay for craft/build at Base B” behavior. Trying to let the game do free crafting then separately `Items.Take` remote stock **after** `ItemCraftedEvent` would be non-atomic and could produce items without paying, fail during server crash, bypass category choices and leave building costs untouched.
+
+The ShroudForge transaction report independently warns that the original inventory transaction's native journal and ECS writable context are borrowed engine internals; manipulating them separately from Lua is not a safe substitute for one authoritative source-selection and consumption operation.
+
+**Best next engineering target:** keep the existing recipe costs intact, add Kiln's missing reflected ingredient/category metadata as a safe read-only API, then extend the game's **client material-source resolver** and the **host's original transaction** so cross-base Magic Chests participate as genuine sources. This is an upstream Kiln engine/API enhancement, not a change to the existing managed read-only scanner. Do not port ShroudForge's free-crafting cost-zeroing behavior as the cross-base solution.
+
 ## Proposed contract for future upstream service (API sketch, not executable)
 
 A future optional Kiln native service might expose:
