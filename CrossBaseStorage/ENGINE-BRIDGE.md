@@ -36,6 +36,18 @@ Key references (upstream):
 
 No game offsets from these research notes are hardcoded into the mod. They identify conceptual integration points only.
 
+## Workbench recipe test exposes a second upstream API gap
+
+At 21:27 UTC on 8 November 2026 the user ran `cbstore plan 0x23c98255 1` in Enshrouded with **50** visible Magic Chests. The game's hand-crafting registry returned a Workbench recipe with **2** inputs and **1** output:
+
+- Input `String` / `0x18feb214`: **3** required; player **0**; Magic Chest pool **716** across chest **1412** (466) and **1081** (250). Exact-item deficit: **0**.
+- Second input: `itemId=0`, raw `count=0`. **Undetermined** category/placeholder; raw zero does not establish zero cost.
+- Output: **1 Workbench**. The calculation made **no inventory changes** and did not craft a Workbench.
+
+The pinned [native Kiln.Gameplay recipe copier](https://github.com/frostdev-ops/kiln/blob/v0.2.0-dev.15/native/services/gameplay/recipes.cpp) extracts only 8 bytes (item ID at +0x10 and count at +0x14) from each **48-byte** native input record. The remaining field values, potentially needed for category material selection, are lost at the public API boundary. The managed `GameplayRecipe.Inputs` therefore cannot fully describe or price the second input. In the proposed upstream bridge, add a **version-safe read-only category input descriptor** and the authoritative ingredient resolution rule before trying to compute craftable amounts or consume remote resources.
+
+The local **0.1.4** diagnostic changes the output from `CATEGORY ingredient x0` to `UNRESOLVED CATEGORY/PLACEHOLDER ingredient (itemId=0, rawCount=0)` and explicitly declines to infer the missing cost.
+
 ## Proposed contract for future upstream service (API sketch, not executable)
 
 A future optional Kiln native service might expose:
@@ -76,9 +88,9 @@ Live test of the native event diagnostic prototype (then versioned `0.1.0-alpha.
 
 This is **consistent with** a client-side crafting button being disabled before sending a request; it is **not conclusive proof** that the client's material-source resolver alone blocked crafting. Recipe unlocks, station state, missing local materials and other mod state weren't isolated in that test. The client crafting research describes this as a possible gate, but diagnosing why requires a native client trace or comparing with a normal craft with all inputs in the player backpack.
 
-**0.1.3 diagnostic improvement:** `cbstore plan last` now returns a non-error explanatory message if no request exists. `cbstore recipes [output-filter]` can enumerate hand-crafting recipe IDs without performing a craft, and `cbstore plan <recipeId> [count]` can compare inputs against Magic Chest stock without relying on a craft request. This is read-only and cannot activate a disabled game UI control.
+**0.1.4 diagnostic improvement:** `cbstore plan last` now returns a non-error explanatory message if no request exists. `cbstore recipes [output-filter]` can enumerate hand-crafting recipe IDs without performing a craft, and `cbstore plan <recipeId> [count]` can compare inputs against Magic Chest stock without relying on a craft request. This is read-only and cannot activate a disabled game UI control.
 
-## Reproducible read-only tests using current 0.1.3
+## Reproducible read-only tests using current 0.1.4
 
 In Enshrouded, enter a world, and first try the **zero-crafting** recipe discovery path. This works even when the client craft button is disabled:
 
@@ -102,4 +114,4 @@ All these operations are **read-only**. If tests show a client never submits a c
 6. Repeat after disconnect/reconnect, server world save/restart, long-distance travel and chunk streaming.
 7. Repeat with the relevant Kiln runtime and both client-side/Kiln host parts installed; fail closed if mismatched.
 
-As of 0.1.3, **none of these actual native craft/build acceptance criteria has been met**.
+As of 0.1.4, **none of these actual native craft/build acceptance criteria has been met**.
