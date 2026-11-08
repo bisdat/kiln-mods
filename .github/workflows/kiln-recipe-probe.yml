@@ -49,3 +49,38 @@ jobs:
         run: |
           echo "PASS: source patch applied, C ABI sizeof verified, managed service compiled."
           echo "NOT tested: Windows kiln-gameplay.dll build or in-game category semantics."
+
+  native-windows:
+    name: Build native kiln-gameplay.dll (Windows x64, CI only)
+    runs-on: windows-2022
+    env:
+      PINNED_KILN_SHA: eba9a5e1e0e0044a9146fdd53021a751e2957030
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Fetch exact Kiln revision
+        shell: pwsh
+        run: |
+          git init .kiln-probe
+          git -C .kiln-probe remote add origin https://github.com/frostdev-ops/kiln.git
+          git -C .kiln-probe fetch --depth=1 origin $env:PINNED_KILN_SHA
+          git -C .kiln-probe checkout --detach $env:PINNED_KILN_SHA
+      - name: Apply guarded source proposal
+        shell: pwsh
+        run: |
+          python sdk-proposals/recipe-input-probe/native.py .kiln-probe
+          python sdk-proposals/recipe-input-probe/managed.py .kiln-probe
+          git -C .kiln-probe diff --check
+      - name: Configure Windows x64
+        shell: pwsh
+        run: cmake -S .kiln-probe/native -B .kiln-probe/native/build/ci -G "Visual Studio 17 2022" -A x64
+      - name: Compile only patched native service
+        shell: pwsh
+        run: cmake --build .kiln-probe/native/build/ci --config Release --target kiln-gameplay --parallel 4
+      - name: Report scope
+        shell: pwsh
+        run: |
+          Write-Output 'PASS: Windows native kiln-gameplay.dll compiles from pinned source plus research probe.'
+          Write-Output 'NOT tested: loading into a real game, category interpretation or cross-base crafting.'
