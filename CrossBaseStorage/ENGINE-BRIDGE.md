@@ -92,6 +92,20 @@ The tool only exports *opaque bytes* at this stage. This **does not interpret a 
 
 For a production-ready upstream change, first validate the exact native category input layout for the known game build against the authoritative `RecipeRegistryResource` fields and replace opaque bytes with **typed**, validated descriptors. Following that, the client source resolver and atomic server material payment still need their own native implementation and end-to-end tests.
 
+## Native craft/payment and building integration clues in newer Kiln `main` (8 November 2026)
+
+While investigating this task, the newer upstream [`Kiln.Rules` creative hook implementation](https://github.com/frostdev-ops/kiln/blob/77e525888ac0d5f4f6b16103e945ed7ac049b50e/native/services/rules/creative.cpp) (main commit `77e525888ac0d5f4f6b16103e945ed7ac049b50e`) was examined. **This is not part of the pinned `v0.2.0-dev.15` SDK used by Cross-base Storage 0.1.4**, and the branch may change.
+
+The upstream source already demonstrates two relevant low-level seams:
+
+1. **Client craftability gate.** It wraps `UiCraftableAmount(gameUi, recipeId, cap, selections)`, first calls the game's original computation and for `FREE_CRAFTING` returns at least `cap`. For cross-base storage, a valid extension would need to compute actual available *eligible* remote stock (including category choices, water, unlocking and output constraints) rather than simply forcing `cap`. The UI's separate ingredient-row counts must also reflect the same stock.
+2. **Original server recipe payer.** It hooks an alternative recipe payment function with a signature conceptually like `pay(tx, costs, owner, multiplier, extra)`, validates the recipe-specific call site, and when `FREE_CRAFTING` is enabled returns success `0` without adding a charge. This is a **transaction entry point**, not merely a post-craft notification. Cross-base storage could potentially extend **the original source inventory set / payment traversal** at this point so the normal transaction journals actual withdrawals. However, returning `0` (the existing free mode) is **not** a cross-base implementation: it deliberately waives payment. No verified way to enrol remote chests in this transaction exists yet.
+3. **Building material payment.** The pinned [`Kiln.Rules` native implementation](https://github.com/frostdev-ops/kiln/blob/v0.2.0-dev.15/native/services/rules/rules.cpp) already hooks `ApplyMaterials` on the authoritative server and alters a *copy* of the material cost list for its `BuildCost` multiplier. It also has a client build-cursor missing-material waiver for `BuildCost=0`. A future bridge needs source inclusion and proper debit, not cost scaling or merely clearing UI warnings.
+
+The newly identified payment hooks **make a transaction-aligned solution more plausible** than zeroing `RecipeRegistryResource` costs or calling `Items.Take` after crafting. They do **not** prove that remote Magic Chests can safely be attached to the borrowed transaction, that the original payer supports these sources, or that the same hook covers category inputs/automated stations. Modifying these hooks requires upstream native code, matching server and client build symbols, strict thread/lifetime checks and independent rollback/concurrency tests.
+
+**Proposed next code investigation:** trace the genuine native `InventoryPay` and `RecipePayAlt` source enumerator and the `ApplyMaterials` building payer in an exact supported executable; determine where the engine collects eligible chest inventory IDs before it mutates the payment journal. Only add a remote-source provider **at that point** with explicit Magic Chest authority, per-world eligibility, one-transaction debits and fail-closed fallback. Do not use the existing `FREE_CRAFTING` flag or an unconditional craftable amount to simulate success.
+
 ## Proposed contract for future upstream service (API sketch, not executable)
 
 A future optional Kiln native service might expose:
