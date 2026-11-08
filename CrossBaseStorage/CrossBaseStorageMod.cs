@@ -10,16 +10,74 @@ public sealed class CrossBaseStorageMod : Mod
     private CommandRegistration? _commands;
     private const int MaxShown = 12;
 
+    // Bounded, per-player in-memory traces of VANILLA game actions. Never saved.
+    // These events have already occurred (or will be handled by the engine);
+    // we only observe them and never set Canceled or inject another action.
+    private readonly Dictionary<uint, CraftRequestTrace> _craftRequests = new();
+    private readonly Dictionary<uint, CraftOutcomeTrace> _craftOutcomes = new();
+    private readonly Dictionary<uint, BuildTrace> _buildOutcomes = new();
+
+    private sealed record CraftRequestTrace(DateTimeOffset When, uint Recipe, uint Station,
+        int Amount, bool Canceled, bool Injected);
+    private sealed record CraftOutcomeTrace(DateTimeOffset When, uint Recipe, uint Station,
+        uint Workshop, CraftResult Result, int RawResult);
+    private sealed record BuildTrace(DateTimeOffset When, BuildKind Kind, uint Item,
+        BuildOutcome Result, WorldPosition Position);
+
     public override void OnLoad()
     {
         _commands = Commands.Register(
             "cbstore", HandleCommand, CommandPermission.Admin,
-            usage: "<status|scan|templates|near|stock item name|top>",
-            description: "Inspect loaded storage and possible magic chests across the world (read-only).");
+            usage: "<status|scan|templates|near|stock item name|top|recipes [filter]|plan <recipe> [count]|lastcraft|lastbuild>",
+            description: "Inspect loaded magic chest inventory and native craft/build requests (read-only).");
+        if (Gameplay.Available && !Gameplay.Enable())
+            Log.Warn("Cross-base Storage: kiln.gameplay present but events are not ready.");
         Log.Warn("Cross-base Storage: discovery prototype loaded. Vanilla cross-base crafting/building is NOT enabled; Kiln has no storage-source integration API yet.");
     }
 
-    public override void OnUnload() => _commands?.Dispose();
+    public override void OnUnload()
+    {
+        _commands?.Dispose();
+        _craftRequests.Clear();
+        _craftOutcomes.Clear();
+        _buildOutcomes.Clear();
+    }
+
+    // The pinned Kiln.Gameplay emits vanilla player requests here. We record
+    // them only. No cancellation, recipe injection, or stock movement.
+    [Subscribe(EventPriority.Monitor, ReceiveCanceled = true)]
+    private void OnCraftRequested(CraftEvent e)
+    {
+        if (!e.ByPlayer) return;
+        Remember(_craftRequests, e.Operator.Value,
+            new CraftRequestTrace(DateTimeOffset.UtcNow, e.RecipeId,
+                e.Station.Value, e.Amount, e.Canceled, e.Injected));
+    }
+
+    [Subscribe(EventPriority.Monitor)]
+    private void OnCraftCompleted(ItemCraftedEvent e)
+    {
+        if (!e.ByPlayer) return;
+        Remember(_craftOutcomes, e.Operator.Value,
+            new CraftOutcomeTrace(DateTimeOffset.UtcNow, e.RecipeId,
+                e.Station.Value, e.WorkshopId, e.Result, e.RawResult));
+    }
+
+    [Subscribe(EventPriority.Monitor)]
+    private void OnBuildCompleted(BuildEvent e)
+    {
+        if (!e.Player.IsPlayer) return;
+        Remember(_buildOutcomes, e.Player.Value,
+            new BuildTrace(DateTimeOffset.UtcNow, e.Kind, e.ItemId, e.Outcome, e.Position));
+    }
+
+    private static void Remember<T>(Dictionary<uint, T> traces, uint player, T value)
+    {
+        // Prevent a long-running multiplayer server collecting unbounded
+        // per-player keys; these are diagnostics, not an audit log.
+        if (!traces.ContainsKey(player) && traces.Count >= 64) traces.Clear();
+        traces[player] = value;
+    }
 
     private sealed record Chest(
         EntityId Entity, string Template, WorldPosition Position,
@@ -75,7 +133,8 @@ public sealed class CrossBaseStorageMod : Mod
     private static void Status(CommandContext c)
     {
         c.Reply($"Cross-base Storage (Kiln) discovery-only prototype; world={Saves.WorldId ?? "(not loaded)"}, " +
-                $"items={Items.Available}, spawn={Spawn.Available}, world={World.Available}. " +
+                $"items={Items.Available}, spawn={Spawn.Available}, world={World.Available}, " +
+                $"gameplay={Gameplay.Available}, craftEventHook={Gameplay.Status?.CraftHook}, buildEventHook={Gameplay.Status?.BuildHooks}. " +
                 "Cross-base build/craft integration=NOT AVAILABLE in this Kiln SDK. " +
                 "No item transfers, crafting injection or inventory changes are performed.");
     }
@@ -171,13 +230,162 @@ public sealed class CrossBaseStorageMod : Mod
             c.Reply($"{count} x {Items.Get(id)?.Label ?? id.ToString()}");
     }
 
+    private static void EnsureGameplay()
+    {
+        if (!Gameplay.Available)
+            throw new CommandException("Kiln.Gameplay is unavailable on this runtime: recipe introspection cannot run.");
+    }
+
+    private static uint ParseRecipeId(string arg)
+    {
+        if (arg.StartsWith("0x", StringComparison.OrdinalIgnoreCase) &&
+            uint.TryParse(arg.AsSpan(2), System.Globalization.NumberStyles.HexNumber,
+                System.Globalization.CultureInfo.InvariantCulture, out var hex))
+            return hex;
+        if (uint.TryParse(arg, out var decimalId)) return decimalId;
+        throw new CommandException("Recipe ID must be decimal or hex with 0x prefix. Example: cbstore plan 0x2cd4c47e");
+    }
+
+    private uint RecipeIdFromCommand(CommandContext c, string arg)
+    {
+        if (arg.Equals("last", StringComparison.OrdinalIgnoreCase))
+        {
+            if (c.Source.Player.IsNone || !_craftRequests.TryGetValue(c.Source.Player.Value, out var trace))
+                throw new CommandException("No native craft request recorded for your player yet; craft one item first.");
+            return trace.Recipe;
+        }
+        return ParseRecipeId(arg);
+    }
+
+    private static string Label(uint item)
+    {
+        if (item == 0) return "(category input - precise item selection unavailable)";
+        var id = new ItemId(item);
+        return Items.Get(id)?.Label ?? id.ToString();
+    }
+
+    // Read-only view of registered native recipe inputs versus server-readable
+    // stock. This is NOT a promise that the vanilla UI can craft with the stock.
+    private void Plan(CommandContext c)
+    {
+        EnsureGameplay();
+        if (c.Count < 2) throw c.Usage("cbstore plan <recipeId|last> [quantity]");
+        var id = RecipeIdFromCommand(c, c.Arg(1));
+        var quantity = c.Count > 2 ? c.Int(2) : 1;
+        if (quantity is < 1 or > 100)
+            throw new CommandException("Requested recipe count must be 1..100 (read-only estimate).");
+        var recipe = Gameplay.Recipe(id) ??
+            throw new CommandException($"Unknown game recipe 0x{id:x8}.");
+        var inventory = c.Source.Player.IsNone ? null : Items.Read(c.Source.Player);
+        var magic = ScanLoaded().Where(chest => chest.MagicByName).ToArray();
+        var remoteOk = true;
+        var unknownCategory = false;
+
+        c.Reply($"READ-ONLY recipe 0x{id:x8} x{quantity}; workshop=0x{recipe.Workshop:x8}, " +
+                $"inputs={recipe.Inputs.Count}, outputs={recipe.Outputs.Count}, " +
+                $"visibleMagicChests={magic.Length}. This does NOT enable native cross-base crafting.");
+
+        foreach (var ingredient in recipe.Inputs)
+        {
+            if (ingredient.ItemId == 0)
+            {
+                unknownCategory = true;
+                c.Reply($"CATEGORY ingredient x{(long)ingredient.Count * quantity}: " +
+                        "game-specific category choices not exposed by the recipe snapshot; no stock conclusion.");
+                continue;
+            }
+
+            var item = new ItemId(ingredient.ItemId);
+            var required = (long)ingredient.Count * quantity;
+            var playerCount = inventory?.Count(item) ?? 0;
+            var sources = magic.Select(chest => (Chest: chest, Count: chest.Contents.Count(item)))
+                .Where(source => source.Count > 0)
+                .OrderByDescending(source => source.Count)
+                .ToArray();
+            var magicCount = sources.Sum(source => (long)source.Count);
+            var total = (long)playerCount + magicCount;
+            if (total < required) remoteOk = false;
+            c.Reply($"{Label(ingredient.ItemId)} (0x{ingredient.ItemId:x8}): " +
+                    $"need={required}, player={playerCount}, magicPool={magicCount} " +
+                    $"({sources.Length} loaded chests), combined={total}, remaining={Math.Max(0, required - total)}.");
+            foreach (var (chest, count) in sources.Take(3))
+                c.Reply($"  source {count} @ {Where(chest)} entity={chest.Entity}");
+        }
+        c.Reply("Outputs (native registry): " +
+                string.Join(", ", recipe.Outputs.Select(item =>
+                    $"{item.Count * (long)quantity} x {Label(item.ItemId)}")));
+        c.Reply(unknownCategory
+            ? "INSUFFICIENT INFORMATION: category ingredient selection is not resolved; vanilla UI still determines craftability."
+            : remoteOk
+                ? "ALL EXACT INGREDIENTS VISIBLE in player + scanned magic stock. Native UI requirements and resource deduction are not changed."
+                : "SOME INGREDIENTS MISSING in player + scanned magic stock. Native UI and permissions not changed.");
+    }
+
+    private static void Recipes(CommandContext c)
+    {
+        EnsureGameplay();
+        var query = string.Join(" ", c.Args.Skip(1)).Trim();
+        var ids = Gameplay.WorkshopRecipes(0);
+        var rows = ids.Select(Gameplay.Recipe).Where(recipe => recipe is not null)
+            .Select(recipe => recipe!)
+            .Where(recipe => string.IsNullOrWhiteSpace(query) ||
+                recipe.Outputs.Any(output => Label(output.ItemId)
+                    .Contains(query, StringComparison.OrdinalIgnoreCase)))
+            .Take(MaxShown + 1).ToArray();
+        c.Reply($"READ-ONLY hand-crafting (workshop=0) recipes matching '{query}': " +
+                $"{Math.Min(rows.Length, MaxShown)} shown; other crafting stations have separate workshop IDs.");
+        foreach (var recipe in rows.Take(MaxShown))
+            c.Reply($"0x{recipe.Id:x8}: " +
+                    string.Join(", ", recipe.Outputs.Select(output => $"{output.Count} x {Label(output.ItemId)}")) +
+                    $"; inputs={recipe.Inputs.Count}; use cbstore plan 0x{recipe.Id:x8}");
+        if (rows.Length > MaxShown)
+            c.Reply("More results available; narrow the search filter.");
+    }
+
+    private void LastCraft(CommandContext c)
+    {
+        if (c.Source.Player.IsNone)
+            throw new CommandException("Run this as an in-world player to inspect your latest native crafting events.");
+        var player = c.Source.Player.Value;
+        if (_craftRequests.TryGetValue(player, out var request))
+            c.Reply($"LAST vanilla CRAFT request UTC={request.When:O}, " +
+                    $"recipe=0x{request.Recipe:x8}, amount={request.Amount}, " +
+                    $"station={request.Station}, canceled={request.Canceled}, injected={request.Injected}. " +
+                    $"Try cbstore plan 0x{request.Recipe:x8}");
+        else
+            c.Reply("No native craft request recorded yet (the client UI may disable crafting before it sends a request).");
+
+        if (_craftOutcomes.TryGetValue(player, out var outcome))
+            c.Reply($"LAST native CRAFT outcome UTC={outcome.When:O}, " +
+                    $"recipe=0x{outcome.Recipe:x8}, station={outcome.Station}, " +
+                    $"workshop=0x{outcome.Workshop:x8}, result={outcome.Result}, raw={outcome.RawResult}.");
+        else
+            c.Reply("No native crafting outcome recorded yet.");
+    }
+
+    private void LastBuild(CommandContext c)
+    {
+        if (c.Source.Player.IsNone)
+            throw new CommandException("Run this as an in-world player to inspect your latest native building event.");
+        if (!_buildOutcomes.TryGetValue(c.Source.Player.Value, out var trace))
+        {
+            c.Reply("No building outcome recorded; the client may reject unavailable materials before sending an action.");
+            return;
+        }
+        c.Reply($"LAST vanilla BUILD outcome UTC={trace.When:O}: " +
+                $"kind={trace.Kind}, item={Label(trace.Item)} (0x{trace.Item:x8}), " +
+                $"outcome={trace.Result}, at={trace.Position.X:F1},{trace.Position.Y:F1},{trace.Position.Z:F1}. " +
+                "The event is POST action; it does not expose the original crafting/building source list.");
+    }
+
     private static void HandleCommand(CommandContext c)
     {
         var verb = c.ArgOrDefault(0, "help")!.ToLowerInvariant();
         switch (verb)
         {
             case "help":
-                c.Reply("cbstore status | scan | templates | near | stock <item> | top. " +
+                c.Reply("cbstore status | scan | templates | near | stock <item> | top | " +
+                        "recipes [output filter] | plan <recipeId|last> [count] | lastcraft | lastbuild. " +
                         "Read-only diagnostics; no cross-base crafting/building yet.");
                 break;
             case "status": Status(c); break;
@@ -186,6 +394,10 @@ public sealed class CrossBaseStorageMod : Mod
             case "near": Nearest(c); break;
             case "stock": Stock(c); break;
             case "top": Top(c); break;
+            case "recipes": Recipes(c); break;
+            case "plan": Plan(c); break;
+            case "lastcraft": LastCraft(c); break;
+            case "lastbuild": LastBuild(c); break;
             default: throw c.Usage($"Unknown Cross-base Storage action '{verb}'.");
         }
     }
