@@ -54,6 +54,9 @@ jobs:
       - name: Check prototype's read-only boundaries
         run: python3 scripts/validate-cross-base.py
 
+      - name: Test deterministic, read-only material source quote planner
+        run: dotnet run --project tests/material-quote/MaterialQuote.Tests.csproj --configuration Release
+
       - name: Build pinned Kiln SDK and package mod
         run: bash scripts/build.sh CrossBaseStorage
 
