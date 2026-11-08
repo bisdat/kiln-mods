@@ -1,4 +1,4 @@
-# Cross-base Storage (Kiln) — 0.1.3
+# Cross-base Storage (Kiln) — 0.1.4
 
 **Status: read-only inventory + vanilla craft/build observation prototype — not a working cross-base crafting mod.**
 
@@ -35,7 +35,7 @@ For these reasons, the development preview **never moves, gives, takes, consumes
 
 **Important:** These are real server inventory reads. They are **not** proof that the normal build and craft menus accept those resources, or that unloaded areas would behave the same after restarting a world.
 
-## Newly investigated native craft/build integration (0.1.3)
+## Newly investigated native craft/build integration (0.1.4)
 
 The pinned Kiln.Gameplay SDK exposes the native game recipe registry and two read-only event families:
 
@@ -90,11 +90,23 @@ cat kiln/control/console/cbnear.result.json
 
 Kiln processes the console command with your character context only while you are in a world; at the title screen, commands needing an in-world character may not work. The first command is read-only and can run without chest proximity.
 
+### Verified Workbench ingredient check (8 November 2026)
+
+On version **0.1.3**, the user ran `cbstore plan 0x23c98255 1` in a live world. The native recipe is a hand-crafted **Workbench**, with two input records and one output. The planner found:
+
+- **String:** 3 required, **0** in the player backpack, **716** in **two Magic Chests** (entity `1412` at `3393.6,942.0,3807.8`: 466; entity `1081` at `3383.5,937.0,3796.3`: 250). The exact-item shortage is zero.
+- **Second input:** native `itemId=0`, raw `count=0`; current Kiln.Gameplay exposes neither the full recipe input entry nor the category selection details needed to interpret this field. It may represent a category-based ingredient or other placeholder. **It is not proven to be free or cost zero.**
+- **Output:** 1 Workbench. **No craft was attempted or produced by the planner.**
+
+The [pinned native recipe implementation](https://github.com/frostdev-ops/kiln/blob/v0.2.0-dev.15/native/services/gameplay/recipes.cpp) reads only `item` at offset `+0x10` and `count` at `+0x14` from each 48-byte native recipe input entry. It does **not** return the remainder of each input record to the managed API. A category/placeholder with a raw zero count therefore **cannot be treated as a complete ingredient requirement**.
+
+**0.1.4 corrects the diagnostic wording:** instead of misleading `CATEGORY ingredient x0`, it explicitly reports `UNRESOLVED CATEGORY/PLACEHOLDER ingredient (itemId=0, rawCount=0)`, warns that the true requirement is unknown and makes no claim that the complete recipe is affordable.
+
 ### When the game will not let you craft
 
 The in-game test on **8 November 2026 at 21:14 UTC** returned `gameplay=True`, `craftEventHook=True` and `buildEventHook=True`, but `cbstore lastcraft` found **no request or outcome** and `cbstore lastbuild` found **no event**. This means Kiln exposes the hooks but no native action reached the observer in that test. It is **consistent** with the client refusing a button/action because its ordinary material-source list doesn't include remote Magic Chests; it is not proof that a native craft ran or that server-side permissions were checked. The `cbstore plan last` command originally raised an error because no recipe could be inferred from an absent event.
 
-From **0.1.3**, `cbstore plan last` instead gives a useful explanation and returns a successful diagnostic response when no craft request has occurred. **You do not need to craft anything to inspect recipes.** Run:
+From **0.1.4**, `cbstore plan last` instead gives a useful explanation and returns a successful diagnostic response when no craft request has occurred. **You do not need to craft anything to inspect recipes.** Run:
 
 ```bash
 printf 'cbstore recipes\n' > kiln/control/console/cbrecipes.tmp
@@ -106,7 +118,7 @@ This lists up to 12 registered **hand-crafting** recipes. Select one of the `0x.
 
 If **even a normal vanilla craft with all ingredients in your backpack** cannot be performed, that would be a different potential issue, worth checking separately. The current mod does not cancel or inject crafting actions, and cannot tell from an absent event whether the UI, recipe unlock, station requirement or another mod blocked the attempted action.
 
-### Recipe and building diagnostics (0.1.3)
+### Recipe and building diagnostics (0.1.4)
 
 To inspect the real crafting pipeline **without modifying inventory**, perform one ordinary vanilla craft in-game (a cheap one using materials you already have), then run:
 
@@ -127,7 +139,7 @@ Use `cbstore lastbuild` **after a normal build action**. It reports only the pos
 
 1. Open [Cross-base Storage GitHub Actions](https://github.com/bisdat/kiln-mods/actions/workflows/cross-base-storage.yml).
 2. Download `cross-base-storage-kiln-package` from a successful build.
-3. Extract the Actions artifact. Import `cross-base-storage-0.1.3.zip` into Kiln Library and enable it in the active profile.
+3. Extract the Actions artifact. Import `cross-base-storage-0.1.4.zip` into Kiln Library and enable it in the active profile.
 4. Restart Enshrouded, enter a world, run `cbstore scan` and `cbstore near` beside an existing Magic Chest, then use `cbstore lastcraft` / `cbstore plan last` after a normal craft to inspect the game's native recipe handling.
 5. This package **does not yet enable cross-base crafting**. If you only want the finished gameplay effect, do not install this diagnostic development preview.
 
@@ -153,4 +165,4 @@ KILN_SDK_VERSION=0.2.0-dev.local.20261107.61500 \
 bash scripts/build.sh CrossBaseStorage
 ```
 
-Output: `bin/Release/cross-base-storage-0.1.3.zip`. The workflow builds and uploads this prototype on pull requests and optionally publishes a GitHub **development pre-release** for a matching **numeric** `cross-base-storage-v0.1.3` tag. Future versions use `0.1.4`, `0.1.5`, etc., without an `-alpha.n` suffix. **It should not be presented as a playable cross-base storage release.**
+Output: `bin/Release/cross-base-storage-0.1.4.zip`. The workflow builds and uploads this prototype on pull requests and optionally publishes a GitHub **development pre-release** for a matching **numeric** `cross-base-storage-v0.1.4` tag. Future versions use `0.1.4`, `0.1.5`, etc., without an `-alpha.n` suffix. **It should not be presented as a playable cross-base storage release.**
