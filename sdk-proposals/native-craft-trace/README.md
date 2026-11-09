@@ -109,3 +109,49 @@ mapping from these linked inventory entities to their container owners, base
 membership and Magic Chest entitlement**. Only after that can a carefully
 scoped native extension investigate enrolling eligible sources in the
 *original* transaction, with the client using the same eligibility rules.
+
+## Current published Kiln release: passive raw payer cost rows (9 November 2026)
+
+**Supersedes the historical fixed SHA build steps above.** The
+[craft-trace CI workflow](../../.github/workflows/kiln-craft-trace.yml)
+now resolves the **newest published Kiln development release** via the same
+repository release selector used for the installable mod packages. Both
+Windows and Linux jobs use the **same exact published upstream tag + SHA**
+and refuse changed source anchors.
+
+A new [`costs.py`](costs.py) research patch extends the pre-existing
+`kiln.rules` payment detours and the optional, tail-extended service ABI
+with read-only `Rules.TraceRecipeCostRows()`. The snapshot includes payer
+kind (primary or alternative), original owner, transaction operator,
+requested multiplier, native payer return code, number of input rows,
+and **up to eight raw item/count pairs**, along with a status indicating
+invalid or truncated reads. The observer is strictly limited to the
+validated `RecipePaid` callsite, current server world and released
+`items/tx.operator` layout. The game-owned input buffer is copied
+*before* the original payer executes, and the observation is published
+*after* the untouched original returns. No game pointers are exposed or
+retained. There are no additional native detours.
+
+**Crucial uncertainty:** the observed `costs` argument is tentatively
+read as a {pointer,count} list of 24-byte rows, with raw ID at +16 and
+raw count at +20. The upstream reverse-engineering notes establish this
+format for building's `ApplyMaterials`, but **the complete recipe and
+alternative-payer category selection semantics are not verified**.
+Status=1 means the memory read was valid, not that the raw values are
+authoritative recipe ingredients. A zero item/count never means a
+free ingredient; it may represent an unresolved category. Cost and
+journal observations have separate publication locks, and must not be
+assumed to form an atomic pair from the same call during concurrent crafts.
+
+The [dev20 native trace build](https://github.com/bisdat/kiln-mods/actions/runs/42584680335)
+succeeded on **Linux managed `Kiln.Rules`**, the 64-byte craft,
+112-byte journal and **120-byte raw-cost native ABI** checks, and
+**Windows x64 `kiln-rules.dll`** compilation. The existing observer-only
+validator passed. The instrumented DLL is **not uploaded, installed,
+or loaded in a game**; no real runtime cost rows have been collected.
+
+**Next test:** compare a genuine recipe payment's raw cost rows against
+the known recipe input selections, then verify the appended journal
+take slots and what the engine commits or rolls back. Until actual
+live-call ABI and category semantics are observed, the source-only
+native adapter cannot safely enable cross-base crafting.
