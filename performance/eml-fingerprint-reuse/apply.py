@@ -33,7 +33,7 @@ change("cache/mod.rs",
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 struct ChangeStamp {
     volume: u64,
-    file_id: u128,
+    file_id: [u8; 16],
     change_time: i128,
 }
 
@@ -44,7 +44,7 @@ fn raw_change_stamp(file: &File) -> Option<ChangeStamp> {
     let m = file.metadata().ok()?;
     Some(ChangeStamp {
         volume: m.dev(),
-        file_id: m.ino() as u128,
+        file_id: (m.ino() as u128).to_le_bytes(),
         change_time: (m.ctime() as i128) * 1_000_000_000 + m.ctime_nsec() as i128,
     })
 }
@@ -79,7 +79,7 @@ fn raw_change_stamp(file: &File) -> Option<ChangeStamp> {
     if !ok_basic || !ok_id || basic.changed == 0 { return None; }
     Some(ChangeStamp {
         volume: id.volume,
-        file_id: u128::from_le_bytes(id.file_id),
+        file_id: id.file_id,
         change_time: basic.changed as i128,
     })
 }
