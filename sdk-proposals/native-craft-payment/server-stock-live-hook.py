@@ -106,18 +106,20 @@ struct PayLife {
     PayLife& operator=(const PayLife&)=delete;
 };
 
-// Original stock selector's actual four-argument Microsoft x64 ABI.
-// The SafetyHook trampoline is called FIRST. No client-state-derived source
-// data may enter this callback.
+// Original stock selector's SIX-argument Microsoft x64 ABI:
+// RCX result, RDX lists, R8/R9 base systems, stack arg 5 position,
+// stack arg 6 game player. The game uses both stack args in its vanilla
+// source selection. Losing them corrupts the original pay path.
 SelectorStatus* __fastcall hk_selector(
     SelectorStatus* status,GameStockLists* lists,
-    void* primary,void* fallback) {
+    void* primary,void* fallback,const float* position,uint32_t player) {
     const uintptr_t ret=reinterpret_cast<uintptr_t>(_ReturnAddress());
     SelectorStatus* vanilla=h_selector.call<SelectorStatus*>(
-        status,lists,primary,fallback);
+        status,lists,primary,fallback,position,player);
     if(!enabled || !vanilla || vanilla!=status || !status ||
        status->error!=0 || !lists ||
        !active_actor || !active_tx || !original_selector ||
+       !position || player!=active_actor ||
        !OriginalPayerScope::current())
         return vanilla;
     const uintptr_t base=reinterpret_cast<uintptr_t>(GetModuleHandleW(nullptr));
