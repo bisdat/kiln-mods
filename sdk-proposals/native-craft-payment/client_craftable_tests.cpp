@@ -5,17 +5,17 @@
 #include <functional>
 using namespace cbpay::client;
 
-static SignedCapability g_cap{};
+static ServerCapability g_cap{};
 static bool g_query_ok = true;
 static int g_queries = 0;
-static bool query(const Call&, SignedCapability* out) {
+static bool query(const Call&, ServerCapability* out) {
     ++g_queries;
     if (!g_query_ok) return false;
     *out = g_cap;
     return true;
 }
-static SignedCapability complete(uint32_t recipe=0x23c98255, uint32_t count=1) {
-    SignedCapability c{};
+static ServerCapability complete(uint32_t recipe=0x23c98255, uint32_t count=1) {
+    ServerCapability c{};
     c.recipe=recipe;c.approved_count=count;
     c.live_authenticated_server=true;
     c.matching_native_protocol=true;
