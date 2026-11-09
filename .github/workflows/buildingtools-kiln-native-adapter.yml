@@ -1,0 +1,61 @@
+name: Building Tools as Kiln native DLL (experimental adapter)
+
+on:
+  push:
+    branches: [feature/cross-base-storage-kiln]
+    paths:
+      - 'tools/package-buildingtools-for-kiln.py'
+      - 'docs/BUILDINGTOOLS-KILN-ADAPTER.md'
+      - '.github/workflows/buildingtools-kiln-native-adapter.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  adapter:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fetch only the official published Building Tools v0.31.2 release
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE=https://github.com/AleksanderWojtal-CC/Enshrouded-BuildingTools/releases/download/v0.31.2
+          curl --fail --location --retry 3 "${BASE}/EnshroudedBuildingTools-0.31.2.zip" -o /tmp/EnshroudedBuildingTools-0.31.2.zip
+          curl --fail --location --retry 3 "${BASE}/EnshroudedBuildingTools-0.31.2.zip.sha256" -o /tmp/EnshroudedBuildingTools-0.31.2.zip.sha256
+      - name: Convert official release to Kiln native drop-in without patching game binary
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          python3 tools/package-buildingtools-for-kiln.py \
+            /tmp/EnshroudedBuildingTools-0.31.2.zip \
+            --checksum /tmp/EnshroudedBuildingTools-0.31.2.zip.sha256 \
+            --output dist/BuildingTools-Kiln-native-0.31.2-EXPERIMENTAL.zip
+          python3 - <<'PY'
+          import hashlib, json, pathlib, zipfile
+          p = pathlib.Path("dist/BuildingTools-Kiln-native-0.31.2-EXPERIMENTAL.zip")
+          with zipfile.ZipFile(p) as z, zipfile.ZipFile("/tmp/EnshroudedBuildingTools-0.31.2.zip") as upstream:
+              names=set(z.namelist())
+              root="kiln/native/building-tools/"
+              assert all(not s.startswith("/") and ".." not in s.split("/") for s in names)
+              assert "dinput8.dll" not in names
+              assert root+"BuildingTools.dll" in names
+              assert root+"native.json" in names
+              m=json.loads(z.read(root+"native.json"))
+              assert m["id"]=="building-tools" and m["phase"]=="boot" and m["side"]=="client"
+              assert m["dlls"]==["BuildingTools.dll"]
+              assert z.read(root+"BuildingTools.dll")==upstream.read("dinput8.dll")
+              assert z.read(root+"BuildingTools-LICENSE.txt")==upstream.read("BuildingTools-LICENSE.txt")
+              assert any(x.startswith("BuildingTools-Languages/") for x in names)
+              assert not json.loads(z.read(root+"provenance.json"))["gameplay_verified"]
+          print("PASS: official DLL byte-exact, original MIT license present, native manifest discoverable, Kiln dinput8 untouched, translation files at game root")
+          PY
+      - name: Upload test-only Kiln native adapter package
+        uses: actions/upload-artifact@v4
+        with:
+          name: BuildingTools-Kiln-native-0.31.2-EXPERIMENTAL
+          path: dist/BuildingTools-Kiln-native-0.31.2-EXPERIMENTAL.zip
+          retention-days: 7
+          if-no-files-found: error
