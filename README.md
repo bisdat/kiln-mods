@@ -47,3 +47,17 @@ read-only Magic material pool. This is a naming rule for diagnostics,
 **not** native crafting eligibility or a resource-deduction feature.
 
 Version **0.1.8** integrates optional `cbstore trace status|pair|payer|cost|journal|all` into Cross-base Storage; the separate Craft Payment Trace observer mod is no longer required. `pair` represents raw cost and staged journal observations captured from the **same original payer invocation** when a separately validated native trace service is available. Normal Kiln correctly reports `UNAVAILABLE`; the lab service replacements are not distributed or deployed as part of Cross-base Storage. The mod does **not** deduct remote stock or enable cross-base crafting.
+
+
+Version **0.1.9** is the **final planned read-only investigation release**
+before active native crafting implementation. It adds
+`cbstore handoff <recipeId|last> [count]`: one complete recipe-bill snapshot,
+player-plus-loaded-Magic source proposal and owner-to-linked-inventory mapping.
+Unknown category costs, insufficient stock and ambiguous identities fail closed
+without recommending partial deductions. The report always says
+`nativePaymentPermitted=False`: it cannot establish the game's per-base
+permissions or final transaction rollback. No further diagnostic-only
+feature release is planned; subsequent work targets native server payment
+inside `RecipeApply` and matching client craftability, with real test-world
+verification before enabling either. **No auto-installation, engine DLL patch
+or game inventory writes are included in 0.1.9.**
