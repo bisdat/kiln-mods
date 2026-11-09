@@ -56,6 +56,8 @@ jobs:
 
       - name: Test deterministic, read-only material source quote planner
         run: dotnet run --project tests/material-quote/MaterialQuote.Tests.csproj --configuration Release
+      - name: Test read-only chest owner to inventory-link mapping
+        run: dotnet run --project tests/inventory-links/InventoryLinks.Tests.csproj --configuration Release
 
       - name: Build pinned Kiln SDK and package mod
         run: bash scripts/build.sh CrossBaseStorage
