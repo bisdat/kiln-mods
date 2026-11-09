@@ -1,0 +1,5 @@
+{
+  "msbuild-sdks": {
+    "Kiln.Sdk": "0.2.0-dev.20"
+  }
+}
