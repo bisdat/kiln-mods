@@ -25,7 +25,33 @@ to Enshrouded process memory, inventory, game transactions or saved games.
 - Real-world chest owner IDs 1412 and 1081 appear in the host fixtures, but
   the stock and transaction execution are synthetic.
 
-Host test:
+Host tests (both pure planning and current-layout native take adapter):
+
+    for suite in payment_plan_tests native_take_adapter_tests; do
+      g++ -std=c++20 -O2 -Wall -Wextra -Werror -pedantic \
+        "sdk-proposals/native-craft-payment/$suite.cpp" -o "/tmp/$suite"
+      "/tmp/$suite"
+    done
+
+The native adapter `native_take_adapter.h` now binds the actual MS-x64
+`InventoryRemoveItems(out, originalTx, owner, item, preferredSlot, count)`
+calling convention (through a function pointer supplied by a future
+trusted native caller). It reads transaction operator at `+0xe0`,
+journal pointer at `+0xf0`, operation count at `+0xf8`, and exact
+appended 52-byte take records; these layouts are from the released
+Kiln source, NOT invented persistent inventory links. Any unexpected
+journal slot/item/quantity/op-type, native error, short pay, missing
+transaction data or unexpected second operation returns a failure
+requiring the *outer recipe* to roll back. **This prototype neither
+owns a game transaction nor automatically rolls anything back.**
+
+[Native payment safety run](https://github.com/bisdat/kiln-mods/actions/runs/42585229144)
+passed **28 host tests** (17 pure planner + 11 native-layout adapter)
+under Linux GCC, Linux Clang and Windows MSVC on 9 November 2026,
+and checked its source seam against Kiln's published dev20 release.
+
+Host test for the original planner only (also works):
+
 
     g++ -std=c++20 -O2 -Wall -Wextra -Werror -pedantic \
       sdk-proposals/native-craft-payment/payment_plan_tests.cpp -o /tmp/cbpay
