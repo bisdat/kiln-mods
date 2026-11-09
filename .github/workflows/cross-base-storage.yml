@@ -6,6 +6,7 @@ on:
     tags: ['cross-base-storage-v*']
     paths:
       - 'CrossBaseStorage/**'
+      - 'tests/craft-handoff/**'
       - 'CraftPaymentTrace/TraceReader.cs'
       - 'tests/craft-payment-trace/**'
       - 'scripts/build.sh'
@@ -18,6 +19,7 @@ on:
   pull_request:
     paths:
       - 'CrossBaseStorage/**'
+      - 'tests/craft-handoff/**'
       - 'CraftPaymentTrace/TraceReader.cs'
       - 'tests/craft-payment-trace/**'
       - 'scripts/build.sh'
@@ -73,6 +75,9 @@ jobs:
 
       - name: Test embedded read-only optional native payer trace
         run: dotnet run --project tests/craft-payment-trace/Trace.Tests.csproj --configuration Release
+
+      - name: Test final fail-closed complete recipe handoff
+        run: dotnet run --project tests/craft-handoff/Handoff.Tests.csproj --configuration Release
 
       - name: Build newest published Kiln SDK and package mod
         run: bash scripts/build.sh CrossBaseStorage
