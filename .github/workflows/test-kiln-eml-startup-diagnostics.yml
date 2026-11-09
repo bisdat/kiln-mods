@@ -37,6 +37,7 @@ jobs:
         run: |
           python3 diagnostics/kiln-eml-startup/apply_instrumentation.py kiln-upstream
           python3 diagnostics/kiln-eml-startup/apply_preload_diagnostics.py kiln-upstream
+          python3 diagnostics/kiln-eml-startup/apply_game_file_progress.py kiln-upstream
           mkdir -p kiln-upstream/gpl/kiln-eml/eml/mod-loader-base/tests
           cp diagnostics/kiln-eml-startup/stage_diagnostics.rs \
              kiln-upstream/gpl/kiln-eml/eml/mod-loader-base/tests/stage_diagnostics.rs
@@ -47,6 +48,11 @@ jobs:
         run: |
           cd kiln-upstream/gpl/kiln-eml
           cargo test -p mod-loader-base --test stage_diagnostics -- --nocapture
+
+      - name: Verify cache fingerprint behavior remains unchanged
+        run: |
+          cd kiln-upstream/gpl/kiln-eml
+          cargo test -p mod-loader-lua preserved_timestamp_edit_and_unreadable_file_invalidate_cache -- --nocapture
 
       - name: Check all modified EML crates, including the Lua runner and plugin
         run: |
@@ -91,6 +97,8 @@ jobs:
             gpl/kiln-eml/eml/mod-loader-base/src/registry/fs.rs \
             gpl/kiln-eml/eml/mod-loader-lua/src/runner/state.rs \
             gpl/kiln-eml/eml/mod-loader-lua/src/lib.rs \
+            gpl/kiln-eml/eml/mod-loader-lua/src/cache/mod.rs \
+            gpl/kiln-eml/eml/mod-loader-lua/src/cache/track.rs \
             > kiln-eml-startup-stage-diagnostics.patch
           test -s kiln-eml-startup-stage-diagnostics.patch
           git -C kiln-upstream diff --check
