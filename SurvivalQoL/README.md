@@ -29,13 +29,13 @@ From the repository root:
 bash scripts/build.sh
 ```
 
-This clones upstream Kiln into the ignored `.kiln-upstream/`, checks out commit `9b9adada835c5f0a68b36567f939dc645cc1ef94`, packages its SDK and services into the ignored `.kiln-mdk/nuget/`, builds this project and invokes `KilnPack`. The SDK package version is pinned to `0.2.0-dev.local.20261107.62100`.
+This retrieves Kiln's **latest published development release**, checks out its exact immutable Git tag in the ignored `.kiln-upstream/`, packs the matching SDK into `.kiln-mdk/nuget/`, updates the shared `global.json` SDK mapping for the build, and invokes `KilnPack`. The build fails instead of falling back to an obsolete release; a sidecar `bin/Release/kiln-sdk-provenance.json` records the exact version and commit.
 
 Alternatively open **Actions → Package Survival QoL**, choose a successful run and download the **survival-qol-package** artifact. The artifact download contains the installable `survival-qol-<version>.zip` made by KilnPack.
 
 ## CI packaging and releases
 
-The [packaging workflow](../.github/workflows/build.yml) runs on mod or build-script changes to `main`, for pull requests, and on demand via **Actions → Package Survival QoL → Run workflow**. It rebuilds the pinned Kiln SDK, compiles the mod, and retains the installable ZIP as a GitHub Actions artifact for 90 days.
+The [packaging workflow](../.github/workflows/build.yml) runs on mod or build-script changes to `main`, for pull requests, and on demand via **Actions → Package Survival QoL → Run workflow**. It builds against the newest published Kiln SDK, compiles the mod, and retains the installable ZIP as a GitHub Actions artifact for 90 days.
 
 To publish a versioned GitHub Release from the current `main` revision, push a tag that matches the `<Version>` in `SurvivalQoL.csproj`:
 
@@ -50,7 +50,7 @@ A `v*` tag triggers the same package build, checks the tag matches the project v
 
 ## Install and configure
 
-1. Install/update Kiln from [upstream](https://github.com/frostdev-ops/kiln) on your game/host or dedicated server. A newer Kiln runtime may be needed if it predates the pinned SDK's APIs.
+1. Install/update Kiln from [upstream](https://github.com/frostdev-ops/kiln) on your game/host or dedicated server. A newer Kiln runtime may be needed if it predates the SDK used to build the downloaded artifact; check `kiln-sdk-provenance.json`.
 2. Extract `survival-qol-0.1.0.zip` into the game/server's `kiln/mods/` folder. The archive contains a `survival-qol/` directory with the generated `kiln.mod.json` and compiled DLL.
 3. Launch your game/server with Kiln enabled. Check `kiln/logs/kiln.log` for the mod load message.
 4. Edit `kiln/config/survival-qol.json` to enable/disable individual effects and set regeneration rates. The config is created at first load and changes are hot-reloaded.
