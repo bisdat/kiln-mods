@@ -45,30 +45,38 @@ jobs:
           print('EML manifest verified')
           PY
 
-      - name: Package installable standalone EML mod
+      # The artifact downloaded from Actions is ALREADY a ZIP. Upload files rather
+      # than an inner ZIP, otherwise Kiln (correctly) treats the inner ZIP as an
+      # opaque asset and does not import the EML mod on drag and drop.
+      - name: Stage drag-and-drop Kiln mod
         run: |
           mkdir -p dist/flame-altar-expanded/src
           cp FlameAltarExpanded/mod.json dist/flame-altar-expanded/mod.json
           cp FlameAltarExpanded/src/mod.lua dist/flame-altar-expanded/src/mod.lua
           cp FlameAltarExpanded/README.md dist/flame-altar-expanded/README.md
-          (cd dist && zip -q -r flame-altar-expanded-0.1.0.zip flame-altar-expanded)
           python3 - <<'PY'
+          from pathlib import Path
           from zipfile import ZipFile
-          with ZipFile('dist/flame-altar-expanded-0.1.0.zip') as z:
-              assert sorted(z.namelist()) == sorted([
-                  'flame-altar-expanded/',
-                  'flame-altar-expanded/src/',
-                  'flame-altar-expanded/mod.json',
-                  'flame-altar-expanded/src/mod.lua',
-                  'flame-altar-expanded/README.md',
-              ])
-          print('Standalone EML package verified')
+          stage = Path("dist/flame-altar-expanded")
+          files = sorted(p.relative_to(stage).as_posix() for p in stage.rglob("*") if p.is_file())
+          assert files == ["README.md", "mod.json", "src/mod.lua"], files
+          # Simulate the GitHub Actions artifact archive: the manifest and src
+          # must be at the ZIP root (no containing directory or nested ZIP).
+          with ZipFile("dist/drag-drop-smoke-test.zip", "w") as z:
+              for path in files:
+                  z.write(stage / path, path)
+          with ZipFile("dist/drag-drop-smoke-test.zip") as z:
+              assert sorted(z.namelist()) == files
+              assert z.read("src/mod.lua").startswith(b"-- SPDX-License-Identifier")
+          print("Kiln UI drag-and-drop archive layout verified")
           PY
 
-      - name: Upload experimental package
+      - name: Upload directly installable ZIP
         uses: actions/upload-artifact@v4
         with:
-          name: flame-altar-expanded-experimental
-          path: dist/flame-altar-expanded-0.1.0.zip
+          name: flame-altar-expanded-0.1.0-kiln
+          # upload-artifact produces the ONE ZIP to drag onto Kiln's window.
+          # The directory itself is stripped; mod.json is at the ZIP root.
+          path: dist/flame-altar-expanded/
           if-no-files-found: error
           retention-days: 90
