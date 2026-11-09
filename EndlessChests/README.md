@@ -99,14 +99,12 @@ cat kiln/control/console/probe.result.json
 
 ## CI and development
 
-The GitHub Actions workflow validates all 195 original groups, the 3,464 item entries, alphabetical key order within every INI section, all 32 case variants of Empty, the observed chest-name FNV hashes, mixed-case matching for all original group labels and the collision-safe catalogue lookup. It builds against the released/pinned Kiln SDK source and stages the sorted standalone INI with the mod ZIP for download and tagged releases.
+The GitHub Actions workflow validates all 195 original groups, the 3,464 item entries, alphabetical key order within every INI section, all 32 case variants of Empty, the observed chest-name FNV hashes, mixed-case matching for all original group labels and the collision-safe catalogue lookup. It builds against the **latest published Kiln dev release** (exact tagged source commit, not moving `main`) and stages the sorted standalone INI and SDK provenance with the mod ZIP for download and tagged releases.
 
 Local Linux build:
 
 ```bash
-KILN_UPSTREAM_SHA=eba9a5e1e0e0044a9146fdd53021a751e2957030 \
-KILN_SDK_VERSION=0.2.0-dev.local.20261107.61500 \
 bash scripts/build.sh EndlessChests
 ```
 
-Output: `bin/Release/endless-chests-kiln-0.4.2.zip`. After merging this change into `main`, publishing tag **`endless-chests-v0.4.2`** triggers both release assets automatically. The original v0.4.1 release remains unchanged; the remaining parity checks are tracked in [issue #4](https://github.com/bisdat/kiln-mods/issues/4).
+Output: `bin/Release/endless-chests-kiln-0.4.2.zip` and exact release details in `bin/Release/kiln-sdk-provenance.json`. After merging this change into `main`, publishing tag **`endless-chests-v0.4.2`** triggers both release assets automatically. The original v0.4.1 release remains unchanged; the remaining parity checks are tracked in [issue #4](https://github.com/bisdat/kiln-mods/issues/4).
