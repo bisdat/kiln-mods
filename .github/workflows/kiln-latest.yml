@@ -24,6 +24,8 @@ jobs:
     runs-on: ubuntu-24.04
     outputs:
       source_ref: ${{ steps.branch.outputs.ref }}
+      source_sha: ${{ steps.source.outputs.sha }}
+      source_short: ${{ steps.source.outputs.short }}
       release_tag: ${{ steps.release.outputs.tag }}
       release_version: ${{ steps.release.outputs.version }}
       build: ${{ steps.gate.outputs.build }}
@@ -43,6 +45,14 @@ jobs:
         with:
           ref: ${{ steps.branch.outputs.ref }}
           clean: true
+      - name: Record exact mod source revision
+        id: source
+        shell: bash
+        run: |
+          sha="$(git rev-parse HEAD)"
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+          echo "short=${sha:0:12}" >> "$GITHUB_OUTPUT"
+
       - name: Resolve the latest published Kiln dev release
         id: release
         env:
@@ -109,23 +119,132 @@ jobs:
       - name: Include standalone INI for Endless Chests
         if: matrix.mod == 'EndlessChests'
         run: cp EndlessChests/defaults/endless-chests.defaults.ini bin/Release/endless-chests.defaults.ini
+      - name: Give every mod an unambiguous provenance filename
+        shell: bash
+        run: |
+          cp bin/Release/kiln-sdk-provenance.json "bin/Release/kiln-sdk-provenance-${{ matrix.mod }}.json"
+
       - name: Upload package with exact Kiln SDK provenance
         uses: actions/upload-artifact@v4
         with:
           name: "kiln-${{ needs.check.outputs.release_version }}-${{ matrix.mod }}"
           path: |
             bin/Release/*.zip
-            bin/Release/kiln-sdk-provenance.json
+            bin/Release/kiln-sdk-provenance-${{ matrix.mod }}.json
             bin/Release/endless-chests.defaults.ini
           if-no-files-found: error
           retention-days: 90
 
-  mark-success:
+  publish:
+    name: Publish GitHub compatibility prerelease
     needs: [check, package]
-    if: needs.check.outputs.build == 'true' && needs.check.outputs.cache_hit != 'true' && needs.package.result == 'success'
+    if: needs.check.outputs.build == 'true' && needs.package.result == 'success'
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    env:
+      RELEASE_TAG: kiln-compat-${{ needs.check.outputs.release_tag }}-r${{ needs.check.outputs.source_short }}
+      KILN_RELEASE_TAG: ${{ needs.check.outputs.release_tag }}
+      KILN_RELEASE_VERSION: ${{ needs.check.outputs.release_version }}
+      EXPECTED_SOURCE_SHA: ${{ needs.check.outputs.source_sha }}
+    steps:
+      - name: Download all three tested mod artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: kiln-${{ needs.check.outputs.release_version }}-*
+          path: dist
+          merge-multiple: false
+
+      - name: Verify complete package set and matching provenance before publication
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          from shutil import copy2
+
+          root = Path("dist")
+          output = Path("publish")
+          output.mkdir(exist_ok=True)
+          required = {
+              "SurvivalQoL": "survival-qol-*.zip",
+              "EndlessChests": "endless-chests-kiln-*.zip",
+              "CrossBaseStorage": "cross-base-storage-*.zip",
+          }
+          version = os.environ["KILN_RELEASE_VERSION"]
+          tag = os.environ["KILN_RELEASE_TAG"]
+          upstream_sha = None
+          published = []
+          for mod, pattern in required.items():
+              folder = root / f"kiln-{version}-{mod}"
+              if not folder.is_dir():
+                  raise SystemExit(f"Missing successful build artifact for {mod}")
+              zips = list(folder.glob(pattern))
+              if len(zips) != 1 or zips[0].stat().st_size == 0:
+                  raise SystemExit(f"Expected exactly one nonempty installable ZIP for {mod}: {zips}")
+              provenance = folder / f"kiln-sdk-provenance-{mod}.json"
+              if not provenance.is_file():
+                  raise SystemExit(f"Missing provenance for {mod}")
+              data = json.loads(provenance.read_text(encoding="utf-8"))
+              if data.get("tag") != tag or data.get("version") != version:
+                  raise SystemExit(f"Provenance mismatch for {mod}: {data}")
+              sha = data.get("checked_out_sha")
+              if not isinstance(sha, str) or len(sha) != 40:
+                  raise SystemExit(f"Unverified SDK checkout SHA for {mod}")
+              if upstream_sha is not None and upstream_sha != sha:
+                  raise SystemExit("Mod artifacts were compiled from different Kiln source commits")
+              upstream_sha = sha
+              for item in (zips[0], provenance):
+                  dest = output / item.name
+                  if dest.exists():
+                      raise SystemExit(f"Duplicate release asset: {item.name}")
+                  copy2(item, dest)
+                  published.append(item.name)
+          ini = root / f"kiln-{version}-EndlessChests" / "endless-chests.defaults.ini"
+          if not ini.is_file() or ini.stat().st_size == 0:
+              raise SystemExit("Missing Endless Chests reference INI")
+          copy2(ini, output / ini.name)
+          published.append(ini.name)
+          if len(published) != 7:
+              raise SystemExit(f"Wrong asset count: {published}")
+          print(f"Publishing {os.environ['RELEASE_TAG']} against upstream {upstream_sha}")
+          print("Source commit:", os.environ["EXPECTED_SOURCE_SHA"])
+          for name in published:
+              print("Asset:", name)
+          PY
+
+      - name: Publish or update this exact source-and-Kiln prerelease
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.RELEASE_TAG }}
+          target_commitish: ${{ needs.check.outputs.source_sha }}
+          name: "Kiln ${{ needs.check.outputs.release_tag }} compatibility — mods at ${{ needs.check.outputs.source_short }}"
+          prerelease: true
+          draft: false
+          overwrite_files: true
+          fail_on_unmatched_files: true
+          files: publish/*
+          body: |
+            Automated compatibility build for **Kiln ${{ needs.check.outputs.release_tag }}**.
+            This release contains independently tested packages for **Survival QoL**, **Endless Chests**, and **Cross-base Storage**, plus the Endless Chests reference INI.
+
+            - **Kiln release:** ${{ needs.check.outputs.release_tag }}
+            - **Mod source commit:** ${{ needs.check.outputs.source_sha }} (${{ needs.check.outputs.source_ref }})
+            - **CI tests:** all three packaging jobs passed; see [workflow run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}).
+            - **Provenance:** each mod has its own `kiln-sdk-provenance-<mod>.json` listing the exact upstream tag and Git commit.
+            - **Important:** Cross-base Storage remains **read-only diagnostics**; vanilla cross-base crafting/building has **not** been implemented.
+
+            **Install manually using Kiln Library.** These are *development compatibility prereleases*, not new stable mod versions, nor proof of in-game runtime compatibility. Back up your saves before testing.
+
+            This tag is unique to the Kiln version **and the mod source commit**; rerunning the same build updates its assets instead of creating duplicate releases. Mod version tags (`v*`, `endless-chests-v*`, `cross-base-storage-v*`) remain independent.
+
+  mark-success:
+    needs: [check, package, publish]
+    if: needs.check.outputs.build == 'true' && needs.check.outputs.cache_hit != 'true' && needs.package.result == 'success' && needs.publish.result == 'success'
     runs-on: ubuntu-24.04
     steps:
-      - name: Write marker after every mod builds and tests successfully
+      - name: Record verified SDK version only after publishing the prerelease
         run: echo "${{ needs.check.outputs.release_version }}" > .kiln-release-success.txt
       - uses: actions/cache/save@v4
         with:
