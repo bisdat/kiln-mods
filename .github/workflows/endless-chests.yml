@@ -7,12 +7,16 @@ on:
     paths:
       - 'EndlessChests/**'
       - 'scripts/**'
+      - 'tests/kiln-release/**'
+      - 'global.json'
       - 'NuGet.Config'
       - '.github/workflows/endless-chests.yml'
   pull_request:
     paths:
       - 'EndlessChests/**'
       - 'scripts/**'
+      - 'tests/kiln-release/**'
+      - 'global.json'
       - 'NuGet.Config'
       - '.github/workflows/endless-chests.yml'
   workflow_dispatch:
@@ -29,10 +33,7 @@ jobs:
     name: Build Endless Chests
     runs-on: ubuntu-24.04
     env:
-      # Use the released Kiln SDK commit, not a newer development main,
-      # to avoid an unwarranted 'needs a newer Kiln' launcher warning.
-      KILN_UPSTREAM_SHA: eba9a5e1e0e0044a9146fdd53021a751e2957030
-      KILN_SDK_VERSION: 0.2.0-dev.local.20261107.61500
+      GITHUB_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@v4
 
@@ -51,6 +52,9 @@ jobs:
             exit 1
           fi
 
+      - name: Test latest Kiln release selection (offline fixtures)
+        run: python3 -m unittest discover -s tests/kiln-release -p 'test_*.py' -v
+
       - name: Verify the original 195 named groups and disabled defaults
         run: python3 scripts/validate-endless-ini.py
 
@@ -60,7 +64,7 @@ jobs:
       - name: Test case-insensitive FNV name matching
         run: python3 scripts/test-chest-case.py
 
-      - name: Build Kiln SDK and package mod
+      - name: Build latest published Kiln SDK and package mod
         run: bash scripts/build.sh EndlessChests
 
       - name: Stage editable INI catalogue for the release
@@ -75,6 +79,7 @@ jobs:
           path: |
             bin/Release/endless-chests-kiln-*.zip
             bin/Release/endless-chests.defaults.ini
+            bin/Release/kiln-sdk-provenance.json
           if-no-files-found: error
           retention-days: 90
 
