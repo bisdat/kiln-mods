@@ -45,70 +45,70 @@ int main(){
         auto m=workbench();
         std::vector<SelectedRow> s{{0,STRING,3,IngredientKind::Exact,false},
                                    {1,WOOD,6,IngredientKind::Category,true}};
-        assert(match_selected(m,s,member)==Status::Ready);
+        assert(match_selected(m,s,member)==cbpay::recipes::Status::Ready);
     });
     test("category without game native selection proof fails",[] {
         auto m=workbench();
         std::vector<SelectedRow> s{{0,STRING,3,IngredientKind::Exact,false},
                                    {1,WOOD,6,IngredientKind::Category,false}};
-        assert(match_selected(m,s,member)==Status::UnknownCategoryMembership);
+        assert(match_selected(m,s,member)==cbpay::recipes::Status::UnknownCategoryMembership);
     });
     test("wrong chosen wood type fails game membership",[] {
         auto m=workbench();
         std::vector<SelectedRow> s{{0,STRING,3,IngredientKind::Exact,false},
                                    {1,STRING,6,IngredientKind::Category,true}};
-        assert(match_selected(m,s,member)==Status::UnknownCategoryMembership);
+        assert(match_selected(m,s,member)==cbpay::recipes::Status::UnknownCategoryMembership);
     });
     test("category zero count is unresolved and never free",[] {
-        assert(decode(make(0,0,CATEGORY,0)).status==Status::UnresolvedInput);
+        assert(decode(make(0,0,CATEGORY,0)).status==cbpay::recipes::Status::UnresolvedInput);
     });
     test("category amount is never itemStack zero",[] {
         auto r=decode(make(0,0,CATEGORY,6));assert(r && r.inputs[0].count==6);
     });
     test("both direct and category inputs are ambiguous",[] {
-        assert(decode(make(STRING,3,CATEGORY,6)).status==Status::UnresolvedInput);
+        assert(decode(make(STRING,3,CATEGORY,6)).status==cbpay::recipes::Status::UnresolvedInput);
     });
     test("unlisted zero ingredient is rejected",[] {
-        assert(decode(make(0,0,0,0)).status==Status::UnresolvedInput);
+        assert(decode(make(0,0,0,0)).status==cbpay::recipes::Status::UnresolvedInput);
     });
     test("invalid mix category id with nonzero direct count",[] {
-        assert(decode(make(0,2,CATEGORY,3)).status==Status::UnresolvedInput);
+        assert(decode(make(0,2,CATEGORY,3)).status==cbpay::recipes::Status::UnresolvedInput);
     });
     test("direct cost with spurious category count rejected",[] {
-        assert(decode(make(STRING,3,0,2)).status==Status::UnresolvedInput);
+        assert(decode(make(STRING,3,0,2)).status==cbpay::recipes::Status::UnresolvedInput);
     });
     test("selected category amount mismatch rejects before spending",[] {
         auto m=workbench();
         std::vector<SelectedRow> s{{0,STRING,3,IngredientKind::Exact,false},
                                    {1,WOOD,5,IngredientKind::Category,true}};
-        assert(match_selected(m,s,member)==Status::CountMismatch);
+        assert(match_selected(m,s,member)==cbpay::recipes::Status::CountMismatch);
     });
     test("selected item mismatch rejects before spending",[] {
         auto m=workbench();
         std::vector<SelectedRow> s{{0,WOOD,3,IngredientKind::Exact,false},
                                    {1,WOOD,6,IngredientKind::Category,true}};
-        assert(match_selected(m,s,member)==Status::InvalidSelection);
+        assert(match_selected(m,s,member)==cbpay::recipes::Status::InvalidSelection);
     });
     test("missing native category selection never authorises",[] {
         auto m=workbench();
         std::vector<SelectedRow> s{{0,STRING,3,IngredientKind::Exact,false}};
-        assert(match_selected(m,s,member)==Status::InvalidSelection);
+        assert(match_selected(m,s,member)==cbpay::recipes::Status::InvalidSelection);
     });
     test("duplicate recipe input selection rejected",[] {
         auto m=workbench();
         std::vector<SelectedRow> s{{0,STRING,3,IngredientKind::Exact,false},
                                    {0,STRING,3,IngredientKind::Exact,false}};
-        assert(match_selected(m,s,member)==Status::DuplicateSelection);
+        assert(match_selected(m,s,member)==cbpay::recipes::Status::DuplicateSelection);
     });
     test("bad row count and max 64 inputs rejected",[] {
-        assert(decode(std::vector<uint8_t>(47)).status==Status::InvalidRows);
-        assert(decode(std::vector<uint8_t>(65*48)).status==Status::InvalidRows);
+        assert(decode(std::vector<uint8_t>(47)).status==cbpay::recipes::Status::InvalidRows);
+        assert(decode(std::vector<uint8_t>(65*48)).status==cbpay::recipes::Status::InvalidRows);
     });
     test("invalid selected category index rejected",[] {
         auto m=workbench();
         std::vector<SelectedRow> s{{0,STRING,3,IngredientKind::Exact,false},
                                    {20,WOOD,6,IngredientKind::Category,true}};
-        assert(match_selected(m,s,member)==Status::InvalidSelection);
+        assert(match_selected(m,s,member)==cbpay::recipes::Status::InvalidSelection);
     });
     std::printf("PASS: %d native recipe shape tests; no live game source entitlement.\n",passed);
 }
