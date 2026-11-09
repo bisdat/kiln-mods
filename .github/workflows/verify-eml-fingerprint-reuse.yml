@@ -36,6 +36,18 @@ jobs:
           xvfb-run -a wine /tmp/eml-stamp-probe.exe | tee wine-stamp-result.txt
           grep '^WINE_CHANGE_STAMP=' wine-stamp-result.txt
           echo "UNSUPPORTED and UNRELIABLE mean safe fallback; VERIFIED means eligible for runtime gate"
+      - name: Package on-host Proton scratch-only capability probe
+        run: |
+          mkdir -p proton-stamp-test
+          cp /tmp/eml-stamp-probe.exe proton-stamp-test/eml-stamp-probe.exe
+          cp performance/eml-fingerprint-reuse/run-stamp-under-proton.sh proton-stamp-test/run-stamp-under-proton.sh
+          bash -n proton-stamp-test/run-stamp-under-proton.sh
+      - name: Upload standalone Proton scratch-only diagnostic
+        uses: actions/upload-artifact@v4
+        with:
+          name: eml-proton-change-stamp-READ-ONLY-GAME-DATA
+          path: proton-stamp-test/
+          if-no-files-found: error
       - uses: actions/upload-artifact@v4
         with:
           name: eml-wine-change-stamp-capability
