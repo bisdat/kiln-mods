@@ -94,8 +94,12 @@ static NativeResult12* CBPAY_CALL remove_game(
 static std::vector<Source> g_sources;
 static std::vector<Requirement> g_cost;
 static bool g_allow=true,g_invalid_proof=false,g_invalid_failure=false;
+static bool g_bad_membership=false;
 static bool g_bad_payer_row=false,g_incomplete_selection=false;
 static int g_resolves=0,g_grants=0;
+static bool native_member(const Call&, uint32_t category, uint32_t item) {
+    return !g_bad_membership && category==0x778899 && item==String;
+}
 static bool native_grant(const Call&, const Source& source, uint32_t actor) {
     ++g_grants;
     return g_allow && actor==Player && source.loaded;
@@ -122,6 +126,16 @@ static bool trusted_resolve(const Call& call, Resolved* out) {
     }
     if (g_bad_payer_row && !out->original_payer_rows.empty())
         out->original_payer_rows[0].count += 1;
+    out->native_recipe_inputs={recipes::Status::Ready,{}};
+    for (size_t i=0; i<g_cost.size(); ++i) {
+        const auto& cost=g_cost[i];
+        if (cost.item && cost.count)
+            out->native_recipe_inputs.inputs.push_back({
+                static_cast<uint32_t>(i),cost.item,0,cost.count});
+        else
+            out->native_recipe_inputs={recipes::Status::UnresolvedInput,{}};
+    }
+    out->native_category_member=&native_member;
     out->eligible_slots=g_sources;
     out->original_remove_items=&remove_game;
     out->grant=&native_grant;
@@ -134,7 +148,7 @@ static void setup(std::vector<Source> sources, std::vector<Requirement> needs) {
     g_cost=std::move(needs);
     g_allow=true;
     g_invalid_proof=g_invalid_failure=false;
-    g_bad_payer_row=g_incomplete_selection=false;
+    g_bad_payer_row=g_incomplete_selection=false;g_bad_membership=false;
     g_resolves=g_grants=0;
 }
 static Decision run(Tx& tx, Payer payer=Payer::InventoryPay,
@@ -270,6 +284,17 @@ int main() {
     check("incomplete native selected input enumeration cannot debit", [&] {
         setup(s,{{String,10}});g_incomplete_selection=true;Tx tx(s);
         const auto r=run(tx,Payer::RecipePayAlt);
+        assert(r.action==RecipePaymentAction::DelegateVanilla &&
+               tx.attempts==0 && tx.journal.empty());
+    });
+    check("missing native recipe metadata cannot debit", [&] {
+        setup(s,{{String,10}});Tx tx(s);
+        const int64_t fake[2]={1,1};
+        const Call call{tx.bytes.data(),fake,Player,1,nullptr,
+                        RecipePayReturn,Payer::InventoryPay};
+        // Unknown category is not an independent selected recipe input.
+        setup(s,{{String,10},{0,0,true}});
+        const auto r=dispatch(call,&trusted_resolve);
         assert(r.action==RecipePaymentAction::DelegateVanilla &&
                tx.attempts==0 && tx.journal.empty());
     });
