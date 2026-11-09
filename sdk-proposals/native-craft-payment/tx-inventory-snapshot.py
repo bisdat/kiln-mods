@@ -54,7 +54,7 @@ edit(abi,
 } KilnItemsApi;""",
 """    KilnResult(KILN_CALL* peek_result)(uint64_t ticket, KilnItemsResult* out);
     /* Optional native ABI tail; check header.size. The original transaction
-     * operator must match actor, server world only; snapshots ALL pages of
+     * operator must match actor, authoritative server world only; snapshots ALL pages of
      * owner using the same native read-other accessors as game's transaction.
      * No partial results: KILN_ERR_BUFFER_TOO_SMALL if capacity < slot_total.
      * This does not check Magic, base membership or actor permission. */
@@ -87,6 +87,27 @@ bool tx_operator_is(void* tx, KilnEntity actor) {
     }
 }
 
+// The client's single-player session also owns an AUTHORITATIVE server world.
+// Never confuse it with a joined remote client's presentation/prediction world.
+bool cbpay_original_server_world() {
+    if (!g_api || !g_api->session || !g_api->world ||
+        !g_api->server_world || !g_api->side) return false;
+    KilnSessionInfo state{};
+    state.size = sizeof state;
+    if (g_api->session(&state) != KILN_OK) return false;
+    const auto side = g_api->side();
+    if (side == KILN_SIDE_SERVER) {
+        if (state.state != KILN_SESSION_DEDICATED ||
+            state.side != KILN_SIDE_SERVER) return false;
+    } else if (side == KILN_SIDE_CLIENT) {
+        if (state.state != KILN_SESSION_HOST ||
+            state.side != KILN_SIDE_CLIENT) return false;
+    } else return false;
+    const uintptr_t server = g_api->world(KILN_WORLD_SERVER);
+    return server && server == g_api->server_world() &&
+           server == state.worlds[KILN_WORLD_SERVER];
+}
+
 KilnResult KILN_CALL t_read_in_tx(void* tx, KilnEntity actor, KilnEntity owner,
                                  KilnItemsTxSnapshot* snapshot,
                                  KilnItemsSlot* slots, uint32_t capacity) {
@@ -96,7 +117,7 @@ KilnResult KILN_CALL t_read_in_tx(void* tx, KilnEntity actor, KilnEntity owner,
         (capacity && !slots))
         return KILN_ERR_INVALID_ARGUMENT;
     if (!E.tx_ok || !E.read_other || !E.job_storage || !E.component_map_find ||
-        !g_api || g_api->side() != KILN_SIDE_SERVER ||
+        !cbpay_original_server_world() ||
         !tx_operator_is(tx, actor))
         return KILN_ERR_UNAVAILABLE;
 
