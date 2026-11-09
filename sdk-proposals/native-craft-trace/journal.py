@@ -70,8 +70,8 @@ void journal_reset();
 KilnResult KILN_CALL journal_trace(KilnRulesJournalTrace* out);""")
 
 cpp = "native/services/rules/creative.cpp"
-edit(cpp, "} CT;\n",
-r"""} CT;
+edit(cpp, "}  // namespace\n\nbool idle() { return g_flame.load(std::memory_order_relaxed); }\n",
+r"""}  // namespace
 
 // The game owns the transaction. We read only the delta queued by the
 // ORIGINAL recipe payment while the caller still owns its ECS context.
@@ -200,6 +200,8 @@ KilnResult KILN_CALL journal_trace(KilnRulesJournalTrace* out) {
     *out = v;
     return KILN_OK;
 }
+
+bool idle() { return g_flame.load(std::memory_order_relaxed); }
 """)
 edit(cpp,
 """    const uint32_t result = h_alt.call<uint32_t>(tx, costs, owner, multiplier, extra);
