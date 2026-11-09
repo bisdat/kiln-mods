@@ -94,6 +94,7 @@ static NativeResult12* CBPAY_CALL remove_game(
 static std::vector<Source> g_sources;
 static std::vector<Requirement> g_cost;
 static bool g_allow=true,g_invalid_proof=false,g_invalid_failure=false;
+static bool g_bad_payer_row=false,g_incomplete_selection=false;
 static int g_resolves=0,g_grants=0;
 static bool native_grant(const Call&, const Source& source, uint32_t actor) {
     ++g_grants;
@@ -106,7 +107,21 @@ static bool trusted_resolve(const Call& call, Resolved* out) {
         return false;
     out->proof=proof();
     if(g_invalid_proof) out->proof.original_rollback=false;
-    out->selected_costs=g_cost;
+    out->cost_proof={true,true,true,true,true};
+    if (g_incomplete_selection) out->cost_proof.complete_input_enumeration=false;
+    out->original_payer_rows.clear();
+    out->selected_ingredients.clear();
+    for (size_t i=0; i<g_cost.size(); ++i) {
+        const auto& cost=g_cost[i];
+        out->original_payer_rows.push_back({cost.item,cost.count});
+        out->selected_ingredients.push_back({
+            static_cast<uint32_t>(i),cost.item,cost.count,
+            cost.category?costs::IngredientKind::Category:costs::IngredientKind::Exact,
+            false // actual native category selection is NOT proven by this fixture
+        });
+    }
+    if (g_bad_payer_row && !out->original_payer_rows.empty())
+        out->original_payer_rows[0].count += 1;
     out->eligible_slots=g_sources;
     out->original_remove_items=&remove_game;
     out->grant=&native_grant;
@@ -119,6 +134,7 @@ static void setup(std::vector<Source> sources, std::vector<Requirement> needs) {
     g_cost=std::move(needs);
     g_allow=true;
     g_invalid_proof=g_invalid_failure=false;
+    g_bad_payer_row=g_incomplete_selection=false;
     g_resolves=g_grants=0;
 }
 static Decision run(Tx& tx, Payer payer=Payer::InventoryPay,
@@ -244,6 +260,18 @@ int main() {
         const auto r=dispatch(call,&trusted_resolve);
         assert(r.action==RecipePaymentAction::DelegateVanilla &&
                !tx.attempts && !g_grants);
+    });
+    check("mismatched independently selected payer cost cannot debit", [&] {
+        setup(s,{{String,10}});g_bad_payer_row=true;Tx tx(s);
+        const auto r=run(tx);
+        assert(r.action==RecipePaymentAction::DelegateVanilla &&
+               tx.attempts==0 && tx.journal.empty());
+    });
+    check("incomplete native selected input enumeration cannot debit", [&] {
+        setup(s,{{String,10}});g_incomplete_selection=true;Tx tx(s);
+        const auto r=run(tx,Payer::RecipePayAlt);
+        assert(r.action==RecipePaymentAction::DelegateVanilla &&
+               tx.attempts==0 && tx.journal.empty());
     });
     check("malformed original call data rejects without resolver or native reads", [&] {
         setup(s,{{String,10}});Tx tx(s);
