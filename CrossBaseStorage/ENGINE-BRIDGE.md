@@ -242,3 +242,43 @@ The correct production hook must also match UI source counts and preserve the
 host game's same-transaction journalled debit; do not graft temporary links
 into the player's persistent `InventorySetup` or infer a commit from a
 staged payment observation.
+
+## Supported owner-link lookup now implemented in v0.1.6 (9 November 2026)
+
+**Upstream SDK breakthrough:** pinned Kiln.Items `v0.2.0-dev.15`
+already returns `InventoryContents.Inventories` from `Items.Read(chest)`,
+with the tuple `(Inventory: EntityId, Category: InventoryCategory)` for
+each linked underlying eight-slot inventory. The native C API's
+`KilnItemsInventory.Inventories[32]` and `Categories[32]` are copied
+by the managed `Items.Read` implementation. No invented native
+offsets, custom DLL, or new SDK API are needed to observe *loaded*
+chest owner-to-link relationships.
+
+Cross-base Storage **0.1.6** adds two admin-only, read-only diagnostics
+`cbstore links <owner>` and `cbstore resolve <linked inventory>`.
+The pure `InventoryLinkIndex` fails closed on malformed owner IDs,
+duplicate link IDs within an owner, invalid link counts and duplicate
+owners. Shared links across owners report `Ambiguous`; nonmatching
+IDs report `NotFound` (which may simply mean an unscanned player,
+station or other owner). The `magicByTemplate` flag is still the
+**heuristic** name match. The mapping is a *current loaded-world
+observation*, not stable across reloads or authority to craft.
+
+The new twelve-case independent test harness is in
+[`tests/inventory-links`](../tests/inventory-links/Program.cs), alongside
+the existing ten quote-planner tests. Initial [v0.1.6
+build](https://github.com/bisdat/kiln-mods/actions/runs/42573891495)
+passed read-only validation, **22 pure-logic tests**, pinned SDK build
+(0 compiler warnings/errors) and package generation. The new commands
+still need in-game validation with actual owner and linked inventory IDs.
+
+**What this closes:** source-journal inventory entities can now be mapped
+back to candidate loaded chest owners using existing managed Kiln APIs,
+without mutating native `InventorySetup`. **What it does not close:**
+the experimental journal observer has not been installed/tested in-game;
+matching IDs from separate observations does not prove a single atomic
+transaction or commit. There is no authoritative Magic property or
+Flame Altar/base permission resolver, no typed category/water costs,
+and no client-side crafting/building source inclusion. The PR stays
+draft and v0.1.6 remains diagnostic-only.
+
