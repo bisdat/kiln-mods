@@ -13,6 +13,14 @@ The user's preserved files show an **idle no-EML-mod** run at 14:22:05–14:22:0
 
 A subsequent, **real** Proton 11 read-only test using the pinned EML file reader succeeded with both the Linux `/home` and `/var/home` Library paths. Therefore no general canonicalization defect has been demonstrated. We need error-stage logging **inside the game startup code**, not another speculative path rewrite.
 
+### Confirmed 15:06 checkpoint boundary
+
+The 15:06:23 UTC in-game trace reached `eml_preload_checkpoint stage=track_game_files_start` at elapsed 2 ms, with **no matching `track_game_files_done`**. The previous mod snapshot and previous-cache read had already completed successfully. Its `eml.json`/ `boot.json` are older (14:56 UTC, idle), not the active-run outcome. This isolates the interrupted operation to `FileStateCache::track_game_files`; it is **not proof** that an individual file hung or that the failed `src/mod.lua` read recurred.
+
+The pinned EML `track_game_files` enumerates the game's top-level files by extension (`dat`, `kfc`, `kfc_resources`, `exe`, `bak`, `integrity`, plus `eml.json`) and `FileStateCache::track` reads **every byte** through a CRC-64 digest in 64-KiB blocks. `apply_game_file_progress.py` adds tracing-only `eml_game_file_fingerprint_start/done` with file sizes and elapsed time, plus `eml_large_file_hash_progress` every 128 MiB for large files. Existing file selection, hashing, cache contents and error handling are unchanged.
+
+A separate `list-game-file-sizes.py` is included with the diagnostic artifact. Run `python3 list-game-file-sizes.py` on the host (game **closed**, Flame Altar Expanded **disabled**) to list exactly the candidate sizes **without opening or hashing their contents**. This is a safe preliminary check before authorizing another DLL test.
+
 ## What is changed
 
 The `apply_instrumentation.py` script applies strict single-match substitutions to these two GPL files in a checkout of the pinned Kiln commit:
@@ -21,6 +29,8 @@ The `apply_instrumentation.py` script applies strict single-match substitutions 
 - `gpl/kiln-eml/eml/mod-loader-lua/src/runner/state.rs`: logs the mod ID, fully qualified module, root and `src/mod.lua` require operation immediately before file access, plus the success/failure and any UTF-8 read errors.
 
 - `gpl/kiln-eml/eml/mod-loader-lua/src/lib.rs`: a `eml_run_identity` record with process ID and UTC epoch milliseconds; `eml_preload_checkpoint` events bracketing initial mod fingerprinting, cached-state reads, game-file hashing, second mod snapshot, `AppState::new`, game input fingerprinting, Lua runner construction/setup, and the transition into executing modules. This identifies the **last stage reached if the process stops before requiring a Lua file**. These events measure the time from EML's run entry; they perform no extra game-file reads.
+
+- `gpl/kiln-eml/eml/mod-loader-lua/src/cache/track.rs` and `cache/mod.rs`: identify and time the exact game file being CRC-64 fingerprinted and report bounded, 128-MiB progress while hashing large files. Read and CRC semantics remain identical.
 
 **No path handling or authorization rule is relaxed.** The same `canonicalize_utf8`, root-containment, symlink, `is_file`, `File::open`, and original `io::Error` return semantics remain. No caching, game data, transaction, or recipe behaviour changes. Diagnostics log local Library paths; review/redact them before publicly sharing logs.
 
