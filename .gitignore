@@ -10,3 +10,7 @@
 
 # Packaged mods (uploaded as CI artifacts instead)
 *.zip
+
+# Resolved published Kiln release (rewritten on every build)
+.kiln-release.env
+.kiln-release.json
