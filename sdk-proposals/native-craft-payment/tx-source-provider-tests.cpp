@@ -95,7 +95,8 @@ int main(){
     });
     test("empty owner list and actor zero reject",[] {
         assert(collect_from({}).status==Result::InvalidOwners);
-        auto r=collect(0,std::vector<uint32_t>{A},
+        const std::vector<uint32_t> owners{A};
+        auto r=collect(0,owners,
                        [](auto,auto,auto*){return true;},
                        [](auto,auto){return Grant{};});
         assert(r.status==Result::InvalidActor && r.entries.empty());
