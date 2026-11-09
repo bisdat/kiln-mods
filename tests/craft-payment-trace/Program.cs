@@ -80,6 +80,35 @@ Verify("payer counters never promise atomic correlations or remote crafting", ()
           text.Contains("RecipePayAlt calls=2") &&
           text.Contains("NOT correlated atomic"), text);
 });
+Verify("a matched raw cost and native journal share one stable call identifier", () =>
+{
+    var text = Dump(typeof(MatchedRules), "pair");
+    Check(text.Contains("SAME-CALL") && text.Contains("sampleId=29") &&
+          text.Contains("rawCost[0] item=0x0000012a count=3") &&
+          text.Contains("staged inventoryEntity=1421") &&
+          text.Contains("not proven committed"), text);
+});
+
+Verify("pairing rejects independently mismatched payer call metadata", () =>
+{
+    var text = Dump(typeof(MismatchedRules), "pair");
+    Check(text.Contains("INVALID OR UNAVAILABLE") && !text.Contains("rawCost[0]") &&
+          !text.Contains("staged inventoryEntity="), text);
+});
+
+Verify("invalid native pair never prints ingredient or journal data", () =>
+{
+    var text = Dump(typeof(InvalidPairRules), "pair");
+    Check(text.Contains("pairStatus=invalid") &&
+          text.Contains("INVALID OR UNAVAILABLE") && !text.Contains("rawCost[0]"), text);
+});
+
+Verify("vanilla Kiln does not expose the new optional paired API", () =>
+{
+    var text = Dump(typeof(StandardRules), "pair");
+    Check(text.Contains("UNAVAILABLE") && text.Contains("TraceRecipePayment"), text);
+});
+
 Verify("unsupported actions throw instead of resolving unexpected reflection methods", () =>
 {
     try { TraceReader.Read(typeof(FakeRules), "free"); }
@@ -104,6 +133,30 @@ public sealed record FakePayer(
     uint LastAlternativeOwner, uint LastAlternativeResult,
     uint LastUiRecipe, uint LastUiVanillaAmount, uint LastUiCap,
     uint InstalledFlags);
+public sealed record FakePair(
+    uint Status, ulong Calls, ulong Rejected, ulong SampleId,
+    FakeCost Costs, FakeJournal Journal);
+public static class MatchedRules
+{
+    public static FakePair TraceRecipePayment() =>
+        new(1, 29, 0, 29,
+            new FakeCost(1, 0, 0, 1, 1, 1, 1, 0, 1, 1, [new(0x12a, 3)]),
+            new FakeJournal(1, 0, 0, 1, 1, 0, 1, 1, 1, [new(1421, 3)]));
+}
+public static class MismatchedRules
+{
+    public static FakePair TraceRecipePayment() =>
+        new(1, 29, 0, 29,
+            new FakeCost(1, 0, 0, 1, 1, 1, 1, 0, 1, 1, [new(0x12a, 3)]),
+            new FakeJournal(1, 0, 0, 2, 1, 0, 1, 1, 1, [new(1421, 3)]));
+}
+public static class InvalidPairRules
+{
+    public static FakePair TraceRecipePayment() =>
+        new(2, 29, 1, 29,
+            new FakeCost(2, 0, 0, 1, 1, 1, 1, 0, 1, 1, [new(0x12a, 3)]),
+            new FakeJournal(1, 0, 0, 1, 1, 0, 1, 1, 1, [new(1421, 3)]));
+}
 public static class StandardRules { }
 public static class EmptyRules
 {
