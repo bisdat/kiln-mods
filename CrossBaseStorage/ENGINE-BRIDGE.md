@@ -485,3 +485,83 @@ resolver, and the exact authoritative rollback behavior when any
 individual `InventoryRemoveItems` leaves partial staged changes.
 Until those gates exist the prototype cannot be enabled for crafting;
 UI and building still require separate matching source resolution.
+
+## Payer-cost instrumentation + engine-style removal adapter — 9 November 2026
+
+**Concrete implementation and verification now in PR #7:**
+
+1. [`sdk-proposals/native-craft-trace/costs.py`](../sdk-proposals/native-craft-trace/costs.py)
+   extends the *existing* Kiln Rules payer detours on the
+   **latest published Kiln dev release** with an optional, bounded
+   **120-byte `KilnRulesCostTrace` ABI** and managed
+   `Rules.TraceRecipeCostRows()`. It reports player/station
+   transaction operator, original recipe payer kind, owner,
+   multiplier, native return, row count and up to eight raw
+   item/count pairs. It copies read-only data **before** the native
+   payer executes and publishes the result after the untouched
+   payer returns. There are no new detours or client crafting
+   overrides, and *zero resource withdrawals added by this patch*.
+   Raw row offsets {+0x10 item,+0x14 count,stride 0x18} are a
+   **hypothesis extrapolated from building's ApplyMaterials cost
+   entries**, not verified for category inputs or RecipePayAlt.
+   Pointers are capped, checked under native SEH, and never exposed
+   to the managed observer. The trace cost and journal snapshots
+   are **not atomically correlated across concurrent calls**.
+2. [`sdk-proposals/native-craft-payment/native_take_adapter.h`](../sdk-proposals/native-craft-payment/native_take_adapter.h)
+   adds an isolated current-layout **native removal adapter** that
+   uses the actual `InventoryRemoveItems(Result12*, tx, owner,
+   item, preferredSlot, qty)` x64 function signature rather than
+   the previous abstract mock-only stage function. The adapter
+   reads `tx.operator` at +0xe0 and original `tx.ops`
+   pointer/count at +0xf0/+0xf8, checks *only newly appended*
+   0x34-byte op records, and demands exact type=take, item,
+   packed inventory slot and total quantity per take. A game
+   error, shortened take, wrong slot, unexpected op or invalid
+   transaction yields `AbortNeedsRollback`, never success.
+   **It NEVER commits/rolls back** and must remain uninstalled
+   until the real outer `RecipeApply` rollback path is proven.
+   It does not collect eligible Magic Chests or decode native
+   category ingredients. The read/write access to raw transaction
+   bytes is simulated in CI; a live adapter additionally needs
+   runtime-checked constants and SEH.
+3. **Evidence:** the [latest released dev20 native trace
+   build](https://github.com/bisdat/kiln-mods/actions/runs/42584680335)
+   passed Linux managed/API ABI checks, native Windows x64
+   `kiln-rules.dll` compilation and the observer-only safety
+   validator. No patched native DLL was uploaded or deployed.
+   [Native payment run
+   #42585229144](https://github.com/bisdat/kiln-mods/actions/runs/42585229144)
+   passed **28 synthetic host tests** (17 pure planner plus 11
+   engine-style raw transaction tests) across Linux GCC,
+   Linux Clang and Windows MSVC, plus the current published
+   Kiln release native-seam gate. It did **not** execute an
+   in-game craft or prove a production rollback.
+
+**Additional permissions research:** dev20
+[`native/services/players/log_tracker.cpp`](https://github.com/frostdev-ops/kiln/blob/d35ee27/native/services/players/log_tracker.cpp)
+maps `CanAccessInventories` to player permission bit `0x02`;
+the server
+[`docs/re/players.md`](https://github.com/frostdev-ops/kiln/blob/d35ee27/docs/re/players.md)
+corroborates it. A group permission is only one **necessary access
+gate**, not proof that a player may use a particular other base's
+chest. The public `Items.Read().SetupFlags` exposes Player/NPC
+classification, **not a confirmed Magic crafting entitlement**.
+`InventorySetup` link category `Generic` (4) or
+`Virtual` (5) is an inventory structural type, **not a
+remote-Magic authorisation flag**. `BaseIdComponent` currently
+identifies a Flame Altar entity, not an arbitrary chest's
+membership/owner. Any native resolver that assumes these fields
+grant remote access is unsafe.
+
+**Actual next in-game milestone:** validate raw native cost-list
+samples for a known *ordinary* paid recipe, including category
+ingredient selections and both payer paths, and compare them
+against the original transaction journal in the SAME call. Then
+implement an authoritative per-chest Magic/Flame Altar/rights resolver
+on the server and its matching client-facing stock count. Without
+those verified inputs, enabling `InventoryRemoveItems` from another
+base or returning a crafting "paid" result is not justified.
+
+**Release status:** current user-facing Cross-base Storage 0.1.6
+still offers read-only diagnostics; no native runtime DLL or
+experiment was installed or packaged. PR #7 stays **draft**.
