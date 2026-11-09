@@ -102,14 +102,16 @@ jobs:
           fixture="$GITHUB_WORKSPACE/readonly-fixture/library/eml/flame-altar-expanded/0.1.1+hash"
           mkdir -p "$fixture/src"
           printf '{"id":"flame-altar-expanded"}' > "$fixture/mod.json"
-          printf '%s\\n' 'return true' > "$fixture/src/mod.lua"
+          printf '%s\n' 'return true' > "$fixture/src/mod.lua"
           winpath="$(python3 - "$fixture" <<'PY'
           import sys
-          print("Z:" + sys.argv[1].replace("/", "\\\\"))
+          print("Z:" + sys.argv[1].replace("/", chr(92)))
           PY
           )"
           exe="kiln-upstream/gpl/kiln-eml/target/x86_64-pc-windows-gnu/debug/eml-readonly-probe.exe"
           xvfb-run -a wine "$exe" "$winpath"
+      - name: Validate safe runner shell syntax
+        run: bash -n diagnostics/kiln-eml-path/run-with-proton.sh
       - name: Stage Windows probe and instructions
         run: |
           mkdir -p probe-dist
