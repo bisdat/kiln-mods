@@ -36,17 +36,18 @@ jobs:
         run: |
           python3 sdk-proposals/native-craft-trace/native.py .kiln-trace
           python3 sdk-proposals/native-craft-trace/managed.py .kiln-trace
+          python3 sdk-proposals/native-craft-trace/journal.py .kiln-trace
           git -C .kiln-trace diff --check
       - name: Verify 64-byte value ABI
         run: |
-          printf '#include "services/kiln_rules.h"\nstatic_assert(sizeof(KilnRulesCraftTrace) == 64);\nint main() { return 0; }\n' | \
+          printf '#include "services/kiln_rules.h"\nstatic_assert(sizeof(KilnRulesCraftTrace) == 64);\nstatic_assert(sizeof(KilnRulesJournalTrace) == 112);\nint main() { return 0; }\n' | \
             c++ -std=c++20 -Wall -Wextra -Werror -x c++ -fsyntax-only -I .kiln-trace/native/core/abi -
       - name: Compile managed Kiln.Rules
         run: dotnet build .kiln-trace/managed/services/Kiln.Rules/Kiln.Rules.csproj --configuration Release
       - name: Safety constraints
         run: |
           python3 sdk-proposals/native-craft-trace/verify.py .kiln-trace
-          echo 'PASS: read-only provider trace, no inventory mutation or new hooks'
+          echo 'PASS: passive staged payer source sample, no inventory mutation or new hooks'
 
   native:
     name: Compile native kiln-rules.dll (Windows x64)
@@ -70,6 +71,7 @@ jobs:
         run: |
           python sdk-proposals/native-craft-trace/native.py .kiln-trace
           python sdk-proposals/native-craft-trace/managed.py .kiln-trace
+          python sdk-proposals/native-craft-trace/journal.py .kiln-trace
           git -C .kiln-trace diff --check
           python sdk-proposals/native-craft-trace/verify.py .kiln-trace
       - name: Work around baseline Kiln main MSVC symbol cast (CI only)
@@ -86,5 +88,5 @@ jobs:
       - name: Scope check
         shell: pwsh
         run: |
-          Write-Output 'PASS: existing native rules hooks compile with passive trace. CI ONLY.'
+          Write-Output 'PASS: existing native rules hooks compile with passive staged journal observation. CI ONLY.'
           Write-Output 'NOT tested: running a game, paying from remote chests, client/server source eligibility.'
