@@ -47,6 +47,32 @@ edit(header,
 // Check actual recipe-specific original payer return address and operator.
 // This permits observation only, not payment or source authorisation.
 bool receipt_scope(void* tx, uint32_t owner, uintptr_t ret, uint32_t payer);""")
+edit(header,
+     "bool receipt_scope(void* tx, uint32_t owner, uintptr_t ret, uint32_t payer);",
+     """bool receipt_scope(void* tx, uint32_t owner, uintptr_t ret, uint32_t payer);
+// Short-lived original-transaction journal cursor, with no retained pointer.
+struct JournalStart { uint64_t count = 0; bool valid = false; };
+struct JournalDelta { uint32_t take_ops = 0; bool checked = false; };
+JournalStart receipt_before(void* tx, uint32_t owner, uintptr_t ret, uint32_t payer);
+JournalDelta receipt_after(void* tx, uint32_t owner, uintptr_t ret, uint32_t payer, JournalStart before);""")
+
+edit(creative,
+     "int64_t g_tx_operator = 0;",
+     """int64_t g_tx_operator = 0;
+// The original recipe transaction journal offset; independently from
+// pinned native symbol items/tx.ops. Never guess the value at runtime.
+int64_t g_cbpay_tx_ops = -1;""")
+
+edit(creative,
+     """uint32_t install(const KilnApi* api, std::string& off) {
+    g_api = api;""",
+     """uint32_t install(const KilnApi* api, std::string& off) {
+    g_api = api;
+    if constexpr (cbpay::settlement::kEnabled) {
+        if (!cst("items/tx.ops", &g_cbpay_tx_ops) ||
+            g_cbpay_tx_ops != 0xF0) g_cbpay_tx_ops = -1;
+    }""")
+
 edit(creative,
      """void pay_hook_failed() {
     g_recipe_ret = 0;""",
@@ -61,20 +87,81 @@ edit(creative,
 void pay_hook_failed() {
     g_recipe_ret = 0;""")
 
+// These functions are read-only, bounded, and wrapped in SEH so an untrusted
+// raw transaction view can never be interpreted as a valid journal on fault.
+// They are never called in a normal, disabled Kiln build.
+edit(creative,
+     """void pay_hook_failed() {
+    g_recipe_ret = 0;""",
+     """JournalStart receipt_before(void* tx, uint32_t owner, uintptr_t ret, uint32_t payer) {
+    if (!receipt_scope(tx, owner, ret, payer) || g_cbpay_tx_ops != 0xF0)
+        return {};
+    __try {
+        const auto* b = static_cast<const uint8_t*>(tx);
+        const uint8_t* entries = nullptr;
+        uint64_t count = 0;
+        std::memcpy(&entries, b + g_cbpay_tx_ops, sizeof entries);
+        std::memcpy(&count, b + g_cbpay_tx_ops + 8, sizeof count);
+        if (count > 4096 || (!entries && count)) return {};
+        return {count, true};
+    } __except (EXCEPTION_EXECUTE_HANDLER) {
+        return {};
+    }
+}
+
+JournalDelta receipt_after(void* tx, uint32_t owner, uintptr_t ret,
+                           uint32_t payer, JournalStart before) {
+    if (!before.valid || !receipt_scope(tx, owner, ret, payer) ||
+        g_cbpay_tx_ops != 0xF0) return {};
+    __try {
+        const auto* b = static_cast<const uint8_t*>(tx);
+        const uint8_t* entries = nullptr;
+        uint64_t count = 0;
+        std::memcpy(&entries, b + g_cbpay_tx_ops, sizeof entries);
+        std::memcpy(&count, b + g_cbpay_tx_ops + 8, sizeof count);
+        if (count < before.count || count > 4096 ||
+            count - before.count > 128 || (count && !entries) ||
+            (entries && reinterpret_cast<uintptr_t>(entries) > UINTPTR_MAX - count * 0x34u))
+            return {};
+        // Inside the original payer these newly staged records must all be
+        // actual take ops. A mixed/unknown journal is NOT transaction proof.
+        for (uint64_t i = before.count; i < count; ++i) {
+            const auto* op = entries + i * 0x34u;
+            uint64_t slot = 0;
+            uint32_t item = 0;
+            uint16_t qty = 0;
+            std::memcpy(&slot, op, sizeof slot);
+            std::memcpy(&item, op + 8, sizeof item);
+            std::memcpy(&qty, op + 0x24, sizeof qty);
+            if (!slot || !(uint32_t)slot || (slot >> 32) >= 8 ||
+                !item || !qty || op[0x26] != 1) return {};
+        }
+        return {static_cast<uint32_t>(count - before.count), true};
+    } __except (EXCEPTION_EXECUTE_HANDLER) {
+        return {};
+    }
+}
+
+void pay_hook_failed() {
+    g_recipe_ret = 0;""")
+
 edit(rules,
      """    return h_pay.call<uint32_t>(tx, costs, owner, multiplier, extra);
 }
 
 // Check the resolved return address really follows a direct call to this payment.""",
-     """    const uint32_t original = h_pay.call<uint32_t>(tx, costs, owner, multiplier, extra);
+     """    kiln_rules_creative::JournalStart before{};
+    if constexpr (cbpay::settlement::kEnabled)
+        before = kiln_rules_creative::receipt_before(
+            tx, owner, reinterpret_cast<uintptr_t>(_ReturnAddress()), 1);
+    const uint32_t original = h_pay.call<uint32_t>(tx, costs, owner, multiplier, extra);
     if constexpr (cbpay::settlement::kEnabled) {
-        if (kiln_rules_creative::receipt_scope(tx, owner,
-                reinterpret_cast<uintptr_t>(_ReturnAddress()), 1)) {
-            // Bounded copy: journal amount is NOT asserted without an actual
-            // checked original-transaction delta. Never claim a partial take.
+        if (before.valid) {
+            const auto delta = kiln_rules_creative::receipt_after(
+                tx, owner, reinterpret_cast<uintptr_t>(_ReturnAddress()), 1, before);
             cbpay::settlement::g_original_recipe_witness.payer_returned(
                 {tx, owner, cbpay::settlement::Payer::InventoryPay,
-                 original, 0, false, true});
+                 original, delta.take_ops, delta.checked, true});
         }
     }
     return original;
@@ -87,13 +174,18 @@ edit(creative,
 }
 
 // ============================================================================================ craft buttons ======""",
-     """    const uint32_t original = h_alt.call<uint32_t>(tx, costs, owner, multiplier, extra);
+     """    JournalStart before{};
+    if constexpr (cbpay::settlement::kEnabled)
+        before = receipt_before(tx, owner,
+            reinterpret_cast<uintptr_t>(_ReturnAddress()), 2);
+    const uint32_t original = h_alt.call<uint32_t>(tx, costs, owner, multiplier, extra);
     if constexpr (cbpay::settlement::kEnabled) {
-        if (receipt_scope(tx, owner,
-                reinterpret_cast<uintptr_t>(_ReturnAddress()), 2)) {
+        if (before.valid) {
+            const auto delta = receipt_after(tx, owner,
+                reinterpret_cast<uintptr_t>(_ReturnAddress()), 2, before);
             cbpay::settlement::g_original_recipe_witness.payer_returned(
                 {tx, owner, cbpay::settlement::Payer::RecipePayAlt,
-                 original, 0, false, true});
+                 original, delta.take_ops, delta.checked, true});
         }
     }
     return original;
