@@ -23,6 +23,9 @@ SIGNATURES = {
     "original_remove_items": "48 89 5C 24 08 48 89 74 24 18 48 89 7C 24 20 48 89 54 24 10 55 41 54 41 55 41 56 41 57 48 8D AC 24 20 FF FF",
     "original_commit": "40 55 53 41 55 48 8D AC 24 30 FC FF",
     "original_rollback": "4C 8B DC 55 56 41 55 41 56 41 57 49",
+    # 26430253: base-stocking resolver that returns an ordinary item-owner
+    # pointer/count and separately a fuel owner pointer/count (four qwords).
+    "original_base_stock_selector": "48 89 5C 24 08 48 89 6C 24 10 48 89 74 24 20 57 48 83 EC 40 49 8B F9 49 8B E8 48 8B F2 48 8B D9 4D 85 C0",
     # Historical EMF snippets, for hints only. Zero matches on a new build
     # are normal; these may not identify the same function now.
     "historical_remove_recipe_inputs": "48 89 5C 24 10 44 89 4C 24 20 55 56 57 41 54 41 55 41 56 41 57 48 81 EC B0 00 00 00 45 33 ED 45",
