@@ -63,6 +63,32 @@ transaction symbols. [CI run #42643312142](https://github.com/bisdat/kiln-mods/a
 passed. The old RVAs remain **research only** and must not be used as
 unverified constants when Enshrouded updates.
 
+### Current server selector call boundary (9 November 2026)
+
+The verified `0x2081c0` original selector **does not return the stock
+array through RAX**. It takes four MS-x64 arguments: `RCX = status*`,
+`RDX = GameStockLists*`, `R8 = primary bases*`, `R9 = fallback bases*`.
+It returns the same `status*` and writes a success byte at `status+0`
+alongside separate item and fuel arrays. This result shape is derived
+from original-game assembly on the pinned current server EXE, *not* from
+the older EMF build.
+
+- [`server_selector_abi.h`](server_selector_abi.h): native wrapper that
+  **always calls the game's original selector first**, preserves its
+  status and the fuel list, and permits ordinary item-source extension only
+  when the exact game caller and borrowed buffers have been verified.
+- [`server_stock_scope.h`](server_stock_scope.h): scoped TLS owner-list
+  lifetime across the original recipe payer. Holds **two distinct buffers**
+  for the game's two observed selector calls and refuses recursion, unrelated
+  transaction/actor calls, missing native grants and invalid source lists.
+- Unit tests exercise the exact native call shape, all-or-nothing original
+  delegation, nested lifetime, and two simultaneous result pointers.
+
+**Not yet connected:** the actual runtime detour of the game selector,
+native owner/altar/permission enumeration, and client
+`cache_crafting_stock`. The wrapper deliberately has no source provider in
+the released Kiln integration and never claims a working craft.
+
 [`native_stock_overlay.h`](native_stock_overlay.h) implements the
 32-byte borrowed stock-list ABI with strict C++ layout assertions,
 single authenticated player-record gate, all-proof-required item-owner
