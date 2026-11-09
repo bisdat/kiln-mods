@@ -12,7 +12,7 @@ mod = root / "CraftPaymentTrace"
 csproj = ET.parse(mod / "CraftPaymentTrace.csproj").getroot()
 get = lambda name: csproj.findtext(f"./PropertyGroup/{name}")
 assert get("KilnModId") == "craft-payment-trace"
-assert get("Version") == "0.1.0"
+assert get("Version") == "0.1.1"
 assert get("KilnSide") == "server"
 assert get("KilnClients") == "none"
 assert set((get("KilnServices") or "").split(";")) == {"Chat", "Rules"}
@@ -20,11 +20,14 @@ mod_src = (mod / "CraftPaymentTraceMod.cs").read_text(encoding="utf-8")
 reader = (mod / "TraceReader.cs").read_text(encoding="utf-8")
 assert 'Commands.Register(' in mod_src
 assert '"cbtrace"' in mod_src and "CommandPermission.Admin" in mod_src
+assert '"pair"' in mod_src and '"pair" => "TraceRecipePayment"' in reader
 assert '"status"' in mod_src and '"cost"' in mod_src and '"journal"' in mod_src
 assert 'typeof(Rules)' in mod_src
 assert '"TraceRecipeCostRows"' in reader
 assert '"TraceRecipeJournal"' in reader
 assert '"TraceCraftPayments"' in reader
+assert "FormatPair(object snapshot)" in reader
+assert "Number(cost, \"PayerKind\") != Number(journal, \"PayerKind\")" in reader
 assert '"UNAVAILABLE:' in reader
 assert "Status(ulong status)" in reader
 assert 'status is 0 or 2' in reader
