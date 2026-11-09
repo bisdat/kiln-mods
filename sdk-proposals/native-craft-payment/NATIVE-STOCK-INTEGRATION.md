@@ -121,6 +121,53 @@ original transaction. Do not change the recipe counts to zero.
 - Existing original-payer bridge and settlement witness remain disabled;
   they may be useful for verifying the eventual real stock source extension.
 
+## 9 November — first actual server hook, compiled but not gameplay-tested
+
+The opt-in native integration now contains an **actual original-game stock
+selector detour**, not just a stand-alone source-union type:
+
+- [`server_live_roster.h`](server_live_roster.h): on the original recipe
+  transaction, enumerate the game's own 16 base crafting-stock records;
+  verify real `keen::ecs::InventoryCraftingStock` **template** components
+  with `GetTemplateComponent`, the actor's live `kiln.players` **record**
+  and its single-player inventory/base-edit permissions, plus the linked
+  inventory pages using the experimental `kiln.items.read_in_tx` native
+  extension. The original payer retains ingredient selection, consumption,
+  output and rollback. Local-first source union and fuel separation remain.
+- [`server-stock-live-hook.py`](server-stock-live-hook.py) patches a
+  **disposable checkout** of released Kiln. The stock detour is installed
+  only when explicitly compiled with `CBPAY_ENABLE_SERVER_STOCK`, the
+  executable SHA256 is exactly that of the verified **dedicated-server**
+  26430253 binary, the original caller is verified and both original
+  game selector calls match their E8 callsites. The original selector is
+  called **first**. Any uncertain evidence delegates unchanged to vanilla.
+- [CI #42654759767](https://github.com/bisdat/kiln-mods/actions/runs/42654759767)
+  **passed** strict GCC/Clang tests and Windows x64 compilation of the real
+  instrumented Kiln Items and Rules services with the opt-in selector hook
+  compiled. The DLLs were neither uploaded as a playable mod nor installed.
+- The recorded native base layout, component eligibility, player permissions
+  and full transaction stock conservation **have not been runtime-tested**.
+  A successful native compilation does not establish a correct live hook.
+
+### Critical client-host distinction (the user's game)
+
+The user runs Enshrouded single-player under Proton:
+`enshrouded.exe` (client process, hosting its own server world).
+The current compiled stock hook accepts **only** the dedicated-server
+`enshrouded_server.exe`; on client process it remains OFF.
+
+The published Kiln build metadata verifies current client executable
+**26430625** as SHA256
+`5d9ef2f140b8ed49e30dbee655841b89d08baec20f799a1817e171a18a850c77`
+and confirms the client can host a server world. But it **does not**
+provide a verified current-build client version of the `0x2081c0`
+dedicated-server stock-selector callsite or of client program
+`cache_crafting_stock`. Server RVAs MUST NOT be used on the client.
+The next implementation target is the real client-hosted stock-selector
+and UI stock-cache interface, including source-identity replication.
+Do not send the user the dedicated-server lab DLL; it cannot make their
+single-player crafting menu display remote stock.
+
 ## Precise missing native engine interfaces
 
 1. **Server collector:** the current-build function, list layout, stock-mode-2
@@ -129,7 +176,9 @@ original transaction. Do not change the recipe counts to zero.
    **game-registered** Magic Chest owners under the same original `InventoryTx`,
    validates actor/base permissions, verifies the linked original 8-slot
    pages, and retains the appended owner list until the original payer returns.
-   The 32-byte adapter exists but no detour is installed or activated.
+   The actual dedicated-server detour is now present and Windows-CI-compiled,
+   but has no independent running-game validation and is disabled in public
+   builds; the client's server-world equivalent remains unverified.
 2. **Game authorization:** use the game's actual Magic stock component,
    dynamic stock enable state, active altar/base relationship and
    actor/player permission checks. Client inventory/template names and base
