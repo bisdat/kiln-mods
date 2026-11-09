@@ -36,13 +36,15 @@ class OriginalPayerScope final {
     bool invalid_ = false;
     uint32_t published_ = 0;
 
-    inline static thread_local OriginalPayerScope* active_ = nullptr;
+    // TLS address token is valid strictly for the original payer's stack scope.
+    // An integer key avoids GCC's false escaping-stack-pointer warning.
+    inline static thread_local std::uintptr_t active_key_ = 0;
 public:
     // Scope must exist only DURING h_pay.call() / h_alt.call(), after any
     // creative-mode bypass. Nested payers are never eligible for an overlay.
     OriginalPayerScope(uint32_t actor, void* tx, VerifiedRoster provider)
-        : previous_(active_), actor_(actor), tx_(tx), provider_(provider) {
-        if (!previous_ && actor_ && tx_ && provider_) active_ = this;
+        : previous_(current()), actor_(actor), tx_(tx), provider_(provider) {
+        if (!previous_ && actor_ && tx_ && provider_) active_key_ = reinterpret_cast<std::uintptr_t>(this);
         else invalid_ = true;
     }
     OriginalPayerScope(const OriginalPayerScope&) = delete;
@@ -50,9 +52,12 @@ public:
     OriginalPayerScope(OriginalPayerScope&&) = delete;
     OriginalPayerScope& operator=(OriginalPayerScope&&) = delete;
     ~OriginalPayerScope() {
-        if (active_ == this) active_ = previous_;
+        if (current() == this)
+            active_key_ = reinterpret_cast<std::uintptr_t>(previous_);
     }
-    static OriginalPayerScope* current() { return active_; }
+    static OriginalPayerScope* current() {
+        return reinterpret_cast<OriginalPayerScope*>(active_key_);
+    }
     bool eligible(uint32_t actor, void* tx) const {
         return !invalid_ && actor_ == actor && tx_ == tx && provider_ &&
                current() == this && used_ < selected_.size();
