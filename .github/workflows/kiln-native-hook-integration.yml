@@ -78,6 +78,8 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw 'Transaction snapshot source integration failed' }
           python sdk-proposals/native-craft-payment/settlement-hook.py .kiln-native-pay
           if ($LASTEXITCODE -ne 0) { throw 'Original recipe settlement witness patch failed' }
+          python sdk-proposals/native-craft-payment/server-stock-live-hook.py .kiln-native-pay
+          if ($LASTEXITCODE -ne 0) { throw 'Real pinned-server stock source hook patch failed' }
           git -C .kiln-native-pay diff --check
           if ($LASTEXITCODE -ne 0) { throw 'Invalid patch' }
 
@@ -88,6 +90,13 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw 'Baseline MSVC compatibility failed' }
           python sdk-proposals/native-craft-payment/items-msvc-compat.py .kiln-native-pay
           if ($LASTEXITCODE -ne 0) { throw 'Baseline Kiln Items MSVC compatibility failed' }
+
+      - name: Compile-gate the real native stock selector only in disposable CI
+        shell: pwsh
+        run: |
+          Add-Content '.kiln-native-pay/native/services/rules/CMakeLists.txt' 'target_compile_definitions(kiln-rules PRIVATE CBPAY_ENABLE_SERVER_STOCK)'
+          Write-Output 'Only this disposable CI build has the native stock experiment enabled.'
+          Write-Output 'The resulting DLL is not packaged or deployed; client game hash is not whitelisted.'
 
       - name: Configure Windows x64 native Kiln services
         shell: pwsh
@@ -108,6 +117,8 @@ jobs:
         shell: pwsh
         run: |
           Write-Output 'SUCCESS: original Kiln Rules hooks and native transaction-scoped Kiln Items snapshots compiled.'
-          Write-Output 'Native slots can be read from a borrowed tx but Magic/base entitlement and selected costs remain unresolved; payment resolver=nullptr.'
+          Write-Output 'Native stock overlay code is now compiled in this isolated job; it uses the original server payer and original InventoryTx.'
+          Write-Output 'It is active only for the exact pinned dedicated-server executable; untested game runtime and NO client-host compatibility.'
+          Write-Output 'Cross-base crafting UI and client stock cache remain unavailable; ordinary remote payer resolver=nullptr.'
           Write-Output 'No DLL installed, deployed, published as a playable mod, or uploaded as an artifact.'
           Write-Output 'Cross-base Storage 0.1.9 and the current Kiln installation remain unchanged.'
