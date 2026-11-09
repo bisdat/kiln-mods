@@ -8,5 +8,6 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="../../CrossBaseStorage/InventoryLinkIndex.cs" Link="InventoryLinkIndex.cs" />
+    <Compile Include="../../CrossBaseStorage/StorageTemplate.cs" Link="StorageTemplate.cs" />
   </ItemGroup>
 </Project>
