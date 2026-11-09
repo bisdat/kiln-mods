@@ -71,7 +71,11 @@ jobs:
           print("Kiln UI drag-and-drop archive layout verified")
           PY
 
+      # QUARANTINED: 0.1.1 prevents Enshrouded startup on a real client.
+      # No more distributable ZIPs until game-side logs pinpoint the fault
+      # and a controlled test confirms the game boots and is unmodified.
       - name: Upload directly installable ZIP
+        if: ${{ false }}
         uses: actions/upload-artifact@v4
         with:
           name: flame-altar-expanded-0.1.1-kiln
