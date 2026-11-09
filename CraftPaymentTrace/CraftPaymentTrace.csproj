@@ -1,0 +1,14 @@
+<Project Sdk="Kiln.Sdk">
+  <PropertyGroup>
+    <KilnModId>craft-payment-trace</KilnModId>
+    <KilnModName>Craft Payment Trace (Experimental Observer)</KilnModName>
+    <Version>0.1.0</Version>
+    <Authors>bisdat</Authors>
+    <Description>Optional read-only CraftPay and RecipePayAlt native cost/journal snapshots. Never changes recipes, items, or transactions. Requires a separately verified instrumented kiln.rules service for samples.</Description>
+    <PackageProjectUrl>https://github.com/bisdat/kiln-mods</PackageProjectUrl>
+    <KilnSide>server</KilnSide>
+    <KilnClients>none</KilnClients>
+    <KilnServices>Chat;Rules</KilnServices>
+    <KilnGameIds>None</KilnGameIds>
+  </PropertyGroup>
+</Project>
