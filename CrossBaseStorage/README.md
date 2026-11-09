@@ -1,4 +1,4 @@
-# Cross-base Storage (Kiln) — 0.1.7
+# Cross-base Storage (Kiln) — 0.1.8
 
 **Status: read-only inventory + vanilla craft/build observation prototype — not a working cross-base crafting mod.**
 
@@ -42,6 +42,36 @@ This is a **read-only naming rule**, not the game's authoritative Magic
 entitlement or confirmation that a particular player is permitted to use
 another base's supplies. Crafting and building remain unchanged.
 
+## Native payer trace integrated in 0.1.8 (optional, read-only)
+
+Cross-base Storage now includes the **`cbstore trace`** administrator command,
+so you no longer need the separate Craft Payment Trace observer mod. The code
+shares its bounded managed formatter, compiled directly into this ZIP. It is
+safe with the **normal released Kiln SDK and runtime** because it checks for
+optional diagnostic methods and reports `UNAVAILABLE` when absent.
+
+| Command | Observation |
+|---|---|
+| `cbstore trace status` | Check if experimental native trace APIs are available |
+| `cbstore trace pair` | Raw ingredient-cost rows and newly staged native take operations from **one original recipe payer call** |
+| `cbstore trace payer` | Separate original payer and client UI counters |
+| `cbstore trace cost` | Last raw cost-row sample, unverified ingredient layout |
+| `cbstore trace journal` | Last staged take-operation sample, **not proof of commit** |
+| `cbstore trace all` | All views; only `pair` is captured atomically from one payer invocation |
+
+**Important:** The normal Kiln dev20 release does **not** provide the
+experimental native methods, so `cbstore trace pair` should report
+`UNAVAILABLE` until the separately compiled, still unvalidated native
+lab services are available in a safe test environment. Never overwrite
+your auto-updated production Kiln services just to enable these fields.
+A successful paired trace does not establish actual server-side game
+commit/rollback, chest access rights or crafting UI eligibility.
+**Cross-base crafting and building remain unchanged.**
+
+The 24-slot `Prop_Decoration_T1_Storage_24_Magic` chest (entity 15577)
+was independently recognised in a live world alongside 50 72-slot
+Magic Chests. This confirms size-independent `_Magic` recognition.
+
 ## What we verified in a live Enshrouded world (8 November 2026)
 
 - Enshrouded's known 72-slot Magic Chest template is `Prop_Decoration_T6_Storage_72_Magic`. The template-name detector reported `magicByTemplate=True` on a real chest.
@@ -81,6 +111,7 @@ It installs as a **server-side Kiln mod** and exposes administrator-only command
 | `cbstore plan last` | Same estimate for your latest **observed vanilla craft request** |
 | `cbstore lastcraft` | Show the latest vanilla crafting attempt/result observed for your player; no action recorded if the client disabled its button |
 | `cbstore lastbuild` | Show the latest native building outcome for your player, if the client sent an action |
+| `cbstore trace [status|pair|payer|cost|journal|all]` | Optional same-call native recipe payment diagnostics, or explicit unavailable message on standard Kiln; **never mutates inventory** |
 | `cbstore help` | List diagnostics |
 
 As of **0.1.7**, `scan`, `stock`, `top`, `quote`, `plan`, `links` and `resolve` classify candidate Magic Chests only when the template ends with **`_Magic`** (case-insensitive). The slot count is taken from the actual inventory; there is **no 72-slot ceiling**. This is *not* guaranteed to be the same as the game's Magic Chest property. If `cbstore near` reports `magicByTemplate=false` while standing next to a known Magic Chest, that is useful evidence that an engine-supported flag must be discovered. All commands work on the Kiln server tick thread; `near` requires an in-world player location.
