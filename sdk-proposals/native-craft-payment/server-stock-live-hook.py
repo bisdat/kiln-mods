@@ -51,7 +51,7 @@ edit(rules,
 # The game calls BaseStockSelector through the same original payer that
 # kiln.rules already hooks. Only an authentic original RecipeApply caller
 # enters the scope; no additional transaction, removal or inventory write.
-code=String.raw if False else r"""
+code=r"""
 #if defined(CBPAY_ENABLE_SERVER_STOCK)
 namespace cbpay_game_stock {
 using cbpay::stock::native::GameStockLists;
@@ -148,8 +148,9 @@ void install(const KilnApi* api) {
         return;
     uintptr_t paid=0;
     int64_t op=0;
-    if(!sym("rules/RecipePaid",&paid) ||
-       !cst("items/tx.operator",&op) || op!=0xE0)
+    if (api->symbol(KilnStr{"rules/RecipePaid",16},&paid)!=KILN_OK ||
+        api->constant(KilnStr{"items/tx.operator",17},&op)!=KILN_OK ||
+        !paid || op!=0xE0)
         return;
     // SHA-256 checked by live::bind against actual process executable.
     const auto module=reinterpret_cast<uintptr_t>(GetModuleHandleW(nullptr));
