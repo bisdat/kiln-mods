@@ -140,6 +140,16 @@ SelectorStatus* __fastcall hk_selector(
     return vanilla;
 }
 
+uint32_t invoke_original_payer(void* tx,int64_t* costs,uint32_t owner,
+                               uint32_t multiplier,void* extra,uintptr_t ret) {
+    if(payer_matches(tx,owner,ret)) {
+        PayLife owner_scope(tx,owner);
+        OriginalPayerScope source_scope(owner,tx,&cbpay::stock::live::roster);
+        return h_pay.call<uint32_t>(tx,costs,owner,multiplier,extra);
+    }
+    return h_pay.call<uint32_t>(tx,costs,owner,multiplier,extra);
+}
+
 void install(const KilnApi* api) {
     enabled=false;
     if(!h_pay || !(g_hooks & KILN_RULES_HOOK_CRAFT) ||
@@ -186,25 +196,16 @@ anchor="uint32_t __fastcall hk_pay(void* tx, int64_t* costs, uint32_t owner, uin
 edit(rules,anchor,code+anchor)
 
 edit(rules,
-"""    return h_pay.call<uint32_t>(tx, costs, owner, multiplier, extra);
-}
-
-// Check the resolved return address really follows a direct call to this payment.""",
+"""    const uint32_t original = h_pay.call<uint32_t>(tx, costs, owner, multiplier, extra);
+    if constexpr (cbpay::settlement::kEnabled) {""",
 """#if defined(CBPAY_ENABLE_SERVER_STOCK)
-    // Native server original stock selector is used only on a genuine
-    // RecipeApply transaction. The game's original payer ALWAYS runs.
-    if (cbpay_game_stock::payer_matches(
-          tx,owner,reinterpret_cast<uintptr_t>(_ReturnAddress()))) {
-        cbpay_game_stock::PayLife owner_scope(tx,owner);
-        cbpay::stock::native::OriginalPayerScope source_scope(
-            owner,tx,&cbpay::stock::live::roster);
-        return h_pay.call<uint32_t>(tx, costs, owner, multiplier, extra);
-    }
+    const uint32_t original = cbpay_game_stock::invoke_original_payer(
+        tx,costs,owner,multiplier,extra,
+        reinterpret_cast<uintptr_t>(_ReturnAddress()));
+#else
+    const uint32_t original = h_pay.call<uint32_t>(tx, costs, owner, multiplier, extra);
 #endif
-    return h_pay.call<uint32_t>(tx, costs, owner, multiplier, extra);
-}
-
-// Check the resolved return address really follows a direct call to this payment.""")
+    if constexpr (cbpay::settlement::kEnabled) {""")
 
 edit(rules,
 """    g_hooks |= kiln_rules_flight::install(g_api, off);  // character flight yields to Creative Mode too""",
