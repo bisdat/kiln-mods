@@ -1,16 +1,19 @@
 #!/usr/bin/env python3
-"""Install the pinned Enshrouded original stock hook in a disposable Kiln checkout.
+"""Install the exact-build original stock hook in a disposable Kiln checkout.
 
 This is REAL server-side game code, not a mock. It is compiled only with
 CBPAY_ENABLE_SERVER_STOCK; the normal public Kiln build does not install it.
 Requires hook-integration.py and tx-inventory-snapshot.py first. The hook:
   * enters through original InventoryPay (never replaces result/payment)
-  * calls the game's original 0x2081c0 selector exactly once
+  * calls the game's original pinned selector exactly once
   * validates actual registered Magic component, original tx inventory pages,
     authenticated solo player and game-registered active base stock owners
   * temporarily extends ONLY the item-owner pointer while original payer runs
   * restores original behavior on any missing evidence.
-Client-hosted singleplayer is NOT supported by this server exe SHA pin.
+Client-hosted single-player now has its own hash-pinned selector and
+payer callsite profile; a remote-only client's presentation world remains
+ineligible. This remains unreleased until the separate client crafting-cache
+integration and original stock consumption are validated.
 """
 import os
 from pathlib import Path
@@ -42,6 +45,10 @@ dest=root/"native/services/rules/cbpay/server_live_roster.h"
 if not src.is_file() or not dest.parent.is_dir():
     raise SystemExit("Missing live roster or preceding original payer integration")
 dest.write_bytes(src.read_bytes())
+build_src=src.parent/"native_stock_builds.h"
+if not build_src.is_file():
+    raise SystemExit("Missing exact server/client original stock selector profiles")
+(dest.parent/"native_stock_builds.h").write_bytes(build_src.read_bytes())
 
 rules="native/services/rules/rules.cpp"
 edit(rules,
@@ -114,9 +121,14 @@ SelectorStatus* __fastcall hk_selector(
        !OriginalPayerScope::current())
         return vanilla;
     const uintptr_t base=reinterpret_cast<uintptr_t>(GetModuleHandleW(nullptr));
-    // These are the exact two return addresses of the pinned server payer's
-    // direct E8 calls. No other native selector user may be intercepted.
-    if ((ret!=base+0x199d93 && ret!=base+0x199fa7) ||
+    // Verify exactly the two direct-call return addresses for the
+    // current process's own SHA-pinned original payer. Never carry the
+    // dedicated-server RVA into a client-hosted session.
+    const auto* profile=cbpay::stock::live::S.build;
+    if (!profile || ret<base ||
+        ret-base>0xFFFFFFFFull ||
+        !cbpay::stock::build::original_return(
+            *profile,static_cast<uint32_t>(ret-base)) ||
         !caller_was_original(ret,original_selector))
         return vanilla;
     try {
@@ -173,14 +185,19 @@ void install(const KilnApi* api) {
         api->constant(KilnStr{"items/tx.operator",17},&op)!=KILN_OK ||
         !paid || op!=0xE0)
         return;
-    // SHA-256 checked by live::bind against actual process executable.
+    // Two separately proven original-game binaries: dedicated server and
+    // the user's client-hosted authoritative server world.
+    const auto* profile=cbpay::stock::live::S.build;
+    if(!profile)return;
     const auto module=reinterpret_cast<uintptr_t>(GetModuleHandleW(nullptr));
-    const uintptr_t selector=module+0x2081c0;
+    const uintptr_t selector=module+profile->selector_rva;
     // Probe in a small POD-only SEH helper: MSVC cannot use __try in
     // this function, since SafetyHook owns C++ unwinding temporaries.
     if(!selector_prologue_is(selector) ||
-       !caller_was_original(module+0x199d93,selector) ||
-       !caller_was_original(module+0x199fa7,selector))
+       !caller_was_original(
+           module+cbpay::stock::build::first_return(*profile),selector) ||
+       !caller_was_original(
+           module+cbpay::stock::build::second_return(*profile),selector))
         return;
     h_selector=safetyhook::create_inline(
         reinterpret_cast<void*>(selector),
@@ -190,7 +207,7 @@ void install(const KilnApi* api) {
     original_selector=selector;
     operator_offset=op;
     enabled=true;
-    LOGI("Cross-base ORIGINAL native stock owner hook active on exact pinned dedicated-server EXE; only authenticated solo player with game-registered Magic stock; no postpay");
+    LOGI("Cross-base original stock selector armed only for SHA-pinned authoritative server world (dedicated or hosted); experimental, client cache not modified");
 }
 } // namespace cbpay_game_stock
 #endif
@@ -223,4 +240,4 @@ assert content.count("cbpay::stock::live::roster")==1
 assert content.count("h_selector.call<SelectorStatus*>")==1
 assert content.count("cbpay_game_stock::install(g_api)")==1
 assert "resolver" not in content or "nullptr);" in content
-print("PASS: real original-stock selector detour and real game-native source roster wired for opt-in exact dedicated server ONLY; both original payers unchanged.")
+print("PASS: original stock selector detour profile-bound on dedicated server OR client's authoritative hosted server world; native permissions enforced; client UI cache still untouched.")
