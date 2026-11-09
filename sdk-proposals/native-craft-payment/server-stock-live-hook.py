@@ -49,11 +49,15 @@ build_src=src.parent/"native_stock_builds.h"
 if not build_src.is_file():
     raise SystemExit("Missing exact server/client original stock selector profiles")
 (dest.parent/"native_stock_builds.h").write_bytes(build_src.read_bytes())
+cache_src=src.parent/"client_stock_cache_hook.h"
+if not cache_src.is_file():
+    raise SystemExit("Missing original game client cache iterator implementation")
+(dest.parent/"client_stock_cache_hook.h").write_bytes(cache_src.read_bytes())
 
 rules="native/services/rules/rules.cpp"
 edit(rules,
      '#include "cbpay/server_stock_scope.h"',
-     '#include "cbpay/server_stock_scope.h"\n#include "cbpay/server_selector_abi.h"\n#include "cbpay/server_live_roster.h"')
+     '#include "cbpay/server_stock_scope.h"\n#include "cbpay/server_selector_abi.h"\n#include "cbpay/server_live_roster.h"\n#include "cbpay/client_stock_cache_hook.h"')
 
 # The game calls BaseStockSelector through the same original payer that
 # kiln.rules already hooks. Only an authentic original RecipeApply caller
@@ -209,7 +213,21 @@ void install(const KilnApi* api) {
     original_selector=selector;
     operator_offset=op;
     enabled=true;
-    LOGI("Cross-base original stock selector armed only for SHA-pinned authoritative server world (dedicated or hosted); experimental, client cache not modified");
+    if(profile->side==cbpay::stock::build::Side::ClientHosted) {
+        // A live hosted server must NEVER claim remote payment without an
+        // original client cache that reads the same registered chest roster.
+        if(!cbpay::stock::clientcache::install(api)) {
+            enabled=false;
+            h_selector.reset();  // original game selector fully restored
+            original_paid_ret=0;
+            original_selector=0;
+            LOGI("Cross-base original stock selector declined: cache_crafting_stock/ClientStock ABI cannot be verified on this client");
+            return;
+        }
+        LOGI("Cross-base original hosted-client payer and stock iterator armed on exact verified game (EXPERIMENTAL, NO PLAYABLE RELEASE)");
+    } else {
+        LOGI("Cross-base original dedicated-server stock selector armed on exact verified game (EXPERIMENTAL, NO PLAYABLE RELEASE)");
+    }
 }
 } // namespace cbpay_game_stock
 #endif
@@ -242,4 +260,4 @@ assert content.count("cbpay::stock::live::roster")==1
 assert content.count("h_selector.call<SelectorStatus*>")==1
 assert content.count("cbpay_game_stock::install(g_api)")==1
 assert "resolver" not in content or "nullptr);" in content
-print("PASS: original stock selector detour profile-bound on dedicated server OR client's authoritative hosted server world; native permissions enforced; client UI cache still untouched.")
+print("PASS: original payer selector and real original client crafting-stock iterator compile-gated; client and server game ABI checks fail closed; no playable release.")
