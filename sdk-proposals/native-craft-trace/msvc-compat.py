@@ -7,10 +7,12 @@ changes only the symbol-lookup cast, to preserve numeric vs pointer behavior.
 Run AFTER verify.py (which tests the actual feature-only source diff).
 """
 from pathlib import Path
+import os
 import subprocess
 import sys
 
-PIN = "77e525888ac0d5f4f6b16103e945ed7ac049b50e"
+# Historical dev snapshot remains the local default; CI always sets the newest
+# PUBLISHED release commit and then checks it against the checkout.\nPIN = os.environ.get("KILN_UPSTREAM_SHA", "77e525888ac0d5f4f6b16103e945ed7ac049b50e")
 if len(sys.argv) != 2:
     raise SystemExit("Usage: msvc-compat.py <disposable-kiln-checkout>")
 root = Path(sys.argv[1]).resolve()
