@@ -9,6 +9,7 @@
 #include <array>
 #include <cstddef>
 #include <cstdint>
+#include <utility>
 
 namespace cbpay::sources {
 
