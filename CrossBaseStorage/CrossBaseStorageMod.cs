@@ -28,7 +28,7 @@ public sealed class CrossBaseStorageMod : Mod
     {
         _commands = Commands.Register(
             "cbstore", HandleCommand, CommandPermission.Admin,
-            usage: "<status|scan|templates|near|links <owner>|resolve <inventory>|stock item name|quote <amount> <item>|top|recipes [filter]|plan <recipe> [count]|lastcraft|lastbuild|trace [status|pair|payer|cost|journal|all]>",
+            usage: "<status|scan|templates|near|links <owner>|resolve <inventory>|stock item name|quote <amount> <item>|top|recipes [filter]|plan <recipe> [count]|handoff <recipe> [count]|lastcraft|lastbuild|trace [status|pair|payer|cost|journal|all]>",
             description: "Inspect loaded magic chest inventory and native craft/build requests (read-only).");
         if (Gameplay.Available && !Gameplay.Enable())
             Log.Warn("Cross-base Storage: kiln.gameplay present but events are not ready.");
@@ -468,6 +468,117 @@ public sealed class CrossBaseStorageMod : Mod
                 : "SOME INGREDIENTS MISSING in player + scanned magic stock. Native UI and permissions not changed.");
     }
 
+    // The last investigative console command before attempting the REAL
+    // native server+client crafting bridge. No player/chest edits, no
+    // transaction reservation, and no suggestion that _Magic implies rights.
+    // One coherent loaded-world read, one full-cost preflight. Unknown
+    // categories or one short ingredient invalidate the whole proposal.
+    private void Handoff(CommandContext c)
+    {
+        EnsureGameplay();
+        if (c.Count is < 2 or > 3)
+            throw c.Usage("cbstore handoff <recipeId|last> [quantity]");
+        if (c.Source.Player.IsNone)
+            throw new CommandException("Handoff requires an in-world player.");
+        if (c.Arg(1).Equals("last", StringComparison.OrdinalIgnoreCase) &&
+            !_craftRequests.ContainsKey(c.Source.Player.Value))
+        {
+            c.Reply("No observed vanilla craft request: the client may block crafting " +
+                    "before a server event. Use cbstore recipes [output] and " +
+                    "cbstore handoff 0x<recipeId> 1 instead.");
+            return;
+        }
+        var quantity = c.Count == 3 ? c.Int(2) : 1;
+        if (quantity is < 1 or > 100)
+            throw new CommandException("Handoff quantity must be 1..100.");
+        var id = RecipeIdFromCommand(c, c.Arg(1));
+        var recipe = Gameplay.Recipe(id) ??
+            throw new CommandException($"Unknown registered recipe 0x{id:x8}.");
+        var player = c.Source.Player;
+        var inventory = Items.Read(player) ??
+            throw new CommandException("Player inventory unavailable; refuse incomplete handoff.");
+        var at = World.Position(player) ??
+            throw new CommandException("Player world position unavailable; refuse source ordering.");
+        var loaded = ScanLoaded();
+        var index = LoadedLinkIndex(loaded);
+        c.Reply($"FINAL READ-ONLY HANDOFF 0.1.9: recipe=0x{id:x8} x{quantity}, " +
+                $"workshop=0x{recipe.Workshop:x8}, rawInputs={recipe.Inputs.Count}, " +
+                $"loadedStorage={loaded.Count}, templateMagic={loaded.Count(chest => chest.MagicByName)}, " +
+                $"linkedInventoryIds={index.InventoryCount}, ambiguousLinks={index.AmbiguousCount}.");
+        if (!index.Valid || index.AmbiguousCount > 0)
+        {
+            c.Reply("BLOCKED: invalid or ambiguously owned linked inventories. " +
+                    "Do not attribute remote payments or use any proposed sources.");
+            return;
+        }
+
+        var magic = loaded.Where(chest => chest.MagicByName).ToArray();
+        var inputs = recipe.Inputs.Select(input => new HandoffIngredient(
+            input.ItemId, (long)input.Count * quantity)).ToArray();
+        var observed = new List<HandoffStock>();
+        // One player source per exact ingredient. All remote entries identify
+        // chest OWNERS, never the individual linked 8-slot inventory entity.
+        foreach (var item in inputs.Select(input => input.ItemId).Where(x => x != 0).Distinct())
+        {
+            var itemId = new ItemId(item);
+            observed.Add(new HandoffStock(item,
+                new QuoteSource(player.Value, inventory.Count(itemId), 0, true)));
+            foreach (var chest in magic)
+            {
+                var count = chest.Contents.Count(itemId);
+                if (count > 0)
+                    observed.Add(new HandoffStock(item,
+                        new QuoteSource(chest.Entity.Value, count,
+                            DistanceSquared(chest.Position, at), false)));
+            }
+        }
+        var report = CraftHandoffPlanner.Inspect(inputs, observed, player.Value);
+        c.Reply($"HANDOFF STATUS={report.Status}, requiredUnits={report.RequiredTotal}, " +
+                $"remoteCandidateOwners={report.RemoteOwners}, " +
+                $"nativePaymentPermitted={report.NativePaymentPermitted}. " +
+                "This is a snapshot, NOT a completed or authorised payment.");
+        if (report.Status == HandoffStatus.UnknownIngredients)
+        {
+            foreach (var input in recipe.Inputs.Where(input => input.ItemId == 0 || input.Count == 0)
+                         .Take(MaxShown))
+                c.Reply($"  UNRESOLVED native input item=0x{input.ItemId:x8}, rawCount={input.Count}. " +
+                        "Category/alternative selection and actual cost are UNKNOWN, never free.");
+        }
+        foreach (var line in report.Lines.Take(MaxShown))
+        {
+            c.Reply($"  INPUT {Label(line.ItemId)} (0x{line.ItemId:x8}): " +
+                    $"need={line.Required}, visible={line.Visible}, missing={line.Missing}, " +
+                    $"proposedSources={line.Proposed.Count}.");
+            foreach (var debit in line.Proposed.Take(MaxShown))
+            {
+                if (debit.IsPlayer)
+                {
+                    c.Reply($"    PROPOSE {debit.Units} from PLAYER entity={player.Value}.");
+                    continue;
+                }
+                var chest = magic.FirstOrDefault(x => x.Entity.Value == debit.EntityId);
+                if (chest is null)
+                    throw new CommandException("Chest owner vanished from read-only handoff snapshot.");
+                var links = chest.Contents.Inventories;
+                // Link ownership is observed; it cannot authorise actual
+                // native crafting. Truncate the diagnostic to bounded output.
+                c.Reply($"    PROPOSE {debit.Units} from Magic TEMPLATE candidate " +
+                        $"chestOwner={debit.EntityId} capacity={chest.Slots} " +
+                        $"linkedInventories={links.Count}, " +
+                        $"firstLinks={string.Join(",", links.Take(12).Select(link => link.Inventory.Value))}. " +
+                        "Flame Altar/base entitlement UNVERIFIED.");
+            }
+        }
+        if (report.Lines.Count > MaxShown)
+            c.Reply($"... {report.Lines.Count - MaxShown} other input types omitted from display.");
+        var pair = CraftPaymentTrace.TraceReader.Read(typeof(Rules), "pair");
+        c.Reply("OPTIONAL last native recipe payment trace (NOT necessarily this recipe): " + pair[0]);
+        c.Reply("NEXT IMPLEMENTATION GATES: authoritative actual Magic Chest + player/base rights; " +
+                "exact native category/alternative costs; original RecipeApply atomic rollback/commit; " +
+                "client crafting/building source resolver; concurrent/multiplayer/save tests. " +
+                "No inventory mutation, free crafting, source reservation or UI override occurred.");
+    }
+
     private static void Recipes(CommandContext c)
     {
         EnsureGameplay();
@@ -574,7 +685,7 @@ public sealed class CrossBaseStorageMod : Mod
             case "help":
                 c.Reply("cbstore status | scan | templates | near | links <owner> | resolve <inventory> | stock <item> | top | " +
                         "quote <units> <item> | recipes [output filter] | plan <recipeId|last> [count] | " +
-                        "lastcraft | lastbuild | trace [status|pair|payer|cost|journal|all]. " +
+                        "handoff <recipeId|last> [count] | lastcraft | lastbuild | trace [status|pair|payer|cost|journal|all]. " +
                         "Read-only diagnostics; no cross-base crafting/building yet.");
                 break;
             case "status": Status(c); break;
@@ -588,6 +699,7 @@ public sealed class CrossBaseStorageMod : Mod
             case "top": Top(c); break;
             case "recipes": Recipes(c); break;
             case "plan": Plan(c); break;
+            case "handoff": Handoff(c); break;
             case "lastcraft": LastCraft(c); break;
             case "lastbuild": LastBuild(c); break;
             case "trace": Trace(c); break;
