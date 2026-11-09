@@ -207,3 +207,38 @@ All these operations are **read-only**. If tests show a client never submits a c
 7. Repeat with the relevant Kiln runtime and both client-side/Kiln host parts installed; fail closed if mismatched.
 
 As of 0.1.5, **none of these actual native craft/build acceptance criteria has been met**.
+
+
+## Follow-up native journal source probe — 9 November 2026
+
+Following the successful live `cbstore quote 500 String` (466 proposed
+from chest 1412 and 34 from chest 1081, with no item mutation), the
+isolated [native-craft-trace proposal](../sdk-proposals/native-craft-trace/README.md)
+now includes a second **read-only, bounded journal observation** stage.
+
+The native `journal.py` extension observes the *original* primary or
+alternative recipe payer, captures the engine-owned transaction's op-count
+delta, and samples up to eight distinct **underlying inventory entity IDs**
+and their staged take quantities. The observer retains no pointers and never
+modifies payments, game source eligibility, inventory links or the client UI.
+Its resolver requires exact `items/tx.*` layout constants from the supported
+upstream revision; unknown layouts disable the probe. It is *not* part of the
+released/installed server-side mod.
+
+[GitHub Actions native + managed test](https://github.com/bisdat/kiln-mods/actions/runs/42572154780)
+passed on 9 November 2026 (Linux ABI/managed and Windows x64 native compilation;
+previous no-mutation checks retained). **Neither native staging nor actual
+gameplay is verified at runtime.** Journal entries are tentative operations:
+later validation, commit or rollback can change the result. They do not
+establish that a remote Magic Chest was a valid source.
+
+**New research dependency:** one Magic Chest owner with 72 slots can reference
+multiple eight-slot inventory entities through `InventorySetup`. Therefore
+observing the journal's inventory entity IDs is insufficient to identify the
+container owner, its Magic property, Flame Altar membership, permissions or
+base priority. A separate, authoritative owner-to-link resolver is required
+before comparing observed vanilla source selection to proposed remote sources.
+The correct production hook must also match UI source counts and preserve the
+host game's same-transaction journalled debit; do not graft temporary links
+into the player's persistent `InventorySetup` or infer a commit from a
+staged payment observation.
