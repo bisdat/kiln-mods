@@ -118,8 +118,12 @@ Run safety tests without game binaries using:
 
 The workflow verifies the original official DLL equals the repackaged
 DLL, checks deterministic ZIP output and publishes an installable Actions
-artifact. A matching **building-tools-kiln-v1.0.0** tag can publish a
-namespaced GitHub Release with the ZIP and SHA256 after review.
+artifact. **After the production PR is merged into main**, the successful
+main-branch workflow creates **building-tools-kiln-v1.0.0** (only if
+not already present) and publishes a permanent, namespaced GitHub
+Release with the ZIP and SHA256. The release job is idempotent and does
+not replace existing release assets. A matching manually pushed tag
+also triggers this same publication path.
 Version changes require explicit upstream pin updates and new tests;
 the wrapper **never silently upgrades Building Tools**.
 
