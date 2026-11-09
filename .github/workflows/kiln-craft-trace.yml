@@ -5,6 +5,7 @@ on:
     branches: ['feature/cross-base-storage-kiln']
     paths:
       - 'sdk-proposals/native-craft-trace/**'
+      - 'scripts/resolve-kiln-release.py'
       - '.github/workflows/kiln-craft-trace.yml'
   workflow_dispatch:
 
@@ -16,57 +17,92 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  release:
+    name: Resolve latest published Kiln dev (single exact commit)
+    runs-on: ubuntu-24.04
+    outputs:
+      tag: ${{ steps.resolve.outputs.tag }}
+      sha: ${{ steps.resolve.outputs.sha }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Find published Kiln release, not moving main
+        id: resolve
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          python3 scripts/resolve-kiln-release.py
+          python3 - <<'PY'
+          import json, os, re
+          from pathlib import Path
+          r = json.loads(Path('.kiln-release.json').read_text())
+          if not re.fullmatch('[0-9a-fA-F]{40}', r['release_target']):
+              raise SystemExit('Published Kiln tag has no immutable target commit; refuse unpinned experiment')
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+              f.write(f"tag={r['tag']}\nsha={r['release_target']}\n")
+          print(f"Passive native source experiment: {r['tag']} @ {r['release_target']}")
+          PY
+
   api:
-    name: Native ABI and managed Kiln.Rules (Linux)
+    needs: release
+    name: Native ABI and managed Rules on ${{ needs.release.outputs.tag }} (Linux)
     runs-on: ubuntu-24.04
     env:
-      PINNED_SHA: 77e525888ac0d5f4f6b16103e945ed7ac049b50e
+      RELEASE_TAG: ${{ needs.release.outputs.tag }}
+      KILN_UPSTREAM_SHA: ${{ needs.release.outputs.sha }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.0.x'
-      - name: Fetch isolated source
+      - name: Fetch exact published Kiln source
+        shell: bash
         run: |
-          git init .kiln-trace
+          git init -q .kiln-trace
           git -C .kiln-trace remote add origin https://github.com/frostdev-ops/kiln.git
-          git -C .kiln-trace fetch --depth=1 origin "$PINNED_SHA"
-          git -C .kiln-trace checkout --detach "$PINNED_SHA"
-      - name: Apply passive trace to existing hooks
+          git -C .kiln-trace fetch --depth=1 origin "refs/tags/$RELEASE_TAG"
+          git -C .kiln-trace checkout -q --detach 'FETCH_HEAD^{commit}'
+          test "$(git -C .kiln-trace rev-parse HEAD)" = "$KILN_UPSTREAM_SHA"
+      - name: Apply passive read-only payer/journal trace to existing native hooks
         run: |
           python3 sdk-proposals/native-craft-trace/native.py .kiln-trace
           python3 sdk-proposals/native-craft-trace/managed.py .kiln-trace
           python3 sdk-proposals/native-craft-trace/journal.py .kiln-trace
           git -C .kiln-trace diff --check
-      - name: Verify 64-byte value ABI
+      - name: Compile 64-byte and 112-byte trace ABI
+        shell: bash
         run: |
           printf '#include "services/kiln_rules.h"\nstatic_assert(sizeof(KilnRulesCraftTrace) == 64);\nstatic_assert(sizeof(KilnRulesJournalTrace) == 112);\nint main() { return 0; }\n' | \
             c++ -std=c++20 -Wall -Wextra -Werror -x c++ -fsyntax-only -I .kiln-trace/native/core/abi -
       - name: Compile managed Kiln.Rules
         run: dotnet build .kiln-trace/managed/services/Kiln.Rules/Kiln.Rules.csproj --configuration Release
-      - name: Safety constraints
+      - name: Enforce observer-only patch safety boundaries
         run: |
           python3 sdk-proposals/native-craft-trace/verify.py .kiln-trace
-          echo 'PASS: passive staged payer source sample, no inventory mutation or new hooks'
+          echo 'PASS: passive native payer/journal instrumentation; no new hook or inventory mutation.'
 
   native:
-    name: Compile native kiln-rules.dll (Windows x64)
+    needs: release
+    name: Compile native kiln-rules.dll on ${{ needs.release.outputs.tag }} (Windows)
     runs-on: windows-2022
     env:
-      PINNED_SHA: 77e525888ac0d5f4f6b16103e945ed7ac049b50e
+      RELEASE_TAG: ${{ needs.release.outputs.tag }}
+      KILN_UPSTREAM_SHA: ${{ needs.release.outputs.sha }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Fetch isolated source
+      - name: Fetch exact published Kiln source
         shell: pwsh
         run: |
           git init .kiln-trace
           git -C .kiln-trace remote add origin https://github.com/frostdev-ops/kiln.git
-          git -C .kiln-trace fetch --depth=1 origin $env:PINNED_SHA
-          git -C .kiln-trace checkout --detach $env:PINNED_SHA
-      - name: Apply passive trace
+          git -C .kiln-trace fetch --depth=1 origin "refs/tags/$env:RELEASE_TAG"
+          git -C .kiln-trace checkout --detach 'FETCH_HEAD^{commit}'
+          $actual = git -C .kiln-trace rev-parse HEAD
+          if ($actual.Trim() -ne $env:KILN_UPSTREAM_SHA) { throw "Kiln release ref changed: $actual" }
+      - name: Apply and verify passive native trace
         shell: pwsh
         run: |
           python sdk-proposals/native-craft-trace/native.py .kiln-trace
@@ -74,19 +110,19 @@ jobs:
           python sdk-proposals/native-craft-trace/journal.py .kiln-trace
           git -C .kiln-trace diff --check
           python sdk-proposals/native-craft-trace/verify.py .kiln-trace
-      - name: Work around baseline Kiln main MSVC symbol cast (CI only)
+      - name: Preserve known baseline MSVC symbol cast fix (CI only)
         shell: pwsh
         run: |
           python sdk-proposals/native-craft-trace/msvc-compat.py .kiln-trace
           git -C .kiln-trace diff --check
-      - name: Configure native x64
+      - name: Configure native Win64
         shell: pwsh
         run: cmake -S .kiln-trace/native -B .kiln-trace/native/build/ci -G "Visual Studio 17 2022" -A x64
-      - name: Compile existing rules service
+      - name: Compile patched native rules service (CI only)
         shell: pwsh
         run: cmake --build .kiln-trace/native/build/ci --config Release --target kiln-rules --parallel 4
-      - name: Scope check
+      - name: Report disabled runtime integration
         shell: pwsh
         run: |
-          Write-Output 'PASS: existing native rules hooks compile with passive staged journal observation. CI ONLY.'
-          Write-Output 'NOT tested: running a game, paying from remote chests, client/server source eligibility.'
+          Write-Output 'PASS: isolated native kiln-rules.dll compiles from newest released Kiln and passive journal patch.'
+          Write-Output 'NOT installed, NOT uploaded to game, NOT a cross-base crafter. Commit/debit and client source UI still untested.'
