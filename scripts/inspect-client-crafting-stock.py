@@ -86,7 +86,7 @@ def inspect(exe: Path, side: str) -> dict:
         raise ValueError("Not an x64 Windows executable")
     base = image.OPTIONAL_HEADER.ImageBase
     code_sections = [s for s in image.sections if s.Characteristics & 0x20000000]
-    text = [s for s in code_sections if s.Name.rstrip(b"\\0") == b".text"]
+    text = [s for s in code_sections if s.Name.rstrip(b"\0") == b".text"]
     if len(text) != 1:
         raise ValueError("Unknown PE section structure; expected one .text")
     txt = text[0].get_data()
