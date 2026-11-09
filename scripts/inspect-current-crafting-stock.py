@@ -172,6 +172,10 @@ def main() -> None:
         print(f"{key}: {len(hits)} match(es): {', '.join(hits[:8])}")
     for label, hits in label_matches.items():
         print(f"string {label}: {len(hits)}")
+    for name, fn in functions.items():
+        print(f"original branch map: {name} @ {fn['rva']}:")
+        for call in fn["calls"][:28]:
+            print(f"  {call['kind']} {call['at']} => {call['to']} {call['known'] or ''}")
     for x in xrefs[:25]:
         print(f"xref {x['target']}: {x['at']} {x['ins']}")
     print("Bounded non-copyright callmap report:",args.output)
