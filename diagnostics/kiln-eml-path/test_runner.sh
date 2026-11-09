@@ -14,12 +14,21 @@ fake="$test_root/fake-proton.sh"
 cat > "$fake" <<'SH'
 #!/usr/bin/env bash
 set -euo pipefail
-[[ "$1" == "waitforexitandrun" ]]
-[[ "$#" == "4" ]]
-echo "EML src/mod.lua: read OK (11 bytes)"
-echo "RESULT: PASS"
-echo "EML src/mod.lua: read OK (11 bytes)"
-echo "RESULT: PASS"
+case "$1" in
+  waitforexitandrun)
+    [[ "$#" == "5" ]]
+    mkdir -p "$STEAM_COMPAT_DATA_PATH/pfx"
+    echo "Proton: Upgrading prefix from None to 11.0-100"
+    ;;
+  runinprefix)
+    [[ "$#" == "4" ]]
+    echo "EML src/mod.lua: read OK (11 bytes)"
+    echo "RESULT: PASS"
+    echo "EML src/mod.lua: read OK (11 bytes)"
+    echo "RESULT: PASS"
+    ;;
+  *) exit 4 ;;
+esac
 SH
 chmod +x "$fake"
 export TMPDIR="$test_root"
@@ -29,11 +38,20 @@ export PROTON_RUNNER="$fake"
 bash "$test_root/diagnostic/run-with-proton.sh" > "$test_root/success.log" 2>&1
 grep -q 'Both read-only EML file checks completed.' "$test_root/success.log"
 
+# A fake Steam launch can initialize the prefix and exit 0 without running
+# the standalone probe. A subsequent runinprefix must produce actual results.
 cat > "$fake" <<'SH'
 #!/usr/bin/env bash
-[[ "$1" == "waitforexitandrun" ]] || exit 4
-echo "Proton: Upgrading prefix from None to 11.0-100"
-exit 0
+case "$1" in
+  waitforexitandrun)
+    mkdir -p "$STEAM_COMPAT_DATA_PATH/pfx"
+    echo "Proton: Upgrading prefix from None to 11.0-100"
+    exit 0 ;;
+  runinprefix)
+    echo "silent exit without executing a probe"
+    exit 0 ;;
+  *) exit 4 ;;
+esac
 SH
 set +e
 bash "$test_root/diagnostic/run-with-proton.sh" > "$test_root/missing-probe.log" 2>&1
@@ -41,4 +59,4 @@ result=$?
 set -e
 [[ "$result" == "3" ]] || { cat "$test_root/missing-probe.log"; echo "missing result must fail with code 3"; exit 1; }
 grep -q 'the EML probe did not complete both file checks' "$test_root/missing-probe.log"
-echo "Runner self-test PASSED: validates both paths; refuses prefix-only success"
+echo "Runner self-test PASSED: real read output required after direct runinprefix"
