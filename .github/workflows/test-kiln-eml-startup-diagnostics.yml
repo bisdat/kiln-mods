@@ -72,7 +72,7 @@ jobs:
           cp diagnostics/kiln-eml-startup/capture-run-logs.sh kiln-eml-diagnostic/capture-run-logs.sh
           # Ensure Linux Bash compatibility regardless of Windows checkout settings.
           python3 -c 'from pathlib import Path; p=Path("kiln-eml-diagnostic/capture-run-logs.sh"); p.write_bytes(p.read_bytes().replace(bytes([13,10]), bytes([10])))'
-          python3 -c 'from pathlib import Path; p=Path("kiln-eml-diagnostic/capture-run-logs.sh"); b=p.read_bytes(); assert b.startswith(b"#!/usr/bin/env bash\\n") and b"\\r" not in b, "capture script must use LF"'
+          python3 -c 'from pathlib import Path; p=Path("kiln-eml-diagnostic/capture-run-logs.sh"); b=p.read_bytes(); assert b.startswith(bytes([35,33,47,117,115,114,47,98,105,110,47,101,110,118,32,98,97,115,104,10])) and bytes([13]) not in b, "capture script must use LF"'
           ls -l kiln-eml-diagnostic/
 
       - name: Upload TEST-ONLY diagnostic DLL (never auto-installed)
