@@ -6,10 +6,12 @@ Run native.py and managed.py first. This file changes neither installed Kiln
 nor any shipping Cross-base Storage project. There are NO extra detours.
 """
 from pathlib import Path
+import os
 import subprocess
 import sys
 
-PIN = "77e525888ac0d5f4f6b16103e945ed7ac049b50e"
+# Historical dev snapshot remains the local default; CI always sets the newest
+# PUBLISHED release commit and then checks it against the checkout.\nPIN = os.environ.get("KILN_UPSTREAM_SHA", "77e525888ac0d5f4f6b16103e945ed7ac049b50e")
 if len(sys.argv) != 2:
     raise SystemExit("Usage: journal.py <already-patched-disposable-kiln-checkout>")
 root = Path(sys.argv[1]).resolve()
