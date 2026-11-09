@@ -119,6 +119,38 @@ def main() -> None:
         functions[name] = {"rva":hex(ptr-imagebase),"calls":calls[:80],
                            "instructions":instructions[:240]}
 
+    # Extra static function map for the observed (exact-current-build)
+    # original payer call edges. A new EXE digest must be reverified before
+    # any of these research-only addresses are interpreted.
+    digest = hashlib.sha256(raw).hexdigest()
+    research_points = {}
+    if digest == "f0d824be7fcd48ebfe2458ff5c28da26060c2074e3ec1fcac587e5a1d508aeb2":
+        research_points = {
+            "payer_stock_helper": 0x2081c0,
+            "payer_remove_auto": 0x1b0d60,
+            "alternate_recipe_payer": 0x19a9b0,
+        }
+    for name, rva in research_points.items():
+        ptr = imagebase + rva
+        pos = ptr - text_base
+        if not 0 <= pos < len(text):
+            continue
+        insns = []
+        calls = []
+        for ins in cs.disasm(text[pos:pos + 3200], ptr):
+            if len(insns) >= 460:
+                break
+            insns.append({"rva":hex(ins.address - imagebase),
+                          "ins":f"{ins.mnemonic} {ins.op_str}".strip()})
+            if ins.mnemonic in ("call", "jmp") and ins.operands and ins.operands[0].type == capstone.x86.X86_OP_IMM:
+                target = ins.operands[0].imm
+                if text_base <= target < text_base + len(text):
+                    calls.append({"kind":ins.mnemonic, "at":hex(ins.address-imagebase),
+                                  "to":hex(target-imagebase),
+                                  "known":known.get(target)})
+        functions[name] = {"rva":hex(rva),"calls":calls[:100],
+                           "instructions":insns[:460]}
+
     label_matches = {}
     for label in STOCK_LABELS:
         hits = []
@@ -176,6 +208,23 @@ def main() -> None:
         print(f"original branch map: {name} @ {fn['rva']}:")
         for call in fn["calls"][:28]:
             print(f"  {call['kind']} {call['at']} => {call['to']} {call['known'] or ''}")
+    for name in ("historical_remove_recipe_inputs","payer_stock_helper","payer_remove_auto"):
+        fn = functions.get(name)
+        if not fn:
+            continue
+        instructions = fn["instructions"]
+        print(f"FOCUSED {name} @ {fn['rva']}: {len(instructions)} instructions")
+        if name == "historical_remove_recipe_inputs":
+            focus = {"0x199d8e","0x199fa2","0x19a01c"}
+            for i, ins in enumerate(instructions):
+                if ins["rva"] in focus:
+                    for near in instructions[max(0,i-16):i+6]:
+                        print(f"   {near['rva']}: {near['ins']}")
+        else:
+            for ins in instructions[:100]:
+                print(f"   {ins['rva']}: {ins['ins']}")
+            for call in fn["calls"][:35]:
+                print(f"   {call['kind']} {call['at']} -> {call['to']}")
     for x in xrefs[:25]:
         print(f"xref {x['target']}: {x['at']} {x['ins']}")
     print("Bounded non-copyright callmap report:",args.output)
