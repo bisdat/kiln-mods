@@ -72,6 +72,11 @@ jobs:
           python sdk-proposals/native-craft-trace/managed.py .kiln-trace
           git -C .kiln-trace diff --check
           python sdk-proposals/native-craft-trace/verify.py .kiln-trace
+      - name: Work around baseline Kiln main MSVC symbol cast (CI only)
+        shell: pwsh
+        run: |
+          python sdk-proposals/native-craft-trace/msvc-compat.py .kiln-trace
+          git -C .kiln-trace diff --check
       - name: Configure native x64
         shell: pwsh
         run: cmake -S .kiln-trace/native -B .kiln-trace/native/build/ci -G "Visual Studio 17 2022" -A x64
