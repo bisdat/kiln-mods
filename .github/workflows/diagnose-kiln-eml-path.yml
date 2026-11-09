@@ -25,3 +25,28 @@ jobs:
         run: rustc --edition=2021 --test diagnostics/kiln-eml-path/test.rs -o eml-path-test.exe
       - name: Check nested paths and escape protections
         run: ./eml-path-test.exe --nocapture
+
+  wine-z-drive:
+    name: Cross-compiled Windows diagnostic under Wine (Z-drive)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Windows Rust target and Wine runner
+        run: |
+          rustup target add x86_64-pc-windows-gnu
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends gcc-mingw-w64-x86-64 wine wine64 xvfb
+      - name: Compile native Windows executable for Wine
+        run: |
+          rustc --edition=2021 --test \
+            --target x86_64-pc-windows-gnu \
+            -C linker=x86_64-w64-mingw32-gcc \
+            diagnostics/kiln-eml-path/test.rs \
+            -o eml-path-wine.exe
+      - name: Run Z-mapped Library path tests in Wine
+        env:
+          WINEDEBUG: "-all"
+          WINEPREFIX: ${{ runner.temp }}/kiln-eml-wine
+          WINEARCH: win64
+          KILN_EML_TEST_USE_CWD: "1"
+        run: xvfb-run -a wine ./eml-path-wine.exe --nocapture
