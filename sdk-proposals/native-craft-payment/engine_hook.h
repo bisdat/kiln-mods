@@ -5,6 +5,7 @@
 #pragma once
 
 #include "recipe_payment_bridge.h"
+#include "selected_costs.h"
 
 #include <cstdint>
 #include <span>
@@ -29,7 +30,12 @@ struct Call {
 // Sources must come from transaction-scoped, write-tracked game storage.
 struct Resolved {
     RecipePaymentProof proof{};
-    std::vector<Requirement> selected_costs;
+    // TWO independent native sources must match the same original payer:
+    // selected recipe/category/alternative bill and detached payer cost rows.
+    // No missing category row is converted to zero-cost or guessed material.
+    costs::Proof cost_proof{};
+    std::vector<costs::PayerRow> original_payer_rows;
+    std::vector<costs::SelectedRow> selected_ingredients;
     std::vector<Source> eligible_slots;
     NativeRemoveFn original_remove_items = nullptr;
     // Authoritative native game grant validation immediately before staging.
@@ -63,15 +69,24 @@ inline Decision dispatch(const Call& call, ResolveFn resolver) {
     if (!resolver(call, &data) || !data.proof.valid() ||
         !data.original_remove_items || !data.grant ||
         !data.failure_result_verified || !data.verified_failure_result ||
-        data.selected_costs.empty() || data.selected_costs.size() > 64 ||
+        data.original_payer_rows.empty() || data.original_payer_rows.size() > 64 ||
+        data.selected_ingredients.empty() || data.selected_ingredients.size() > 64 ||
         data.eligible_slots.size() > 8192)
         return {};
+
+    // A game-owned payer row alone is NOT proof that the recipe's complete
+    // category/alternative/water bill was selected. Reconcile with an
+    // independently verified native recipe/selection view before ANY take.
+    const auto bill = costs::reconcile(
+        data.cost_proof, call.multiplier, data.original_payer_rows,
+        data.selected_ingredients);
+    if (!bill) return {};
 
     // The caller's authoritative recipe-specific return address and
     // transaction owner are part of the resolver's REQUIRED proof. Recheck
     // each candidate source immediately before any journalled item take.
     const auto result = try_recipe_payment(
-        data.proof, call.owner, data.selected_costs, data.eligible_slots,
+        data.proof, call.owner, bill.requirements, data.eligible_slots,
         [&](const Source& source, uint32_t actor) {
             return data.grant(call, source, actor);
         },
