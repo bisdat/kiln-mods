@@ -1,0 +1,27 @@
+name: Diagnose upstream Kiln EML nested paths
+
+on:
+  push:
+    branches:
+      - diagnostic/kiln-eml-wine-path
+    paths:
+      - 'diagnostics/kiln-eml-path/**'
+      - '.github/workflows/diagnose-kiln-eml-path.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  path-regression:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, windows-2022]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compile isolated path diagnostic
+        run: rustc --edition=2021 --test diagnostics/kiln-eml-path/test.rs -o eml-path-test.exe
+      - name: Check nested paths and escape protections
+        run: ./eml-path-test.exe --nocapture
