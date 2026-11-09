@@ -126,6 +126,20 @@ Kiln's original [`docs/re/items.md`, sections 4 and 7](https://github.com/frostd
 
 **Important constraints:** These observations do **not** authorize writing into a player's persistent/replicated `InventorySetup` to append remote chest links. Such a change may affect equipment, loot, other item actions and saves, violate the fixed 16-link capacity, or persist outside a craft. A safe implementation must be scoped to the actual original payment transaction and prove that its mutable ECS accessors and rollback journal cover the additional chest owners. The current `cbstore quote` represents **owner-level candidate amounts only**, not authoritative per-slot debits.
 
+## New testable native craft/UI payment trace (9 November 2026)
+
+The next engineering increment has been implemented in a **disposable upstream-source experiment** at [`sdk-proposals/native-craft-trace`](../sdk-proposals/native-craft-trace/README.md). It targets exactly Kiln `main` commit `77e525888ac0d5f4f6b16103e945ed7ac049b50e`, which has the newer `rules.craft` payment hooks not present in the older game-tested Cross-base Storage SDK. **The shipping Cross-base Storage `0.1.5` mod has not been modified.**
+
+To avoid conflicting game-function detours, this experiment **extends the existing `kiln.rules` hooks** rather than installing a second independent hook. It adds a passive ABI tail `craft_trace` and optional managed `Rules.TraceCraftPayments()`. It records:
+
+- **Client:** `UiCraftableAmount` recipe ID, original vanilla craftable amount and requested cap; no forced UI availability.
+- **Server:** original primary `InventoryPay` and alternate `RecipePayAlt` payment calls and engine return codes, only when the original validated recipe-specific callsite matches; nothing is charged or waived by the trace.
+- **Safety:** no engine pointers, source slot IDs, ingredient lists, reservations, new detours or item mutations. The last-sample fields are scalar, process-local, and not transaction-correlated across workers. An older Kiln runtime returns `null` for this optional managed API.
+
+This closes an **instrumentation gap**, not the material-source gap: an active client gate and a successful server payer are necessary but insufficient to prove remote Magic Chest consumption. The current native payment hooks waive costs in free-crafting mode; they do **not** expose a safe way to supply additional inventories to the original payment journal. The latter requires independent reverse-engineering and an API designed around one transaction's immutable validated source set and exact debit semantics. Merely adding `Items.Take` after the payer succeeds is never acceptable.
+
+The separate CI workflow compiles the managed wrapper and Windows x64 native `kiln-rules.dll` against the pinned source, without publishing a custom game-installable binary. The upstream `main` revision contains a baseline MSVC integer-to-integer `reinterpret_cast` issue in its `sym<F>` helpers; its Windows CI job applies an **isolated compiler-compatibility adaptation after the feature-only source diff has been checked**, without changing game hooks or the feature proposal.
+
 ## Proposed contract for future upstream service (API sketch, not executable)
 
 A future optional Kiln native service might expose:
