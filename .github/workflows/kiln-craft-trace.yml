@@ -69,11 +69,12 @@ jobs:
           python3 sdk-proposals/native-craft-trace/managed.py .kiln-trace
           python3 sdk-proposals/native-craft-trace/journal.py .kiln-trace
           python3 sdk-proposals/native-craft-trace/costs.py .kiln-trace
+          python3 sdk-proposals/native-craft-trace/paired.py .kiln-trace
           git -C .kiln-trace diff --check
-      - name: Compile 64-byte, 112-byte and 120-byte trace ABIs
+      - name: Compile 64/112/120/264-byte trace ABIs
         shell: bash
         run: |
-          printf '#include "services/kiln_rules.h"\nstatic_assert(sizeof(KilnRulesCraftTrace) == 64);\nstatic_assert(sizeof(KilnRulesJournalTrace) == 112);\nstatic_assert(sizeof(KilnRulesCostTrace) == 120);\nint main() { return 0; }\n' | \
+          printf '#include "services/kiln_rules.h"\nstatic_assert(sizeof(KilnRulesCraftTrace) == 64);\nstatic_assert(sizeof(KilnRulesJournalTrace) == 112);\nstatic_assert(sizeof(KilnRulesCostTrace) == 120);\nstatic_assert(sizeof(KilnRulesPaymentTrace) == 264);\nint main() { return 0; }\n' | \
             c++ -std=c++20 -Wall -Wextra -Werror -x c++ -fsyntax-only -I .kiln-trace/native/core/abi -
       - name: Compile managed Kiln.Rules
         run: dotnet build .kiln-trace/managed/services/Kiln.Rules/Kiln.Rules.csproj --configuration Release
@@ -130,6 +131,7 @@ jobs:
           python sdk-proposals/native-craft-trace/managed.py .kiln-trace
           python sdk-proposals/native-craft-trace/journal.py .kiln-trace
           python sdk-proposals/native-craft-trace/costs.py .kiln-trace
+          python sdk-proposals/native-craft-trace/paired.py .kiln-trace
           git -C .kiln-trace diff --check
           python sdk-proposals/native-craft-trace/verify.py .kiln-trace
       - name: Preserve known baseline MSVC symbol cast fix (CI only)
