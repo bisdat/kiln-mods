@@ -33,7 +33,7 @@ jobs:
       - name: GCC C++20 strict build and test
         shell: bash
         run: |
-          for suite in payment_plan_tests native_take_adapter_tests recipe_payment_bridge_tests engine_hook_tests tx-source-provider-tests selected_costs_tests recipe_metadata_tests settlement_witness_tests client_craftable_tests stock_sources_tests native_stock_overlay_tests server_stock_scope_tests server_selector_abi_tests; do
+          for suite in payment_plan_tests native_take_adapter_tests recipe_payment_bridge_tests engine_hook_tests tx-source-provider-tests selected_costs_tests recipe_metadata_tests settlement_witness_tests client_craftable_tests stock_sources_tests native_stock_overlay_tests server_stock_scope_tests server_selector_abi_tests native_stock_builds_tests; do
             g++ -std=c++20 -O2 -Wall -Wextra -Werror -pedantic \
               "sdk-proposals/native-craft-payment/$suite.cpp" -o "/tmp/$suite-gcc"
             "/tmp/$suite-gcc"
@@ -42,7 +42,7 @@ jobs:
       - name: Clang C++20 strict build and test
         shell: bash
         run: |
-          for suite in payment_plan_tests native_take_adapter_tests recipe_payment_bridge_tests engine_hook_tests tx-source-provider-tests selected_costs_tests recipe_metadata_tests settlement_witness_tests client_craftable_tests stock_sources_tests native_stock_overlay_tests server_stock_scope_tests server_selector_abi_tests; do
+          for suite in payment_plan_tests native_take_adapter_tests recipe_payment_bridge_tests engine_hook_tests tx-source-provider-tests selected_costs_tests recipe_metadata_tests settlement_witness_tests client_craftable_tests stock_sources_tests native_stock_overlay_tests server_stock_scope_tests server_selector_abi_tests native_stock_builds_tests; do
             clang++ -std=c++20 -O2 -Wall -Wextra -Werror -pedantic \
               "sdk-proposals/native-craft-payment/$suite.cpp" -o "/tmp/$suite-clang"
             "/tmp/$suite-clang"
@@ -122,6 +122,10 @@ jobs:
           cl /nologo /std:c++20 /W4 /WX /EHsc /utf-8 sdk-proposals/native-craft-payment/server_selector_abi_tests.cpp /Fe:%TEMP%\cbpay-selector-msvc.exe
           if errorlevel 1 exit /b 1
           "%TEMP%\cbpay-selector-msvc.exe"
+          if errorlevel 1 exit /b 1
+          cl /nologo /std:c++20 /W4 /WX /EHsc /utf-8 sdk-proposals/native-craft-payment/native_stock_builds_tests.cpp /Fe:%TEMP%\cbpay-buildprofiles-msvc.exe
+          if errorlevel 1 exit /b 1
+          "%TEMP%\cbpay-buildprofiles-msvc.exe"
           if errorlevel 1 exit /b 1
       - name: Confirm that this is isolated host logic only
         shell: pwsh
