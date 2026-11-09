@@ -12,6 +12,36 @@ permissions:
   contents: read
 
 jobs:
+
+  wine-change-stamp:
+    name: Wine Win32 change-stamp capability (scratch only)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install MinGW-w64 and Wine
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends mingw-w64 wine wine64 xvfb
+      - name: Build scratch-only Windows file identity probe
+        run: |
+          x86_64-w64-mingw32-gcc -O2 -Wall -Wextra \
+            performance/eml-fingerprint-reuse/wine_change_stamp_probe.c \
+            -o /tmp/eml-stamp-probe.exe
+      - name: Verify Wine ChangeTime under preserved-mtime edit
+        env:
+          WINEDEBUG: "-all"
+          WINEPREFIX: ${{ runner.temp }}/wine-change-stamp
+          WINEARCH: win64
+        run: |
+          xvfb-run -a wine /tmp/eml-stamp-probe.exe | tee wine-stamp-result.txt
+          grep '^WINE_CHANGE_STAMP=' wine-stamp-result.txt
+          echo "UNSUPPORTED and UNRELIABLE mean safe fallback; VERIFIED means eligible for runtime gate"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: eml-wine-change-stamp-capability
+          path: wine-stamp-result.txt
+          if-no-files-found: error
+
   build-and-test:
     name: Fingerprint regression (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
