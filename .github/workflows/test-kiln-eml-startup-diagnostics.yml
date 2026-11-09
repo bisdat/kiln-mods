@@ -69,6 +69,7 @@ jobs:
              kiln-eml-diagnostic/kiln-eml.dll
           cp kiln-upstream/gpl/kiln-eml/LICENSE kiln-eml-diagnostic/LICENSE.GPL-3.0
           cp diagnostics/kiln-eml-startup/README.md kiln-eml-diagnostic/README.md
+          cp diagnostics/kiln-eml-startup/capture-run-logs.sh kiln-eml-diagnostic/capture-run-logs.sh
           ls -l kiln-eml-diagnostic/
 
       - name: Upload TEST-ONLY diagnostic DLL (never auto-installed)
