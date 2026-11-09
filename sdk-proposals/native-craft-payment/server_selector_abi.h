@@ -5,9 +5,12 @@
 //
 // Native disassembly verifies:
 // RCX -> status result buffer, RDX -> 32-byte GameStockLists output,
-// R8  -> primary PlayerBasesSystemServer* (may be null),
-// R9  -> fallback PlayerBasesSystemServer* (may be null);
-// returns the original RCX status pointer, status byte at +0,
+// R8  -> primary PlayerBasesSystem* (may be null),
+// R9  -> fallback PlayerBasesSystem* (may be null),
+// stack arg 5 -> player position float[3], stack arg 6 -> player entity.
+// The original chest-list selector is SIX arguments; omitting position and
+// player corrupts the x64 ABI even though a 4-arg detour compiles.
+// Returns the original RCX status pointer, status byte at +0,
 // item/fuel arrays are written into RDX before original returns.
 //
 // This code is not a hook installer and is never invoked with a replacement
@@ -36,7 +39,7 @@ static_assert(std::is_standard_layout_v<SelectorStatus>);
 // Exact Microsoft x64 by-pointer result ABI; the game owns all 4 pointers.
 using OriginalSelector = SelectorStatus* (CBPAY_STOCK_CALL*)(
     SelectorStatus*, GameStockLists*, void* primary_bases,
-    void* fallback_bases);
+    void* fallback_bases, const float* position, uint32_t player);
 
 // The original returned item/fuel owner pointers stay borrowed.
 // Caller must SEH-check pointers, executable hash and return address before
@@ -46,6 +49,7 @@ inline SelectorStatus* selector_after_original(
     OriginalSelector original,
     SelectorStatus* result, GameStockLists* lists,
     void* primary_bases, void* fallback_bases,
+    const float* position, uint32_t player,
     uint32_t actor, void* original_recipe_tx,
     bool exact_original_selector_callsite,
     bool original_return_and_buffers_probed) noexcept
@@ -53,10 +57,12 @@ inline SelectorStatus* selector_after_original(
     if (!original) return nullptr;
     // Always invoke the game's genuine original selector first exactly once.
     // The shadow cannot cause free crafting or bypass a failed game selector.
-    SelectorStatus* returned=original(result,lists,primary_bases,fallback_bases);
+    SelectorStatus* returned=original(result,lists,primary_bases,fallback_bases,
+                                      position,player);
     if (!result || !lists || returned != result || result->error != 0 ||
         !exact_original_selector_callsite ||
-        !original_return_and_buffers_probed)
+        !original_return_and_buffers_probed ||
+        !position || !player || actor!=player)
         return returned;
     OriginalPayerScope* scope=OriginalPayerScope::current();
     if (scope) scope->after_original_selector(actor,original_recipe_tx,lists);
