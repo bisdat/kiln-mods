@@ -58,3 +58,54 @@ Windows CI also configures the upstream `native/CMakeLists.txt` and builds targe
 This trace moves toward step 3 by confirming the *actual call paths*, but does **not** implement the payment source resolver itself.
 
 See [engineering design](../../CrossBaseStorage/ENGINE-BRIDGE.md) and [GitHub issue #6](https://github.com/bisdat/kiln-mods/issues/6).
+
+
+## Follow-up: bounded original recipe-payment journal observation (9 November 2026)
+
+The companion [journal.py](journal.py) patches the **already-patched disposable**
+Kiln source from this proposal. It adds another optional ABI-tail entry,
+`journal_trace`, and a nullable managed `Rules.TraceRecipeJournal()` API.
+This does not run in the shipping mod and does not change any game's payments.
+
+The observer brackets the original primary and alternative recipe payer calls
+at their **validated recipe-specific return addresses**, after normal
+free-crafting/upgrade bypass conditions. It reads the transaction's **op count
+before/after** the original payer returns, then examines at most **128 newly
+staged 52-byte inventory operations**. It records at most **eight distinct
+underlying inventory-slot entity IDs** and the sum of staged take units per ID,
+without persisting raw transaction pointers, recipe costs, item bytes, or slot
+addresses. It never adds inventory links, invokes a transaction, or performs
+any material withdrawal.
+
+**Important distinction:** these operations are *staged in the engine-owned
+journal*, not proof of commit or durable payment. The result can be discarded
+or rolled back later. An inventory entity ID is a **linked 8-slot inventory**,
+**not** necessarily the Magic Chest owner; matching it to a chest requires a
+separate authoritative owner→InventorySetup-links mapping.
+
+The native reader requires resolved `items/tx.ops=0xF0`,
+`items/tx.ops_inline=0x118`, and `items/tx.operator=0xE0`, and only enables
+on the **server**. Any missing/mismatched signature disables the inspection.
+Malformed records, impossible counts or unreadable memory produce
+`status=2` with no source sample. More than eight source IDs produce
+`status=3` (sample **truncated**, never a complete source bill).
+The native entry is appended after the existing 64-byte craft trace; the
+new value ABI is 112 bytes. Older Kiln instances return `null` in the managed
+API. The observer is intentionally **not installed in Enshrouded**, and its
+native behavior has not been game-tested.
+
+The status values are: `0` not observed, `1` complete staged sample,
+`2` invalid/untrusted sample, `3` truncated sample. The returned
+`PayerKind` is 1 (primary) or 2 (alternative); `Owner` and
+`InventoryEntity` are current-process entity IDs only.
+`Calls` and `Rejected` are process-local counters.
+
+**CI route (source checks only):** after `native.py` and `managed.py`,
+run `journal.py`, then `verify.py` and the existing managed/native
+build steps. No patched DLL is uploaded or released.
+
+The next prerequisite for an actual cross-base provider is an **authoritative
+mapping from these linked inventory entities to their container owners, base
+membership and Magic Chest entitlement**. Only after that can a carefully
+scoped native extension investigate enrolling eligible sources in the
+*original* transaction, with the client using the same eligibility rules.
