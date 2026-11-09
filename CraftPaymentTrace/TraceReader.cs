@@ -18,6 +18,7 @@ internal static class TraceReader
             "cost" => "TraceRecipeCostRows",
             "journal" => "TraceRecipeJournal",
             "payer" => "TraceCraftPayments",
+            "pair" => "TraceRecipePayment",
             _ => throw new ArgumentException("Expected cost, journal or payer", nameof(action))
         };
         var method = api.GetMethod(methodName, BindingFlags.Public | BindingFlags.Static,
@@ -44,6 +45,7 @@ internal static class TraceReader
         {
             "cost" => FormatCost(result),
             "journal" => FormatJournal(result),
+            "pair" => FormatPair(result),
             _ => FormatPayer(result)
         };
     }
@@ -134,6 +136,39 @@ internal static class TraceReader
         if (status == 3) rows.Add("TRUNCATED: at most eight native inventory entities shown.");
         rows.Add("Native cost and journal snapshots can be from different concurrent calls.");
         return rows;
+    }
+
+    private static IReadOnlyList<string> FormatPair(object snapshot)
+    {
+        // The native trace copies both inputs from ONE original payer invocation.
+        // Reject mismatched or malformed structures rather than silently
+        // re-pairing separately sampled native cost and journal globals.
+        var cost = snapshot.GetType().GetProperty("Costs")?.GetValue(snapshot);
+        var journal = snapshot.GetType().GetProperty("Journal")?.GetValue(snapshot);
+        var status = Number(snapshot, "Status");
+        var lines = new List<string>
+        {
+            "READ-ONLY SAME-CALL recipe payment trace; raw costs are UNVERIFIED and " +
+            "journal takes are STAGED (not proven committed).",
+            $"pairStatus={Status(status)} sampleId={Text(snapshot,"SampleId")} " +
+            $"calls={Text(snapshot,"Calls")} rejected={Text(snapshot,"Rejected")}"
+        };
+        if (cost is null || journal is null ||
+            status is not (1 or 3) ||
+            Number(cost, "PayerKind") != Number(journal, "PayerKind") ||
+            Number(cost, "Owner") != Number(journal, "Owner") ||
+            Number(cost, "NativeResult") != Number(journal, "NativeResult") ||
+            Number(cost, "Status") is not (1 or 3) ||
+            Number(journal, "Status") is not (1 or 3))
+        {
+            lines.Add("INVALID OR UNAVAILABLE: no trustworthy same-call costs/journal to display.");
+            return lines;
+        }
+        lines.AddRange(FormatCost(cost));
+        lines.AddRange(FormatJournal(journal));
+        lines.Add("Matched by native call stack, NOT by comparing separate last-seen globals. " +
+                  "Final game transaction COMMIT/ROLLBACK remains unknown.");
+        return lines;
     }
 
     private static IReadOnlyList<string> FormatPayer(object s) =>
