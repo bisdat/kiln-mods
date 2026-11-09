@@ -1,0 +1,105 @@
+name: Native original recipe payer integration (no live payment)
+
+on:
+  push:
+    branches: ['feature/cross-base-storage-kiln']
+    paths:
+      - 'sdk-proposals/native-craft-payment/**'
+      - 'scripts/resolve-kiln-release.py'
+      - 'sdk-proposals/native-craft-trace/msvc-compat.py'
+      - '.github/workflows/kiln-native-hook-integration.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: native-hook-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  host:
+    name: Validate original native payment contract with strict GCC and Clang
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Native payment planning, exact slot journal, transaction and hook tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          for compiler in g++ clang++; do
+            for suite in payment_plan_tests native_take_adapter_tests recipe_payment_bridge_tests engine_hook_tests; do
+              "$compiler" -std=c++20 -O2 -Wall -Wextra -Werror -pedantic \
+                "sdk-proposals/native-craft-payment/$suite.cpp" -o "/tmp/$suite-${compiler//+/p}"
+              "/tmp/$suite-${compiler//+/p}"
+            done
+          done
+
+  native:
+    name: Compile original two Kiln Rules hooks (Windows x64; resolver disabled)
+    runs-on: windows-2022
+    env:
+      GITHUB_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Resolve the newest published immutable Kiln release
+        shell: pwsh
+        run: |
+          python scripts/resolve-kiln-release.py
+          if ($LASTEXITCODE -ne 0) { throw "Cannot resolve released Kiln SDK" }
+          $info = Get-Content .kiln-release.json -Raw | ConvertFrom-Json
+          if ($info.release_target -notmatch '^[0-9a-fA-F]{40}$') { throw 'Unpinned upstream ref' }
+          "KILN_UPSTREAM_SHA=$($info.release_target)" >> $env:GITHUB_ENV
+          "KILN_RELEASE_TAG=$($info.tag)" >> $env:GITHUB_ENV
+
+      - name: Check out exact published native Kiln source
+        shell: pwsh
+        run: |
+          git init .kiln-native-pay
+          git -C .kiln-native-pay remote add origin https://github.com/frostdev-ops/kiln.git
+          git -C .kiln-native-pay fetch --depth=1 origin "refs/tags/$env:KILN_RELEASE_TAG"
+          if ($LASTEXITCODE -ne 0) { throw 'Cannot fetch upstream released tag' }
+          git -C .kiln-native-pay checkout --detach 'FETCH_HEAD^{commit}'
+          if ($LASTEXITCODE -ne 0) { throw 'Cannot checkout upstream commit' }
+          $commit = (git -C .kiln-native-pay rev-parse HEAD).Trim()
+          if ($commit -ne $env:KILN_UPSTREAM_SHA) { throw "Upstream source drift: $commit" }
+
+      - name: Integrate native adapter into BOTH existing Kiln Rules payer hooks
+        shell: pwsh
+        run: |
+          python sdk-proposals/native-craft-payment/hook-integration.py .kiln-native-pay
+          if ($LASTEXITCODE -ne 0) { throw 'Hook integration safety validation failed' }
+          git -C .kiln-native-pay diff --check
+          if ($LASTEXITCODE -ne 0) { throw 'Invalid patch' }
+
+      - name: Apply upstream baseline MSVC symbol-cast compatibility (lab only)
+        shell: pwsh
+        run: |
+          python sdk-proposals/native-craft-trace/msvc-compat.py .kiln-native-pay
+          if ($LASTEXITCODE -ne 0) { throw 'Baseline MSVC compatibility failed' }
+
+      - name: Configure Windows x64 native Kiln services
+        shell: pwsh
+        run: cmake -S .kiln-native-pay/native -B .kiln-native-pay/native/build/ci -G "Visual Studio 17 2022" -A x64
+
+      - name: Compile adapted original kiln-rules.dll without installing it
+        shell: pwsh
+        run: |
+          cmake --build .kiln-native-pay/native/build/ci --config Release --target kiln-rules --parallel 4
+          if ($LASTEXITCODE -ne 0) { throw 'Native Kiln Rules hook integration failed compilation' }
+          $dlls = @(Get-ChildItem .kiln-native-pay/native/build/ci -Recurse -File -Filter kiln-rules.dll)
+          if ($dlls.Count -ne 1) { throw "Expected one compiled native rules DLL; got $($dlls.Count)" }
+          Get-FileHash $dlls[0].FullName -Algorithm SHA256
+
+      - name: Explicit release gate remains closed
+        shell: pwsh
+        run: |
+          Write-Output 'SUCCESS: BOTH ORIGINAL KILN RECIPE PAYER HOOKS COMPILED with the native payment bridge.'
+          Write-Output 'No authorised native source provider yet: resolver=nullptr in both production hook callsites.'
+          Write-Output 'No DLL installed, deployed, published as a playable mod, or uploaded as an artifact.'
+          Write-Output 'Cross-base Storage 0.1.9 and the user's current Kiln installation remain unchanged.'
