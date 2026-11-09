@@ -438,3 +438,50 @@ historical pinned-ABI source as **research fixtures**, not shipping
 package dependencies; these must be ported to the newest released
 Kiln branch before any new native functionality is deployed. This
 separation does not justify promising native cross-base crafting.
+
+## Source-only native recipe-payment preflight — 9 November 2026
+
+Added a pure-C++20 *non-installable* experiment
+[`sdk-proposals/native-craft-payment`](../sdk-proposals/native-craft-payment/README.md)
+to PR #7. Its `make_plan` accepts **exact** per-item requirements,
+real packed 8-slot inventory slot IDs, and explicit native-authority
+gates for loaded, Magic-confirmed, player-authorised and base-authorised
+remote source owners. It deliberately cannot derive any of those
+permission bits from a template name or managed world scan. It
+allocates player first, same-base Magic second, distant eligible Magic
+third; invalid/duplicate source snapshots, unknown category ingredients,
+overflow, and any ingredient shortage reject the *entire* plan.
+
+An important property is now encoded: the actual engine's
+`InventoryRemoveItems` **preferred slot is not guaranteed exact**.
+`stage_plan` therefore requires the newly appended native transaction
+journal to contain **only matching take operations** for each planned
+slot, item and quantity. Any unsuccessful or off-slot stage produces an
+`AbortNeedsRollback` result. There is no separate post-craft
+`Items.Take`, no implicit transaction commit, no bypass of the
+original payer for a local-only recipe, and no client craftable-amount
+faking. The helper cannot itself guarantee the game will roll back,
+so it must not be connected to a live recipe without proof of the
+outer game's rollback path.
+
+**CI evidence:** [native-payment workflow](https://github.com/bisdat/kiln-mods/actions/runs/42583677155)
+passed **17 native host tests** on Linux GCC, Linux Clang and Windows
+MSVC x64, and the upstream payer-removal source-seam gate against
+**latest published Kiln dev20**. Host tests use synthetic inventory
+data and mock transaction rollback: they are NOT a live-game debit.
+
+The companion [native-craft-trace workflow](../.github/workflows/kiln-craft-trace.yml)
+was updated to resolve **the latest published Kiln development release**
+and use that *single exact immutable commit* in both Windows and Linux
+native experiment builds. Its passive native payer/journal observers
+still do not alter game payments, and compiled DLLs are not
+uploaded or installed. The original static commit remains only
+the default for reproducing a historical local experiment.
+
+**Next genuine engine integration step:** determine the native payer's
+cost list including selected category/alternative inputs, the
+transaction-time trusted Magic and Flame Altar/base permission
+resolver, and the exact authoritative rollback behavior when any
+individual `InventoryRemoveItems` leaves partial staged changes.
+Until those gates exist the prototype cannot be enabled for crafting;
+UI and building still require separate matching source resolution.
