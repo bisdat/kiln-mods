@@ -83,17 +83,10 @@ public sealed class CrossBaseStorageMod : Mod
         EntityId Entity, string Template, WorldPosition Position,
         int Slots, int UsedSlots, InventoryContents Contents, bool MagicByName);
 
-    // Template-name matching is deliberately a HEURISTIC. It is not an engine
-    // MagicChest flag; an upgraded chest could retain an ordinary template.
-    // The 'templates'/'near' diagnostics let the host identify false negatives.
-    private static bool IsStorage(string? template, int slots) =>
-        template is not null && template.StartsWith("Prop_", StringComparison.OrdinalIgnoreCase) &&
-        (template.Contains("Storage", StringComparison.OrdinalIgnoreCase) ||
-         template.Contains("Chest", StringComparison.OrdinalIgnoreCase)) &&
-        slots is >= 16 and <= 72;
-
-    private static bool MagicByName(string template) =>
-        template.Contains("Magic", StringComparison.OrdinalIgnoreCase);
+    // Read-only template identification: the only Magic Chest naming rule is
+    // the exact "_Magic" suffix (case-insensitive). Inventory capacity comes
+    // from Items.Read and is never assumed to be 72 slots. This is still
+    // a template heuristic, NOT the native game's crafting entitlement.
 
     private static List<Chest> ScanLoaded()
     {
@@ -112,13 +105,13 @@ public sealed class CrossBaseStorageMod : Mod
                 continue;
 
             var info = Spawn.Inspect(id);
-            if (!IsStorage(info?.TemplateName, inventory.GenericSlots))
+            if (!StorageTemplate.IsStorageCandidate(info?.TemplateName, inventory.GenericSlots))
                 continue;
 
             var position = info!.Position;
             var template = info.TemplateName!;
             chests.Add(new Chest(id, template, position, inventory.GenericSlots,
-                inventory.UsedSlots, inventory, MagicByName(template)));
+                inventory.UsedSlots, inventory, StorageTemplate.IsMagic(template)));
         }
         return chests;
     }
@@ -151,7 +144,7 @@ public sealed class CrossBaseStorageMod : Mod
                 $"{probable.Length} magic-by-template candidates; {unique} item types, " +
                 $"{units} units across those candidates. " +
                 "This is a READ-ONLY sample, NOT cross-base crafting access. " +
-                "Unloaded bases and magic upgrades without 'Magic' in their template may be absent.");
+                "Unloaded bases and magic upgrades without the '_Magic' suffix in their template may be absent.");
 
         foreach (var chest in probable.Take(MaxShown))
             c.Reply("MAGIC CANDIDATE " + Describe(chest));
@@ -165,10 +158,10 @@ public sealed class CrossBaseStorageMod : Mod
         var groups = chests.GroupBy(x => x.Template, StringComparer.OrdinalIgnoreCase)
             .OrderBy(x => x.Key, StringComparer.OrdinalIgnoreCase)
             .ToArray();
-        c.Reply($"Loaded chest templates ({groups.Length} types). 'Magic' classification is provisional:");
+        c.Reply($"Loaded chest templates ({groups.Length} types). '_Magic' suffix classification is provisional:");
         foreach (var group in groups.Take(24))
             c.Reply($"{group.Key}: {group.Count()} loaded chests; " +
-                    $"magicByTemplate={MagicByName(group.Key)}");
+                    $"magicByTemplate={StorageTemplate.IsMagic(group.Key)}");
         if (groups.Length > 24)
             c.Reply($"... {groups.Length - 24} more templates.");
     }
