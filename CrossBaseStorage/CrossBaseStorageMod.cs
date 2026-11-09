@@ -28,7 +28,7 @@ public sealed class CrossBaseStorageMod : Mod
     {
         _commands = Commands.Register(
             "cbstore", HandleCommand, CommandPermission.Admin,
-            usage: "<status|scan|templates|near|stock item name|quote <amount> <item>|top|recipes [filter]|plan <recipe> [count]|lastcraft|lastbuild>",
+            usage: "<status|scan|templates|near|links <owner>|resolve <inventory>|stock item name|quote <amount> <item>|top|recipes [filter]|plan <recipe> [count]|lastcraft|lastbuild>",
             description: "Inspect loaded magic chest inventory and native craft/build requests (read-only).");
         if (Gameplay.Available && !Gameplay.Enable())
             Log.Warn("Cross-base Storage: kiln.gameplay present but events are not ready.");
@@ -171,6 +171,82 @@ public sealed class CrossBaseStorageMod : Mod
                     $"magicByTemplate={MagicByName(group.Key)}");
         if (groups.Length > 24)
             c.Reply($"... {groups.Length - 24} more templates.");
+    }
+
+    // Kiln.Items already exposes the flattened 8-slot inventory links for
+    // each chest owner. This is a diagnostic relationship, not a native
+    // crafting source permission, Magic flag or proof of payment.
+    private static InventoryLinkIndex LoadedLinkIndex(IReadOnlyList<Chest> chests) =>
+        InventoryLinkIndex.Build(chests.Select(chest => new InventoryLinkOwner(
+            chest.Entity.Value, chest.MagicByName,
+            chest.Contents.Inventories.Select(link => link.Inventory.Value).ToArray())));
+
+    private static void Links(CommandContext c)
+    {
+        if (c.Count != 2)
+            throw c.Usage("cbstore links <chest owner entity ID>");
+        var id = c.Int(1);
+        if (id <= 0) throw new CommandException("Expected a positive chest owner entity ID.");
+
+        var chests = ScanLoaded();
+        var index = LoadedLinkIndex(chests);
+        if (!index.Valid)
+            throw new CommandException("INVALID inventory ownership snapshot; malformed or duplicate owner/link IDs.");
+
+        var chest = chests.FirstOrDefault(x => x.Entity.Value == (uint)id);
+        if (chest is null)
+            throw new CommandException($"Owner {id} is not a loaded compatible storage chest in this scan.");
+
+        var links = chest.Contents.Inventories;
+        c.Reply($"READ-ONLY linked inventories for chest owner={id}: {links.Count} links, " +
+                $"magicByTemplate={chest.MagicByName}, template={chest.Template}, pos={Where(chest)}. " +
+                "These are actual Kiln inventory links, NOT native crafting permissions.");
+        for (var i = 0; i < links.Count && i < MaxShown; ++i)
+        {
+            var (linked, category) = links[i];
+            var usedSlots = chest.Contents.Slots.Count(slot => slot.Link == i && !slot.IsEmpty);
+            var units = chest.Contents.Slots
+                .Where(slot => slot.Link == i && !slot.IsEmpty)
+                .Sum(slot => (long)slot.Count);
+            var match = index.Resolve(linked.Value);
+            c.Reply($"  link[{i}] inventoryEntity={linked}, category={category}, " +
+                    $"usedSlots={usedSlots}, units={units}, ownerMapping={match.Status}");
+        }
+        if (links.Count > MaxShown)
+            c.Reply($"... {links.Count - MaxShown} more links not displayed.");
+        c.Reply("No crafting, transaction, reservation or inventory mutation occurred.");
+    }
+
+    private static void Resolve(CommandContext c)
+    {
+        if (c.Count != 2)
+            throw c.Usage("cbstore resolve <linked inventory entity ID>");
+        var id = c.Int(1);
+        if (id <= 0) throw new CommandException("Expected a positive linked inventory entity ID.");
+
+        var chests = ScanLoaded();
+        var index = LoadedLinkIndex(chests);
+        var result = index.Resolve((uint)id);
+        c.Reply($"READ-ONLY linked inventory lookup {id}: state={result.Status}, " +
+                $"candidateOwners={index.OwnerCount}, linkedInventoryIds={index.InventoryCount}, " +
+                $"ambiguousLinks={index.AmbiguousCount}.");
+        foreach (var match in result.Matches.Take(MaxShown))
+        {
+            var chest = chests.First(x => x.Entity.Value == match.Owner);
+            c.Reply($"  owner={match.Owner}, linkIndex={match.LinkIndex}, " +
+                    $"magicByTemplate={match.MagicByTemplate}, template={chest.Template}, pos={Where(chest)}");
+        }
+        if (result.Matches.Count > MaxShown)
+            c.Reply($"... {result.Matches.Count - MaxShown} more possible owners.");
+        c.Reply(result.Status switch
+        {
+            InventoryLinkStatus.Matched => "Owner LINK identified in current loaded candidate scan. " +
+                "This does NOT establish engine crafting eligibility or completed resource payment.",
+            InventoryLinkStatus.NotFound => "NOT FOUND in loaded candidate storage chests. " +
+                "The inventory may belong to a player, station, unrelated object or unscanned chest.",
+            InventoryLinkStatus.Ambiguous => "AMBIGUOUS shared link: owner cannot be uniquely determined; do not attribute payment.",
+            _ => "INVALID SNAPSHOT: malformed or duplicate link identities; no owner attribution is trusted."
+        });
     }
 
     private static void Nearest(CommandContext c)
@@ -464,7 +540,7 @@ public sealed class CrossBaseStorageMod : Mod
         switch (verb)
         {
             case "help":
-                c.Reply("cbstore status | scan | templates | near | stock <item> | top | " +
+                c.Reply("cbstore status | scan | templates | near | links <owner> | resolve <inventory> | stock <item> | top | " +
                         "quote <units> <item> | recipes [output filter] | plan <recipeId|last> [count] | lastcraft | lastbuild. " +
                         "Read-only diagnostics; no cross-base crafting/building yet.");
                 break;
@@ -472,6 +548,8 @@ public sealed class CrossBaseStorageMod : Mod
             case "scan": Scan(c); break;
             case "templates": Templates(c); break;
             case "near": Nearest(c); break;
+            case "links": Links(c); break;
+            case "resolve": Resolve(c); break;
             case "stock": Stock(c); break;
             case "quote": Quote(c); break;
             case "top": Top(c); break;
