@@ -15,7 +15,7 @@ project = ET.parse(root / "CrossBaseStorage/CrossBaseStorage.csproj").getroot()
 assert project.findtext("./PropertyGroup/KilnModId") == "cross-base-storage"
 assert project.findtext("./PropertyGroup/KilnSide") == "server"
 assert project.findtext("./PropertyGroup/KilnClients") == "none"
-assert project.findtext("./PropertyGroup/KilnServices") == "Items;World;Spawn;Saves;Chat;Gameplay"
+assert project.findtext("./PropertyGroup/KilnServices") == "Items;World;Spawn;Saves;Chat;Gameplay;Rules"
 
 assert "CommandPermission.Admin" in src
 assert "Items.FindInventories(InventoryKinds.Containers)" in src
@@ -35,6 +35,16 @@ assert "case \"lastbuild\":" in src
 assert "case \"quote\":" in src
 assert "case \"links\":" in src
 assert "case \"resolve\":" in src
+assert 'case "trace": Trace(c);' in src
+assert 'CraftPaymentTrace.TraceReader.Read(typeof(Rules), action)' in src
+assert 'CraftPaymentTrace.TraceReader.Read(typeof(Rules), mode)' in src
+assert 'Do not replace your automatically updated production runtime.' in src
+trace_lib = (root / "CraftPaymentTrace/TraceReader.cs").read_text(encoding="utf-8")
+assert 'Compile Include="../CraftPaymentTrace/TraceReader.cs"' in (root / "CrossBaseStorage/CrossBaseStorage.csproj").read_text(encoding="utf-8")
+assert '"pair" => "TraceRecipePayment"' in trace_lib
+assert "FormatPair(object snapshot)" in trace_lib
+assert "status is not (1 or 3)" in trace_lib
+assert "INV" not in ""  # no native memory access in the managed observer
 assert "LoadedLinkIndex(chests)" in src
 assert "InventoryLinkIndex.Build(" in src
 assert (root / "CrossBaseStorage/InventoryLinkIndex.cs").exists()
@@ -57,12 +67,12 @@ assert "UNRESOLVED CATEGORY/PLACEHOLDER ingredient" in src
 assert "A raw count of 0 does NOT establish zero material cost" in src
 assert "INCOMPLETE RECIPE INPUT DATA" in src
 assert "cbstore recipes [output name]" in src
-assert project.findtext("./PropertyGroup/Version") == "0.1.7"
+assert project.findtext("./PropertyGroup/Version") == "0.1.8"
 assert re.fullmatch(r"0\.1\.\d+", project.findtext("./PropertyGroup/Version") or "")
 
 # This phase is explicitly non-mutating: no give, take, teleport, mutate,
 # vanilla recipe injection, or raw component writes.
-all_code = "\\n".join(p.read_text(encoding="utf-8") for p in (root / "CrossBaseStorage").glob("*.cs"))
+all_code = "\\n".join(p.read_text(encoding="utf-8") for p in (root / "CrossBaseStorage").glob("*.cs")) + "\\n" + trace_lib
 for token in (
     r"\bItems\s*\.\s*(?:Give|Take|TakeSlot|GiveRecipeResult)\s*\(",
     r"\bWorld\s*\.\s*(?:TryWrite|QueueAdd|QueueRemove)\s*\(",
@@ -74,5 +84,5 @@ for token in (
 for text in ("read-only", "not", "building", "crafting", "loaded", "magic"):
     assert text in guide.lower(), f"README must explain limitation: {text}"
 
-print("PASS: Cross-base Storage 0.1.7 has read-only chest/recipe/link diagnostics, " +
+print("PASS: Cross-base Storage 0.1.8 has read-only chest/recipe/link diagnostics, " +
       "native craft/build event observation and no inventory mutation calls")
