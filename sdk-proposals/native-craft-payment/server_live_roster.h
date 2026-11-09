@@ -321,8 +321,8 @@ inline uint64_t client_cache_system_rva(const KilnApi* api) {
     KilnSystemInfo entry{};entry.size=sizeof entry;
     if(types->system_info(static_cast<uint32_t>(index),&entry)!=KILN_OK ||
        entry.index!=static_cast<uint32_t>(index) ||
-       !entry.rva || !entry.name.data || entry.name.size!=sizeof(kName)-1 ||
-       std::memcmp(entry.name.data,kName,sizeof(kName)-1)!=0)return 0;
+       !entry.rva || !entry.name.ptr || entry.name.len!=sizeof(kName)-1 ||
+       std::memcmp(entry.name.ptr,kName,sizeof(kName)-1)!=0)return 0;
     return entry.rva;
 }
 
