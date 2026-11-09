@@ -36,6 +36,7 @@ jobs:
       - name: Apply observational EML diagnostics
         run: |
           python3 diagnostics/kiln-eml-startup/apply_instrumentation.py kiln-upstream
+          python3 diagnostics/kiln-eml-startup/apply_preload_diagnostics.py kiln-upstream
           mkdir -p kiln-upstream/gpl/kiln-eml/eml/mod-loader-base/tests
           cp diagnostics/kiln-eml-startup/stage_diagnostics.rs \
              kiln-upstream/gpl/kiln-eml/eml/mod-loader-base/tests/stage_diagnostics.rs
@@ -85,6 +86,7 @@ jobs:
           git -C kiln-upstream diff -- \
             gpl/kiln-eml/eml/mod-loader-base/src/registry/fs.rs \
             gpl/kiln-eml/eml/mod-loader-lua/src/runner/state.rs \
+            gpl/kiln-eml/eml/mod-loader-lua/src/lib.rs \
             > kiln-eml-startup-stage-diagnostics.patch
           test -s kiln-eml-startup-stage-diagnostics.patch
           git -C kiln-upstream diff --check
