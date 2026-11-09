@@ -84,6 +84,45 @@ jobs:
             -type f -name 'eml_disk_fs-*.exe' -print -quit)"
           test -n "$exe"
           xvfb-run -a wine "$exe" --nocapture
+      - name: Stage read-only EML Library probe
+        run: |
+          mkdir -p kiln-upstream/gpl/kiln-eml/eml/mod-loader-base/src/bin
+          cp diagnostics/kiln-eml-path/eml_readonly_probe.rs \
+             kiln-upstream/gpl/kiln-eml/eml/mod-loader-base/src/bin/eml-readonly-probe.rs
+      - name: Cross-compile installed-library read-only probe
+        run: |
+          cd kiln-upstream/gpl/kiln-eml
+          cargo build -p mod-loader-base --target x86_64-pc-windows-gnu --bin eml-readonly-probe
+      - name: Smoke-test read-only probe with Wine against existing files
+        env:
+          WINEDEBUG: "-all"
+          WINEPREFIX: ${{ runner.temp }}/kiln-eml-wine
+          WINEARCH: win64
+        run: |
+          fixture="$GITHUB_WORKSPACE/readonly-fixture/library/eml/flame-altar-expanded/0.1.1+hash"
+          mkdir -p "$fixture/src"
+          printf '{"id":"flame-altar-expanded"}' > "$fixture/mod.json"
+          printf '%s\\n' 'return true' > "$fixture/src/mod.lua"
+          winpath="$(python3 - "$fixture" <<'PY'
+          import sys
+          print("Z:" + sys.argv[1].replace("/", "\\\\"))
+          PY
+          )"
+          exe="kiln-upstream/gpl/kiln-eml/target/x86_64-pc-windows-gnu/debug/eml-readonly-probe.exe"
+          xvfb-run -a wine "$exe" "$winpath"
+      - name: Stage Windows probe and instructions
+        run: |
+          mkdir -p probe-dist
+          cp kiln-upstream/gpl/kiln-eml/target/x86_64-pc-windows-gnu/debug/eml-readonly-probe.exe probe-dist/
+          cp diagnostics/kiln-eml-path/run-with-proton.sh probe-dist/
+          cp diagnostics/kiln-eml-path/README.md probe-dist/README.md
+      - name: Publish read-only diagnostic (NOT a mod)
+        uses: actions/upload-artifact@v4
+        with:
+          name: kiln-eml-readonly-proton-diagnostic
+          path: probe-dist/
+          if-no-files-found: error
+          retention-days: 30
       - name: Compile native Windows executable for Wine
         run: |
           rustc --edition=2021 --test \
