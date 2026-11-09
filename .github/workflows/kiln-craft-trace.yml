@@ -82,6 +82,26 @@ jobs:
           python3 sdk-proposals/native-craft-trace/verify.py .kiln-trace
           echo 'PASS: passive native payer/journal/cost-row instrumentation; no new hook or inventory mutation.'
 
+      - name: Stage precisely one patched managed Rules DLL (LAB only)
+        shell: bash
+        run: |
+          mkdir -p .trace-managed
+          mapfile -t libs < <(find .kiln-trace/managed/services/Kiln.Rules/bin -type f -path '*/Release/net10.0/Kiln.Rules.dll')
+          if [[ "${#libs[@]}" != 1 ]]; then
+            printf 'Expected one patched managed DLL, got %s\n' "${#libs[@]}" >&2
+            exit 1
+          fi
+          cp "${libs[0]}" .trace-managed/Kiln.Rules.dll
+          file .trace-managed/Kiln.Rules.dll
+          sha256sum .trace-managed/Kiln.Rules.dll
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: trace-managed-${{ needs.release.outputs.tag }}
+          path: .trace-managed/Kiln.Rules.dll
+          if-no-files-found: error
+          retention-days: 30
+
   native:
     needs: release
     name: Compile native kiln-rules.dll on ${{ needs.release.outputs.tag }} (Windows)
@@ -123,8 +143,73 @@ jobs:
       - name: Compile patched native rules service (CI only)
         shell: pwsh
         run: cmake --build .kiln-trace/native/build/ci --config Release --target kiln-rules --parallel 4
-      - name: Report disabled runtime integration
+      - name: Stage precisely one compiled native Rules DLL (LAB only)
         shell: pwsh
         run: |
-          Write-Output 'PASS: isolated native kiln-rules.dll compiles from newest released Kiln and passive journal patch.'
-          Write-Output 'NOT installed, NOT uploaded to game, NOT a cross-base crafter. Commit/debit and client source UI still untested.'
+          $matches = @(Get-ChildItem -Path .kiln-trace/native/build/ci -Recurse -File -Filter kiln-rules.dll)
+          if ($matches.Count -ne 1) { throw "Expected one patched kiln-rules.dll, found $($matches.Count)" }
+          New-Item -ItemType Directory -Force .trace-native | Out-Null
+          Copy-Item $matches[0].FullName .trace-native/kiln-rules.dll
+          Get-FileHash .trace-native/kiln-rules.dll -Algorithm SHA256
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: trace-native-${{ needs.release.outputs.tag }}
+          path: .trace-native/kiln-rules.dll
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Report isolated, uninstalled runtime experiment
+        shell: pwsh
+        run: |
+          Write-Output 'PASS: native kiln-rules.dll compiled on exact released Kiln.'
+          Write-Output 'LAB-only artifact is NOT deployed, installed or included in Cross-base Storage.'
+ 
+  lab-bundle:
+    name: LAB ONLY - matched native/managed trace plus admin observer
+    needs: [release, api, native]
+    if: needs.api.result == 'success' && needs.native.result == 'success'
+    runs-on: ubuntu-24.04
+    env:
+      GITHUB_TOKEN: ${{ github.token }}
+      KILN_RELEASE_TAG: ${{ needs.release.outputs.tag }}
+      KILN_UPSTREAM_SHA: ${{ needs.release.outputs.sha }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Download both independently compiled matching services
+        uses: actions/download-artifact@v4
+        with:
+          pattern: trace-*-${{ needs.release.outputs.tag }}
+          path: trace-input
+          merge-multiple: false
+
+      - name: Recheck observer's read-only guard and bounded output tests
+        run: |
+          python3 scripts/validate-craft-payment-trace.py
+          dotnet run --project tests/craft-payment-trace/Trace.Tests.csproj -c Release
+
+      - name: Build matching standard-SDK observer (no native hooks in mod)
+        run: bash scripts/build.sh CraftPaymentTrace
+
+      - name: Assemble noninstalling, version-locked lab artifact
+        shell: bash
+        run: |
+          python3 sdk-proposals/native-craft-trace/package-lab.py \
+            --native "trace-input/trace-native-$KILN_RELEASE_TAG/kiln-rules.dll" \
+            --managed "trace-input/trace-managed-$KILN_RELEASE_TAG/Kiln.Rules.dll" \
+            --observer bin/Release/craft-payment-trace-0.1.0.zip \
+            --release .kiln-release.json \
+            --out "craft-payment-trace-LAB-$KILN_RELEASE_TAG.zip"
+
+      - name: Upload separately named manual lab inspection archive
+        uses: actions/upload-artifact@v4
+        with:
+          name: craft-payment-trace-LAB-${{ needs.release.outputs.tag }}
+          path: craft-payment-trace-LAB-*.zip
+          if-no-files-found: error
+          retention-days: 30
