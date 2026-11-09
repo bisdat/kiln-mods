@@ -28,7 +28,7 @@ jobs:
         run: |
           set -euo pipefail
           for compiler in g++ clang++; do
-            for suite in payment_plan_tests native_take_adapter_tests recipe_payment_bridge_tests engine_hook_tests tx-source-provider-tests selected_costs_tests recipe_metadata_tests settlement_witness_tests client_craftable_tests; do
+            for suite in payment_plan_tests native_take_adapter_tests recipe_payment_bridge_tests engine_hook_tests tx-source-provider-tests selected_costs_tests recipe_metadata_tests settlement_witness_tests client_craftable_tests stock_sources_tests; do
               "$compiler" -std=c++20 -O2 -Wall -Wextra -Werror -pedantic \
                 "sdk-proposals/native-craft-payment/$suite.cpp" -o "/tmp/$suite-${compiler//+/p}"
               "/tmp/$suite-${compiler//+/p}"
