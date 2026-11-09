@@ -36,6 +36,33 @@ jobs:
           rustup target add x86_64-pc-windows-gnu
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends gcc-mingw-w64-x86-64 wine wine64 xvfb
+      - name: Check out exact upstream Kiln build used in failed boot
+        uses: actions/checkout@v4
+        with:
+          repository: frostdev-ops/kiln
+          ref: d35ee27c5c4f1f31b1c4a3503636a653d6d3ae63
+          path: kiln-upstream
+          persist-credentials: false
+      - name: Stage real EML FileSystem integration regression
+        run: |
+          mkdir -p kiln-upstream/gpl/kiln-eml/eml/mod-loader-base/tests
+          cp diagnostics/kiln-eml-path/eml_disk_fs.rs \
+             kiln-upstream/gpl/kiln-eml/eml/mod-loader-base/tests/eml_disk_fs.rs
+      - name: Cross-compile pinned mod-loader-base integration test
+        run: |
+          cd kiln-upstream/gpl/kiln-eml
+          cargo test -p mod-loader-base --target x86_64-pc-windows-gnu --test eml_disk_fs --no-run
+      - name: Run pinned EML FileSystem under Wine
+        env:
+          WINEDEBUG: "-all"
+          WINEPREFIX: ${{ runner.temp }}/kiln-eml-wine
+          WINEARCH: win64
+          KILN_EML_TEST_USE_CWD: "1"
+        run: |
+          exe="$(find kiln-upstream/gpl/kiln-eml/target/x86_64-pc-windows-gnu/debug/deps \
+            -type f -name 'eml_disk_fs-*.exe' -print -quit)"
+          test -n "$exe"
+          xvfb-run -a wine "$exe" --nocapture
       - name: Compile native Windows executable for Wine
         run: |
           rustc --edition=2021 --test \
