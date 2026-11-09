@@ -1,3 +1,46 @@
+# Native category and material selection gate (9 November 2026)
+
+This is **source-only safety work**, not an in-game remotely payable mod.
+
+Kiln.Content's current published native reflection reader (v0.2.0-dev.20)
+already knows that a 48-byte RecipeInputResource contains two DIFFERENT
+amounts: itemStack.count at +0x14 and inputItemCategory.count at +0x2c,
+with category ID at +0x28. This explains why Kiln.Gameplay's original
+item-only projection showed Workbench's second ingredient as `item=0,
+count=0` even though it is not free.
+
+New `recipe_metadata.h` decodes a **detached** complete native input list
+and fails closed on zero, both-kind, malformed and truncated rows. The
+`engine_hook.h` gate now needs all of the following BEFORE any native
+remove: independently resolved selected input rows, the complete typed
+recipe input shape, original payer row reconciliation, and verified native
+category membership. The category membership callback is only a contract;
+an actual engine-native registry selector is still absent. Actual native
+amount scaling and water cost have not been proven and stay disabled.
+`recipe_metadata_tests.cpp` adds 16 synthetic host regression cases.
+
+A potentially authoritative Magic discriminator has been identified:
+`keen::ecs::InventoryCraftingStock` (qualified ECS hash `0xe41a0d1f`)
+appears in public Kiln component type records and in the independent
+open-source Enshrouded inventory reader. This is stronger evidence than
+a template name, but its runtime presence and the original transaction's
+read permission/accessor must be verified before it can contribute to a
+grant. Neither a crafting-stock marker nor a Flame Altar's spatial zone
+alone proves player entitlement to use remote inventory. Do not substitute
+`GetComponent` from an untracked worker thread for the original
+transaction's declared ECS accessors.
+
+The original `RecipeApply` rollback-on-failed-payer semantics, category
+material choice, valid original payer failure code, cross-base owner roster,
+player/base permission and matching native client UI must still be
+implemented and demonstrated in a backed-up test world.
+
+**Production resolver is still null at BOTH native payer hook sites.**
+No experimental DLL may be installed or uploaded as a playable build; no
+native debits can occur from Cross-base Storage 0.1.9. Keep PR #7 draft.
+These safety gates protect future implementation, but do not satisfy the
+request for a working cross-base crafting release.
+
 # Third implementation milestone — selected native recipe cost reconciliation (9 November 2026)
 
 The experimental two-payer engine dispatch now **requires an independently
