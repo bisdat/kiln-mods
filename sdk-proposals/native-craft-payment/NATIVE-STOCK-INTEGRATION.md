@@ -168,6 +168,51 @@ and UI stock-cache interface, including source-identity replication.
 Do not send the user the dedicated-server lab DLL; it cannot make their
 single-player crafting menu display remote stock.
 
+## 9 November — client-host original payer callsites established
+
+The user supplied a **read-only metadata map** generated from their
+installed `enshrouded.exe` **26430625**, SHA256
+`5d9ef2f140b8ed49e30dbee655841b89d08baec20f799a1817e171a18a850c77`.
+The original client-hosted payer and selector are each unique:
+
+| Client-host original function | RVA |
+| --- | --- |
+| Original recipe payer | `0x3f89e0` |
+| Original game stock selector | `0x46fa10` |
+| First payer E8 call (return `+5`) | `0x3f8aee` (return `0x3f8af3`) |
+| Second payer E8 call (return `+5`) | `0x3f8d02` (return `0x3f8d07`) |
+| Original RecipeApply | `0x3f8f30` |
+
+The native experiment now stores **separate, SHA-pinned** server and
+client-hosted profiles in [`native_stock_builds.h`](native_stock_builds.h)
+and checks executable identity, genuine server-world session, caller E8
+branches, selector prologue and original transaction operator.
+[`server_live_roster.h`](server_live_roster.h) accepts a real HOST
+server-world, never a remote-only client or prediction world.
+[`server-stock-live-hook.py`](server-stock-live-hook.py) now selects the
+correct original selector RVA and callsites for either exact executable.
+These updates were compiled in disposable Windows Kiln integration and
+tested with cross-platform native profile regressions.
+
+**Critical additional discovery: the existing released Kiln Types service
+already resolves game ECS systems by name.** `kiln.types`
+`system_find("cache_crafting_stock")` and `system_info(index)` provide
+the original client's update RVA, including build changes, without
+guessing an address or running another EXE probe. The native hosted-world
+`bind()` now requires that verified system descriptor and records the
+entry RVA in `original_client_cache_update_rva` before the stock selector
+can arm. This check is performed through `Kiln.Types`, not client
+`.rdata` string addresses.
+
+**Still not implemented:** the client program's actual post-update
+`PlayerBasesSystemClient` material totals and authorised source
+replication. `Kiln.Types` also provides `system_hook` with the game's
+real ProgramContext and original execution, but the cache access/write
+contract has not yet been verified. No blind memory patch, forced
+craft-button enable, user installation or playable build is authorized.
+The exact original transaction's remote stock deductions likewise still
+require running-game acceptance tests.
+
 ## Precise missing native engine interfaces
 
 1. **Server collector:** the current-build function, list layout, stock-mode-2
@@ -178,15 +223,17 @@ single-player crafting menu display remote stock.
    pages, and retains the appended owner list until the original payer returns.
    The actual dedicated-server detour is now present and Windows-CI-compiled,
    but has no independent running-game validation and is disabled in public
-   builds; the client's server-world equivalent remains unverified.
+   builds; the exact client-hosted selector, caller RVAs and server-world
+   session are now integrated and CI-compiled, not yet exercised in game.
 2. **Game authorization:** use the game's actual Magic stock component,
    dynamic stock enable state, active altar/base relationship and
    actor/player permission checks. Client inventory/template names and base
    AABB geometry are insufficient. Do not assert authorization without
    matching game evidence.
-3. **Client collector:** identify native `cache_crafting_stock`'s current
-   interface and its use of `PlayerBasesSystemClient`, including material
-   category choices. The client may display remote counts only when its
+3. **Client collector:** `Kiln.Types` can now identify the original
+   `cache_crafting_stock` update by name and RVA on the live client; the
+   remaining work is the **actual cache data access/update contract** for
+   `PlayerBasesSystemClient`, including material category choices. The client may display remote counts only when its
    connected server supports the same extension, with consistent source
    identities and a fresh state epoch.
 4. **Consistency:** preserve vanilla local-first ordering, player backpack,
