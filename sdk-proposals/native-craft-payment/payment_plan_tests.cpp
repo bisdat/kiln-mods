@@ -120,7 +120,7 @@ int main() {
         auto s = std::vector<Source>{stock(Player, 200, 0, String, 2), stock(RemoteChest, 1081, 1, String, 5)};
         auto p = planned(Player, {{String, 6}}, s);
         MockNativeTx tx(s);
-        auto rc = stage_plan(p, [&](const Take& t) { return tx.stage(t); });
+        auto rc = stage_plan(p, Player, [&](const Take& t) { return tx.stage(t); });
         assert(rc == PaymentOutcome::StagedExact && !tx.committed && tx.calls == 2);
         tx.commit();
         assert(tx.material[slot(200, 0)].second == 0);
@@ -130,7 +130,7 @@ int main() {
         auto s = std::vector<Source>{stock(RemoteChest, 1081, 0, String, 10)};
         auto p = planned(Player, {{String, 4}}, s);
         MockNativeTx tx(s); tx.wrong_slot = 1;
-        auto rc = stage_plan(p, [&](const Take& t) { return tx.stage(t); });
+        auto rc = stage_plan(p, Player, [&](const Take& t) { return tx.stage(t); });
         assert(rc == PaymentOutcome::AbortNeedsRollback && !tx.committed);
         tx.rollback();
         assert(tx.staged == tx.material);
@@ -139,14 +139,20 @@ int main() {
         auto s = std::vector<Source>{stock(Player, 200, 0, String, 1), stock(RemoteChest, 1081, 0, String, 3)};
         auto p = planned(Player, {{String, 4}}, s);
         MockNativeTx tx(s); tx.deny_at = 2;
-        auto rc = stage_plan(p, [&](const Take& t) { return tx.stage(t); });
+        auto rc = stage_plan(p, Player, [&](const Take& t) { return tx.stage(t); });
         assert(rc == PaymentOutcome::AbortNeedsRollback && tx.calls == 2 && !tx.committed);
         assert(tx.staged != tx.material); tx.rollback(); assert(tx.staged == tx.material);
+    });
+    run("local-only material uses the untouched vanilla payer", [] {
+        auto p = planned(Player, {{String, 2}}, {stock(Player, 200, 0, String, 10)});
+        int calls = 0;
+        auto rc = stage_plan(p, Player, [&](const Take&) -> StageResult { ++calls; return {}; });
+        assert(rc == PaymentOutcome::Declined && calls == 0);
     });
     run("no plan means no native staging", [] {
         auto p = planned(Player, {{String, 100}}, {stock(RemoteChest, 1081, 0, String, 10)});
         int calls = 0;
-        auto rc = stage_plan(p, [&](const Take&) -> StageResult { ++calls; return {}; });
+        auto rc = stage_plan(p, Player, [&](const Take&) -> StageResult { ++calls; return {}; });
         assert(rc == PaymentOutcome::Declined && !calls);
     });
     run("zero or huge op counts are refused", [] {
