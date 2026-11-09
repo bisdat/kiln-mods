@@ -2,13 +2,17 @@
   <PropertyGroup>
     <KilnModId>cross-base-storage</KilnModId>
     <KilnModName>Cross-base Storage (Kiln)</KilnModName>
-    <Version>0.1.7</Version>
+    <Version>0.1.8</Version>
     <Authors>bisdat</Authors>
-    <Description>Read-only magic chest stock discovery, native craft/build event tracing and recipe requirement and read-only source quote planning and chest-to-inventory link diagnostics; vanilla cross-base crafting is not yet supported.</Description>
+    <Description>Read-only cross-base Magic Chest discovery, source quotes, recipe and chest-link diagnostics, and optional native payer/cost/journal observation; no remote crafting or resource mutations.</Description>
     <PackageProjectUrl>https://github.com/bisdat/kiln-mods</PackageProjectUrl>
     <KilnSide>server</KilnSide>
     <KilnClients>none</KilnClients>
-    <KilnServices>Items;World;Spawn;Saves;Chat;Gameplay</KilnServices>
+    <KilnServices>Items;World;Spawn;Saves;Chat;Gameplay;Rules</KilnServices>
     <KilnGameIds>None</KilnGameIds>
   </PropertyGroup>
+  <ItemGroup>
+    <!-- Shared optional diagnostic formatter; compiles into this mod, no observer dependency. -->
+    <Compile Include="../CraftPaymentTrace/TraceReader.cs" Link="NativeRecipeTraceReader.cs" />
+  </ItemGroup>
 </Project>
