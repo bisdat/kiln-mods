@@ -44,6 +44,10 @@ struct CacheState {
     std::vector<uint32_t> owners;
     int here=-2;
     uint32_t base_count=0;
+    // Stable address for the vanilla player_ui chest-order check when the
+    // current base has no local Magic Chest. Real item totals still come
+    // from cache_crafting_stock, and actual payment remains server-native.
+    uint32_t menu_first_chest=0;
 };
 inline std::mutex g_registry_lock;
 inline std::array<std::unique_ptr<CacheState>,4> g_registry;
@@ -59,6 +63,30 @@ inline CacheState* state_for(uint8_t* sys) {
     }
     return nullptr; // world churn beyond 4 identities: fail closed
 }
+// A read-only lookup for the game's per-frame player_ui selector. The UI
+// asks thousands of times per second; never allocate or enumerate here.
+inline CacheState* known_state(uint8_t* sys) {
+    if(!sys) return nullptr;
+    std::lock_guard<std::mutex> lock(g_registry_lock);
+    for(auto& x:g_registry)if(x && x->system==sys)return x.get();
+    return nullptr;
+}
+// Original menu chooses "backpack only" with zero current-base chests,
+// even when its already-cached remote material totals are sufficient.
+// Expose ONE previously verified remote chest so the game's menu chooses
+// normal chest stock mode; the cache, not this alias, supplies quantities.
+// The game server's payer always rechecks ingredients inside InventoryTx.
+inline bool menu_chest_mode(uint8_t* sys,uint32_t player,
+                            const uint32_t** first_owner) {
+    if(!enabled || !sys || !player || !first_owner)return false;
+    CacheState* state=known_state(sys);
+    if(!state)return false;
+    std::lock_guard<std::mutex> lock(state->mutex);
+    if(!state->menu_first_chest || state->owners.empty())return false;
+    *first_owner=&state->menu_first_chest;
+    return true;
+}
+
 inline bool read32(const void* p, uintptr_t off, uint32_t* out) {
     if(!p || !out)return false;
     __try {
@@ -175,6 +203,7 @@ inline uint8_t* __fastcall hk_client_stock(
         std::vector<uint32_t> new_owners;
         if(!collect(sys,bases,here,&new_owners))return original();
         state->owners=std::move(new_owners);
+        state->menu_first_chest=state->owners.empty()?0:state->owners.front();
         state->here=here;
         state->base_count=bases;
     }
