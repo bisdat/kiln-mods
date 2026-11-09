@@ -35,14 +35,15 @@ inline constexpr uint32_t kBaseItemCount = 0x38;
 inline constexpr uint32_t kBaseFuelPointer = 0x58;
 inline constexpr uint32_t kBaseFuelCount = 0x60;
 
-struct Slice { const void* ptr = nullptr; uint64_t size = 0; };
-using GetComponent = Slice* (__fastcall*)(Slice*, uintptr_t, uint32_t, uint32_t);
+// InventoryCraftingStock is an ECS TEMPLATE component, not a dynamic
+// component. GetComponent would return nullptr on genuine Magic Chests.
+using GetTemplateComponent = void* (__fastcall*)(uintptr_t, uint32_t, uint32_t);
 
 struct Services {
     const KilnApi* api = nullptr;
     const KilnPlayersApi* players = nullptr;
     const KilnItemsApi* items = nullptr;
-    GetComponent get_component = nullptr;
+    GetTemplateComponent get_template = nullptr;
     bool hash_ok = false;
     bool original_finality_ok = false;
 };
@@ -124,13 +125,13 @@ inline bool real_solo_player(uint32_t actor) {
 }
 
 inline bool magic_component(uint32_t owner) {
-    if (!S.get_component || !S.api || !S.api->server_world()) return false;
-    Slice s{};
-    // Native ECS component existence, not a template string.
+    if (!S.get_template || !S.api || !S.api->server_world()) return false;
+    // The game's native template component, not a chest name or mutable C#
+    // string flag. The native base stock list additionally confirms that
+    // the game currently registered it for crafting.
     __try {
-        const auto* result=S.get_component(&s,S.api->server_world(),
-                                          kMagicStockHash,owner);
-        return result==&s && s.ptr && s.size>=1;
+        return S.get_template(S.api->server_world(),
+                              kMagicStockHash,owner)!=nullptr;
     } __except(EXCEPTION_EXECUTE_HANDLER) { return false; }
 }
 
@@ -288,12 +289,12 @@ inline bool bind(const KilnApi* api) {
        items->header.size<offsetof(KilnItemsApi,read_in_tx)+sizeof(items->read_in_tx) ||
        !items->read_in_tx)return false;
     uintptr_t fn=0,commit=0,rollback=0;
-    if(api->symbol(KilnStr{"GetComponent",12},&fn)!=KILN_OK || !fn ||
+    if(api->symbol(KilnStr{"GetTemplateComponent",20},&fn)!=KILN_OK || !fn ||
        api->symbol(KilnStr{"items/InventoryCommit",21},&commit)!=KILN_OK ||
        api->symbol(KilnStr{"items/InventoryRollback",23},&rollback)!=KILN_OK ||
        !commit || !rollback)return false;
     S.api=api;S.players=players;S.items=items;
-    S.get_component=reinterpret_cast<GetComponent>(fn);
+    S.get_template=reinterpret_cast<GetTemplateComponent>(fn);
     S.hash_ok=true;S.original_finality_ok=true;
     return true;
 }
