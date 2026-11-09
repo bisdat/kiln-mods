@@ -39,7 +39,7 @@ struct ChangeStamp {
 
 // Native Linux: inode+device and ctime detect edits even when mtime is reset.
 #[cfg(unix)]
-fn change_stamp(file: &File) -> Option<ChangeStamp> {
+fn raw_change_stamp(file: &File) -> Option<ChangeStamp> {
     use std::os::unix::fs::MetadataExt;
     let m = file.metadata().ok()?;
     Some(ChangeStamp {
@@ -50,7 +50,7 @@ fn change_stamp(file: &File) -> Option<ChangeStamp> {
 }
 
 #[cfg(windows)]
-fn change_stamp(file: &File) -> Option<ChangeStamp> {
+fn raw_change_stamp(file: &File) -> Option<ChangeStamp> {
     use std::{ffi::c_void, os::windows::io::AsRawHandle};
     #[repr(C)]
     struct Basic {
@@ -85,7 +85,67 @@ fn change_stamp(file: &File) -> Option<ChangeStamp> {
 }
 
 #[cfg(not(any(unix, windows)))]
-fn change_stamp(_file: &File) -> Option<ChangeStamp> { None }
+fn raw_change_stamp(_file: &File) -> Option<ChangeStamp> { None }
+
+// Changes to the underlying file are trusted ONLY after a live mutation
+// experiment, in the same cache/game volume, proves the change stamp moves
+// despite restoring the last-write timestamp. Fail closed on unsupported
+// Wine/Proton or filesystem implementations.
+static VERIFIED_CHANGE_VOLUME: std::sync::OnceLock<Option<u64>> =
+    std::sync::OnceLock::new();
+
+fn change_stamp(file: &File) -> Option<ChangeStamp> {
+    let volume = VERIFIED_CHANGE_VOLUME.get()?.as_ref()?;
+    let stamp = raw_change_stamp(file)?;
+    if stamp.volume == *volume { Some(stamp) } else { None }
+}
+
+pub(crate) fn verify_change_stamp_on_volume(dir: &Path) -> bool {
+    let volume = VERIFIED_CHANGE_VOLUME.get_or_init(|| {
+        use std::io::{Seek, SeekFrom, Write};
+        let probe = || -> std::io::Result<Option<u64>> {
+            let path = dir.join(format!(
+                ".eml-change-stamp-probe-{}-{}",
+                std::process::id(),
+                std::time::SystemTime::now()
+                    .duration_since(std::time::UNIX_EPOCH)
+                    .unwrap_or_default().as_nanos(),
+            ));
+            let mut f = std::fs::OpenOptions::new().read(true).write(true)
+                .create_new(true).open(&path)?;
+            let result = (|| -> std::io::Result<Option<u64>> {
+                f.write_all(b"first")?;
+                f.flush()?;
+                let before = raw_change_stamp(&f);
+                let old_mtime = f.metadata()?.modified()?;
+                std::thread::sleep(std::time::Duration::from_millis(35));
+                f.seek(SeekFrom::Start(0))?;
+                f.write_all(b"other")?;
+                f.flush()?;
+                f.set_modified(old_mtime)?;
+                let after = raw_change_stamp(&f);
+                let (Some(a), Some(b)) = (before, after) else {
+                    return Ok(None);
+                };
+                if a.volume != b.volume || a.file_id != b.file_id
+                    || a.change_time == b.change_time {
+                    return Ok(None);
+                }
+                let reopened = File::open(&path)?;
+                if raw_change_stamp(&reopened).as_ref() != Some(&b)
+                    || reopened.metadata()?.modified()? != old_mtime {
+                    return Ok(None);
+                }
+                Ok(Some(b.volume))
+            })();
+            drop(f);
+            let _ = std::fs::remove_file(&path);
+            result
+        };
+        probe().ok().flatten()
+    });
+    volume.is_some()
+}
 
 fn modified_nanos(m: &Metadata) -> std::io::Result<u128> {
     m.modified()?.duration_since(std::time::UNIX_EPOCH)
@@ -265,6 +325,21 @@ change("cache/mod.rs",
         if let Some(s) = stamp { self.stamps.insert(path.clone(), s); }
         self.files.insert(path, timestamp);''')
 
+change("lib.rs",
+'''    info!("Running lua with options: {:?}", args);
+
+    let cache_key''',
+'''    info!("Running lua with options: {:?}", args);
+    let strong_change_stamps =
+        crate::cache::verify_change_stamp_on_volume(env.cache_dir().as_std_path());
+    tracing::info!(
+        target: "eml::lua",
+        event = "fingerprint_change_stamp_probe",
+        strong_change_stamps,
+        "EML change-stamp reliability gate (full CRC fallback if false)"
+    );
+
+    let cache_key''')
 change("lib.rs",
 '''    let cache_diff = if !args.options.skip_cache {
         let current_cache = FileStateCache::read(env.cache_dir());
