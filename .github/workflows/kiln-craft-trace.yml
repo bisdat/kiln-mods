@@ -1,0 +1,85 @@
+name: Experimental Kiln crafting transaction trace
+
+on:
+  push:
+    branches: ['feature/cross-base-storage-kiln']
+    paths:
+      - 'sdk-proposals/native-craft-trace/**'
+      - '.github/workflows/kiln-craft-trace.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  api:
+    name: Native ABI and managed Kiln.Rules (Linux)
+    runs-on: ubuntu-24.04
+    env:
+      PINNED_SHA: 77e525888ac0d5f4f6b16103e945ed7ac049b50e
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Fetch isolated source
+        run: |
+          git init .kiln-trace
+          git -C .kiln-trace remote add origin https://github.com/frostdev-ops/kiln.git
+          git -C .kiln-trace fetch --depth=1 origin "$PINNED_SHA"
+          git -C .kiln-trace checkout --detach "$PINNED_SHA"
+      - name: Apply passive trace to existing hooks
+        run: |
+          python3 sdk-proposals/native-craft-trace/native.py .kiln-trace
+          python3 sdk-proposals/native-craft-trace/managed.py .kiln-trace
+          git -C .kiln-trace diff --check
+      - name: Verify 64-byte value ABI
+        run: |
+          printf '#include "services/kiln_rules.h"\nstatic_assert(sizeof(KilnRulesCraftTrace) == 64);\nint main() { return 0; }\n' | \
+            c++ -std=c++20 -Wall -Wextra -Werror -x c++ -fsyntax-only -I .kiln-trace/native/core/abi -
+      - name: Compile managed Kiln.Rules
+        run: dotnet build .kiln-trace/managed/services/Kiln.Rules/Kiln.Rules.csproj --configuration Release
+      - name: Safety constraints
+        run: |
+          python3 sdk-proposals/native-craft-trace/verify.py .kiln-trace
+          echo 'PASS: read-only provider trace, no inventory mutation or new hooks'
+
+  native:
+    name: Compile native kiln-rules.dll (Windows x64)
+    runs-on: windows-2022
+    env:
+      PINNED_SHA: 77e525888ac0d5f4f6b16103e945ed7ac049b50e
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Fetch isolated source
+        shell: pwsh
+        run: |
+          git init .kiln-trace
+          git -C .kiln-trace remote add origin https://github.com/frostdev-ops/kiln.git
+          git -C .kiln-trace fetch --depth=1 origin $env:PINNED_SHA
+          git -C .kiln-trace checkout --detach $env:PINNED_SHA
+      - name: Apply passive trace
+        shell: pwsh
+        run: |
+          python sdk-proposals/native-craft-trace/native.py .kiln-trace
+          python sdk-proposals/native-craft-trace/managed.py .kiln-trace
+          git -C .kiln-trace diff --check
+          python sdk-proposals/native-craft-trace/verify.py .kiln-trace
+      - name: Configure native x64
+        shell: pwsh
+        run: cmake -S .kiln-trace/native -B .kiln-trace/native/build/ci -G "Visual Studio 17 2022" -A x64
+      - name: Compile existing rules service
+        shell: pwsh
+        run: cmake --build .kiln-trace/native/build/ci --config Release --target kiln-rules --parallel 4
+      - name: Scope check
+        shell: pwsh
+        run: |
+          Write-Output 'PASS: existing native rules hooks compile with passive trace. CI ONLY.'
+          Write-Output 'NOT tested: running a game, paying from remote chests, client/server source eligibility.'
