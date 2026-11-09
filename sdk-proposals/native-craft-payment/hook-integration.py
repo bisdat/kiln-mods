@@ -39,7 +39,7 @@ destination = root / "native/services/rules/cbpay"
 destination.mkdir(parents=True, exist_ok=True)
 src = repo / "sdk-proposals/native-craft-payment"
 for name in ("payment_plan.h", "native_take_adapter.h",
-             "recipe_payment_bridge.h", "selected_costs.h", "engine_hook.h",
+             "recipe_payment_bridge.h", "selected_costs.h", "recipe_metadata.h", "engine_hook.h",
              "tx-source-provider.h", "tx-source-native.h"):
     shutil.copyfile(src / name, destination / name)
     print("COPIED isolated native header", name)
