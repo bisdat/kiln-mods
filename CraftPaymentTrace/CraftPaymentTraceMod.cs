@@ -13,9 +13,9 @@ public sealed class CraftPaymentTraceMod : Mod
     {
         _command = Commands.Register(
             "cbtrace", Handle, CommandPermission.Admin,
-            usage: "<status|cost|journal|payer|all>",
+            usage: "<status|pair|cost|journal|payer|all>",
             description: "Inspect OPTIONAL passive native recipe-payment snapshots (read-only).");
-        Log.Warn("Craft Payment Trace 0.1.0: read-only OBSERVER only. " +
+        Log.Warn("Craft Payment Trace 0.1.1: read-only OBSERVER only. " +
                  "The standard Kiln release does not contain the experimental cost/journal trace API. " +
                  "No native DLL or recipe hook is installed by this mod.");
     }
@@ -29,7 +29,7 @@ public sealed class CraftPaymentTraceMod : Mod
         {
             c.Reply("Cross-base native trace observer: read-only, no transaction interception, " +
                     "no storage mutation, no vanilla crafting override.");
-            foreach (var item in new[] { "payer", "cost", "journal" })
+            foreach (var item in new[] { "pair", "payer", "cost", "journal" })
             {
                 var lines = TraceReader.Read(typeof(Rules), item);
                 c.Reply($"{item}: {lines[0]}");
@@ -40,11 +40,11 @@ public sealed class CraftPaymentTraceMod : Mod
         }
         if (action == "all")
         {
-            foreach (var name in new[] { "payer", "cost", "journal" })
+            foreach (var name in new[] { "pair", "payer", "cost", "journal" })
                 foreach (var line in TraceReader.Read(typeof(Rules), name)) c.Reply(line);
             return;
         }
-        if (action is not ("payer" or "cost" or "journal"))
+        if (action is not ("pair" or "payer" or "cost" or "journal"))
             throw c.Usage($"Unknown Craft Payment Trace action '{action}'.");
         foreach (var line in TraceReader.Read(typeof(Rules), action)) c.Reply(line);
     }
