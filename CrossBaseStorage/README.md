@@ -1,4 +1,4 @@
-# Cross-base Storage (Kiln) — 0.1.6
+# Cross-base Storage (Kiln) — 0.1.7
 
 **Status: read-only inventory + vanilla craft/build observation prototype — not a working cross-base crafting mod.**
 
@@ -14,7 +14,7 @@ The existing independent [Cross-Base Storage (Beta) by CharosDX on Nexus Mods](h
 
 ## Why the full feature is not implemented yet
 
-The pinned public Kiln SDK `v0.2.0-dev.15` offers:
+The public Kiln SDK, built against the latest published Kiln development release, offers:
 
 - `Items.FindInventories`, `Items.Read`: enumerate and inspect **currently loaded** inventories.
 - `Spawn.Inspect` and `World.Position`: resolve chest templates and positions.
@@ -27,6 +27,21 @@ Even a complete live server scan does **not** include unloaded distant bases. Th
 
 For these reasons, the development preview **never moves, gives, takes, consumes, creates or duplicates any item**. It cannot make the normal crafting/building interfaces use other bases' Magic Chests. Enabling it does not alter vanilla storage behaviour.
 
+## Magic Chest recognition updated in 0.1.7
+
+Your confirmed suffix **`_Magic`** is the sole template-name classifier for
+Magic Chests. For example `Prop_Decoration_T6_Storage_72_Magic` matches, as do
+`Prop_Decoration_T5_Storage_40_Magic` and other capacities ending in
+`_Magic`. `Storage_72` is **not** required, nor is 72 the maximum
+recognised inventory size. Matching is case-insensitive and requires the
+literal trailing underscore and `Magic` as the end of the template.
+Normal chests remain visible to template diagnostics but never enter the
+Magic stock pool.
+
+This is a **read-only naming rule**, not the game's authoritative Magic
+entitlement or confirmation that a particular player is permitted to use
+another base's supplies. Crafting and building remain unchanged.
+
 ## What we verified in a live Enshrouded world (8 November 2026)
 
 - Enshrouded's known 72-slot Magic Chest template is `Prop_Decoration_T6_Storage_72_Magic`. The template-name detector reported `magicByTemplate=True` on a real chest.
@@ -37,7 +52,7 @@ For these reasons, the development preview **never moves, gives, takes, consumes
 
 ## Newly investigated native craft/build integration (0.1.4)
 
-The pinned Kiln.Gameplay SDK exposes the native game recipe registry and two read-only event families:
+The Kiln.Gameplay SDK exposes the native game recipe registry and two read-only event families:
 
 - `CraftEvent`: captured before the game's crafting routine, with its operator (player), station, recipe id and requested count. A player normally cannot send this event when the native crafting UI disables its craft button.
 - `ItemCraftedEvent`: reports the game's result, including `MissingMaterials`, `NoRoomForOutput` and `Crafted`. This is not an inventory-source resolver and cannot retroactively change the result.
@@ -68,7 +83,7 @@ It installs as a **server-side Kiln mod** and exposes administrator-only command
 | `cbstore lastbuild` | Show the latest native building outcome for your player, if the client sent an action |
 | `cbstore help` | List diagnostics |
 
-`scan`, `stock` and `top` count only storage chest templates that contain **Magic**. This is *not* guaranteed to be the same as the game's Magic Chest property. If `cbstore near` reports `magicByTemplate=false` while standing next to a known Magic Chest, that is useful evidence that an engine-supported flag must be discovered. All commands work on the Kiln server tick thread; `near` requires an in-world player location.
+As of **0.1.7**, `scan`, `stock`, `top`, `quote`, `plan`, `links` and `resolve` classify candidate Magic Chests only when the template ends with **`_Magic`** (case-insensitive). The slot count is taken from the actual inventory; there is **no 72-slot ceiling**. This is *not* guaranteed to be the same as the game's Magic Chest property. If `cbstore near` reports `magicByTemplate=false` while standing next to a known Magic Chest, that is useful evidence that an engine-supported flag must be discovered. All commands work on the Kiln server tick thread; `near` requires an in-world player location.
 
 ### Local solo command example
 
@@ -207,7 +222,7 @@ Use `cbstore lastbuild` **after a normal build action**. It reports only the pos
 
 1. Open [Cross-base Storage GitHub Actions](https://github.com/bisdat/kiln-mods/actions/workflows/cross-base-storage.yml).
 2. Download `cross-base-storage-kiln-package` from a successful build.
-3. Extract the Actions artifact. Import `cross-base-storage-0.1.6.zip` into Kiln Library and enable it in the active profile.
+3. Extract the Actions artifact. Import `cross-base-storage-0.1.7.zip` into Kiln Library and enable it in the active profile.
 4. Restart Enshrouded, enter a world, run `cbstore links 1412` (if this owner still exists), then `cbstore resolve <linked ID from the output>` to check owner mapping. Normal `scan`, `near`, `quote`, `lastcraft` and `plan` diagnostics remain available.
 5. This package **does not yet enable cross-base crafting**. If you only want the finished gameplay effect, do not install this diagnostic development preview.
 
@@ -231,4 +246,4 @@ Until those primitives exist in the installed Kiln runtime, the official craftin
 bash scripts/build.sh CrossBaseStorage
 ```
 
-Output: `bin/Release/cross-base-storage-0.1.6.zip`, with exact SDK metadata in `bin/Release/kiln-sdk-provenance.json`. The workflow builds and uploads this prototype on pull requests and optionally publishes a GitHub **development pre-release** for a matching **numeric** `cross-base-storage-v0.1.6` tag. Future versions use `0.1.7`, `0.1.8`, etc., without an `-alpha.n` suffix. **It should not be presented as a playable cross-base storage release.**
+Output: `bin/Release/cross-base-storage-0.1.7.zip`, with exact SDK metadata in `bin/Release/kiln-sdk-provenance.json`. The workflow builds and uploads this prototype on pull requests and optionally publishes a GitHub **development pre-release** for a matching **numeric** `cross-base-storage-v0.1.7` tag. Future versions use `0.1.8`, `0.1.9`, etc., without an `-alpha.n` suffix. **It should not be presented as a playable cross-base storage release.**
