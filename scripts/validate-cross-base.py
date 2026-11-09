@@ -33,6 +33,11 @@ assert "case \"plan\":" in src
 assert "case \"lastcraft\":" in src
 assert "case \"lastbuild\":" in src
 assert "case \"quote\":" in src
+assert "case \"links\":" in src
+assert "case \"resolve\":" in src
+assert "LoadedLinkIndex(chests)" in src
+assert "InventoryLinkIndex.Build(" in src
+assert (root / "CrossBaseStorage/InventoryLinkIndex.cs").exists()
 assert "MaterialQuotePlanner.QuoteExact(" in src
 assert (root / "CrossBaseStorage/MaterialQuotePlanner.cs").exists()
 assert "No craft request was recorded" in src
@@ -40,21 +45,22 @@ assert "UNRESOLVED CATEGORY/PLACEHOLDER ingredient" in src
 assert "A raw count of 0 does NOT establish zero material cost" in src
 assert "INCOMPLETE RECIPE INPUT DATA" in src
 assert "cbstore recipes [output name]" in src
-assert project.findtext("./PropertyGroup/Version") == "0.1.5"
+assert project.findtext("./PropertyGroup/Version") == "0.1.6"
 assert re.fullmatch(r"0\.1\.\d+", project.findtext("./PropertyGroup/Version") or "")
 
 # This phase is explicitly non-mutating: no give, take, teleport, mutate,
 # vanilla recipe injection, or raw component writes.
+all_code = "\\n".join(p.read_text(encoding="utf-8") for p in (root / "CrossBaseStorage").glob("*.cs"))
 for token in (
     r"\bItems\s*\.\s*(?:Give|Take|TakeSlot|GiveRecipeResult)\s*\(",
     r"\bWorld\s*\.\s*(?:TryWrite|QueueAdd|QueueRemove)\s*\(",
     r"\bGameplay\s*\.\s*Inject\s*\.",
     r"\bSpawn\s*\.\s*(?:Destroy|Create)\s*\(",
 ):
-    assert re.search(token, src) is None, f"Mutating operation in discovery phase: {token}"
+    assert re.search(token, all_code) is None, f"Mutating operation in discovery phase: {token}"
 
 for text in ("read-only", "not", "building", "crafting", "loaded", "magic"):
     assert text in guide.lower(), f"README must explain limitation: {text}"
 
-print("PASS: Cross-base Storage 0.1.5 has read-only chest/recipe diagnostics, " +
+print("PASS: Cross-base Storage 0.1.6 has read-only chest/recipe/link diagnostics, " +
       "native craft/build event observation and no inventory mutation calls")
