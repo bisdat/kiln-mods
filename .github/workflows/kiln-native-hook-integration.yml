@@ -76,6 +76,8 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw 'Hook integration safety validation failed' }
           python sdk-proposals/native-craft-payment/tx-inventory-snapshot.py .kiln-native-pay
           if ($LASTEXITCODE -ne 0) { throw 'Transaction snapshot source integration failed' }
+          python sdk-proposals/native-craft-payment/settlement-hook.py .kiln-native-pay
+          if ($LASTEXITCODE -ne 0) { throw 'Original recipe settlement witness patch failed' }
           git -C .kiln-native-pay diff --check
           if ($LASTEXITCODE -ne 0) { throw 'Invalid patch' }
 
