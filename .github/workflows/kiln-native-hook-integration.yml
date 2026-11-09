@@ -74,6 +74,8 @@ jobs:
         run: |
           python sdk-proposals/native-craft-payment/hook-integration.py .kiln-native-pay
           if ($LASTEXITCODE -ne 0) { throw 'Hook integration safety validation failed' }
+          python sdk-proposals/native-craft-payment/tx-inventory-snapshot.py .kiln-native-pay
+          if ($LASTEXITCODE -ne 0) { throw 'Transaction snapshot source integration failed' }
           git -C .kiln-native-pay diff --check
           if ($LASTEXITCODE -ne 0) { throw 'Invalid patch' }
 
@@ -90,16 +92,18 @@ jobs:
       - name: Compile adapted original kiln-rules.dll without installing it
         shell: pwsh
         run: |
-          cmake --build .kiln-native-pay/native/build/ci --config Release --target kiln-rules --parallel 4
+          cmake --build .kiln-native-pay/native/build/ci --config Release --target kiln-items kiln-rules --parallel 4
           if ($LASTEXITCODE -ne 0) { throw 'Native Kiln Rules hook integration failed compilation' }
-          $dlls = @(Get-ChildItem .kiln-native-pay/native/build/ci -Recurse -File -Filter kiln-rules.dll)
-          if ($dlls.Count -ne 1) { throw "Expected one compiled native rules DLL; got $($dlls.Count)" }
-          Get-FileHash $dlls[0].FullName -Algorithm SHA256
+          foreach ($dllName in @('kiln-items.dll', 'kiln-rules.dll')) {
+            $dlls = @(Get-ChildItem .kiln-native-pay/native/build/ci -Recurse -File -Filter $dllName)
+            if ($dlls.Count -ne 1) { throw "Expected one compiled $dllName; got $($dlls.Count)" }
+            Get-FileHash $dlls[0].FullName -Algorithm SHA256
+          }
 
       - name: Explicit release gate remains closed
         shell: pwsh
         run: |
-          Write-Output 'SUCCESS: BOTH ORIGINAL KILN RECIPE PAYER HOOKS COMPILED with the native payment bridge.'
-          Write-Output 'No authorised native source provider yet: resolver=nullptr in both production hook callsites.'
+          Write-Output 'SUCCESS: original Kiln Rules hooks and native transaction-scoped Kiln Items snapshots compiled.'
+          Write-Output 'Native slots can be read from a borrowed tx but Magic/base entitlement and selected costs remain unresolved; payment resolver=nullptr.'
           Write-Output 'No DLL installed, deployed, published as a playable mod, or uploaded as an artifact.'
           Write-Output 'Cross-base Storage 0.1.9 and the current Kiln installation remain unchanged.'
