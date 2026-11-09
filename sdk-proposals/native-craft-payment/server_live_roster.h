@@ -65,6 +65,13 @@ struct SelectorInput {
 };
 inline thread_local SelectorInput current_selector{};
 
+inline bool read_u32(const void* base, uintptr_t off, uint32_t* out) {
+    if (!base || !out) return false;
+    __try {
+        std::memcpy(out, static_cast<const uint8_t*>(base) + off, 4);
+        return true;
+    } __except(EXCEPTION_EXECUTE_HANDLER) {return false;}
+}
 inline bool read_u64(const void* base, uintptr_t off, uint64_t* out) {
     if (!base || !out) return false;
     __try {
@@ -236,9 +243,13 @@ inline bool roster(uint32_t actor,void* tx,
     std::vector<BaseRecord> base_records;
     for (const void* sys:systems) {
         if(!sys)continue;
+        uint32_t active_bases=0;
+        if(!read_u32(sys,0x24,&active_bases) ||
+           !active_bases || active_bases>kBaseSlots)continue;
         std::vector<BaseRecord> records;
+        records.reserve(active_bases);
         bool ok=true;
-        for(uint32_t i=0;i<kBaseSlots;++i) {
+        for(uint32_t i=0;i<active_bases;++i) {
             BaseRecord b{};
             if(!base_record(sys,i,&b)){ok=false;break;}
             records.push_back(b);
@@ -269,7 +280,7 @@ inline bool roster(uint32_t actor,void* tx,
     for(size_t i=0;i<original.size();++i)if(original[i]!=local_ids[i])return false;
 
     vanilla.clear();remote.clear();
-    for(uint32_t i=0;i<kBaseSlots;++i) {
+    for(uint32_t i=0;i<base_records.size();++i) {
         const auto& b=base_records[i];
         if(!b.item_count)continue;
         std::vector<uint32_t> ids;
