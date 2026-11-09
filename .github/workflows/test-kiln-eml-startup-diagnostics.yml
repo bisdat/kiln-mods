@@ -1,0 +1,72 @@
+name: Verify Kiln EML startup-stage diagnostics patch
+
+on:
+  push:
+    branches: [diagnostic/kiln-eml-wine-path]
+    paths:
+      - 'diagnostics/kiln-eml-startup/**'
+      - '.github/workflows/test-kiln-eml-startup-diagnostics.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pinned-source-regression:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, windows-2022]
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Check out diagnostic patch
+        uses: actions/checkout@v4
+
+      - name: Check out the exact Kiln revision used by failed startup
+        uses: actions/checkout@v4
+        with:
+          repository: frostdev-ops/kiln
+          ref: d35ee27c5c4f1f31b1c4a3503636a653d6d3ae63
+          path: kiln-upstream
+          persist-credentials: false
+
+      - name: Apply observational EML diagnostics
+        run: |
+          python3 diagnostics/kiln-eml-startup/apply_instrumentation.py kiln-upstream
+          mkdir -p kiln-upstream/gpl/kiln-eml/eml/mod-loader-base/tests
+          cp diagnostics/kiln-eml-startup/stage_diagnostics.rs \
+             kiln-upstream/gpl/kiln-eml/eml/mod-loader-base/tests/stage_diagnostics.rs
+          printf '\n[dev-dependencies]\ntracing-subscriber = { version = "0.3.19", features = ["fmt"] }\n' \
+            >> kiln-upstream/gpl/kiln-eml/eml/mod-loader-base/Cargo.toml
+
+      - name: Run success / late disappearance / escape regression tests
+        run: |
+          cd kiln-upstream/gpl/kiln-eml
+          cargo test -p mod-loader-base --test stage_diagnostics -- --nocapture
+
+      - name: Check all modified EML crates, including the Lua runner and plugin
+        run: |
+          cd kiln-upstream/gpl/kiln-eml
+          cargo check -p mod-loader-lua -p kiln-eml
+
+      - name: Publish reviewable upstream-source diff
+        if: matrix.os == 'ubuntu-24.04'
+        run: |
+          git -C kiln-upstream diff -- \
+            gpl/kiln-eml/eml/mod-loader-base/src/registry/fs.rs \
+            gpl/kiln-eml/eml/mod-loader-lua/src/runner/state.rs \
+            > kiln-eml-startup-stage-diagnostics.patch
+          test -s kiln-eml-startup-stage-diagnostics.patch
+          git -C kiln-upstream diff --check
+          echo "Source-only diagnostics patch ready for upstream review"
+      - name: Upload upstream-source patch (NOT a DLL or game mod)
+        if: matrix.os == 'ubuntu-24.04'
+        uses: actions/upload-artifact@v4
+        with:
+          name: kiln-eml-startup-stage-diagnostics-source-patch
+          path: kiln-eml-startup-stage-diagnostics.patch
+          if-no-files-found: error
+          retention-days: 30
