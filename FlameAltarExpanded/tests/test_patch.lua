@@ -22,7 +22,7 @@ do
         __newindex = function(u, key, value) assert(arrays[u])[key] = value end,
         __pairs = function(u) return pairs(assert(arrays[u])) end,
     })
-    probe:close()
+    io.close(probe)  -- metamethods now represent an array, not a file
 end
 local function mapped_array(value)
     local u = assert(io.tmpfile())
