@@ -1,0 +1,133 @@
+name: Follow latest Kiln development release
+
+# Scheduled workflows run only from main. While Cross-base Storage is in
+# its draft PR, compile that branch; after merge, compile main instead.
+on:
+  schedule:
+    - cron: '17,47 * * * *'
+  workflow_dispatch:
+    inputs:
+      force:
+        description: Rebuild even if this release was already verified
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: kiln-latest-release-follow
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    outputs:
+      source_ref: ${{ steps.branch.outputs.ref }}
+      release_tag: ${{ steps.release.outputs.tag }}
+      release_version: ${{ steps.release.outputs.version }}
+      build: ${{ steps.gate.outputs.build }}
+      cache_hit: ${{ steps.cache.outputs.cache-hit }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Select active Cross-base Storage development branch, then main
+        id: branch
+        shell: bash
+        run: |
+          if git ls-remote --exit-code --heads origin feature/cross-base-storage-kiln >/dev/null; then
+            echo 'ref=feature/cross-base-storage-kiln' >> "$GITHUB_OUTPUT"
+          else
+            echo 'ref=main' >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.branch.outputs.ref }}
+          clean: true
+      - name: Resolve the latest published Kiln dev release
+        id: release
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python3 scripts/resolve-kiln-release.py
+      - name: Check previously verified release
+        id: cache
+        uses: actions/cache/restore@v4
+        with:
+          path: .kiln-release-success.txt
+          key: kiln-release-verified-${{ steps.release.outputs.version }}
+          lookup-only: true
+      - name: Only rebuild for a new release or a forced run
+        id: gate
+        shell: bash
+        env:
+          CACHE_HIT: ${{ steps.cache.outputs.cache-hit }}
+          FORCE: ${{ inputs.force }}
+        run: |
+          if [[ "$FORCE" == "true" || "$CACHE_HIT" != "true" ]]; then
+            echo 'build=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'build=false' >> "$GITHUB_OUTPUT"
+            echo 'This released SDK already passed the three mod builds.'
+          fi
+
+  package:
+    needs: check
+    if: needs.check.outputs.build == 'true'
+    name: "${{ matrix.mod }} on ${{ needs.check.outputs.release_tag }}"
+    strategy:
+      fail-fast: false
+      matrix:
+        mod: [SurvivalQoL, EndlessChests, CrossBaseStorage]
+    runs-on: ubuntu-24.04
+    env:
+      GITHUB_TOKEN: ${{ github.token }}
+      KILN_RELEASE_TAG: ${{ needs.check.outputs.release_tag }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.check.outputs.source_ref }}
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Check release selection
+        run: python3 -m unittest discover -s tests/kiln-release -p 'test_*.py' -v
+      - name: Validate mod safety and source-data contracts
+        shell: bash
+        run: |
+          case "${{ matrix.mod }}" in
+            CrossBaseStorage)
+              python3 scripts/validate-cross-base.py
+              dotnet run --project tests/material-quote/MaterialQuote.Tests.csproj -c Release
+              dotnet run --project tests/inventory-links/InventoryLinks.Tests.csproj -c Release ;;
+            EndlessChests)
+              python3 scripts/validate-endless-ini.py
+              python3 scripts/test-chest-name-hashes.py
+              python3 scripts/test-chest-case.py ;;
+            SurvivalQoL) echo 'Survival QoL: build verification' ;;
+          esac
+      - name: Build and package against the exact selected release
+        run: bash scripts/build.sh "${{ matrix.mod }}"
+      - name: Include standalone INI for Endless Chests
+        if: matrix.mod == 'EndlessChests'
+        run: cp EndlessChests/defaults/endless-chests.defaults.ini bin/Release/endless-chests.defaults.ini
+      - name: Upload package with exact Kiln SDK provenance
+        uses: actions/upload-artifact@v4
+        with:
+          name: "kiln-${{ needs.check.outputs.release_version }}-${{ matrix.mod }}"
+          path: |
+            bin/Release/*.zip
+            bin/Release/kiln-sdk-provenance.json
+            bin/Release/endless-chests.defaults.ini
+          if-no-files-found: error
+          retention-days: 90
+
+  mark-success:
+    needs: [check, package]
+    if: needs.check.outputs.build == 'true' && needs.check.outputs.cache_hit != 'true' && needs.package.result == 'success'
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Write marker after every mod builds and tests successfully
+        run: echo "${{ needs.check.outputs.release_version }}" > .kiln-release-success.txt
+      - uses: actions/cache/save@v4
+        with:
+          path: .kiln-release-success.txt
+          key: kiln-release-verified-${{ needs.check.outputs.release_version }}
