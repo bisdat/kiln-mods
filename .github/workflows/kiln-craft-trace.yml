@@ -204,7 +204,7 @@ jobs:
           python3 sdk-proposals/native-craft-trace/package-lab.py \
             --native "trace-input/trace-native-$KILN_RELEASE_TAG/kiln-rules.dll" \
             --managed "trace-input/trace-managed-$KILN_RELEASE_TAG/Kiln.Rules.dll" \
-            --observer bin/Release/craft-payment-trace-0.1.0.zip \
+            --observer bin/Release/craft-payment-trace-0.1.1.zip \
             --release .kiln-release.json \
             --out "craft-payment-trace-LAB-$KILN_RELEASE_TAG.zip"
 
