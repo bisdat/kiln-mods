@@ -180,6 +180,7 @@ bool selector_prologue_is(uintptr_t selector) {
 }
 
 void install(const KilnApi* api) {
+    if(enabled || h_selector) return; // single successful installation per EXE
     enabled=false;
     if(!h_pay || !(g_hooks & KILN_RULES_HOOK_CRAFT) ||
        kiln_rules_creative::flame_creative() ||
@@ -248,12 +249,29 @@ edit(rules,
 #endif
     if constexpr (cbpay::settlement::kEnabled) {""")
 
+# Kiln.Rules arms the original payer at the FIRST world of any kind.
+# In hosted single-player that may be CLIENT before SERVER exists. Bind the
+# remote selector and client cache only AFTER the authoritative SERVER world
+# is started and the original payer already has its SafetyHook trampoline.
 edit(rules,
-"""    g_hooks |= kiln_rules_flight::install(g_api, off);  // character flight yields to Creative Mode too""",
-"""#if defined(CBPAY_ENABLE_SERVER_STOCK)
-    cbpay_game_stock::install(g_api);
+"""void arm_payments();
+
+void KILN_CALL on_world""",
+"""void arm_payments();
+#if defined(CBPAY_ENABLE_SERVER_STOCK)
+namespace cbpay_game_stock { void install(const KilnApi*); }
 #endif
-    g_hooks |= kiln_rules_flight::install(g_api, off);  // character flight yields to Creative Mode too""")
+
+void KILN_CALL on_world""")
+edit(rules,
+"""    if (ev->event == KILN_WORLD_STARTED) arm_payments();
+    if (ev->kind == KILN_WORLD_CLIENT""",
+"""    if (ev->event == KILN_WORLD_STARTED) arm_payments();
+#if defined(CBPAY_ENABLE_SERVER_STOCK)
+    if (ev->kind == KILN_WORLD_SERVER && ev->event == KILN_WORLD_STARTED)
+        cbpay_game_stock::install(g_api);
+#endif
+    if (ev->kind == KILN_WORLD_CLIENT""")
 
 content=(root/rules).read_text(encoding="utf8")
 assert content.count("cbpay::stock::live::roster")==1
