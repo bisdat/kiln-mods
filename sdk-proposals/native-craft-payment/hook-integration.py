@@ -40,6 +40,7 @@ destination.mkdir(parents=True, exist_ok=True)
 src = repo / "sdk-proposals/native-craft-payment"
 for name in ("payment_plan.h", "native_take_adapter.h",
              "recipe_payment_bridge.h", "selected_costs.h", "recipe_metadata.h", "engine_hook.h",
+             "client_craftable.h",
              "tx-source-provider.h", "tx-source-native.h", "settlement_witness.h"):
     shutil.copyfile(src / name, destination / name)
     print("COPIED isolated native header", name)
@@ -53,6 +54,9 @@ edit("native/services/rules/rules.cpp",
 edit("native/services/rules/creative.cpp",
      '#include "creative.h"',
      '#include "creative.h"\n#include "cbpay/engine_hook.h"')
+edit("native/services/rules/creative.cpp",
+     '#include "cbpay/engine_hook.h"',
+     '#include "cbpay/engine_hook.h"\n#include "cbpay/client_craftable.h"')
 
 edit("native/services/rules/rules.cpp",
 """    if (kiln_rules_creative::pay_free(reinterpret_cast<uintptr_t>(_ReturnAddress()), tx, owner)) return 0;
@@ -82,6 +86,19 @@ edit("native/services/rules/creative.cpp",
         return bridge.original_payer_result;
     return h_alt.call<uint32_t>(tx, costs, owner, multiplier, extra);
 }""")
+# Client/UI arm uses the existing Kiln free-craft craftable-amount
+# hook, but NEVER claims remotely payable stock until the matching original
+# server transaction resolver is fully installed. Default native provider OFF.
+edit("native/services/rules/creative.cpp",
+"""    return n;
+}
+
+// ============================================================================================ consumables ========""",
+"""    return cbpay::client::craftable({recipe, cap, selections, n}, nullptr);
+}
+
+// ============================================================================================ consumables ========""")
+
 # Source checks: the ONLY dispatcher endpoints are the two recipe payers,
 # and there is no registration/activation of an unverified native provider.
 primary = (root / "native/services/rules/rules.cpp").read_text()
