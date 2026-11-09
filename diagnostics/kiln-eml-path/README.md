@@ -16,7 +16,7 @@ The first matrix passed on Windows, Linux, Wine `Z:`, and the **real** Kiln EML 
 
 A separate `eml_readonly_probe.rs` creates a standalone **Windows executable** linked against that pinned GPL-licensed EML reader. It **does not write files**: the probe checks Windows `metadata` and `canonicalize` on a caller-supplied existing Library folder and performs only two EML `FileSystem::read_file` reads (manifest and Lua entrypoint). It never loads or evaluates the Lua code.
 
-GitHub Actions attaches `kiln-eml-readonly-proton-diagnostic.zip` containing `eml-readonly-probe.exe`, `run-with-proton.sh`, and this README. It is **not a Kiln mod** and must **not** be dropped onto the Kiln launcher.
+GitHub Actions attaches `kiln-eml-readonly-proton-diagnostic-v2.zip` containing `eml-readonly-probe.exe`, `run-with-proton.sh`, and this README. It is **not a Kiln mod** and must **not** be dropped onto the Kiln launcher.
 
 ### User-side procedure (no game launch)
 
@@ -34,3 +34,5 @@ GitHub Actions attaches `kiln-eml-readonly-proton-diagnostic.zip` containing `em
 ### Licensing
 
 The diagnostic source (`eml_readonly_probe.rs`) and launcher script are MIT licensed. The compiled Windows executable links `mod-loader-base` from upstream Kiln/EML (GPL-3.0-or-later). The corresponding GPL source is publicly available at [upstream commit `d35ee27`](https://github.com/frostdev-ops/kiln/tree/d35ee27c5c4f1f31b1c4a3503636a653d6d3ae63/gpl/kiln-eml); keep the upstream license terms when redistributing the executable.
+
+**Important:** Do not use the original (v1) downloaded diagnostic ZIP; its wrapper had a race that prematurely deleted the scratch Proton prefix. Download the v2 artifact and extract it into a new directory, keeping the obsolete probe separate.
