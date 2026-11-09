@@ -87,9 +87,9 @@ edit(creative,
 void pay_hook_failed() {
     g_recipe_ret = 0;""")
 
-// These functions are read-only, bounded, and wrapped in SEH so an untrusted
-// raw transaction view can never be interpreted as a valid journal on fault.
-// They are never called in a normal, disabled Kiln build.
+# These functions are read-only, bounded, and wrapped in SEH so an untrusted
+# raw transaction view can never be interpreted as a valid journal on fault.
+# They are never called in a normal, disabled Kiln build.
 edit(creative,
      """void pay_hook_failed() {
     g_recipe_ret = 0;""",
