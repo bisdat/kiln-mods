@@ -56,7 +56,10 @@ PY
 # Isolated Proton prefix in temporary storage. The probe is read-only, but
 # Proton may create registry/prefix files: NEVER use the game's live prefix.
 workspace="$(mktemp -d -t kiln-eml-readonly-XXXXXXXX)"
-trap 'rm -rf -- "$workspace"' EXIT
+# Do NOT delete the prefix in EXIT: Proton's wineserver may still be writing
+# registry files when the launcher returns. That race corrupted the first
+# diagnostic attempt before the read-only executable started.
+# Print the one-off location so it can be removed later when Wine is idle.
 mkdir -p "$workspace/compatdata"
 export STEAM_COMPAT_DATA_PATH="$workspace/compatdata"
 export STEAM_COMPAT_CLIENT_INSTALL_PATH="$steam_root"
@@ -66,5 +69,35 @@ export STEAM_COMPAT_APP_ID=1203620
 echo "Proton runner: $runner"
 echo "Game is NOT launched. No Kiln profile or mod files are changed."
 echo "The two tests refer to the same installed, Library-only file."
+echo "Temporary diagnostic prefix (not auto-deleted): $workspace"
 echo
-"$runner" run "$probe" "$logical" "$physical"
+
+# Use the same verb Steam uses for first-process startup. Capture output,
+# distinguish an actual probe result from a successful Proton launcher exit,
+# and keep the temporary prefix intact until Wine has finished.
+set +e
+"$runner" waitforexitandrun "$probe" "$logical" "$physical" 2>&1 | tee "$workspace/probe-output.log"
+runner_status=${PIPESTATUS[0]}
+set -e
+
+# Two paths are supplied: the output must contain exactly two EML read
+# outcomes and two RESULT lines. A prefix-only message does not count.
+seen_reads="$(grep -c '^EML src/mod.lua:' "$workspace/probe-output.log" || true)"
+seen_results="$(grep -c '^RESULT:' "$workspace/probe-output.log" || true)"
+if (( seen_reads != 2 || seen_results != 2 )); then
+  echo "ERROR: the EML probe did not complete both file checks." >&2
+  echo "Proton exit status: $runner_status; read outcomes: $seen_reads; results: $seen_results" >&2
+  echo "Diagnostic log: $workspace/probe-output.log" >&2
+  echo "Retained temporary prefix: $workspace" >&2
+  exit 3
+fi
+if (( runner_status != 0 )); then
+  echo "EML probe completed with a failure (Proton exit status $runner_status)." >&2
+  echo "Diagnostic log: $workspace/probe-output.log" >&2
+  exit "$runner_status"
+fi
+
+echo
+echo "Both read-only EML file checks completed."
+echo "Diagnostic log: $workspace/probe-output.log"
+echo "Temporary prefix retained to avoid deleting it while Wine writes its registry."
