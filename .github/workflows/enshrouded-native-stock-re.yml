@@ -5,6 +5,7 @@ on:
     branches: ['feature/cross-base-storage-kiln']
     paths:
       - 'scripts/inspect-current-crafting-stock.py'
+      - 'scripts/inspect-client-crafting-stock.py'
       - '.github/workflows/enshrouded-native-stock-re.yml'
   workflow_dispatch:
 
@@ -65,6 +66,21 @@ jobs:
           python scripts/inspect-current-crafting-stock.py \
             /tmp/enshrouded-re/enshrouded_server.exe \
             --output /tmp/enshrouded-stock-callmap.json
+          # Same analysis engine on the official freely available server PE:
+          # validates the exact callsite scanner without possessing the
+          # user's paid client executable or publishing proprietary code.
+          python scripts/inspect-client-crafting-stock.py \
+            /tmp/enshrouded-re/enshrouded_server.exe \
+            --side server \
+            --output /tmp/enshrouded-server-client-probe-selftest.json
+          python - <<'PY'
+          import json
+          x=json.load(open('/tmp/enshrouded-server-client-probe-selftest.json'))
+          assert x['side']=='server' and x['selector_unique']
+          assert x['payer_unique'] and x['two_verified_payer_calls']
+          assert not x['safe_to_enable_hook']
+          print('PASS: stock probe faithfully located the original server payer and both real selector calls; client-specific sites remain unverified')
+          PY
           python - <<'PY'
           import json
           doc = json.load(open('/tmp/enshrouded-stock-callmap.json'))
