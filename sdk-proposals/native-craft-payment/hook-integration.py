@@ -40,7 +40,7 @@ destination.mkdir(parents=True, exist_ok=True)
 src = repo / "sdk-proposals/native-craft-payment"
 for name in ("payment_plan.h", "native_take_adapter.h",
              "recipe_payment_bridge.h", "selected_costs.h", "recipe_metadata.h", "engine_hook.h",
-             "client_craftable.h", "stock_sources.h", "native_stock_overlay.h",
+             "client_craftable.h", "stock_sources.h", "native_stock_overlay.h", "server_stock_scope.h",
              "tx-source-provider.h", "tx-source-native.h", "settlement_witness.h"):
     shutil.copyfile(src / name, destination / name)
     print("COPIED isolated native header", name)
@@ -50,7 +50,7 @@ for name in ("payment_plan.h", "native_take_adapter.h",
 # it cannot issue a payment or a new native game read on its own.
 edit("native/services/rules/rules.cpp",
      '#include "creative.h"',
-     '#include "creative.h"\n#include "cbpay/engine_hook.h"\n#include "cbpay/tx-source-native.h"\n#include "cbpay/native_stock_overlay.h"\nstatic_assert(sizeof(cbpay::stock::native::GameStockLists) == 32);')
+     '#include "creative.h"\n#include "cbpay/engine_hook.h"\n#include "cbpay/tx-source-native.h"\n#include "cbpay/native_stock_overlay.h"\n#include "cbpay/server_stock_scope.h"\nstatic_assert(sizeof(cbpay::stock::native::GameStockLists) == 32);')
 edit("native/services/rules/creative.cpp",
      '#include "creative.h"',
      '#include "creative.h"\n#include "cbpay/engine_hook.h"')
