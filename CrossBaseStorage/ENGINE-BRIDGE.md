@@ -394,3 +394,47 @@ to dev20, no game DLL replacement, and no assertion that the
 new moves API enables cross-base crafting. The next development effort
 should be a disposable native original-transaction *payer/source probe*,
 not another chest scanner.
+
+## Released Kiln SDK tracking policy — updated 9 November 2026
+
+**Supersedes the earlier "keep packaging pinned to dev15" decision
+above.** Kiln's installed launcher/runtime follows frequently published
+dev releases, so all three of this repository's **mod packaging** jobs
+now resolve the **newest published development release** (not moving
+`main`) at build time. A central `global.json` contains the
+MSBuild SDK version; every mod project uses `Sdk="Kiln.Sdk"`
+instead of independently pinning older versions. The
+[`scripts/resolve-kiln-release.py`](../scripts/resolve-kiln-release.py)
+helper validates published GitHub release metadata, SDK/API release
+assets and dev tag syntax, and updates the build workspace mapping.
+[`scripts/build.sh`](../scripts/build.sh) then fetches that exact Git
+tag, checks that its commit matches the release target, packs matching
+SDK and API NuGet packages, builds the mod, and creates the sidecar
+`kiln-sdk-provenance.json`. Failure to verify release metadata/tag is
+a **build failure, never a silent fallback to older Kiln**.
+
+**Verified releases:** for
+[`v0.2.0-dev.20`](https://github.com/frostdev-ops/kiln/releases/tag/v0.2.0-dev.20)
+(tag commit `d35ee27c5c4f1f31b1c4a3503636a653d6d3ae63`), all three
+packages built in GitHub Actions on 9 November with 0 compiler warnings
+and errors: [Cross-base Storage](https://github.com/bisdat/kiln-mods/actions/runs/42577853938),
+[Endless Chests](https://github.com/bisdat/kiln-mods/actions/runs/42577853740),
+[Survival QoL](https://github.com/bisdat/kiln-mods/actions/runs/42577853892).
+The Cross-base package also passed the 22 quote/link tests. This
+verifies **build and packaging compatibility**, not an end-to-end game
+test of new runtime releases.
+
+To track Kiln's multiple daily releases automatically, the separate
+[main-branch scheduled workflow](https://github.com/bisdat/kiln-mods/blob/main/.github/workflows/kiln-latest.yml)
+was merged via [PR #8](https://github.com/bisdat/kiln-mods/pull/8).
+At **:17 and :47 UTC** each hour it checks the published dev release,
+compiles all three mods against new versions (from this feature branch
+until it merges), uploads artifacts/provenance, and caches the success
+marker only after all three pass. It intentionally **does not deploy
+or hot-reload user-installed mod ZIPs**.
+
+The old native-craft-trace and recipe-input-probe files retain their
+historical pinned-ABI source as **research fixtures**, not shipping
+package dependencies; these must be ported to the newest released
+Kiln branch before any new native functionality is deployed. This
+separation does not justify promising native cross-base crafting.
