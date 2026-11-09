@@ -20,6 +20,8 @@ The live game test from 9 November 2026 at 05:26 UTC proved only **read-only** s
 - `verify.py` checks the exact six source files changed, preservation of original native payer calls and results, no new detours, and no direct inventory mutations.
 - CI builds managed `Kiln.Rules` on Linux, verifies 64-byte ABI size, and compiles native Windows x64 `kiln-rules.dll` in an isolated checkout. **No artifacts containing patched DLLs are published for gameplay installation.**
 
+The [GitHub Actions build](https://github.com/bisdat/kiln-mods/actions/runs/42568359006) passed both Linux managed/C ABI checks and the native Windows x64 `kiln-rules.dll` compilation. To build this older main revision under MSVC, the Windows job applies [`msvc-compat.py`](msvc-compat.py) **after** the feature-only safety validator. That adapter fixes a pre-existing `reinterpret_cast<uintptr_t>(uintptr_t)` template issue in three upstream symbol helpers; it is not a game-feature change or part of the user-installed mod.
+
 The optional entry can indicate the stage of a **normal** craft:
 1. Client calls the UI gate with original craftable count `0` and cap `1`: possible client-side rejection, but not proof why the count is zero.
 2. The server receives an actual native craft request and calls the primary or alternative payment routine: the engine has reached its original payment boundary.
