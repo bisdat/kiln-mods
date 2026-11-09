@@ -66,18 +66,37 @@ export STEAM_COMPAT_CLIENT_INSTALL_PATH="$steam_root"
 export SteamAppId=1203620 SteamGameId=1203620
 export STEAM_COMPAT_APP_ID=1203620
 
-echo "EML read-only diagnostic runner v2 (Proton lifecycle fix)"
+echo "EML read-only diagnostic runner v3 (direct Wine entry point)"
 echo "Proton runner: $runner"
 echo "Game is NOT launched. No Kiln profile or mod files are changed."
 echo "The two tests refer to the same installed, Library-only file."
 echo "Temporary diagnostic prefix (not auto-deleted): $workspace"
 echo
 
-# Use the same verb Steam uses for first-process startup. Capture output,
-# distinguish an actual probe result from a successful Proton launcher exit,
-# and keep the temporary prefix intact until Wine has finished.
+# Proton 11's 'waitforexitandrun' launches the Steam game via its steam.exe
+# wrapper; outside Steam it can return 0 without running the target or
+# forwarding stdout. First initialize only the scratch compatibility prefix,
+# then use 'runinprefix', which directly invokes Proton's Wine on the probe.
+# No game executable, EML mod, or user's real Steam prefix is involved.
+echo "Initializing isolated Proton prefix..."
 set +e
-"$runner" waitforexitandrun "$probe" "$logical" "$physical" 2>&1 | tee "$workspace/probe-output.log"
+"$runner" waitforexitandrun 'C:\\windows\\system32\\cmd.exe' /c exit 2>&1 | tee "$workspace/prefix-init.log"
+init_status=${PIPESTATUS[0]}
+set -e
+if (( init_status != 0 )); then
+  echo "ERROR: temporary Proton prefix initialization failed (exit $init_status)." >&2
+  echo "Diagnostic prefix retained: $workspace" >&2
+  exit 3
+fi
+if [[ ! -d "$workspace/compatdata/pfx" ]]; then
+  echo "ERROR: Proton did not create its temporary compatibility prefix." >&2
+  echo "Diagnostic prefix retained: $workspace" >&2
+  exit 3
+fi
+
+echo "Executing Windows EML file reader directly through Proton Wine..."
+set +e
+"$runner" runinprefix "$probe" "$logical" "$physical" 2>&1 | tee "$workspace/probe-output.log"
 runner_status=${PIPESTATUS[0]}
 set -e
 
