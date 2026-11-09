@@ -84,6 +84,8 @@ jobs:
         run: |
           python sdk-proposals/native-craft-trace/msvc-compat.py .kiln-native-pay
           if ($LASTEXITCODE -ne 0) { throw 'Baseline MSVC compatibility failed' }
+          python sdk-proposals/native-craft-payment/items-msvc-compat.py .kiln-native-pay
+          if ($LASTEXITCODE -ne 0) { throw 'Baseline Kiln Items MSVC compatibility failed' }
 
       - name: Configure Windows x64 native Kiln services
         shell: pwsh
