@@ -105,7 +105,7 @@ def main() -> None:
         calls = []
         instructions = []
         for ins in cs.disasm(sample, ptr):
-            if len(instructions) >= 360:
+            if len(instructions) >= 700:
                 break
             instructions.append({"rva": hex(ins.address - imagebase), "ins": f"{ins.mnemonic} {ins.op_str}".strip()})
             if ins.mnemonic in ("call", "jmp") and ins.operands and ins.operands[0].type == capstone.x86.X86_OP_IMM:
@@ -117,7 +117,7 @@ def main() -> None:
                                   "known": known.get(target),
                                   "bytes32": text[tp:tp+32].hex()})
         functions[name] = {"rva":hex(ptr-imagebase),"calls":calls[:80],
-                           "instructions":instructions[:240]}
+                           "instructions":instructions[:540]}
 
     # Extra static function map for the observed (exact-current-build)
     # original payer call edges. A new EXE digest must be reverified before
@@ -129,6 +129,9 @@ def main() -> None:
             "payer_stock_helper": 0x2081c0,
             "payer_remove_auto": 0x1b0d60,
             "alternate_recipe_payer": 0x19a9b0,
+            "payer_stock_inventory_helper": 0x1b0bf0,
+            "payer_inventory_read_helper": 0x1b09e0,
+            "base_search": 0x208c60,
         }
     for name, rva in research_points.items():
         ptr = imagebase + rva
@@ -208,7 +211,7 @@ def main() -> None:
         print(f"original branch map: {name} @ {fn['rva']}:")
         for call in fn["calls"][:28]:
             print(f"  {call['kind']} {call['at']} => {call['to']} {call['known'] or ''}")
-    for name in ("historical_remove_recipe_inputs","payer_stock_helper","payer_remove_auto"):
+    for name in ("historical_remove_recipe_inputs","payer_stock_helper","payer_stock_inventory_helper","payer_inventory_read_helper"):
         fn = functions.get(name)
         if not fn:
             continue
@@ -220,8 +223,11 @@ def main() -> None:
                 if ins["rva"] in focus:
                     for near in instructions[max(0,i-16):i+6]:
                         print(f"   {near['rva']}: {near['ins']}")
+            for ins in instructions:
+                if 0x199fa7 <= int(ins["rva"],16) <= 0x19a0da:
+                    print(f"   PAY-SOURCE {ins['rva']}: {ins['ins']}")
         else:
-            for ins in instructions[:100]:
+            for ins in instructions[:125]:
                 print(f"   {ins['rva']}: {ins['ins']}")
             for call in fn["calls"][:35]:
                 print(f"   {call['kind']} {call['at']} -> {call['to']}")
