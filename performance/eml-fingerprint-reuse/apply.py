@@ -303,6 +303,19 @@ change("lib.rs",
         (CacheDiff::new_dirty(), None)
     };''')
 change("lib.rs",
+'''            if !args.options.runtime {
+                return Ok(RunResult { cached: true, ..RunResult::default() });
+            }''',
+'''            if !args.options.runtime {
+                // Upgrade older CRC-only caches on a proven cache hit,
+                // and refresh identity stamps after an identical replacement.
+                // Never treat a changed CRC as a cache hit.
+                if new_cache.stamps != current_cache.stamps {
+                    new_cache.write(env.cache_dir());
+                }
+                return Ok(RunResult { cached: true, ..RunResult::default() });
+            }''')
+change("lib.rs",
 '''    let mut inputs_before = FileStateCache::default();
     inputs_before.track_game_inputs(env.game_dir().as_std_path(), &file_name, vanilla_containers);''',
 '''    let mut inputs_before = FileStateCache::default();
