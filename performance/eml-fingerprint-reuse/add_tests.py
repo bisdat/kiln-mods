@@ -43,7 +43,7 @@ mod fingerprint_reuse_tests {
 
     #[test]
     fn strong_change_stamp_reuses_unchanged_crc() {
-        let dir=temp();
+        let dir=temp(); let reliable = verify_change_stamp_on_volume(&dir);
         let path=dir.join("large.dat");
         fs::write(&path, vec![7u8; 16*1024*1024]).unwrap();
         let mut first=FileStateCache::default();
@@ -51,6 +51,7 @@ mod fingerprint_reuse_tests {
         first.track(&path);
         let cold_ms=cold.elapsed().as_millis();
         assert_eq!(first.hash_bytes_read(), 16*1024*1024);
+        println!("Change-stamp reliability probe: {reliable}");
         let mut warm=FileStateCache::default();
         warm.seed_reuse_from(&first);
         let started=Instant::now();
@@ -75,7 +76,7 @@ mod fingerprint_reuse_tests {
 
     #[test]
     fn preserved_timestamp_content_edit_requires_new_crc() {
-        let dir=temp(); let path=dir.join("data.dat");
+        let dir=temp(); let _ = verify_change_stamp_on_volume(&dir); let path=dir.join("data.dat");
         fs::write(&path, b"CRITICAL-OLD-DATA").unwrap();
         assert_crc_changed_on_preserved_mtime(&path);
         fs::remove_dir_all(dir).unwrap();
@@ -83,7 +84,7 @@ mod fingerprint_reuse_tests {
 
     #[test]
     fn replacing_an_identical_size_file_requires_new_crc() {
-        let dir=temp(); let path=dir.join("data.dat");
+        let dir=temp(); let _ = verify_change_stamp_on_volume(&dir); let path=dir.join("data.dat");
         let replacement=dir.join("replacement.tmp");
         fs::write(&path, b"CRITICAL-OLD-DATA").unwrap();
         let old_time=fs::metadata(&path).unwrap().modified().unwrap();
@@ -99,7 +100,7 @@ mod fingerprint_reuse_tests {
 
     #[test]
     fn deleted_or_unreadable_file_is_never_a_cache_hit() {
-        let dir=temp(); let path=dir.join("data.dat");
+        let dir=temp(); let _ = verify_change_stamp_on_volume(&dir); let path=dir.join("data.dat");
         fs::write(&path, b"CRITICAL-OLD-DATA").unwrap();
         let mut first=FileStateCache::default(); first.track(&path);
         fs::remove_file(&path).unwrap();
@@ -113,7 +114,7 @@ mod fingerprint_reuse_tests {
 
     #[test]
     fn persisted_crc_stamps_roundtrip_and_old_cache_falls_back() {
-        let dir=temp(); let path=dir.join("data.dat");
+        let dir=temp(); let _ = verify_change_stamp_on_volume(&dir); let path=dir.join("data.dat");
         fs::write(&path, vec![1u8; 1024*1024]).unwrap();
         let mut before=FileStateCache::default(); before.track(&path);
         let json=serde_json::to_string(&before).unwrap();
