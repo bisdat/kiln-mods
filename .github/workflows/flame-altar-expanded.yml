@@ -40,7 +40,7 @@ jobs:
           manifest=json.loads(Path('FlameAltarExpanded/mod.json').read_text())
           assert manifest['id']=='flame-altar-expanded'
           assert manifest['capabilities']==['patch']
-          assert manifest['version']=='0.1.0'
+          assert manifest['version']=='0.1.1'
           assert Path('FlameAltarExpanded/src/mod.lua').is_file()
           print('EML manifest verified')
           PY
@@ -74,7 +74,7 @@ jobs:
       - name: Upload directly installable ZIP
         uses: actions/upload-artifact@v4
         with:
-          name: flame-altar-expanded-0.1.0-kiln
+          name: flame-altar-expanded-0.1.1-kiln
           # upload-artifact produces the ONE ZIP to drag onto Kiln's window.
           # The directory itself is stripped; mod.json is at the ZIP root.
           path: dist/flame-altar-expanded/
