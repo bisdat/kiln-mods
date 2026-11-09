@@ -124,4 +124,15 @@ public:
         stats_.pending = 0;
     }
 };
+// Full payment implementation remains OFF regardless of this observer.
+// Enabling this lab-only flag installs extra passive hooks on the actual
+// original InventoryCommit/InventoryRollback functions. Never enable in
+// the release build without isolated runtime verification.
+#if defined(CBPAY_ENABLE_SETTLEMENT_WITNESS)
+inline constexpr bool kEnabled = true;
+#else
+inline constexpr bool kEnabled = false;
+#endif
+inline Witness g_original_recipe_witness{};
+
 } // namespace cbpay::settlement
