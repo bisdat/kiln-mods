@@ -118,4 +118,79 @@ Verify("empty list resolves nothing but is a valid observation", () =>
           map.Resolve(12).Status == InventoryLinkStatus.NotFound, "empty scan");
 });
 
+Verify("Magic Chest suffix recognises different physical capacities, including above 72", () =>
+{
+    foreach (var size in new[] { 8, 16, 24, 32, 40, 72, 120, 256 })
+    {
+        var name = $"Prop_Decoration_T6_Storage_{size}_Magic";
+        Check(StorageTemplate.IsMagic(name), $"must match _Magic suffix for {size} slots");
+        Check(StorageTemplate.IsStorageCandidate(name, size),
+            $"must not enforce 72-slot limit for {size} slots");
+    }
+});
+
+Verify("Magic Chest suffix matches independently of tier and storage number", () =>
+{
+    foreach (var template in new[]
+    {
+        "Prop_Decoration_T1_Storage_16_Magic",
+        "Prop_Decoration_T5_Storage_40_Magic",
+        "Prop_Decoration_T6_Storage_72_Magic",
+        "Prop_CustomStorage_Magic"
+    })
+    {
+        Check(StorageTemplate.IsMagic(template) && StorageTemplate.IsStorageCandidate(template, 8),
+            $"must match full suffix: {template}");
+    }
+});
+
+Verify("Magic Chest suffix comparison is case insensitive", () =>
+{
+    Check(StorageTemplate.IsMagic("prop_decoration_t6_storage_48_magic"), "case-insensitive suffix");
+    Check(StorageTemplate.IsMagic("PROP_DECORATION_T6_STORAGE_48_MAGIC"), "upper-case suffix");
+    Check(StorageTemplate.IsStorageCandidate("prop_decoration_t6_storage_48_magic", 48),
+        "case-insensitive candidate");
+});
+
+Verify("Magic anywhere except final _Magic suffix is NOT magic", () =>
+{
+    foreach (var template in new[]
+    {
+        "Prop_Decoration_T6_Magic_Storage_72",
+        "Prop_Decoration_T6_Storage_72_Magical",
+        "Prop_Decoration_T6_Storage_72_Magic_Upgrade",
+        "Prop_Decoration_T6_Storage_72_NotMagic",
+        "Prop_Decoration_T6_Storage_72"
+    })
+        Check(!StorageTemplate.IsMagic(template), $"false positive: {template}");
+});
+
+Verify("ordinary chests remain storage candidates but do not enter Magic pool", () =>
+{
+    foreach (var template in new[]
+    {
+        "Prop_Decoration_T6_Storage_72",
+        "Prop_Decoration_T6_Storage_144",
+        "Prop_Chest_Wood_24"
+    })
+    {
+        Check(StorageTemplate.IsStorageCandidate(template, 144), $"ordinary storage: {template}");
+        Check(!StorageTemplate.IsMagic(template), $"ordinary must not be Magic: {template}");
+    }
+});
+
+Verify("bad templates and empty inventory capacity fail closed", () =>
+{
+    Check(!StorageTemplate.IsMagic(null), "null magic");
+    Check(!StorageTemplate.IsMagic(""), "empty magic");
+    Check(!StorageTemplate.IsMagic("Prop_Decoration_T6_Storage_72_MagicX"), "trailing character");
+    Check(!StorageTemplate.IsStorageCandidate(null, 72), "null candidate");
+    Check(!StorageTemplate.IsStorageCandidate("Item_Decoration_T6_Storage_72_Magic", 72),
+        "non-prop is not a chest");
+    Check(!StorageTemplate.IsStorageCandidate("Prop_Decoration_T6_Storage_72_Magic", 0),
+        "no inventory");
+    Check(!StorageTemplate.IsStorageCandidate("Prop_Decoration_T6_Storage_72_Magic", -1),
+        "negative capacity");
+});
+
 Console.WriteLine($"PASS: {passed} read-only inventory link ownership tests.");
