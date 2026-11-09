@@ -132,9 +132,11 @@ inline bool authoritative_world() {
 }
 
 inline bool real_solo_player(uint32_t actor) {
+    // Kiln.Players status/get are immutable per-Pre snapshots and explicitly
+    // usable on any thread, including the game's ECS job workers. Requiring
+    // on_tick_thread() here would reject the genuine original payer.
     if (!S.players || !S.players->status || !S.players->get ||
-        !S.api || !S.api->on_tick_thread() ||
-        !authoritative_world()) return false;
+        !S.api || !authoritative_world()) return false;
     KilnPlayersStatus info{};info.size=sizeof info;
     if (S.players->status(&info)!=KILN_OK ||
         info.source!=KILN_PLAYERS_SOURCE_RECORDS ||
