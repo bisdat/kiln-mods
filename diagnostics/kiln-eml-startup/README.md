@@ -7,6 +7,10 @@ This patch targets the exact upstream Kiln source revision used in the failed la
 
 The failure: after approximately 184 seconds in EML's startup processing, an EML mod registry successfully read `mod.json` but its Lua module loader failed on `src/mod.lua` with Windows `Path not found (os error 3)`. The game data was restored; no Lua module was executed.
 
+### Additional evidence from 9 November 2026
+
+The user's preserved files show an **idle no-EML-mod** run at 14:22:05–14:22:06 UTC, followed by an **incomplete mod-enabled EML log** whose last file mtime is 14:28:58 UTC. That later log contains mod discovery, the successful root `mod.json` read and `Running lua with options` but **never reaches** `Running mods...`, the first `src/mod.lua` read, or any file-reader instrumentation. It has no corresponding final EML state, so this is not a successful mod run. This evidence points investigation to the *pre-Lua* preparation in `mod-loader-lua::run`, not necessarily the Lua entrypoint file reader. Later idle starts overwrite `kiln/state/eml.json` and truncate `kiln/logs/eml.log` at plugin initialization; therefore per-attempt snapshots are required.
+
 A subsequent, **real** Proton 11 read-only test using the pinned EML file reader succeeded with both the Linux `/home` and `/var/home` Library paths. Therefore no general canonicalization defect has been demonstrated. We need error-stage logging **inside the game startup code**, not another speculative path rewrite.
 
 ## What is changed
@@ -15,6 +19,8 @@ The `apply_instrumentation.py` script applies strict single-match substitutions 
 
 - `gpl/kiln-eml/eml/mod-loader-base/src/registry/fs.rs`: logs when Lua file reading begins and succeeds, along with requested path, canonicalized root, candidate path, OS error kind/code, and elapsed milliseconds. If canonicalization fails it obtains **read-only** metadata for the candidate and its parent, to distinguish a missing file from a missing directory. Failures are tagged by stage: `canonicalize`, `sanitize_path`, `is_file`, `open`, `outside_root`, `symlink`.
 - `gpl/kiln-eml/eml/mod-loader-lua/src/runner/state.rs`: logs the mod ID, fully qualified module, root and `src/mod.lua` require operation immediately before file access, plus the success/failure and any UTF-8 read errors.
+
+- `gpl/kiln-eml/eml/mod-loader-lua/src/lib.rs`: a `eml_run_identity` record with process ID and UTC epoch milliseconds; `eml_preload_checkpoint` events bracketing initial mod fingerprinting, cached-state reads, game-file hashing, second mod snapshot, `AppState::new`, game input fingerprinting, Lua runner construction/setup, and the transition into executing modules. This identifies the **last stage reached if the process stops before requiring a Lua file**. These events measure the time from EML's run entry; they perform no extra game-file reads.
 
 **No path handling or authorization rule is relaxed.** The same `canonicalize_utf8`, root-containment, symlink, `is_file`, `File::open`, and original `io::Error` return semantics remain. No caching, game data, transaction, or recipe behaviour changes. Diagnostics log local Library paths; review/redact them before publicly sharing logs.
 
@@ -27,9 +33,14 @@ A separate **Windows x64, statically linked CRT, release** `kiln-eml.dll` may be
 ## Controlled in-game verification, only after deciding to test
 
 1. Keep a **byte-for-byte backup** of the installed `kiln/plugins/kiln-eml.dll` outside the game tree. Confirm the pinned revision and available backup before replacing anything. Stop the game and launcher before any DLL changes.
-2. If opting in to test, replace **only** `kiln/plugins/kiln-eml.dll` with the instrumented DLL built from that exact revision. Never modify Kiln's `dinput8.dll`, EML's game backups, save files, or game data.
-3. On one controlled launch with the problematic mod enabled, capture `kiln/logs/eml.log`, `kiln/state/eml.json`, `kiln/state/boot.json`. If startup fails again, do not repeatedly launch. Restore the original DLL and remove the mod from the active profile.
-4. Confirm game startup and vanilla restoration after reverting the original DLL. A successful module read only unlocks the next research phase; it does **not** prove the Flame Altar recipe mod is safe.
+2. **Before starting the test, prepare the read-only capture script** included in this artifact. After the one controlled mod-enabled launch, and **before launching Enshrouded a second time or disabling/re-enabling profiles**, run from the extracted artifact directory:
+   ```bash
+   bash capture-run-logs.sh
+   ```
+   It writes a new, uniquely named `~/Downloads/kiln-eml-startup-<UTC>-<pid>` directory, preserving source modification timestamps. It does not modify game or mod files.
+3. If opting in to test, replace **only** `kiln/plugins/kiln-eml.dll` with the instrumented DLL built from that exact revision. Never modify Kiln's `dinput8.dll`, EML's game backups, save files, or game data.
+4. On one controlled launch with the problematic mod enabled, capture `kiln/logs/eml.log`, `kiln/state/eml.json`, `kiln/state/boot.json`. If startup fails again, do not repeatedly launch. Restore the original DLL and remove the mod from the active profile.
+5. Confirm game startup and vanilla restoration after reverting the original DLL. A successful module read only unlocks the next research phase; it does **not** prove the Flame Altar recipe mod is safe.
 
 The DLL is a *diagnostic mechanism*, not a fix, and the mod remains blocked under [issue #14](https://github.com/bisdat/kiln-mods/issues/14) and [upstream Kiln issue #4](https://github.com/frostdev-ops/kiln/issues/4). Keep draft [PR #13](https://github.com/bisdat/kiln-mods/pull/13) unmerged.
 
