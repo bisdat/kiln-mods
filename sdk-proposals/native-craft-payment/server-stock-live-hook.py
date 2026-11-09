@@ -120,6 +120,23 @@ SelectorStatus* __fastcall hk_selector(
     const uintptr_t ret=reinterpret_cast<uintptr_t>(_ReturnAddress());
     SelectorStatus* vanilla=h_selector.call<SelectorStatus*>(
         status,lists,primary,fallback,position,player);
+    // In a CLIENT world with no local chests, vanilla player_ui otherwise
+    // selects backpack-only stock mode and ignores the already-cached
+    // remote materials. Supply one registered client-cache chest solely
+    // for the original menu's chest-order decision. No fake item count:
+    // cache_crafting_stock and the original payer do all quantity work.
+    if(enabled && vanilla==status && status && lists && player && position &&
+       !active_tx && cbpay::stock::clientcache::enabled &&
+       !lists->item_count && !lists->fuel_count &&
+       (status->error==0 || status->error==0x1f)) {
+        const uint32_t* one=nullptr;
+        auto* client=static_cast<uint8_t*>(primary?primary:fallback);
+        if(cbpay::stock::clientcache::menu_chest_mode(client,player,&one)) {
+            lists->item_owners=one;
+            lists->item_count=1;
+            status->error=0;
+        }
+    }
     if(!enabled || !vanilla || vanilla!=status || !status ||
        status->error!=0 || !lists ||
        !active_actor || !active_tx || !original_selector ||
