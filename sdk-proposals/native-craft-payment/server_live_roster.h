@@ -2,16 +2,18 @@
 // REAL native server stock roster from the game's registered base stock,
 // Kiln's genuine player records, and Kiln.Items' ORIGINAL InventoryTx snapshot.
 //
-// Only for pinned dedicated-server exe SHA256:
-// f0d824be7fcd48ebfe2458ff5c28da26060c2074e3ec1fcac587e5a1d508aeb2
+// Pinned original dedicated server AND verified client-host binary identities.
+// No remote-only client or prediction-world stock access is allowed.
 //
 // This is NOT client-side rendering and NEVER invokes Items.Take/Give.
 // It must only be called while the original recipe payer is on the stack.
-// Do not enable for a client-hosted single-player world until separately
-// verifying the client game's selector and base-record layout.
+// Only exact-build genuine original selector calls are eligible; all
+// borrowed base records must also match original owner/fuel list identities
+// dynamically before another base is considered.
 #pragma once
 
 #include "server_selector_abi.h"
+#include "native_stock_builds.h"
 #include "kiln_api.h"
 #include "services/kiln_players.h"
 #include "services/kiln_items.h"
@@ -25,8 +27,8 @@
 
 namespace cbpay::stock::live {
 
-inline constexpr char kServerHash[] =
-    "f0d824be7fcd48ebfe2458ff5c28da26060c2074e3ec1fcac587e5a1d508aeb2";
+// Source identifiers and native base layout are checked again in-place
+// against the game's genuine original selector result during every payer.
 inline constexpr uint32_t kMagicStockHash = 0xe41a0d1fu;
 inline constexpr uint32_t kBaseSlots = 16;
 inline constexpr uint32_t kBaseStride = 0x130;
@@ -41,6 +43,7 @@ using GetTemplateComponent = void* (__fastcall*)(uintptr_t, uint32_t, uint32_t);
 
 struct Services {
     const KilnApi* api = nullptr;
+    const cbpay::stock::build::Profile* build = nullptr;
     const KilnPlayersApi* players = nullptr;
     const KilnItemsApi* items = nullptr;
     GetTemplateComponent get_template = nullptr;
@@ -105,9 +108,31 @@ inline bool base_record(const void* base, uint32_t index, BaseRecord* out) {
     return true;
 }
 
+inline bool authoritative_world() {
+    if (!S.api || !S.api->session || !S.api->world ||
+        !S.api->server_world || !S.api->side || !S.build)
+        return false;
+    KilnSessionInfo session{}; session.size=sizeof session;
+    if (S.api->session(&session)!=KILN_OK) return false;
+    const uint32_t side=S.api->side();
+    if (S.build->side==cbpay::stock::build::Side::Dedicated) {
+        if (side!=KILN_SIDE_SERVER ||
+            session.state!=KILN_SESSION_DEDICATED ||
+            session.side!=KILN_SIDE_SERVER) return false;
+    } else if (S.build->side==cbpay::stock::build::Side::ClientHosted) {
+        if (side!=KILN_SIDE_CLIENT ||
+            session.state!=KILN_SESSION_HOST ||
+            session.side!=KILN_SIDE_CLIENT) return false;
+    } else return false;
+    const uintptr_t world=S.api->world(KILN_WORLD_SERVER);
+    return world && world==session.worlds[KILN_WORLD_SERVER] &&
+           world==S.api->server_world();
+}
+
 inline bool real_solo_player(uint32_t actor) {
     if (!S.players || !S.players->status || !S.players->get ||
-        !S.api || !S.api->on_tick_thread()) return false;
+        !S.api || !S.api->on_tick_thread() ||
+        !authoritative_world()) return false;
     KilnPlayersStatus info{};info.size=sizeof info;
     if (S.players->status(&info)!=KILN_OK ||
         info.source!=KILN_PLAYERS_SOURCE_RECORDS ||
@@ -273,11 +298,24 @@ inline bool roster(uint32_t actor,void* tx,
 
 inline bool bind(const KilnApi* api) {
     S={};
-    if (!api || api->side()!=KILN_SIDE_SERVER) return false;
+    if (!api || !api->side || !api->build_info ||
+        !api->session || !api->world || !api->server_world)
+        return false;
+    const uint32_t side=api->side();
+    if(side!=KILN_SIDE_SERVER && side!=KILN_SIDE_CLIENT)
+        return false;
     KilnBuildInfo bi{};bi.size=sizeof bi;
     if(api->build_info(&bi)!=KILN_OK || !bi.verified ||
-       std::strcmp(bi.exe_sha256,kServerHash)!=0 || !bi.hooks_enabled)
+       !bi.hooks_enabled || bi.side!=side)
         return false;
+    const auto* build=cbpay::stock::build::exact(
+        side==KILN_SIDE_SERVER ?
+            cbpay::stock::build::Side::Dedicated :
+            cbpay::stock::build::Side::ClientHosted,
+        bi.exe_sha256);
+    if(!build) return false;
+    S.api=api;S.build=build;
+    if(!authoritative_world()) { S={}; return false; }
     auto* players=static_cast<const KilnPlayersApi*>(
         api->service(KilnStr{KILN_PLAYERS_SERVICE,sizeof(KILN_PLAYERS_SERVICE)-1},
                      KILN_PLAYERS_VERSION));
@@ -293,7 +331,7 @@ inline bool bind(const KilnApi* api) {
        api->symbol(KilnStr{"items/InventoryCommit",21},&commit)!=KILN_OK ||
        api->symbol(KilnStr{"items/InventoryRollback",23},&rollback)!=KILN_OK ||
        !commit || !rollback)return false;
-    S.api=api;S.players=players;S.items=items;
+    S.players=players;S.items=items;
     S.get_template=reinterpret_cast<GetTemplateComponent>(fn);
     S.hash_ok=true;S.original_finality_ok=true;
     return true;
