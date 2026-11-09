@@ -21,6 +21,7 @@
 #include <cstdint>
 #include <cstring>
 #include <vector>
+#include <utility>
 
 namespace cbpay::stock::live {
 
@@ -163,6 +164,15 @@ inline bool actual_source(uint32_t actor,void* tx,uint32_t owner,bool local,
     return true;
 }
 
+inline bool native_stock_mode2(const void* borrowed_tx) {
+    if (!borrowed_tx) return false;
+    __try {
+        return static_cast<const uint8_t*>(borrowed_tx)[0xB1] == 2;
+    } __except (EXCEPTION_EXECUTE_HANDLER) {
+        return false;
+    }
+}
+
 inline thread_local uint32_t selected_actor = 0;
 inline bool grant(uint32_t actor,const cbpay::stock::Source& source) {
     // Source comes ONLY from the game-native base stock record, with a
@@ -243,14 +253,10 @@ inline bool roster(uint32_t actor,void* tx,
     }
     if(vanilla.size()!=original.size() || remote.empty())return false;
 
-    const auto* b=static_cast<const uint8_t*>(tx);
-    uint8_t stock_mode=0;
-    __try {stock_mode=b[0xB1];}
-    __except(EXCEPTION_EXECUTE_HANDLER){return false;}
-    if(stock_mode!=2)return false;
+    if(!native_stock_mode2(tx))return false;
 
     Context c{};
-    c.actor=actor;c.transaction_operator=actor;c.stock_mode=stock_mode;
+    c.actor=actor;c.transaction_operator=actor;c.stock_mode=2;
     c.on_original_server_tick=true;c.pinned_executable_hash=true;
     c.real_original_stock_callsite=true;c.native_game_selector_success=true;
     c.complete_authoritative_roster=true;
