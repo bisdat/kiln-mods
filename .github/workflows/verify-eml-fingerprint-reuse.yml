@@ -82,6 +82,10 @@ jobs:
           python3 performance/eml-fingerprint-reuse/add_tests.py kiln-upstream
           git -C kiln-upstream diff --check
 
+      - name: Validate auto-install/rollback shell syntax and line endings
+        run: |
+          bash -n performance/eml-fingerprint-reuse/manage-crc-test.sh
+
       - name: Run CRC reuse, same-size edit, replacement, and old-cache tests
         run: |
           cd kiln-upstream/gpl/kiln-eml
@@ -112,6 +116,9 @@ jobs:
           cp kiln-upstream/gpl/kiln-eml/target/x86_64-pc-windows-msvc/release/kiln_eml.dll eml-crc-reuse-test-only/kiln-eml.dll
           cp kiln-upstream/gpl/kiln-eml/LICENSE eml-crc-reuse-test-only/LICENSE.GPL-3.0
           cp performance/eml-fingerprint-reuse/README.md eml-crc-reuse-test-only/README.md
+          cp performance/eml-fingerprint-reuse/manage-crc-test.sh eml-crc-reuse-test-only/manage-crc-test.sh
+          python3 -c 'from pathlib import Path; p=Path("eml-crc-reuse-test-only/manage-crc-test.sh"); p.write_bytes(p.read_bytes().replace(bytes([13,10]), bytes([10])))'
+          python3 -c 'from pathlib import Path; p=Path("eml-crc-reuse-test-only/manage-crc-test.sh"); b=p.read_bytes(); assert b.startswith(bytes([35,33,47,117,115,114,47,98,105,110,47,101,110,118,32,98,97,115,104,10])) and bytes([13]) not in b, "installer must use LF"'
 
       - name: Upload experimental test-only DLL (NOT a game mod)
         if: matrix.os == 'windows-2022'
