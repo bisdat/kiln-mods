@@ -1,0 +1,120 @@
+name: Cross-base Storage original transaction lab (NO PAYMENT)
+
+on:
+  push:
+    branches: ['feature/cross-base-storage-kiln']
+    paths:
+      - 'sdk-proposals/native-craft-payment/settlement-*'
+      - 'sdk-proposals/native-craft-payment/SETTLEMENT-LAB.md'
+      - '.github/workflows/kiln-native-settlement-lab.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cbpay-settlement-lab-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  witness-lab:
+    name: Build opt-in PASSIVE original transaction witness (Windows x64)
+    runs-on: windows-2022
+    env:
+      GITHUB_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Resolve latest published immutable Kiln release
+        shell: pwsh
+        run: |
+          python scripts/resolve-kiln-release.py
+          if ($LASTEXITCODE -ne 0) { throw 'Release resolution failed' }
+          $info = Get-Content .kiln-release.json -Raw | ConvertFrom-Json
+          if ($info.release_target -notmatch '^[0-9a-f]{40}$') { throw 'Release must have immutable SHA' }
+          "KILN_UPSTREAM_SHA=$($info.release_target)" >> $env:GITHUB_ENV
+          "KILN_RELEASE_TAG=$($info.tag)" >> $env:GITHUB_ENV
+
+      - name: Checkout exact published Kiln source into disposable directory
+        shell: pwsh
+        run: |
+          git init .kiln-settlement-lab
+          git -C .kiln-settlement-lab remote add origin https://github.com/frostdev-ops/kiln.git
+          git -C .kiln-settlement-lab fetch --depth=1 origin "refs/tags/$env:KILN_RELEASE_TAG"
+          if ($LASTEXITCODE -ne 0) { throw 'Upstream tag fetch failed' }
+          git -C .kiln-settlement-lab checkout --detach 'FETCH_HEAD^{commit}'
+          if ($LASTEXITCODE -ne 0) { throw 'Upstream checkout failed' }
+          $got = (git -C .kiln-settlement-lab rev-parse HEAD).Trim()
+          if ($got -ne $env:KILN_UPSTREAM_SHA) { throw "Immutable SHA mismatch: $got" }
+
+      - name: Apply version-pinned original payer and read-only settlement instrumentation
+        shell: pwsh
+        run: |
+          python sdk-proposals/native-craft-payment/hook-integration.py .kiln-settlement-lab
+          if ($LASTEXITCODE -ne 0) { throw 'Original payer patch failed' }
+          python sdk-proposals/native-craft-payment/tx-inventory-snapshot.py .kiln-settlement-lab
+          if ($LASTEXITCODE -ne 0) { throw 'Original inventory snapshot patch failed' }
+          python sdk-proposals/native-craft-payment/settlement-hook.py .kiln-settlement-lab
+          if ($LASTEXITCODE -ne 0) { throw 'Settlement witness patch failed' }
+          python sdk-proposals/native-craft-trace/msvc-compat.py .kiln-settlement-lab
+          if ($LASTEXITCODE -ne 0) { throw 'Rules baseline compatibility patch failed' }
+          python sdk-proposals/native-craft-payment/items-msvc-compat.py .kiln-settlement-lab
+          if ($LASTEXITCODE -ne 0) { throw 'Items baseline compatibility patch failed' }
+          git -C .kiln-settlement-lab diff --check
+          if ($LASTEXITCODE -ne 0) { throw 'Malformed native source patch' }
+
+      - name: Explicitly enable ONLY read-only witness in isolated lab checkout
+        shell: pwsh
+        run: |
+          $target = '.kiln-settlement-lab/native/services/rules/CMakeLists.txt'
+          Add-Content $target 'target_compile_definitions(kiln-rules PRIVATE CBPAY_ENABLE_SETTLEMENT_WITNESS)'
+          $primary = Get-Content '.kiln-settlement-lab/native/services/rules/rules.cpp' -Raw
+          $alternate = Get-Content '.kiln-settlement-lab/native/services/rules/creative.cpp' -Raw
+          if ($primary -notmatch 'cbpay::engine::dispatch\(' -or $alternate -notmatch 'cbpay::engine::dispatch\(') {
+            throw 'Missing original payer integration'
+          }
+          if ($primary -notmatch '(?s)cbpay::engine::Payer::InventoryPay\},\s*nullptr\);' -or
+              $alternate -notmatch '(?s)cbpay::engine::Payer::RecipePayAlt\},\s*nullptr\);') {
+            throw 'Never compile lab with any payment resolver enabled'
+          }
+          Write-Output 'PASS: actual original payer resolver is NULL at both sites, observer ONLY.'
+
+      - name: Compile Windows x64 exact-release passive lab DLL
+        shell: pwsh
+        run: |
+          cmake -S .kiln-settlement-lab/native -B .kiln-settlement-lab/native/build/lab -G "Visual Studio 17 2022" -A x64
+          if ($LASTEXITCODE -ne 0) { throw 'CMake configure failed' }
+          cmake --build .kiln-settlement-lab/native/build/lab --config Release --target kiln-rules --parallel 4
+          if ($LASTEXITCODE -ne 0) { throw 'Native lab compile failed' }
+
+      - name: Package exactly one native lab DLL with release provenance
+        shell: pwsh
+        run: |
+          $found = @(Get-ChildItem '.kiln-settlement-lab/native/build/lab' -Recurse -File -Filter 'kiln-rules.dll')
+          if ($found.Count -ne 1) { throw "Expected exactly one kiln-rules.dll, found $($found.Count)" }
+          $dir = 'cbpay-settlement-lab'
+          New-Item -ItemType Directory -Path $dir | Out-Null
+          Copy-Item $found[0].FullName "$dir/kiln-rules.dll"
+          Copy-Item 'sdk-proposals/native-craft-payment/SETTLEMENT-LAB.md' "$dir/README.md"
+          @(
+            "KILN_RELEASE_TAG=$env:KILN_RELEASE_TAG",
+            "KILN_UPSTREAM_SHA=$env:KILN_UPSTREAM_SHA",
+            "KILN_RULES_SHA256=$((Get-FileHash "$dir/kiln-rules.dll" -Algorithm SHA256).Hash)",
+            "SOURCE_BRANCH_SHA=$env:GITHUB_SHA",
+            'CBPAY_ENABLE_SETTLEMENT_WITNESS=true',
+            'REMOTE_PAYMENT_RESOLVER=nullptr',
+            'GAMEPLAY_RELEASE=false'
+          ) | Set-Content -Encoding utf8 "$dir/provenance.txt"
+          Compress-Archive -Path "$dir/*" -DestinationPath 'cbpay-settlement-lab.zip' -CompressionLevel Optimal -Force
+          Write-Output 'PASS: zipped test-only passive witness, no player inventory code and no deployed DLL.'
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cbpay-settlement-lab-windows-x64-NOT-A-GAMEPLAY-MOD
+          path: cbpay-settlement-lab.zip
+          if-no-files-found: error
+          retention-days: 7
