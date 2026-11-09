@@ -43,8 +43,14 @@ impl Fixture {
             .duration_since(UNIX_EPOCH)
             .expect("clock should be after the epoch")
             .as_nanos();
-        let base = std::env::temp_dir()
-            .join(format!("kiln-eml-path-{}-{}", std::process::id(), now));
+        // Wine maps the Linux checkout to Z:. Exercise precisely that path
+        // rather than Wine's C:-backed %TEMP%.
+        let parent = if std::env::var_os("KILN_EML_TEST_USE_CWD").is_some() {
+            std::env::current_dir()?
+        } else {
+            std::env::temp_dir()
+        };
+        let base = parent.join(format!("kiln-eml-path-{}-{}", std::process::id(), now));
         let raw_root = base.join("eml").join("flame-altar-expanded").join("0.1.1+hash");
         fs::create_dir_all(raw_root.join("src"))?;
         fs::write(raw_root.join("mod.json"), b"{\"id\":\"flame-altar-expanded\"}")?;
@@ -80,6 +86,8 @@ fn root_manifest_and_nested_lua_module_both_open() -> io::Result<()> {
     eprintln!("canonical root: {:?}", f.root);
     eprintln!("old root.join(src/mod.lua): {:?}", old_candidate);
     eprintln!("component-by-component: {:?}", new_candidate);
+    eprintln!("old path metadata: {:?}", fs::metadata(&old_candidate).map(|m| m.len()));
+    eprintln!("old path canonicalize: {:?}", fs::canonicalize(&old_candidate));
     eprintln!("old path read: {:?}", fs::read(&old_candidate).map(|b| b.len()));
 
     #[cfg(windows)]
