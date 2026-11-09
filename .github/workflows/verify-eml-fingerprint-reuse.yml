@@ -1,0 +1,99 @@
+name: Verify EML CRC fingerprint reuse and integrity
+
+on:
+  push:
+    branches: [fix/eml-fingerprint-reuse]
+    paths:
+      - 'performance/eml-fingerprint-reuse/**'
+      - '.github/workflows/verify-eml-fingerprint-reuse.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    name: Fingerprint regression (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, windows-2022]
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Check out corrective patch
+        uses: actions/checkout@v4
+
+      - name: Check out exact upstream EML source from failed launch
+        uses: actions/checkout@v4
+        with:
+          repository: frostdev-ops/kiln
+          ref: d35ee27c5c4f1f31b1c4a3503636a653d6d3ae63
+          path: kiln-upstream
+          persist-credentials: false
+
+      - name: Apply CRC reuse patch to pinned GPL workspace
+        run: |
+          python3 performance/eml-fingerprint-reuse/apply.py kiln-upstream
+          python3 performance/eml-fingerprint-reuse/add_tests.py kiln-upstream
+          git -C kiln-upstream diff --check
+
+      - name: Run CRC reuse, same-size edit, replacement, and old-cache tests
+        run: |
+          cd kiln-upstream/gpl/kiln-eml
+          cargo test --locked --release -p mod-loader-lua fingerprint_reuse_tests -- --nocapture
+
+      - name: Run existing preserved-mtime/unreadable-file cache test
+        run: |
+          cd kiln-upstream/gpl/kiln-eml
+          cargo test --locked --release -p mod-loader-lua preserved_timestamp_edit_and_unreadable_file_invalidate_cache -- --nocapture
+
+      - name: Compile pinned Kiln EML plugin and patched Lua integration
+        run: |
+          cd kiln-upstream/gpl/kiln-eml
+          cargo check --locked -p kiln-eml -p mod-loader-lua
+
+      - name: Compile Windows release static-CRT EML DLL for integration staging
+        if: matrix.os == 'windows-2022'
+        env:
+          RUSTFLAGS: "-Ctarget-feature=+crt-static"
+        run: |
+          cd kiln-upstream/gpl/kiln-eml
+          cargo build --release --locked --target x86_64-pc-windows-msvc -p kiln-eml --lib
+
+      - name: Package test-only DLL separately (never auto-install)
+        if: matrix.os == 'windows-2022'
+        run: |
+          mkdir -p eml-crc-reuse-test-only
+          cp kiln-upstream/gpl/kiln-eml/target/x86_64-pc-windows-msvc/release/kiln_eml.dll eml-crc-reuse-test-only/kiln-eml.dll
+          cp kiln-upstream/gpl/kiln-eml/LICENSE eml-crc-reuse-test-only/LICENSE.GPL-3.0
+          cp performance/eml-fingerprint-reuse/README.md eml-crc-reuse-test-only/README.md
+
+      - name: Upload experimental test-only DLL (NOT a game mod)
+        if: matrix.os == 'windows-2022'
+        uses: actions/upload-artifact@v4
+        with:
+          name: kiln-eml-crc-reuse-TEST-ONLY
+          path: eml-crc-reuse-test-only/
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Generate source-only upstream diff
+        if: matrix.os == 'ubuntu-24.04'
+        run: |
+          git -C kiln-upstream diff -- \
+            gpl/kiln-eml/eml/mod-loader-lua/src/cache/mod.rs \
+            gpl/kiln-eml/eml/mod-loader-lua/src/lib.rs \
+            > kiln-eml-crc-reuse.patch
+          test -s kiln-eml-crc-reuse.patch
+
+      - name: Upload source-only diff for upstream review
+        if: matrix.os == 'ubuntu-24.04'
+        uses: actions/upload-artifact@v4
+        with:
+          name: kiln-eml-crc-reuse-source-patch
+          path: kiln-eml-crc-reuse.patch
+          if-no-files-found: error
+          retention-days: 30
