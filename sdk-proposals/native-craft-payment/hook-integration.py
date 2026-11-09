@@ -40,7 +40,7 @@ destination.mkdir(parents=True, exist_ok=True)
 src = repo / "sdk-proposals/native-craft-payment"
 for name in ("payment_plan.h", "native_take_adapter.h",
              "recipe_payment_bridge.h", "selected_costs.h", "recipe_metadata.h", "engine_hook.h",
-             "client_craftable.h",
+             "client_craftable.h", "stock_sources.h",
              "tx-source-provider.h", "tx-source-native.h", "settlement_witness.h"):
     shutil.copyfile(src / name, destination / name)
     print("COPIED isolated native header", name)
