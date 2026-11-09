@@ -150,6 +150,17 @@ uint32_t invoke_original_payer(void* tx,int64_t* costs,uint32_t owner,
     return h_pay.call<uint32_t>(tx,costs,owner,multiplier,extra);
 }
 
+bool selector_prologue_is(uintptr_t selector) {
+    constexpr uint8_t sig[]={
+        0x48,0x89,0x5C,0x24,0x08,0x48,0x89,0x6C,0x24,0x10,
+        0x48,0x89,0x74,0x24,0x20,0x57,0x48,0x83,0xEC,0x40
+    };
+    __try {
+        return std::memcmp(reinterpret_cast<const void*>(selector),
+                           sig,sizeof(sig))==0;
+    } __except(EXCEPTION_EXECUTE_HANDLER) {return false;}
+}
+
 void install(const KilnApi* api) {
     enabled=false;
     if(!h_pay || !(g_hooks & KILN_RULES_HOOK_CRAFT) ||
@@ -165,17 +176,10 @@ void install(const KilnApi* api) {
     // SHA-256 checked by live::bind against actual process executable.
     const auto module=reinterpret_cast<uintptr_t>(GetModuleHandleW(nullptr));
     const uintptr_t selector=module+0x2081c0;
-    // Additional exact prologue and original E8 caller verification.
-    constexpr uint8_t sig[]={
-      0x48,0x89,0x5C,0x24,0x08,0x48,0x89,0x6C,0x24,0x10,
-      0x48,0x89,0x74,0x24,0x20,0x57,0x48,0x83,0xEC,0x40
-    };
-    bool good=false;
-    __try {
-        good=std::memcmp(reinterpret_cast<const void*>(selector),
-                         sig,sizeof(sig))==0;
-    } __except(EXCEPTION_EXECUTE_HANDLER) {good=false;}
-    if(!good || !caller_was_original(module+0x199d93,selector) ||
+    // Probe in a small POD-only SEH helper: MSVC cannot use __try in
+    // this function, since SafetyHook owns C++ unwinding temporaries.
+    if(!selector_prologue_is(selector) ||
+       !caller_was_original(module+0x199d93,selector) ||
        !caller_was_original(module+0x199fa7,selector))
         return;
     h_selector=safetyhook::create_inline(
