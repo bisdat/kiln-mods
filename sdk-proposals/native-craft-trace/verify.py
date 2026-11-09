@@ -36,7 +36,7 @@ assert not any(keyword in added for keyword in (
 )), "Unexpected direct inventory manipulation or new native detour"
 assert "h_pay.call<uint32_t>(tx, costs, owner, multiplier, extra)" in added
 assert "h_alt.call<uint32_t>(tx, costs, owner, multiplier, extra)" in added
-assert "h_craftable.call<uint32_t>(ui, recipe, cap, selections)" in added
+assert "h_craftable.call<uint32_t>(ui, recipe, cap, selections)" in (root / "native/services/rules/creative.cpp").read_text(), "Original UI calculation must still run"
 assert "return h_pay.call<uint32_t>(tx, costs, owner, multiplier, extra);" in deleted
 assert "return h_alt.call<uint32_t>(tx, costs, owner, multiplier, extra);" in deleted
 assert "KilnRulesCraftTrace" in added
