@@ -35,8 +35,16 @@ export TMPDIR="$test_root"
 export STEAM_ROOT="$test_root/steam"
 export KILN_EML_LIBRARY_DIR="$test_root/library"
 export PROTON_RUNNER="$fake"
-bash "$test_root/diagnostic/run-with-proton.sh" > "$test_root/success.log" 2>&1
-grep -q 'Both read-only EML file checks completed.' "$test_root/success.log"
+if ! bash "$test_root/diagnostic/run-with-proton.sh" > "$test_root/success.log" 2>&1; then
+  echo "Fake Proton success case unexpectedly failed:" >&2
+  cat "$test_root/success.log" >&2
+  exit 1
+fi
+if ! grep -q 'Both read-only EML file checks completed.' "$test_root/success.log"; then
+  echo "Fake Proton success case missing completion marker:" >&2
+  cat "$test_root/success.log" >&2
+  exit 1
+fi
 
 # A fake Steam launch can initialize the prefix and exit 0 without running
 # the standalone probe. A subsequent runinprefix must produce actual results.
