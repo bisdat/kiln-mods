@@ -22,3 +22,8 @@ An independent Kiln-native storage refill mod. Version **0.4.2** uses the comple
 
 The original [`endless-chests.defaults.ini`](EndlessChests/defaults/endless-chests.defaults.ini) has **195 group names sorted alphabetically** within `[Groups]`, with the other INI sections sorted by their keys too. Each group's item list and all original settings are unchanged. Starting with the **`endless-chests-v0.4.2` GitHub Release**, download the **standalone `endless-chests.defaults.ini`** directly from the release's Assets alongside the installable `endless-chests-kiln-0.4.2.zip`. The INI is a readable reference/customization template, not a Kiln-installable mod; upgrading does not overwrite an existing user-modified `endless-chests.ini`.
 
+## Flame Altar Expanded — experimental
+
+[Mod documentation](FlameAltarExpanded/README.md) | [Build workflow](.github/workflows/flame-altar-expanded.yml) | [Issue #12](https://github.com/bisdat/kiln-mods/issues/12)
+
+An **experimental Kiln-hosted EML data patch** to add a new Flame Altar upgrade from level 4 to level 5: **300 × 300 × 300 m** rather than the vanilla 160 m cube. The proposed level-5 upgrade costs **10 Shroud Nexus**. Requires a Kiln installation with the newer `kiln-eml` plugin on client and server; the pinned `v0.2.0-dev.15` SDK alone does not include it. **Not yet verified in-game; do not use on an irreplaceable save.** The Action packages a standalone EML mod ZIP, not a C# DLL.
