@@ -1,5 +1,8 @@
 # Flame Altar Expanded
 
+> **DO NOT INSTALL — STARTUP-BLOCKING REGRESSION (9 November 2026).**
+> A user confirmed that Enshrouded fails to start when Flame Altar Expanded 0.1.1 is in the active Kiln profile, and starts again only after removing it. Even though GitHub's offline Lua tests pass, this mod is **not safe for gameplay or further installations**. **Remove/disable the mod in Kiln and do not test against a valuable save.** The cause is under investigation; there is no approved working version. See [issue #12](https://github.com/bisdat/kiln-mods/issues/12) and [draft PR #13](https://github.com/bisdat/kiln-mods/pull/13).
+
 **Experimental / not yet validated in-game.** Version 0.1.1 corrects EML userdata-array handling and clones the native upgrade recipe through EML's typed-array insertion; v0.1.0 must not be used. A separate [Kiln EML](https://github.com/frostdev-ops/kiln/blob/main/docs/kiln/eml.md) data-patch mod for *Enshrouded*.
 
 ## Intended behaviour
@@ -12,7 +15,7 @@ The vanilla game's balancing table currently already allows altar level 5, but i
 
 This uses **Kiln's `kiln-eml` pregame plugin**, *not* the older `Kiln.Content` C# mod API. Your Kiln runtime must include `kiln/plugins/kiln-eml.dll`. Kiln's pinned SDK tag `v0.2.0-dev.15` does **not** include this plugin; it is documented in newer upstream Kiln development.
 
-**Normal Kiln installation (preferred):**
+**Previously proposed Kiln installation — SUSPENDED pending root-cause analysis:**
 
 1. Open the successful **Package Flame Altar Expanded (experimental)** GitHub Actions run, and download the artifact **`flame-altar-expanded-0.1.1-kiln`**. The downloaded file is already the **single installable ZIP**.
 2. **Drag that ZIP directly onto the Kiln launcher window**, as for your other mods. Do not extract or nest it inside another ZIP.
