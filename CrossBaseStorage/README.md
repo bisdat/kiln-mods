@@ -1,4 +1,4 @@
-# Cross-base Storage (Kiln) — 0.1.8
+# Cross-base Storage (Kiln) — 0.1.9 (final read-only investigation)
 
 **Status: read-only inventory + vanilla craft/build observation prototype — not a working cross-base crafting mod.**
 
@@ -41,6 +41,62 @@ Magic stock pool.
 This is a **read-only naming rule**, not the game's authoritative Magic
 entitlement or confirmation that a particular player is permitted to use
 another base's supplies. Crafting and building remain unchanged.
+
+## Final investigation build — 0.1.9
+
+**This is the last planned read-only diagnostic build.** The next development
+milestone is an actual, safely authorised, atomic **crafting integration**
+rather than more chest scanners or standalone trace mods. Building-mode
+integration will follow only once crafting is verified.
+
+One admin command captures all the existing investigation evidence:
+
+```text
+cbstore handoff <recipeId|last> [count]
+```
+
+Example: `cbstore handoff 0x2cd4c47e 1` (use an **actual** recipe ID from
+`cbstore recipes [name]`). While the vanilla craft button is disabled,
+`last` may have no event; choose a recipe ID directly instead.
+
+**What `handoff` checks in one read-only world snapshot:**
+
+- A full registered native recipe bill, including quantity; any unresolved
+  item/category (ID 0), raw zero count, empty bill, or overflowing total is
+  **unknown and not free**. It produces no hypothetical debits.
+- Player inventory quantities and only currently loaded templates ending
+  in `_Magic` (24-slot and 72-slot Magic Chests have already been validated
+  in-game), preferring local player stock before chest candidates.
+- The owner-to-eight-slot-linked-inventory index, refusing duplicate,
+  malformed or shared identities rather than attributing deductions to
+  the wrong chest.
+- A single deterministic, **whole-recipe** read-only source estimate. If
+  any ingredient is short, all proposed takes are withheld. Displayed
+  remote chest owner IDs and actual linked inventory entity IDs are
+  *diagnostic relationships*, not approved payment operations.
+- Availability of the optional same-invocation `cbstore trace pair`.
+  Normal unmodified Kiln reports `UNAVAILABLE`; the trace's last observed
+  call might not belong to this particular recipe.
+
+The report ALWAYS prints `nativePaymentPermitted=False`. It never
+modifies vanilla crafting, the client button, the player's chest links,
+inventory contents, or the game's original transaction. Template suffixes
+do not prove per-base access, distant unloaded chests aren't scanned,
+and numeric proximity does not prove Flame Altar membership.
+
+**Next implementation acceptance conditions:** (1) authoritative native
+Magic property plus player/base permissions, including unloaded-base rules;
+(2) decoded exact/category ingredient choices in both recipe payer paths;
+(3) remote withdrawals staged exclusively in the original RecipeApply
+transaction, with verified full rollback after any partial failure;
+(4) matching client recipe craftability and building source support;
+(5) a backed-up-world single and multiple craft test, concurrency,
+multiplayer and save/reload verification. The implementation may require
+an upstream Kiln native API change, not just a managed mod update.
+
+The build is **the final observation checkpoint**, not a promise that
+all these native features already exist. Experimental matching native
+Rules DLLs remain lab-only, excluded from this package.
 
 ## Native payer trace integrated in 0.1.8 (optional, read-only)
 
@@ -112,6 +168,7 @@ It installs as a **server-side Kiln mod** and exposes administrator-only command
 | `cbstore lastcraft` | Show the latest vanilla crafting attempt/result observed for your player; no action recorded if the client disabled its button |
 | `cbstore lastbuild` | Show the latest native building outcome for your player, if the client sent an action |
 | `cbstore trace [status|pair|payer|cost|journal|all]` | Optional same-call native recipe payment diagnostics, or explicit unavailable message on standard Kiln; **never mutates inventory** |
+| `cbstore handoff <recipeId|last> [quantity]` | **Final** full native recipe/snapshot/linked-chest preflight with explicit blockers and no native payment |
 | `cbstore help` | List diagnostics |
 
 As of **0.1.7**, `scan`, `stock`, `top`, `quote`, `plan`, `links` and `resolve` classify candidate Magic Chests only when the template ends with **`_Magic`** (case-insensitive). The slot count is taken from the actual inventory; there is **no 72-slot ceiling**. This is *not* guaranteed to be the same as the game's Magic Chest property. If `cbstore near` reports `magicByTemplate=false` while standing next to a known Magic Chest, that is useful evidence that an engine-supported flag must be discovered. All commands work on the Kiln server tick thread; `near` requires an in-world player location.
