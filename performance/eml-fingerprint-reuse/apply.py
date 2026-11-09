@@ -324,6 +324,25 @@ change("lib.rs",
     }
     inputs_before.track_game_inputs(env.game_dir().as_std_path(), &file_name, vanilla_containers);''')
 change("lib.rs",
+'''    let mut patched = 0;
+
+    if app_state.has_feature(AppFeatures::PATCH) {''',
+'''    let mut patched = 0;
+    // Retain the latest verified input snapshot beyond the publication block.
+    let mut verified_inputs: Option<FileStateCache> = None;
+
+    if app_state.has_feature(AppFeatures::PATCH) {''')
+change("lib.rs",
+'''        if inputs_before.diff(&inputs_now).is_some() {
+            anyhow::bail!("Game inputs changed or became unreadable during patch preparation");
+        }
+        info!("Applying patches...");''',
+'''        if inputs_before.diff(&inputs_now).is_some() {
+            anyhow::bail!("Game inputs changed or became unreadable during patch preparation");
+        }
+        verified_inputs = Some(inputs_now);
+        info!("Applying patches...");''')
+change("lib.rs",
 '''        let mut inputs_now = FileStateCache::default();
         inputs_now.track_game_inputs(env.game_dir().as_std_path(), &file_name, vanilla_containers);''',
 '''        let mut inputs_now = FileStateCache::default();
@@ -340,7 +359,9 @@ change("lib.rs",
         if let Some(snapshot) = game_snapshot.as_ref() {
             new_cache.seed_reuse_from(snapshot);
         }
-        new_cache.seed_reuse_from(&inputs_now);
+        if let Some(verified) = verified_inputs.as_ref() {
+            new_cache.seed_reuse_from(verified);
+        }
         new_cache.configuration(&cache_key);
 
         new_cache.track_game_files(env.game_dir());
