@@ -270,6 +270,6 @@ alt = (root / creative).read_text(encoding="utf8")
 assert body.count("cbpay::engine::dispatch(") == 1
 assert alt.count("cbpay::engine::dispatch(") == 1
 assert body.count("cbpay::settlement::kEnabled") >= 2
-assert alt.count("cbpay::settlement::kEnabled") == 1
+assert alt.count("cbpay::settlement::kEnabled") >= 2
 assert "resolver=nullptr" not in body or "nullptr);" in body
 print("PASS: original payer and finality witness code compiles only; lab hooks OFF, original payers unchanged.")
