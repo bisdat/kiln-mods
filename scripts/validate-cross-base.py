@@ -44,7 +44,8 @@ assert 'Compile Include="../CraftPaymentTrace/TraceReader.cs"' in (root / "Cross
 assert '"pair" => "TraceRecipePayment"' in trace_lib
 assert "FormatPair(object snapshot)" in trace_lib
 assert "status is not (1 or 3)" in trace_lib
-assert "INV" not in ""  # no native memory access in the managed observer
+assert "Marshal" not in trace_lib and "DllImport" not in trace_lib
+assert "Items.Take(" not in trace_lib and "Items.Give(" not in trace_lib
 assert "LoadedLinkIndex(chests)" in src
 assert "InventoryLinkIndex.Build(" in src
 assert (root / "CrossBaseStorage/InventoryLinkIndex.cs").exists()
