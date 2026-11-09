@@ -1,3 +1,62 @@
+# Native recipe-payment bridge: implementation begun (server transaction layer)
+
+## First implementation milestone — 9 November 2026
+
+[**`recipe_payment_bridge.h`**](recipe_payment_bridge.h) is the first
+**executable server-side recipe-payment coordinator**, layered on the real
+InventoryRemoveItems ABI adapter and existing exact-slot source planner.
+
+It implements three mutually exclusive actions:
+
+- **DelegateVanilla:** the caller must run the original payer unchanged,
+  with no remote withdrawals staged (for local-only recipes, missing engine
+  proofs, unsupported categories, shortages or denied permissions).
+- **PaidInOriginalTx:** all local and eligible remote sources were validated
+  by a *native transaction-time* authorisation callback, and the original
+  `InventoryRemoveItems` staged the **exact** item, count, slot and operation
+  type on the **original** recipe transaction. The original recipe—not this
+  coordinator—must own its output and the eventual commit or rollback.
+- **AbortOriginalRecipe:** at least one native take produced an error,
+  shortage, incorrect journal delta or misdirected slot. Earlier changes
+  may be staged, so **the outer recipe must roll back**, and the hook
+  MUST NOT fall back to vanilla or report success.
+
+The coordinator makes all seven proofs **mandatory** before any staging:
+validated recipe-specific return address, matching operator, proven outer
+RecipeApply rollback, decoded full selected ingredient bill (including
+category/alternative scaling), original write-tracked ECS context,
+authoritative native Magic/base/player permissions and no conflicting
+creative-mode payment waiver. Merely seeing `_Magic` or trusting a
+`cbstore scan` is *not* proof.
+
+[**`recipe_payment_bridge_tests.cpp`**](recipe_payment_bridge_tests.cpp)
+runs 18 synthetic original-transaction end-to-end cases: player-first,
+same-base and distant payment order; no double charges; successful output
+commit; output failure rollback; denial/shortfall after partial staging;
+wrong slot, wrong item and wrong op-type; revoked rights before staging;
+unsupported categories; stale stock; multiple ingredients; mismatched
+actor and duplicate slot identities.
+
+**Verified CI:** [native payment run #42600744651](https://github.com/bisdat/kiln-mods/actions/runs/42600744651):
+**46/46 host tests per compiler** (17 planner + 11 native ABI + 18 coordinator)
+passed GCC, Clang, Windows MSVC. The latest released Kiln
+`v0.2.0-dev.20` still exposes the original payer and native
+remove/rollback seams.
+
+**Release gate remains CLOSED:** Host tests do not establish real
+native permission retrieval, actual Workbench category-cost selection,
+outer-game rollback semantics, or client UI consistency. The native
+service still has no verified authoritative provider satisfying the proof
+contract, so no live source can pass the bridge. **No DLL was installed
+or deployed**, no new diagnostic-only Cross-base Storage build is
+necessary and v0.1.9 remains installed unchanged.
+
+The next source milestone is filling these mandatory callbacks with
+engine-authenticated data and binding this executor to BOTH original
+recipe payer callsites, while proving failures cause the real
+RecipeApply transaction to roll back. Only then can a feature ZIP be
+safely offered for isolated gameplay tests.
+
 # Native recipe-payment bridge: isolated safety prototype
 
 **Not installable, not an upstream Kiln API, not working cross-base crafting.**
@@ -27,7 +86,7 @@ to Enshrouded process memory, inventory, game transactions or saved games.
 
 Host tests (both pure planning and current-layout native take adapter):
 
-    for suite in payment_plan_tests native_take_adapter_tests; do
+    for suite in payment_plan_tests native_take_adapter_tests recipe_payment_bridge_tests; do
       g++ -std=c++20 -O2 -Wall -Wextra -Werror -pedantic \
         "sdk-proposals/native-craft-payment/$suite.cpp" -o "/tmp/$suite"
       "/tmp/$suite"
