@@ -81,10 +81,10 @@ Stock collect(uint32_t actor, std::span<const uint32_t> owners,
     }
     if (!has_actor) return invalid(Result::InvalidOwners);
     for (auto owner : owners) {
-        Grant rights{};
+        Grant verifiedGrant{};
         if (owner != actor) {
-            rights = grant(actor, owner);
-            if (!rights) {
+            verifiedGrant = grant(actor, owner);
+            if (!verifiedGrant) {
                 ++output.skipped_unauthorised;
                 continue; // don't even read other players' private storage
             }
@@ -113,10 +113,10 @@ Stock collect(uint32_t actor, std::span<const uint32_t> owners,
                 return invalid(Result::LimitExceeded);
             output.entries.push_back({
                 owner,slot.id,slot.item,slot.units,
-                true, owner != actor && rights.native_magic,
-                owner == actor || rights.player_access,
-                owner == actor || rights.base_access,
-                owner != actor && rights.same_base
+                true, owner != actor && verifiedGrant.native_magic,
+                owner == actor || verifiedGrant.player_access,
+                owner == actor || verifiedGrant.base_access,
+                owner != actor && verifiedGrant.same_base
             });
         }
         ++output.owner_count;
