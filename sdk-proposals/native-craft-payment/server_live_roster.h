@@ -17,6 +17,7 @@
 #include "kiln_api.h"
 #include "services/kiln_players.h"
 #include "services/kiln_items.h"
+#include "services/kiln_types.h"
 
 #include <array>
 #include <cstddef>
@@ -49,6 +50,7 @@ struct Services {
     GetTemplateComponent get_template = nullptr;
     bool hash_ok = false;
     bool original_finality_ok = false;
+    uint64_t original_client_cache_update_rva = 0;
 };
 
 inline Services S{};
@@ -296,6 +298,34 @@ inline bool roster(uint32_t actor,void* tx,
     return true;
 }
 
+// The current Kiln Types service indexes the game's actual .rdata ECS
+// system descriptors and supplies the update RVA by NAME. No guessed client
+// function offset, borrowed program callback or button override is used.
+inline uint64_t client_cache_system_rva(const KilnApi* api) {
+    if(!api || !api->service)return 0;
+    const auto* types=static_cast<const KilnTypesApi*>(
+        api->service(KilnStr{KILN_TYPES_SERVICE,sizeof(KILN_TYPES_SERVICE)-1},
+                     KILN_TYPES_VERSION));
+    if(!types || types->header.size <
+       offsetof(KilnTypesApi,system_find)+sizeof(types->system_find) ||
+       types->header.size <
+       offsetof(KilnTypesApi,system_info)+sizeof(types->system_info) ||
+       !types->status || !types->system_find || !types->system_info)
+        return 0;
+    KilnTypesStatus status{};status.size=sizeof status;
+    if(types->status(&status)!=KILN_OK || !status.systems ||
+       !status.system_count)return 0;
+    static constexpr char kName[]="cache_crafting_stock";
+    const int32_t index=types->system_find(KilnStr{kName,sizeof(kName)-1});
+    if(index<0 || static_cast<uint32_t>(index)>=status.system_count)return 0;
+    KilnSystemInfo entry{};entry.size=sizeof entry;
+    if(types->system_info(static_cast<uint32_t>(index),&entry)!=KILN_OK ||
+       entry.index!=static_cast<uint32_t>(index) ||
+       !entry.rva || !entry.name.data || entry.name.size!=sizeof(kName)-1 ||
+       std::memcmp(entry.name.data,kName,sizeof(kName)-1)!=0)return 0;
+    return entry.rva;
+}
+
 inline bool bind(const KilnApi* api) {
     S={};
     if (!api || !api->side || !api->build_info ||
@@ -316,6 +346,13 @@ inline bool bind(const KilnApi* api) {
     if(!build) return false;
     S.api=api;S.build=build;
     if(!authoritative_world()) { S={}; return false; }
+    if(build->side==cbpay::stock::build::Side::ClientHosted) {
+        S.original_client_cache_update_rva=client_cache_system_rva(api);
+        if(!S.original_client_cache_update_rva) {
+            S={};
+            return false; // no correct client cache => no stock overlay
+        }
+    }
     auto* players=static_cast<const KilnPlayersApi*>(
         api->service(KilnStr{KILN_PLAYERS_SERVICE,sizeof(KILN_PLAYERS_SERVICE)-1},
                      KILN_PLAYERS_VERSION));
