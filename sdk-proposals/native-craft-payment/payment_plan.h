@@ -163,8 +163,11 @@ enum class PaymentOutcome : uint8_t {
 // NEVER tx.commit() here. On failed staging, caller MUST abort RecipeApply
 // and roll back the same tx, never fall through to vanilla payment.
 template <typename Stage>
-PaymentOutcome stage_plan(const Plan& p, Stage&& stage) {
-    if (!p || p.takes.empty()) return PaymentOutcome::Declined;
+PaymentOutcome stage_plan(const Plan& p, uint32_t actor, Stage&& stage) {
+    // Leave vanilla untouched when all ingredients are already payable locally.
+    if (!actor || !p || p.takes.empty() ||
+        std::none_of(p.takes.begin(), p.takes.end(), [actor](const Take& t) { return t.owner != actor; }))
+        return PaymentOutcome::Declined;
     for (const Take& t : p.takes) {
         StageResult r = stage(t);
         if (r.game_error || r.remaining != 0 || r.appended.empty())
