@@ -2,9 +2,9 @@
   <PropertyGroup>
     <KilnModId>cross-base-storage</KilnModId>
     <KilnModName>Cross-base Storage (Kiln)</KilnModName>
-    <Version>0.1.8</Version>
+    <Version>0.1.9</Version>
     <Authors>bisdat</Authors>
-    <Description>Read-only cross-base Magic Chest discovery, source quotes, recipe and chest-link diagnostics, and optional native payer/cost/journal observation; no remote crafting or resource mutations.</Description>
+    <Description>Final read-only pre-implementation build: complete recipe handoff with validated loaded Magic Chest owner/link snapshots and optional native trace. No remote crafting or inventory mutations.</Description>
     <PackageProjectUrl>https://github.com/bisdat/kiln-mods</PackageProjectUrl>
     <KilnSide>server</KilnSide>
     <KilnClients>none</KilnClients>
