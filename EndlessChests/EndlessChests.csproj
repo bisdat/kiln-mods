@@ -1,4 +1,4 @@
-<Project Sdk="Kiln.Sdk/0.2.0-dev.local.20261107.61500">
+<Project Sdk="Kiln.Sdk">
   <PropertyGroup>
     <KilnModId>endless-chests-kiln</KilnModId>
     <KilnModName>Endless Chests (Kiln)</KilnModName>
