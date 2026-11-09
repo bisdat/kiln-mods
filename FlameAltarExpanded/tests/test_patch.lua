@@ -14,20 +14,17 @@ local passed = 0
 -- Make test userdata from temporary file handles, rather than plain Lua
 -- arrays, so a future `type(array) == "table"` regression is caught.
 local arrays = setmetatable({}, {__mode = "k"})
-do
-    local probe = assert(io.tmpfile())
-    debug.setmetatable(probe, {
-        __len = function(u) return #assert(arrays[u]) end,
-        __index = function(u, key) return assert(arrays[u])[key] end,
-        __newindex = function(u, key, value) assert(arrays[u])[key] = value end,
-        __pairs = function(u) return pairs(assert(arrays[u])) end,
-    })
-    -- Keep probe alive until process exit: its userdata metatable now
-    -- models a typed array and no longer provides file methods.
-end
+local array_metatable = {
+    __len = function(u) return #assert(arrays[u]) end,
+    __index = function(u, key) return assert(arrays[u])[key] end,
+    __newindex = function(u, key, value) assert(arrays[u])[key] = value end,
+    __pairs = function(u) return pairs(assert(arrays[u])) end,
+}
 local function mapped_array(value)
     local u = assert(io.tmpfile())
     arrays[u] = value
+    -- On Lua 5.4, debug.setmetatable changes this userdata, not all files.
+    debug.setmetatable(u, array_metatable)
     return u
 end
 
