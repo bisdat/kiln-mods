@@ -22,3 +22,31 @@ An independent Kiln-native storage refill mod. Version **0.4.3** fixes ambiguous
 
 The original [`endless-chests.defaults.ini`](EndlessChests/defaults/endless-chests.defaults.ini) has **195 group names sorted alphabetically** within `[Groups]`, with the other INI sections sorted by their keys too. Each group's item list and all original settings are unchanged. Starting with the **`endless-chests-v0.4.2` GitHub Release**, download the **standalone `endless-chests.defaults.ini`** directly from the release's Assets alongside the installable `endless-chests-kiln-0.4.3.zip`. The INI is a readable reference/customization template, not a Kiln-installable mod; upgrading does not overwrite an existing user-modified `endless-chests.ini`.
 
+
+## Building Tools for Kiln — cross-base Magic Chests
+
+**Kiln adapter v1.0.0 · upstream Building Tools v0.31.2**
+
+[Installation and settings](docs/BUILDINGTOOLS-KILN-ADAPTER.md) |
+[Packaging workflow](.github/workflows/buildingtools-kiln-native-adapter.yml) |
+[Releases](https://github.com/bisdat/kiln-mods/releases)
+
+An **MIT-licensed upstream Building Tools DLL**, packaged unchanged
+as a **Kiln-native mod**. Does **not** replace Kiln's dinput8.dll.
+The user confirmed that the in-game menu and **Magic Chests from all
+Flame Altar bases** work under Kiln on Linux Steam/Proton.
+
+Enable with **Home → Options → Magic chests of all bases → On**.
+Alternatively set GlobalMagicChests=1 under [Chests] in the
+game-root BuildingTools.ini while the game is closed, then restart.
+The upstream binary is preserved byte-for-byte with its original MIT
+licence and translations; the production build pins upstream release
+0.31.2 to its verified SHA256. Existing user INI configuration
+survives upgrades.
+
+Previous custom native Cross-base Storage implementation and all
+related research were **archived**, not merged:
+[archived research](docs/ARCHIVED-CROSS-BASE-RESEARCH.md).
+Do not install its experimental kiln-rules/kiln-items DLLs.
+Remote ingredient debit/save-reload conservation still deserves
+separate acceptance testing; see the user guide.

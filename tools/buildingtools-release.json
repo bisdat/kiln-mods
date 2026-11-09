@@ -1,0 +1,6 @@
+{
+  "adapter_version": "1.0.0",
+  "upstream_version": "0.31.2",
+  "upstream_sha256": "416b615ff854b6bd332074eb52731a4bc485fb510cc1779b772258dfeb5ec5fe",
+  "tested_client_sha256": "5d9ef2f140b8ed49e30dbee655841b89d08baec20f799a1817e171a18a850c77"
+}
