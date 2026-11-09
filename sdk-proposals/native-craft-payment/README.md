@@ -1,5 +1,54 @@
 # Native recipe-payment bridge: implementation begun (server transaction layer)
 
+## Second implementation milestone — native original-transaction source reader
+
+The next native phase has progressed beyond synthetic source lists: the
+experimental [`tx-inventory-snapshot.py`](tx-inventory-snapshot.py) applies
+a narrow **optional native Kiln.Items v3 ABI tail** to an exact, disposable
+published Kiln checkout. Its `read_in_tx` reads the **original game's
+borrowed InventoryTx** using the existing guarded
+`kitems::access_from_tx`, `read_pages` and `read_slots` accessors, not the
+public tick-thread-only `Items.Read`. It verifies the transaction operator
+against the actor, server-only world, initialized owner inventory, complete
+linked 8-slot pages, packed slot entity/index and nonzero item/quantity
+consistency. It returns a **detached copy** of all slot IDs and counts or
+fails closed; never writes to a game inventory or extends persistent
+`InventorySetup` links.
+
+[`tx-source-native.h`](tx-source-native.h) converts that native ABI output
+into concrete owner/link/slot records for the crafting payment bridge.
+[`tx-source-provider.h`](tx-source-provider.h) requires a **separate live
+game-native permission grant before reading any remote owner's inventory**;
+the required proof comprises actual native Magic identity, player access and
+Flame Altar/base eligibility, with separate same-base ordering. It rejects
+duplicate/ambiguous linked IDs across owners, wrong operator, incomplete
+pages, corrupt stacks and invalid source identities. It has no right to
+invent a permission from the `_Magic` filename, template, distance, or
+`cbstore scan`.
+
+**CI evidence (9 November 2026):**
+- [Windows original native service build #42605191013](https://github.com/bisdat/kiln-mods/actions/runs/42605191013)
+  built both modified **`kiln-items.dll` and `kiln-rules.dll`** from exact
+  published Kiln `v0.2.0-dev.20`, without installing or uploading either.
+- [Cross-platform C++ safety #42605199473](https://github.com/bisdat/kiln-mods/actions/runs/42605199473)
+  passed **82/82 host cases** (17 planner + 11 native ABI + 18 transaction
+  coordinator + 17 original hook + **19 new source access tests**) on GCC,
+  Clang and Windows MSVC. Source tests deliberately model lost permission,
+  ordinary chest, 8-slot link duplication, forged identity, missing stock
+  and incomplete snapshots.
+
+**What is still NOT implemented or verified:** The game-native provider
+must enumerate eligible loaded chest owners and establish their actual
+Magic/base/player grants. The authoritative selected category/alternative
+ingredient cost and water requirements are still not decoded; the Workbench
+second ingredient remains `itemId=0, count=0` in the managed recipe
+projection. The original recipe's exact abort/rollback return semantics
+still require live validation, as does the client craftability interface.
+**No permission is automatically true and the real hook's resolver is still
+`nullptr`.** There is no active remote item deduction, no playable feature
+ZIP, and no new diagnostic-only build. Keep Cross-base Storage 0.1.9
+installed with standard Kiln.
+
 ## First implementation milestone — 9 November 2026
 
 [**`recipe_payment_bridge.h`**](recipe_payment_bridge.h) is the first
@@ -86,7 +135,7 @@ to Enshrouded process memory, inventory, game transactions or saved games.
 
 Host tests (both pure planning and current-layout native take adapter):
 
-    for suite in payment_plan_tests native_take_adapter_tests recipe_payment_bridge_tests; do
+    for suite in payment_plan_tests native_take_adapter_tests recipe_payment_bridge_tests engine_hook_tests tx-source-provider-tests; do
       g++ -std=c++20 -O2 -Wall -Wextra -Werror -pedantic \
         "sdk-proposals/native-craft-payment/$suite.cpp" -o "/tmp/$suite"
       "/tmp/$suite"
