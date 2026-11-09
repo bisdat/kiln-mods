@@ -66,6 +66,7 @@ export STEAM_COMPAT_CLIENT_INSTALL_PATH="$steam_root"
 export SteamAppId=1203620 SteamGameId=1203620
 export STEAM_COMPAT_APP_ID=1203620
 
+echo "EML read-only diagnostic runner v2 (Proton lifecycle fix)"
 echo "Proton runner: $runner"
 echo "Game is NOT launched. No Kiln profile or mod files are changed."
 echo "The two tests refer to the same installed, Library-only file."
