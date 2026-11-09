@@ -7,6 +7,9 @@ on:
     paths:
       - 'CrossBaseStorage/**'
       - 'scripts/build.sh'
+      - 'scripts/resolve-kiln-release.py'
+      - 'tests/kiln-release/**'
+      - 'global.json'
       - 'scripts/validate-cross-base.py'
       - 'NuGet.Config'
       - '.github/workflows/cross-base-storage.yml'
@@ -14,6 +17,9 @@ on:
     paths:
       - 'CrossBaseStorage/**'
       - 'scripts/build.sh'
+      - 'scripts/resolve-kiln-release.py'
+      - 'tests/kiln-release/**'
+      - 'global.json'
       - 'scripts/validate-cross-base.py'
       - 'NuGet.Config'
       - '.github/workflows/cross-base-storage.yml'
@@ -31,8 +37,7 @@ jobs:
     name: Build Cross-base Storage
     runs-on: ubuntu-24.04
     env:
-      KILN_UPSTREAM_SHA: eba9a5e1e0e0044a9146fdd53021a751e2957030
-      KILN_SDK_VERSION: 0.2.0-dev.local.20261107.61500
+      GITHUB_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@v4
 
@@ -51,6 +56,9 @@ jobs:
             exit 1
           fi
 
+      - name: Test latest Kiln release selection (offline fixtures)
+        run: python3 -m unittest discover -s tests/kiln-release -p 'test_*.py' -v
+
       - name: Check prototype's read-only boundaries
         run: python3 scripts/validate-cross-base.py
 
@@ -59,14 +67,16 @@ jobs:
       - name: Test read-only chest owner to inventory-link mapping
         run: dotnet run --project tests/inventory-links/InventoryLinks.Tests.csproj --configuration Release
 
-      - name: Build pinned Kiln SDK and package mod
+      - name: Build newest published Kiln SDK and package mod
         run: bash scripts/build.sh CrossBaseStorage
 
       - name: Upload prototype Kiln package
         uses: actions/upload-artifact@v4
         with:
           name: cross-base-storage-kiln-package
-          path: bin/Release/cross-base-storage-*.zip
+          path: |
+            bin/Release/cross-base-storage-*.zip
+            bin/Release/kiln-sdk-provenance.json
           if-no-files-found: error
           retention-days: 90
 
