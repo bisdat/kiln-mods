@@ -10,6 +10,45 @@ local SOURCE_ID = 0x12A34567
 local TARGET_ID = 0x43B21CAB
 local passed = 0
 
+-- EML's mapped game arrays are full userdata with __len and __index.
+-- Make test userdata from temporary file handles, rather than plain Lua
+-- arrays, so a future `type(array) == "table"` regression is caught.
+local arrays = setmetatable({}, {__mode = "k"})
+do
+    local probe = assert(io.tmpfile())
+    debug.setmetatable(probe, {
+        __len = function(u) return #assert(arrays[u]) end,
+        __index = function(u, key) return assert(arrays[u])[key] end,
+        __newindex = function(u, key, value) assert(arrays[u])[key] = value end,
+        __pairs = function(u) return pairs(assert(arrays[u])) end,
+    })
+    probe:close()
+end
+local function mapped_array(value)
+    local u = assert(io.tmpfile())
+    arrays[u] = value
+    return u
+end
+
+local function clone_for_mock(value)
+    if type(value) ~= "table" then return value end
+    local out = {}
+    for k, v in pairs(value) do out[clone_for_mock(k)] = clone_for_mock(v) end
+    return out
+end
+local eml_table = setmetatable({
+    insert = function(list, value)
+        if type(list) == "userdata" then
+            local values = assert(arrays[list])
+            -- As Kiln's EML typed-array insert does, validate and clone the
+            -- incoming mapped value before keeping it in the destination.
+            values[#values + 1] = clone_for_mock(value)
+        else
+            table.insert(list, value)
+        end
+    end,
+}, {__index = table})
+
 local function zone(n) return {x=n,y=n,z=n} end
 local function setup(options)
     options = options or {}
@@ -42,9 +81,13 @@ local function setup(options)
         recipes[2]={recipeId={value=TARGET_ID},debugName="Other_Recipe"}
     end
     if options.missing_source then old.debugName="Different" end
+    -- Ensure both game arrays have type "userdata", as in the real EML.
+    balance.buildzoneSizesPerAltarLevel = mapped_array(balance.buildzoneSizesPerAltarLevel)
+    local mapped_recipes = mapped_array(recipes)
     local br={data=balance}
-    local rr={data={recipes=recipes}}
+    local rr={data={recipes=mapped_recipes}}
     local env=setmetatable({
+        table=eml_table,
         loader={features={patch=not options.disabled}},
         game={
             assets={
@@ -64,7 +107,7 @@ local function setup(options)
     local chunk,err=loadfile(script,"t",env)
     assert(chunk,err)
     local ok,reason=pcall(chunk)
-    return {ok=ok,reason=tostring(reason),balance=balance,old=old,recipes=recipes}
+    return {ok=ok,reason=tostring(reason),balance=balance,old=old,recipes=mapped_recipes}
 end
 
 local function test(name,fn)
