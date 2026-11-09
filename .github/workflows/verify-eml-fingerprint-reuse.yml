@@ -72,7 +72,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: frostdev-ops/kiln
-          ref: d35ee27c5c4f1f31b1c4a3503636a653d6d3ae63
+          ref: 2f5f1312819f5e7695a209472471774750760473
           path: kiln-upstream
           persist-credentials: false
 
@@ -99,6 +99,11 @@ jobs:
         run: |
           cd kiln-upstream/gpl/kiln-eml
           cargo test --locked --release -p mod-loader-lua preserved_timestamp_edit_and_unreadable_file_invalidate_cache -- --nocapture
+
+      - name: Re-run upstream EML preflight and per-mod failure regressions from PR 5
+        run: |
+          cd kiln-upstream/gpl/kiln-eml
+          cargo test --locked --release -p kiln-eml --lib -- --nocapture
 
       - name: Compile pinned Kiln EML plugin and patched Lua integration
         run: |
