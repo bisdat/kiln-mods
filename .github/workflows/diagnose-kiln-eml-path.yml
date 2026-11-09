@@ -110,8 +110,10 @@ jobs:
           )"
           exe="kiln-upstream/gpl/kiln-eml/target/x86_64-pc-windows-gnu/debug/eml-readonly-probe.exe"
           xvfb-run -a wine "$exe" "$winpath"
-      - name: Validate safe runner shell syntax
-        run: bash -n diagnostics/kiln-eml-path/run-with-proton.sh
+      - name: Validate safe runner shell syntax and lifecycle
+        run: |
+          bash -n diagnostics/kiln-eml-path/run-with-proton.sh
+          bash diagnostics/kiln-eml-path/test_runner.sh
       - name: Stage Windows probe and instructions
         run: |
           mkdir -p probe-dist
