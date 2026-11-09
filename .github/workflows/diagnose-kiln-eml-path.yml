@@ -63,6 +63,27 @@ jobs:
             -type f -name 'eml_disk_fs-*.exe' -print -quit)"
           test -n "$exe"
           xvfb-run -a wine "$exe" --nocapture
+      - name: Test EML reader with Fedora-style symlinked home
+        env:
+          WINEDEBUG: "-all"
+          WINEPREFIX: ${{ runner.temp }}/kiln-eml-wine
+          WINEARCH: win64
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/silverblue/home"
+          mkdir -p "$GITHUB_WORKSPACE/silverblue/var/home/clive"
+          ln -s "$GITHUB_WORKSPACE/silverblue/var/home/clive" \
+            "$GITHUB_WORKSPACE/silverblue/home/clive"
+          export KILN_EML_TEST_BASE="$(python3 - <<'PY'
+          import os
+          p = os.path.join(os.environ["GITHUB_WORKSPACE"], "silverblue", "home", "clive")
+          print("Z:" + p.replace("/", "\\"))
+          PY
+          )"
+          echo "Wine test uses emulated Z:-mapped symlinked /home path"
+          exe="$(find kiln-upstream/gpl/kiln-eml/target/x86_64-pc-windows-gnu/debug/deps \
+            -type f -name 'eml_disk_fs-*.exe' -print -quit)"
+          test -n "$exe"
+          xvfb-run -a wine "$exe" --nocapture
       - name: Compile native Windows executable for Wine
         run: |
           rustc --edition=2021 --test \
