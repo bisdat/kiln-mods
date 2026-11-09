@@ -34,6 +34,7 @@ inline constexpr Profile kClientHosted{
 
 inline const Profile* exact(Side side, const char* hash) {
     if (!hash || std::strlen(hash)!=64u) return nullptr;
+    if (side!=Side::Dedicated && side!=Side::ClientHosted) return nullptr;
     const Profile& p=side==Side::Dedicated?kDedicated:kClientHosted;
     return std::strcmp(hash,p.sha256)==0?&p:nullptr;
 }
