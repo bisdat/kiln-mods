@@ -68,11 +68,30 @@ jobs:
           python - <<'PY'
           import json
           doc = json.load(open('/tmp/enshrouded-stock-callmap.json'))
-          for name in ('original_recipe_apply','original_remove_items','original_commit','original_rollback'):
+          for name in ('original_recipe_apply','original_remove_items','original_commit','original_rollback','original_base_stock_selector'):
               matches = doc['signatures'][name]
               if len(matches) != 1:
                   raise SystemExit(f'Version/symbol mismatch: {name} has {len(matches)} matches, stop')
-          print('PASS: all four existing published Kiln original-transaction anchors remain unique.')
+          # Selector's two independent lists must remain byte-for-byte
+          # identifiable; never confuse ordinary item owners with fuel owners.
+          stock = doc['known_functions']['original_base_stock_selector']
+          ins = [x['ins'] for x in stock['instructions']]
+          required = (
+              'imul rcx, rax, 0x130',
+              'mov rax, qword ptr [rcx + rbp + 0x30]',
+              'mov rax, qword ptr [rcx + rbp + 0x38]',
+              'mov rax, qword ptr [rcx + rbp + 0x58]',
+              'mov rax, qword ptr [rcx + rbp + 0x60]',
+          )
+          if any(x not in ins for x in required):
+              raise SystemExit('Game-native stock list layout changed; prohibit source overlay')
+          payer = doc['known_functions']['historical_remove_recipe_inputs']['calls']
+          selects = [x for x in payer if x['kind'] == 'call' and
+                     x['to'] == doc['signatures']['original_base_stock_selector'][0]]
+          if len(selects) != 2:
+              raise SystemExit('Original payer did not select base stock at both expected paths')
+          print('PASS: original stock selector uniquely located; two independent native item/fuel lists and two genuine payer callsites verified.')
+
           print('Current binary SHA256:', doc['exe_sha256'])
           PY
           # Explicitly remove downloaded proprietary binary BEFORE upload.
