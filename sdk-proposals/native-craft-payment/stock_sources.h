@@ -10,6 +10,7 @@
 #pragma once
 
 #include <cstdint>
+#include <initializer_list>
 #include <span>
 #include <unordered_set>
 #include <vector>
@@ -92,11 +93,27 @@ inline Result extend(uint32_t actor,
         const auto v=accept(s,true);
         if (v != Status::Ready) return {v,{},false};
     }
+    // Candidate enumeration may include a source already present in the
+    // original stock list. Preserve that original source once if and ONLY if
+    // its complete linked inventory identity agrees. Divergent identities
+    // are ambiguous, not two inventories to count or pay separately.
+    auto in_original = [&](const Source& candidate) -> bool {
+        for (const auto& old : vanilla_sources) {
+            if (old.owner != candidate.owner) continue;
+            return old.linked == candidate.linked;
+        }
+        return false;
+    };
     // Two phases retain local-before-distant order if the game passed a
     // mixed candidate set. Never add unverified local candidates either.
     for (bool local : {true,false}) {
         for (const auto& s : extra_magic_sources) {
             if (s.same_base != local) continue;
+            if (owners.contains(s.owner)) {
+                if (!in_original(s)) return {Status::AmbiguousLinks,{},false};
+                // Already authorised by the original game's collector.
+                continue;
+            }
             const auto v=accept(s,false);
             if (v != Status::Ready) return {v,{},false};
         }
