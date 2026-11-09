@@ -10,6 +10,7 @@ case "$mod" in
   SurvivalQoL) mod_id="survival-qol" ;;
   EndlessChests) mod_id="endless-chests-kiln" ;;
   CrossBaseStorage) mod_id="cross-base-storage" ;;
+  CraftPaymentTrace) mod_id="craft-payment-trace" ;;
   *) echo "Unknown mod: $mod" >&2; exit 2 ;;
 esac
 project="$repo/$mod/$mod.csproj"
