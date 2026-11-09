@@ -52,6 +52,33 @@ jobs:
           cd kiln-upstream/gpl/kiln-eml
           cargo check -p mod-loader-lua -p kiln-eml
 
+      - name: Build instrumented kiln-eml.dll with the release static CRT
+        if: matrix.os == 'windows-2022'
+        env:
+          RUSTFLAGS: "-Ctarget-feature=+crt-static"
+        run: |
+          cd kiln-upstream/gpl/kiln-eml
+          cargo build --release --locked --target x86_64-pc-windows-msvc -p kiln-eml --lib
+
+      - name: Package diagnostic DLL separately from any game mod
+        if: matrix.os == 'windows-2022'
+        run: |
+          mkdir -p kiln-eml-diagnostic
+          cp kiln-upstream/gpl/kiln-eml/target/x86_64-pc-windows-msvc/release/kiln_eml.dll \
+             kiln-eml-diagnostic/kiln-eml.dll
+          cp kiln-upstream/gpl/kiln-eml/LICENSE kiln-eml-diagnostic/LICENSE.GPL-3.0
+          cp diagnostics/kiln-eml-startup/README.md kiln-eml-diagnostic/README.md
+          ls -l kiln-eml-diagnostic/
+
+      - name: Upload TEST-ONLY diagnostic DLL (never auto-installed)
+        if: matrix.os == 'windows-2022'
+        uses: actions/upload-artifact@v4
+        with:
+          name: kiln-eml-startup-io-diagnostics-TEST-ONLY
+          path: kiln-eml-diagnostic/
+          if-no-files-found: error
+          retention-days: 14
+
       - name: Publish reviewable upstream-source diff
         if: matrix.os == 'ubuntu-24.04'
         run: |
