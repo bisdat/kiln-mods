@@ -39,7 +39,8 @@ destination = root / "native/services/rules/cbpay"
 destination.mkdir(parents=True, exist_ok=True)
 src = repo / "sdk-proposals/native-craft-payment"
 for name in ("payment_plan.h", "native_take_adapter.h",
-             "recipe_payment_bridge.h", "engine_hook.h"):
+             "recipe_payment_bridge.h", "engine_hook.h",
+             "tx-source-provider.h", "tx-source-native.h"):
     shutil.copyfile(src / name, destination / name)
     print("COPIED isolated native header", name)
 
@@ -48,7 +49,7 @@ for name in ("payment_plan.h", "native_take_adapter.h",
 # it cannot issue a payment or a new native game read on its own.
 edit("native/services/rules/rules.cpp",
      '#include "creative.h"',
-     '#include "creative.h"\n#include "cbpay/engine_hook.h"')
+     '#include "creative.h"\n#include "cbpay/engine_hook.h"\n#include "cbpay/tx-source-native.h"')
 edit("native/services/rules/creative.cpp",
      '#include "creative.h"',
      '#include "creative.h"\n#include "cbpay/engine_hook.h"')
