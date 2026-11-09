@@ -42,7 +42,7 @@ def assemble(native: Path, managed: Path, observer: Path,
         # Deliberately under STAGING-ONLY, not install-ready paths:
         "STAGING-ONLY/kiln/services/kiln-rules.dll": check_binary(native, "native"),
         "STAGING-ONLY/kiln/host/Kiln.Rules.dll": check_binary(managed, "managed"),
-        "observer/craft-payment-trace-0.1.0.zip": observer.read_bytes(),
+        "observer/craft-payment-trace-0.1.1.zip": observer.read_bytes(),
     }
     with ZipFile(observer) as mod:
         names = mod.namelist()
