@@ -10,16 +10,18 @@ The vanilla game's balancing table currently already allows altar level 5, but i
 
 ## Requirements and installation
 
-This uses **Kiln's `kiln-eml` pregame plugin**, *not* the older `Kiln.Content` C# mod API. A Kiln installation must include `kiln/plugins/kiln-eml.dll`. Kiln's currently pinned SDK tag `v0.2.0-dev.15` does **not** include this plugin; it is documented in newer upstream Kiln development. Do not expect this mod to operate with the pinned SDK alone.
+This uses **Kiln's `kiln-eml` pregame plugin**, *not* the older `Kiln.Content` C# mod API. Your Kiln runtime must include `kiln/plugins/kiln-eml.dll`. Kiln's pinned SDK tag `v0.2.0-dev.15` does **not** include this plugin; it is documented in newer upstream Kiln development.
 
-Install the package so the game contains one of:
+**Normal Kiln installation (preferred):**
 
-- `<Enshrouded>/kiln/eml/mods/flame-altar-expanded/mod.json` and `src/mod.lua` beneath that folder; **or**
-- `<Enshrouded>/mods/flame-altar-expanded/mod.json` and `src/mod.lua` beneath that folder.
+1. Open the successful **Package Flame Altar Expanded (experimental)** GitHub Actions run, and download the artifact **`flame-altar-expanded-0.1.0-kiln`**. The downloaded file is already the **single installable ZIP**.
+2. **Drag that ZIP directly onto the Kiln launcher window**, as for your other mods. Do not extract or nest it inside another ZIP.
+3. Confirm **Flame Altar Expanded** appears in Kiln's **Library**, as an **EML** mod, and is **enabled in the active profile**. The launcher normally adds a dropped mod to the active profile unless that setting is disabled.
+4. Completely exit Enshrouded and start it again. Check Kiln **Logs → Engines → EML** or `kiln/state/eml.json` for the mod's successful loading.
 
-An active Kiln profile must permit EML drop-ins, or explicitly register the mod. For multiplayer, install the same mod and compatible Kiln EML runtime on **both clients and the authoritative server**. Completely restart the game and server after changing it.
+The direct ZIP has `mod.json` at its root, and `src/mod.lua` beneath it. Previous CI artifacts used to contain an inner ZIP; **do not drag the old outer GitHub artifact into Kiln**, because the importer does not extract nested ZIP files.
 
-At startup inspect `kiln/logs/eml.log` and `kiln/state/eml.json` for `flame-altar-expanded`, and ensure the patch was applied rather than skipped or disabled.
+Advanced/manual installation is possible under `<Enshrouded>/kiln/eml/mods/flame-altar-expanded/`, but the **Kiln launcher drag-and-drop installer** is the supported default workflow for this repository. For multiplayer, enable the mod on the authoritative server and all participating clients (same version and compatible runtime).
 
 ## Verification before use on a real save
 
@@ -35,6 +37,6 @@ At startup inspect `kiln/logs/eml.log` and `kiln/state/eml.json` for `flame-alta
 
 ## Development
 
-Source: `src/mod.lua`; manifest: `mod.json`. Run `lua5.4 tests/test_patch.lua` and `luac5.4 -p src/mod.lua` from this directory. The repository's `Package Flame Altar Expanded` GitHub Actions workflow tests and creates an installable ZIP, but does **not** mark this untested mod as a stable release.
+Source: `src/mod.lua`; manifest: `mod.json`. Run `lua5.4 tests/test_patch.lua` and `luac5.4 -p src/mod.lua` from this directory. The repository's `Package Flame Altar Expanded` GitHub Actions workflow runs mock tests and publishes a **single drag-and-drop installable ZIP artifact** with `mod.json` at the archive root; it does **not** mark this untested mod as a stable release.
 
 License: MIT (original patch code). Kiln's bundled EML engine is separately GPL-licensed, maintained upstream and not redistributed in this mod.
