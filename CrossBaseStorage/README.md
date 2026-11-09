@@ -211,7 +211,7 @@ Use `cbstore lastbuild` **after a normal build action**. It reports only the pos
 4. Restart Enshrouded, enter a world, run `cbstore links 1412` (if this owner still exists), then `cbstore resolve <linked ID from the output>` to check owner mapping. Normal `scan`, `near`, `quote`, `lastcraft` and `plan` diagnostics remain available.
 5. This package **does not yet enable cross-base crafting**. If you only want the finished gameplay effect, do not install this diagnostic development preview.
 
-The mod is built against the released Kiln SDK source `eba9a5e1e0e0044a9146fdd53021a751e2957030` with SDK package version `0.2.0-dev.local.20261107.61500`, as used by Endless Chests.
+The mod build now resolves **Kiln's latest published development release** (not moving `main`), compiles the matching SDK and records its exact tag and SHA in `kiln-sdk-provenance.json` in the GitHub Actions artifact. The original 0.1.6 in-game diagnostics were validated on dev15; the newer dev20 build passed compilation and all 22 pure-logic tests on 9 November 2026. Actual in-game behaviour after an SDK upgrade still requires validation.
 
 ## Requirements to complete the actual mod
 
@@ -228,9 +228,7 @@ Until those primitives exist in the installed Kiln runtime, the official craftin
 ## Development
 
 ```bash
-KILN_UPSTREAM_SHA=eba9a5e1e0e0044a9146fdd53021a751e2957030 \
-KILN_SDK_VERSION=0.2.0-dev.local.20261107.61500 \
 bash scripts/build.sh CrossBaseStorage
 ```
 
-Output: `bin/Release/cross-base-storage-0.1.6.zip`. The workflow builds and uploads this prototype on pull requests and optionally publishes a GitHub **development pre-release** for a matching **numeric** `cross-base-storage-v0.1.6` tag. Future versions use `0.1.7`, `0.1.8`, etc., without an `-alpha.n` suffix. **It should not be presented as a playable cross-base storage release.**
+Output: `bin/Release/cross-base-storage-0.1.6.zip`, with exact SDK metadata in `bin/Release/kiln-sdk-provenance.json`. The workflow builds and uploads this prototype on pull requests and optionally publishes a GitHub **development pre-release** for a matching **numeric** `cross-base-storage-v0.1.6` tag. Future versions use `0.1.7`, `0.1.8`, etc., without an `-alpha.n` suffix. **It should not be presented as a playable cross-base storage release.**
