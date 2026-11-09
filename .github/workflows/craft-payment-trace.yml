@@ -1,0 +1,75 @@
+name: Package optional Craft Payment Trace observer
+
+on:
+  push:
+    branches: ['feature/cross-base-storage-kiln']
+    paths:
+      - 'CraftPaymentTrace/**'
+      - 'tests/craft-payment-trace/**'
+      - 'scripts/validate-craft-payment-trace.py'
+      - 'scripts/build.sh'
+      - '.github/workflows/craft-payment-trace.yml'
+  pull_request:
+    paths:
+      - 'CraftPaymentTrace/**'
+      - 'tests/craft-payment-trace/**'
+      - 'scripts/validate-craft-payment-trace.py'
+      - 'scripts/build.sh'
+      - '.github/workflows/craft-payment-trace.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: craft-payment-trace-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  observer:
+    name: Build read-only admin trace command against latest Kiln release
+    runs-on: ubuntu-24.04
+    env:
+      GITHUB_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Enforce read-only source boundaries
+        run: python3 scripts/validate-craft-payment-trace.py
+
+      - name: Test optional read-only trace API and bounded output
+        run: dotnet run --project tests/craft-payment-trace/Trace.Tests.csproj -c Release
+
+      - name: Build standalone observer against latest published Kiln SDK
+        run: bash scripts/build.sh CraftPaymentTrace
+
+      - name: Ensure no experimental DLLs are packaged into the observer
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          from zipfile import ZipFile
+          path = Path("bin/Release/craft-payment-trace-0.1.0.zip")
+          assert path.is_file() and path.stat().st_size > 0
+          with ZipFile(path) as z:
+              files = z.namelist()
+          assert any(n.endswith("/CraftPaymentTrace.dll") for n in files), files
+          assert not any(n.lower().endswith((
+              "/kiln.rules.dll", "/kiln-rules.dll", "/kiln-core.dll", "/dinput8.dll"
+          )) for n in files), files
+          print("PASS: mod ZIP contains only the optional managed observer, NO native hook DLL.")
+          PY
+
+      - name: Upload separate experimental observer package and exact SDK provenance
+        uses: actions/upload-artifact@v4
+        with:
+          name: craft-payment-trace-observer-experimental
+          path: |
+            bin/Release/craft-payment-trace-0.1.0.zip
+            bin/Release/kiln-sdk-provenance.json
+          if-no-files-found: error
+          retention-days: 90
