@@ -38,6 +38,18 @@ assert "case \"resolve\":" in src
 assert "LoadedLinkIndex(chests)" in src
 assert "InventoryLinkIndex.Build(" in src
 assert (root / "CrossBaseStorage/InventoryLinkIndex.cs").exists()
+# Magic Chest recognition must use the exact _Magic suffix, independent of
+# the number of slots. No broad Contains("Magic") or 72-slot upper bound.
+classifier = (root / "CrossBaseStorage/StorageTemplate.cs").read_text(encoding="utf-8")
+assert 'EndsWith("_Magic", StringComparison.OrdinalIgnoreCase)' in classifier
+assert "Contains(\"Magic\"" not in classifier
+assert "actualSlots > 0" in classifier
+assert "actualSlots <= 72" not in classifier
+assert "StorageTemplate.IsStorageCandidate(info?.TemplateName, inventory.GenericSlots)" in src
+assert "StorageTemplate.IsMagic(template)" in src
+assert "StorageTemplate.IsMagic(group.Key)" in src
+assert "private static bool MagicByName" not in src
+assert "slots is >= 16 and <= 72" not in src
 assert "MaterialQuotePlanner.QuoteExact(" in src
 assert (root / "CrossBaseStorage/MaterialQuotePlanner.cs").exists()
 assert "No craft request was recorded" in src
@@ -45,7 +57,7 @@ assert "UNRESOLVED CATEGORY/PLACEHOLDER ingredient" in src
 assert "A raw count of 0 does NOT establish zero material cost" in src
 assert "INCOMPLETE RECIPE INPUT DATA" in src
 assert "cbstore recipes [output name]" in src
-assert project.findtext("./PropertyGroup/Version") == "0.1.6"
+assert project.findtext("./PropertyGroup/Version") == "0.1.7"
 assert re.fullmatch(r"0\.1\.\d+", project.findtext("./PropertyGroup/Version") or "")
 
 # This phase is explicitly non-mutating: no give, take, teleport, mutate,
@@ -62,5 +74,5 @@ for token in (
 for text in ("read-only", "not", "building", "crafting", "loaded", "magic"):
     assert text in guide.lower(), f"README must explain limitation: {text}"
 
-print("PASS: Cross-base Storage 0.1.6 has read-only chest/recipe/link diagnostics, " +
+print("PASS: Cross-base Storage 0.1.7 has read-only chest/recipe/link diagnostics, " +
       "native craft/build event observation and no inventory mutation calls")
