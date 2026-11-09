@@ -13,8 +13,10 @@ using NativeStatus = cbpay::stock::native::Status;
 
 static_assert(!std::is_copy_constructible_v<ScopedItemUnion>);
 static_assert(!std::is_move_constructible_v<ScopedItemUnion>);
-static constexpr uint32_t Player=1, Local=1412, Remote=1081, Ordinary=1035;
-static std::array<uint32_t,2> local_ids{Player,Local};
+static constexpr uint32_t Player=1, Local=1412, Nearby=1420, Remote=1081, Ordinary=1035;
+// The original base-stock list contains chests only; the native payer
+// deducts the player's backpack separately BEFORE consulting these owners.
+static std::array<uint32_t,2> local_ids{Local,Nearby};
 static std::array<uint32_t,1> fuel_ids{4777};
 static bool allow=true;
 static int grants=0;
@@ -38,7 +40,7 @@ static GameStockLists lists() {
     return {local_ids.data(),local_ids.size(),fuel_ids.data(),fuel_ids.size()};
 }
 static std::vector<Source> original() {
-    return {make(Player,true),make(Local,true)};
+    return {make(Local,true),make(Nearby,true)};
 }
 static LivePlayerRecord live() {
     return {Player,2,0x18,0x06,1,1,true,true,false};
@@ -56,13 +58,13 @@ int main() {
         allow=true;grants=0;
         fn();++tested;std::printf("PASS %02u %s\n",tested,label);
     };
-    test("verified native stock-mode2 joins remote owner IDs only",[] {
+    test("verified native base stock-mode2 joins remote owner IDs after local chests",[] {
         ScopedItemUnion x;
         assert(run(x,secure(),lists(),local_ids,original(),{make(Remote,false)})==NativeStatus::Ready);
         GameStockLists result{};
         assert(x.publish(&result));
-        assert(result.item_count==3 && result.item_owners[0]==Player &&
-               result.item_owners[1]==Local && result.item_owners[2]==Remote);
+        assert(result.item_count==3 && result.item_owners[0]==Local &&
+               result.item_owners[1]==Nearby && result.item_owners[2]==Remote);
         assert(result.fuel_count==fuel_ids.size() &&
                result.fuel_owners==fuel_ids.data() &&
                result.fuel_owners[0]==fuel_ids[0]);
@@ -81,18 +83,18 @@ int main() {
         assert(run(x,secure(),lists(),local_ids,original(),{make(Local,true)})==NativeStatus::NoExtraSources);
         assert(grants==0);
     });
-    test("local extra sources precede distant sources without displacing vanilla",[] {
+    test("local extra sources precede distant sources without replacing original base chests",[] {
         ScopedItemUnion x;
         auto second=make(2000,true);
         assert(run(x,secure(),lists(),local_ids,original(),{make(Remote,false),second})==NativeStatus::Ready);
         auto game=lists();
         assert(x.publish(&game) && game.item_count==4 &&
-               game.item_owners[0]==Player && game.item_owners[1]==Local &&
+               game.item_owners[0]==Local && game.item_owners[1]==Nearby &&
                game.item_owners[2]==2000 && game.item_owners[3]==Remote);
     });
     test("unknown original item owner is a refused input",[] {
         ScopedItemUnion x;
-        std::array<uint32_t,2> incorrect{Player,99999};
+        std::array<uint32_t,2> incorrect{Local,99999};
         assert(run(x,secure(),lists(),incorrect,original(),{make(Remote,false)})
                ==NativeStatus::OriginalMismatch);
         assert(x.borrowed_owner_count()==0);
