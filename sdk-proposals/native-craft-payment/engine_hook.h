@@ -6,6 +6,7 @@
 
 #include "recipe_payment_bridge.h"
 #include "selected_costs.h"
+#include "recipe_metadata.h"
 
 #include <cstdint>
 #include <span>
@@ -36,6 +37,12 @@ struct Resolved {
     costs::Proof cost_proof{};
     std::vector<costs::PayerRow> original_payer_rows;
     std::vector<costs::SelectedRow> selected_ingredients;
+    // Independently decoded original recipe input/category descriptors.
+    // A snapshot must come from the CURRENT game recipe in this call,
+    // not from managed Gameplay.Recipe or a stale catalog.
+    recipes::Metadata native_recipe_inputs{};
+    // Must query the original native category registry for this chosen item.
+    bool (*native_category_member)(const Call&, uint32_t category, uint32_t item) = nullptr;
     std::vector<Source> eligible_slots;
     NativeRemoveFn original_remove_items = nullptr;
     // Authoritative native game grant validation immediately before staging.
@@ -71,6 +78,7 @@ inline Decision dispatch(const Call& call, ResolveFn resolver) {
         !data.failure_result_verified || !data.verified_failure_result ||
         data.original_payer_rows.empty() || data.original_payer_rows.size() > 64 ||
         data.selected_ingredients.empty() || data.selected_ingredients.size() > 64 ||
+        !data.native_category_member || !data.native_recipe_inputs ||
         data.eligible_slots.size() > 8192)
         return {};
 
@@ -80,7 +88,11 @@ inline Decision dispatch(const Call& call, ResolveFn resolver) {
     const auto bill = costs::reconcile(
         data.cost_proof, call.multiplier, data.original_payer_rows,
         data.selected_ingredients);
-    if (!bill) return {};
+    if (!bill || recipes::match_selected(
+            data.native_recipe_inputs, data.selected_ingredients,
+            [&](uint32_t category, uint32_t item) {
+                return data.native_category_member(call, category, item);
+            }) != recipes::Status::Ready) return {};
 
     // The caller's authoritative recipe-specific return address and
     // transaction owner are part of the resolver's REQUIRED proof. Recheck
