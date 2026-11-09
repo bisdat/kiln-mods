@@ -211,6 +211,9 @@ impl FileStateCache {
 
     pub fn hash_bytes_read(&self) -> u64 { self.hashed_bytes }
     pub fn reused_files(&self) -> u64 { self.reused_files }
+    pub fn same_stamps(&self, other: &Self) -> bool {
+        self.stamps == other.stamps
+    }
 
     pub fn configuration''')
 change("cache/mod.rs",
@@ -385,7 +388,7 @@ change("lib.rs",
                 // Upgrade older CRC-only caches on a proven cache hit,
                 // and refresh identity stamps after an identical replacement.
                 // Never treat a changed CRC as a cache hit.
-                if new_cache.stamps != current_cache.stamps {
+                if !new_cache.same_stamps(&current_cache) {
                     new_cache.write(env.cache_dir());
                 }
                 return Ok(RunResult { cached: true, ..RunResult::default() });
