@@ -1,0 +1,87 @@
+name: Inspect current Enshrouded original stock collectors (STATIC ONLY)
+
+on:
+  push:
+    branches: ['feature/cross-base-storage-kiln']
+    paths:
+      - 'scripts/inspect-current-crafting-stock.py'
+      - '.github/workflows/enshrouded-native-stock-re.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: enshrouded-stock-re-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  current-server-symbols:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install static analysis library (no game execution)
+        run: python -m pip install --disable-pip-version-check pefile==2024.8.26 capstone==5.0.6
+
+      - name: Obtain official DepotDownloader binary
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --location --retry 3 \
+            -o /tmp/depotdownloader.zip \
+            https://github.com/SteamRE/DepotDownloader/releases/download/DepotDownloader_3.4.0/DepotDownloader-linux-x64.zip
+          mkdir -p /tmp/depotdownloader
+          unzip -q /tmp/depotdownloader.zip -d /tmp/depotdownloader
+          chmod +x /tmp/depotdownloader/DepotDownloader
+          /tmp/depotdownloader/DepotDownloader -help | head -50 || true
+
+      - name: Fetch ONLY the current, free official Enshrouded server EXE
+        shell: bash
+        run: |
+          set -euo pipefail
+          printf 'enshrouded_server.exe\n' > /tmp/enshrouded-exe-only.txt
+          mkdir -p /tmp/enshrouded-re
+          /tmp/depotdownloader/DepotDownloader \
+            -app 2278520 -depot 2278521 \
+            -filelist /tmp/enshrouded-exe-only.txt \
+            -dir /tmp/enshrouded-re -os windows -osarch 64
+          test -s /tmp/enshrouded-re/enshrouded_server.exe
+          if [[ $(find /tmp/enshrouded-re -type f -size +40M | wc -l) -gt 0 ]]; then
+            echo 'Refusing unexpected non-EXE game content' >&2
+            exit 1
+          fi
+          # Game code remains on runner, never in logs/repository/artifact.
+          echo 'Anonymous official server EXE received; private CI-only analysis follows.'
+
+      - name: Extract original-game collector signatures and call edges
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/inspect-current-crafting-stock.py \
+            /tmp/enshrouded-re/enshrouded_server.exe \
+            --output /tmp/enshrouded-stock-callmap.json
+          python - <<'PY'
+          import json
+          doc = json.load(open('/tmp/enshrouded-stock-callmap.json'))
+          for name in ('original_recipe_apply','original_remove_items','original_commit','original_rollback'):
+              matches = doc['signatures'][name]
+              if len(matches) != 1:
+                  raise SystemExit(f'Version/symbol mismatch: {name} has {len(matches)} matches, stop')
+          print('PASS: all four existing published Kiln original-transaction anchors remain unique.')
+          print('Current binary SHA256:', doc['exe_sha256'])
+          PY
+          # Explicitly remove downloaded proprietary binary BEFORE upload.
+          rm -rf /tmp/enshrouded-re /tmp/depotdownloader /tmp/depotdownloader.zip
+
+      - name: Publish only bounded source analysis metadata, NEVER game binaries
+        uses: actions/upload-artifact@v4
+        with:
+          name: enshrouded-current-native-stock-callmap-NO-GAME-FILES
+          path: /tmp/enshrouded-stock-callmap.json
+          if-no-files-found: error
+          retention-days: 7
