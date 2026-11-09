@@ -102,4 +102,4 @@ jobs:
           Write-Output 'SUCCESS: BOTH ORIGINAL KILN RECIPE PAYER HOOKS COMPILED with the native payment bridge.'
           Write-Output 'No authorised native source provider yet: resolver=nullptr in both production hook callsites.'
           Write-Output 'No DLL installed, deployed, published as a playable mod, or uploaded as an artifact.'
-          Write-Output 'Cross-base Storage 0.1.9 and the user's current Kiln installation remain unchanged.'
+          Write-Output 'Cross-base Storage 0.1.9 and the current Kiln installation remain unchanged.'
