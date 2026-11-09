@@ -1,0 +1,10 @@
+{
+  "id": "flame-altar-expanded",
+  "name": "Flame Altar Expanded",
+  "version": "0.1.0",
+  "description": "Adds a fifth Flame Altar upgrade to extend the building volume to 300 x 300 x 300 metres.",
+  "authors": ["bisdat"],
+  "license": "MIT",
+  "dependencies": [],
+  "capabilities": ["patch"]
+}
