@@ -1,4 +1,4 @@
-<Project Sdk="Kiln.Sdk/0.2.0-dev.local.20261107.62100">
+<Project Sdk="Kiln.Sdk">
   <PropertyGroup>
     <KilnModId>survival-qol</KilnModId>
     <KilnModName>Survival QoL</KilnModName>
