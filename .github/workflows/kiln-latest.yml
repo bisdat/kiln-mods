@@ -62,14 +62,14 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: python3 scripts/resolve-kiln-release.py
-      - name: Check previously verified release
+      - name: Check previously verified release and mod-source revision
         id: cache
         uses: actions/cache/restore@v4
         with:
           path: .kiln-release-success.txt
-          key: kiln-release-verified-${{ steps.release.outputs.version }}
+          key: kiln-release-verified-${{ steps.release.outputs.version }}-r${{ steps.source.outputs.short }}
           lookup-only: true
-      - name: Only rebuild for a new release or a forced run
+      - name: Rebuild for a new Kiln release OR a changed mod source
         id: gate
         shell: bash
         env:
@@ -80,7 +80,7 @@ jobs:
             echo 'build=true' >> "$GITHUB_OUTPUT"
           else
             echo 'build=false' >> "$GITHUB_OUTPUT"
-            echo 'This released SDK already passed the three mod builds.'
+            echo 'This exact Kiln release + mod source revision already passed the three builds.'
           fi
 
   package:
@@ -248,9 +248,9 @@ jobs:
     if: needs.check.outputs.build == 'true' && needs.check.outputs.cache_hit != 'true' && needs.package.result == 'success' && needs.publish.result == 'success'
     runs-on: ubuntu-24.04
     steps:
-      - name: Record verified SDK version only after publishing the prerelease
+      - name: Record verified Kiln release AND mod source only after prerelease publication
         run: echo "${{ needs.check.outputs.release_version }}" > .kiln-release-success.txt
       - uses: actions/cache/save@v4
         with:
           path: .kiln-release-success.txt
-          key: kiln-release-verified-${{ needs.check.outputs.release_version }}
+          key: kiln-release-verified-${{ needs.check.outputs.release_version }}-r${{ needs.check.outputs.source_short }}
