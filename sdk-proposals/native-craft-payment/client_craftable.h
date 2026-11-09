@@ -17,7 +17,7 @@ struct Call {
     uint32_t vanilla_result = 0;
 };
 
-struct SignedCapability {
+struct ServerCapability {
     uint32_t recipe = 0;
     uint32_t approved_count = 0;
     // This authorization may only be constructed from the owning server's
@@ -32,7 +32,7 @@ struct SignedCapability {
     bool no_conflicting_free_craft = false;
 };
 
-using NativeQuery = bool (*)(const Call&, SignedCapability*);
+using NativeQuery = bool (*)(const Call&, ServerCapability*);
 
 inline uint32_t craftable(Call call, NativeQuery native_server_capability) {
     // Preserve a valid vanilla answer, including its count cache. The
@@ -42,7 +42,7 @@ inline uint32_t craftable(Call call, NativeQuery native_server_capability) {
         !native_server_capability)
         return call.vanilla_result;
 
-    SignedCapability c{};
+    ServerCapability c{};
     if (!native_server_capability(call, &c) ||
         c.recipe != call.recipe || !c.approved_count ||
         c.approved_count > cap ||
