@@ -1,3 +1,35 @@
+# Third implementation milestone — selected native recipe cost reconciliation (9 November 2026)
+
+The experimental two-payer engine dispatch now **requires an independently
+bound complete selected ingredient bill to reconcile exactly with the original
+payer's native cost rows** before it can stage a single journalled removal.
+
+- [selected_costs.h](selected_costs.h) accepts detached original payer rows
+  and the complete *native selected* recipe inputs with explicit
+  category/alternative proof. It compares per-item totals, detects missing
+  or extra lines, duplicate recipe indices, zero/unknown costs and overflow,
+  without relying on row order. Unknown categories are **never** zero-cost.
+- Current enforcement deliberately rejects unverified selection, water
+  charges and multi-craft multipliers other than 1; these need a proven
+  original-engine decoder rather than guessed multiplication/rounding.
+- [engine_hook.h](engine_hook.h) makes reconciliation mandatory for BOTH
+  already patched `InventoryPay` and `RecipePayAlt` dispatches. The
+  `selected_costs` flag by itself can no longer admit a fabricated or
+  incomplete bill. The host resolver simulates complete costs for
+  exact-input tests; it cannot certify actual game category selection.
+- [selected_costs_tests.cpp](selected_costs_tests.cpp) exercises 20
+  independent reconciliation cases, and the original-payer hook suite adds
+  two rejection cases. Native GCC/Clang/MSVC host CI and exact released
+  Kiln Windows Items/Rules builds cover this gate.
+
+**Important:** The production hook's resolver remains **nullptr**; this
+milestone does **not** implement the game-native input selector, prove
+Workbench's category choice, enumerate authorised Magic Chest/base access,
+or prove original RecipeApply rollback. The selected cost rows in the
+experimental host tests are synthetic, NOT a live original-payer snapshot.
+Do not install experimental DLLs, enable payments, release a new diagnostic
+ZIP, or merge PR #7. Remain on Cross-base Storage 0.1.9.
+
 # Native recipe-payment bridge: implementation begun (server transaction layer)
 
 ## Second implementation milestone — native original-transaction source reader
