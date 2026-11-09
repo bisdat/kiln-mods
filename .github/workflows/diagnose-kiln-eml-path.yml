@@ -123,7 +123,7 @@ jobs:
       - name: Publish read-only diagnostic (NOT a mod)
         uses: actions/upload-artifact@v4
         with:
-          name: kiln-eml-readonly-proton-diagnostic-v2
+          name: kiln-eml-readonly-proton-diagnostic-v3
           path: probe-dist/
           if-no-files-found: error
           retention-days: 30
