@@ -207,8 +207,8 @@ Use `cbstore lastbuild` **after a normal build action**. It reports only the pos
 
 1. Open [Cross-base Storage GitHub Actions](https://github.com/bisdat/kiln-mods/actions/workflows/cross-base-storage.yml).
 2. Download `cross-base-storage-kiln-package` from a successful build.
-3. Extract the Actions artifact. Import `cross-base-storage-0.1.5.zip` into Kiln Library and enable it in the active profile.
-4. Restart Enshrouded, enter a world, run `cbstore scan` and `cbstore near` beside an existing Magic Chest, then use `cbstore lastcraft` / `cbstore plan last` after a normal craft to inspect the game's native recipe handling.
+3. Extract the Actions artifact. Import `cross-base-storage-0.1.6.zip` into Kiln Library and enable it in the active profile.
+4. Restart Enshrouded, enter a world, run `cbstore links 1412` (if this owner still exists), then `cbstore resolve <linked ID from the output>` to check owner mapping. Normal `scan`, `near`, `quote`, `lastcraft` and `plan` diagnostics remain available.
 5. This package **does not yet enable cross-base crafting**. If you only want the finished gameplay effect, do not install this diagnostic development preview.
 
 The mod is built against the released Kiln SDK source `eba9a5e1e0e0044a9146fdd53021a751e2957030` with SDK package version `0.2.0-dev.local.20261107.61500`, as used by Endless Chests.
