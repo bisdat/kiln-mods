@@ -1,6 +1,6 @@
 # Flame Altar Expanded
 
-**Experimental / not yet validated in-game.** A separate [Kiln EML](https://github.com/frostdev-ops/kiln/blob/main/docs/kiln/eml.md) data-patch mod for *Enshrouded*.
+**Experimental / not yet validated in-game.** Version 0.1.1 corrects EML userdata-array handling and clones the native upgrade recipe through EML's typed-array insertion; v0.1.0 must not be used. A separate [Kiln EML](https://github.com/frostdev-ops/kiln/blob/main/docs/kiln/eml.md) data-patch mod for *Enshrouded*.
 
 ## Intended behaviour
 
@@ -14,7 +14,7 @@ This uses **Kiln's `kiln-eml` pregame plugin**, *not* the older `Kiln.Content` C
 
 **Normal Kiln installation (preferred):**
 
-1. Open the successful **Package Flame Altar Expanded (experimental)** GitHub Actions run, and download the artifact **`flame-altar-expanded-0.1.0-kiln`**. The downloaded file is already the **single installable ZIP**.
+1. Open the successful **Package Flame Altar Expanded (experimental)** GitHub Actions run, and download the artifact **`flame-altar-expanded-0.1.1-kiln`**. The downloaded file is already the **single installable ZIP**.
 2. **Drag that ZIP directly onto the Kiln launcher window**, as for your other mods. Do not extract or nest it inside another ZIP.
 3. Confirm **Flame Altar Expanded** appears in Kiln's **Library**, as an **EML** mod, and is **enabled in the active profile**. The launcher normally adds a dropped mod to the active profile unless that setting is disabled.
 4. Completely exit Enshrouded and start it again. Check Kiln **Logs → Engines → EML** or `kiln/state/eml.json` for the mod's successful loading.
