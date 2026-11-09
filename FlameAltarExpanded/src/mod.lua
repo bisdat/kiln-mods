@@ -15,14 +15,11 @@ local RECIPE_GUID = "bce60e59-c9f2-40ea-9386-6c2d119ec705" -- fixed forever
 local LEVEL5_SIZE = 300
 local LEVEL5_COST = 10 -- Shroud Nexus; source is vanilla level-4 cost (5)
 
-local function copy(value, seen)
-    if type(value) ~= "table" then return value end
-    seen = seen or {}
-    if seen[value] then return seen[value] end
-    local result = {}
-    seen[value] = result
-    for k, v in pairs(value) do result[copy(k, seen)] = copy(v, seen) end
-    return result
+-- EML exposes mapped game arrays/structs as userdata, not plain Lua tables.
+-- Its custom table.insert handles typed arrays and clones inserted game values.
+local function is_array(value)
+    local kind = type(value)
+    return kind == "table" or kind == "userdata"
 end
 
 local balance_resources = game.assets.get_resources_by_type("keen::BalancingTable")
@@ -36,7 +33,7 @@ assert(balance and balance.altarLevelMax == 5,
 -- The game's array includes index 1 for level zero, then levels 1..5.
 -- Refuse to rewrite other mods' balancing values or unrecognised layouts.
 local sizes = balance.buildzoneSizesPerAltarLevel
-assert(type(sizes) == "table" and #sizes == 6,
+assert(is_array(sizes) and #sizes == 6,
     "flame-altar-expanded: expected six altar build-zone entries (levels 0..5)")
 local expected = {40, 80, 120, 160, 160}
 for level, metres in ipairs(expected) do
@@ -52,7 +49,7 @@ local source, source_registry, source_data
 local new_id = game.guid.hash(RECIPE_GUID)
 for _, resource in ipairs(registries) do
     local data = resource.data
-    assert(data and type(data.recipes) == "table",
+    assert(data and is_array(data.recipes),
         "flame-altar-expanded: malformed RecipeRegistryResource")
     for _, recipe in ipairs(data.recipes) do
         assert(recipe.debugName ~= NEW_RECIPE,
@@ -78,10 +75,12 @@ assert(input.itemStack and input.itemStack.count == 5 and
        input.inputItemCategory and input.inputItemCategory.count == 0,
     "flame-altar-expanded: vanilla altar level-4 ingredient is not the expected 5 direct items")
 
--- Clone the game's *special* altar upgrade, including its workshop and engine
--- upgrade semantics. Change the identity and price; do not fabricate an item
--- output or interfere with the ordinary crafting menu.
-local recipe = copy(source)
+-- EML's typed-array insertion clones the recipe value, including nested
+-- typed inputs and queries. Do not run our own copy(source): source is userdata,
+-- which would alias the vanilla recipe and mutate level 4 instead of adding 5.
+-- All layout assertions above finish before this first registry mutation.
+table.insert(source_data.recipes, source)
+local recipe = source_data.recipes[#source_data.recipes]
 recipe.recipeGuid = RECIPE_GUID
 recipe.recipeId = {value = new_id}
 recipe.debugName = NEW_RECIPE
@@ -95,8 +94,7 @@ if completion and completion.knowledgeOrQueryId and
     completion.knowledgeOrQueryId = {value = new_id}
 end
 
--- Validation is complete; perform the two related resource edits.
-table.insert(source_data.recipes, recipe)
+-- Complete the level-5 zone update and publish both modified resources.
 sizes[6].x, sizes[6].y, sizes[6].z =
     LEVEL5_SIZE, LEVEL5_SIZE, LEVEL5_SIZE
 source_registry.data = source_data
