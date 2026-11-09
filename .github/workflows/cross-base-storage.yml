@@ -6,6 +6,8 @@ on:
     tags: ['cross-base-storage-v*']
     paths:
       - 'CrossBaseStorage/**'
+      - 'CraftPaymentTrace/TraceReader.cs'
+      - 'tests/craft-payment-trace/**'
       - 'scripts/build.sh'
       - 'scripts/resolve-kiln-release.py'
       - 'tests/kiln-release/**'
@@ -16,6 +18,8 @@ on:
   pull_request:
     paths:
       - 'CrossBaseStorage/**'
+      - 'CraftPaymentTrace/TraceReader.cs'
+      - 'tests/craft-payment-trace/**'
       - 'scripts/build.sh'
       - 'scripts/resolve-kiln-release.py'
       - 'tests/kiln-release/**'
@@ -66,6 +70,9 @@ jobs:
         run: dotnet run --project tests/material-quote/MaterialQuote.Tests.csproj --configuration Release
       - name: Test read-only chest owner to inventory-link mapping
         run: dotnet run --project tests/inventory-links/InventoryLinks.Tests.csproj --configuration Release
+
+      - name: Test embedded read-only optional native payer trace
+        run: dotnet run --project tests/craft-payment-trace/Trace.Tests.csproj --configuration Release
 
       - name: Build newest published Kiln SDK and package mod
         run: bash scripts/build.sh CrossBaseStorage
