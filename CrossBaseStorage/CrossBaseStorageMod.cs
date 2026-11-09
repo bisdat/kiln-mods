@@ -28,7 +28,7 @@ public sealed class CrossBaseStorageMod : Mod
     {
         _commands = Commands.Register(
             "cbstore", HandleCommand, CommandPermission.Admin,
-            usage: "<status|scan|templates|near|links <owner>|resolve <inventory>|stock item name|quote <amount> <item>|top|recipes [filter]|plan <recipe> [count]|lastcraft|lastbuild>",
+            usage: "<status|scan|templates|near|links <owner>|resolve <inventory>|stock item name|quote <amount> <item>|top|recipes [filter]|plan <recipe> [count]|lastcraft|lastbuild|trace [status|pair|payer|cost|journal|all]>",
             description: "Inspect loaded magic chest inventory and native craft/build requests (read-only).");
         if (Gameplay.Available && !Gameplay.Enable())
             Log.Warn("Cross-base Storage: kiln.gameplay present but events are not ready.");
@@ -527,6 +527,45 @@ public sealed class CrossBaseStorageMod : Mod
                 "The event is POST action; it does not expose the original crafting/building source list.");
     }
 
+    // Native trace is OPTIONAL. This source formatter is compiled directly
+    // into Cross-base Storage; no standalone observer or patched DLL required.
+    // Standard Kiln reports UNAVAILABLE. All reads are managed reflection,
+    // bounded, fail-closed; neither game transactions nor inventories change.
+    private static void Trace(CommandContext c)
+    {
+        if (c.Count > 2)
+            throw c.Usage("cbstore trace [status|pair|payer|cost|journal|all]");
+        var mode = c.ArgOrDefault(1, "status")!.ToLowerInvariant();
+        if (mode == "status")
+        {
+            c.Reply("Cross-base Storage optional native trace: read-only. " +
+                    "No native service patches installed by this mod.");
+            foreach (var action in new[] { "pair", "payer", "cost", "journal" })
+            {
+                var lines = CraftPaymentTrace.TraceReader.Read(typeof(Rules), action);
+                c.Reply($"{action}: {lines[0]}");
+            }
+            c.Reply("Vanilla Kiln lacks these experimental APIs. " +
+                    "Do not replace your automatically updated production runtime.");
+            return;
+        }
+
+        if (mode == "all")
+        {
+            foreach (var action in new[] { "pair", "payer", "cost", "journal" })
+            {
+                c.Reply($"TRACE {action}:");
+                foreach (var line in CraftPaymentTrace.TraceReader.Read(typeof(Rules), action))
+                    c.Reply(line);
+            }
+            return;
+        }
+        if (mode is not ("pair" or "payer" or "cost" or "journal"))
+            throw c.Usage("cbstore trace [status|pair|payer|cost|journal|all]");
+        foreach (var line in CraftPaymentTrace.TraceReader.Read(typeof(Rules), mode))
+            c.Reply(line);
+    }
+
     private void HandleCommand(CommandContext c)
     {
         var verb = c.ArgOrDefault(0, "help")!.ToLowerInvariant();
@@ -534,7 +573,8 @@ public sealed class CrossBaseStorageMod : Mod
         {
             case "help":
                 c.Reply("cbstore status | scan | templates | near | links <owner> | resolve <inventory> | stock <item> | top | " +
-                        "quote <units> <item> | recipes [output filter] | plan <recipeId|last> [count] | lastcraft | lastbuild. " +
+                        "quote <units> <item> | recipes [output filter] | plan <recipeId|last> [count] | " +
+                        "lastcraft | lastbuild | trace [status|pair|payer|cost|journal|all]. " +
                         "Read-only diagnostics; no cross-base crafting/building yet.");
                 break;
             case "status": Status(c); break;
@@ -550,6 +590,7 @@ public sealed class CrossBaseStorageMod : Mod
             case "plan": Plan(c); break;
             case "lastcraft": LastCraft(c); break;
             case "lastbuild": LastBuild(c); break;
+            case "trace": Trace(c); break;
             default: throw c.Usage($"Unknown Cross-base Storage action '{verb}'.");
         }
     }
