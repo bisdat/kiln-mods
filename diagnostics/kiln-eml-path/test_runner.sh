@@ -16,7 +16,7 @@ cat > "$fake" <<'SH'
 set -euo pipefail
 case "$1" in
   waitforexitandrun)
-    [[ "$#" == "5" ]]
+    [[ "$#" == "4" ]]
     mkdir -p "$STEAM_COMPAT_DATA_PATH/pfx"
     echo "Proton: Upgrading prefix from None to 11.0-100"
     ;;
