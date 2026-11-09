@@ -14,6 +14,43 @@ internal sealed class IniCatalog
     public HashSet<string> DisabledItems { get; } = new(StringComparer.OrdinalIgnoreCase);
     private readonly ChestNameMatcher _nameMatcher = new();
 
+    // Issue #16: four quest icon items share this display label with the
+    // genuine building block. A code-level pin also fixes old, user-owned
+    // endless-chests.ini files which we must never overwrite.
+    internal const uint RoughWoodBlockId = 2012474258u;
+    internal const string RoughWoodBlockDebugName = "Block_T1_Wood_Rough_CRAFTING";
+
+    // Cache the display-name collision index for each item catalogue snapshot,
+    // rather than scanning the whole game registry for every chest item.
+    private IReadOnlyList<ItemInfo>? _indexedItems;
+    private Dictionary<string, int> _displayNameCounts = new(StringComparer.OrdinalIgnoreCase);
+
+    private void RefreshDisplayNameIndex()
+    {
+        var all = Items.All;
+        if (ReferenceEquals(all, _indexedItems)) return;
+        var counts = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+        foreach (var item in all)
+        {
+            if (string.IsNullOrWhiteSpace(item.DisplayName)) continue;
+            counts[item.DisplayName] = counts.GetValueOrDefault(item.DisplayName) + 1;
+        }
+        _displayNameCounts = counts;
+        _indexedItems = all;
+    }
+
+    private static ItemInfo? LookupItem(string name)
+    {
+        if (!name.Equals("Rough Wood Block", StringComparison.OrdinalIgnoreCase))
+            return Items.Lookup(name);
+
+        // Fail closed on game data changes; never fall back to a quest icon.
+        var matched = Items.Get(new ItemId(RoughWoodBlockId));
+        return matched is not null && !matched.IsBlueprint &&
+            string.Equals(matched.Name, RoughWoodBlockDebugName, StringComparison.Ordinal)
+            ? matched : null;
+    }
+
     public int RecognizedNames => _nameMatcher.Count;
 
     // Resolve a game-produced FNV hash to a known catalogue entry using
@@ -140,16 +177,18 @@ internal sealed class IniCatalog
     {
         var selection = ExpandAlias(requested);
         if (string.Equals(selection, "Empty", StringComparison.OrdinalIgnoreCase))
-            return new SelectionPlan(selection, [], [], [], true);
+            return new SelectionPlan(selection, [], [], [], [], true);
 
         if (DisabledGroups.Contains(selection))
-            return new SelectionPlan(selection, [], [], [$"The group '{selection}' is disabled."], false);
+            return new SelectionPlan(selection, [], [], [$"The group '{selection}' is disabled."], [], false);
 
+        RefreshDisplayNameIndex();
         var names = Groups.TryGetValue(selection, out var group) ? group : [selection];
         var denied = BlockedFromGroups();
         var resolved = new List<ItemInfo>();
         var unknown = new List<string>();
         var blocked = new List<string>();
+        var ambiguous = new List<string>();
         foreach (var name in names)
         {
             // A disabled group excludes its members everywhere, even when
@@ -159,18 +198,25 @@ internal sealed class IniCatalog
                 blocked.Add(name);
                 continue;
             }
-            ItemInfo? info = Items.Lookup(name);
+            ItemInfo? info = LookupItem(name);
             if (info is null || info.IsBlueprint)
             {
-                unknown.Add(name);
+                unknown.Add(name.Equals("Rough Wood Block", StringComparison.OrdinalIgnoreCase)
+                    ? $"{name} (verified ID {RoughWoodBlockId} missing or changed)" : name);
                 continue;
             }
+            // Preserve previous behaviour for other ambiguous item labels,
+            // but log which numeric ID was selected so it can be corrected.
+            if (!name.Equals("Rough Wood Block", StringComparison.OrdinalIgnoreCase) &&
+                string.Equals(info.DisplayName, name, StringComparison.OrdinalIgnoreCase) &&
+                _displayNameCounts.TryGetValue(name, out var count) && count > 1)
+                ambiguous.Add($"{name} ({count} IDs; selected {info.Id.Value})");
             if (resolved.All(x => x.Id != info.Id)) resolved.Add(info);
             if (resolved.Count >= maxItems) break;
         }
-        return new SelectionPlan(selection, resolved, unknown, blocked, false);
+        return new SelectionPlan(selection, resolved, unknown, blocked, ambiguous, false);
     }
 }
 
 internal sealed record SelectionPlan(string Selection, List<ItemInfo> Items,
-    List<string> Unknown, List<string> Blocked, bool IsEmpty);
+    List<string> Unknown, List<string> Blocked, List<string> Ambiguous, bool IsEmpty);

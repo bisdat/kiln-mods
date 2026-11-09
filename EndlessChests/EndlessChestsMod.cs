@@ -612,9 +612,16 @@ public sealed class EndlessChestsMod : Mod
             var first = Items.Read(chest);
             if (first is not { Initialized: true }) return;
             var plan = _catalog.Resolve(selection, Math.Min(first.GenericSlots, 72));
-            if ((plan.Unknown.Count != 0 || plan.Blocked.Count != 0) && _warned.Add(selection))
-                Log.Warn($"Endless Chests: '{selection}': {plan.Unknown.Count} unavailable item names, " +
-                    $"{plan.Blocked.Count} items blocked by owner settings; {plan.Items.Count} valid types.");
+            if ((plan.Unknown.Count != 0 || plan.Blocked.Count != 0 || plan.Ambiguous.Count != 0) &&
+                _warned.Add(selection))
+                Log.Warn($"Endless Chests: '{selection}': {plan.Unknown.Count} unavailable names" +
+                    (plan.Unknown.Count != 0 ? $" ({string.Join(", ", plan.Unknown.Take(3))})" : "") +
+                    $", {plan.Blocked.Count} blocked, {plan.Items.Count} valid types, " +
+                    $"{plan.Ambiguous.Count} unpinned duplicate display names. " +
+                    (plan.Ambiguous.Count != 0
+                        ? $"Examples: {string.Join("; ", plan.Ambiguous.Take(3))}. " +
+                          "Use exact numeric item IDs in your INI to disambiguate."
+                        : ""));
             foreach (var item in plan.Items)
             {
                 if (_stopping || generation != _generation || !_settings.Enabled) break;
