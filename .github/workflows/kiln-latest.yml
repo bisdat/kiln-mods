@@ -3,6 +3,10 @@ name: Follow latest Kiln development release
 # Scheduled workflows run only from main. While Cross-base Storage is in
 # its draft PR, compile that branch; after merge, compile main instead.
 on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/kiln-latest.yml'
   schedule:
     - cron: '17,47 * * * *'
   workflow_dispatch:
