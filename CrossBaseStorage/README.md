@@ -1,4 +1,4 @@
-# Cross-base Storage (Kiln) — 0.1.5
+# Cross-base Storage (Kiln) — 0.1.6
 
 **Status: read-only inventory + vanilla craft/build observation prototype — not a working cross-base crafting mod.**
 
@@ -56,6 +56,8 @@ It installs as a **server-side Kiln mod** and exposes administrator-only command
 | `cbstore scan` | Counts loaded candidate storage chests, probable Magic Chests and pooled material amounts |
 | `cbstore templates` | Lists templates of all loaded candidate storage chests to validate magic identification |
 | `cbstore near` | Inspect nearest storage chest (within 5m), its template, position and tentative magic flag |
+| `cbstore links 1412` | Show each linked eight-slot inventory entity of chest **owner** `1412`, its category, occupied slots and units; no changes |
+| `cbstore resolve 1412` | Resolve inventory entity `1412` to a candidate chest owner and link index, or explicitly report unknown/ambiguous |
 | `cbstore stock Wood Logs` | Show how many Wood Logs are in **loaded magic-by-template candidates**, and their positions |
 | `cbstore top` | List the 12 most abundant items in those candidate magic chests |
 | `cbstore quote 3 String` | Show a **read-only, non-reserving** allocation of exactly 3 String across the player and currently loaded candidate Magic Chests; never charges anything |
@@ -90,6 +92,53 @@ cat kiln/control/console/cbnear.result.json
 ```
 
 Kiln processes the console command with your character context only while you are in a world; at the title screen, commands needing an in-world character may not work. The first command is read-only and can run without chest proximity.
+
+### Chest owner to linked inventory mapping (0.1.6)
+
+The pinned **public** Kiln.Items API already returns `Items.Read(chest).Inventories`,
+a list of `(Inventory: EntityId, Category)` pairs. Each underlying
+inventory entity contributes eight slots, so a 72-slot Magic Chest can have
+nine linked inventory IDs even though it is **one owner/chest**.
+
+The new read-only `cbstore links <owner ID>` and
+`cbstore resolve <linked inventory ID>` commands inspect that relationship.
+For example, chest **1412** was an observed String source in the v0.1.5
+quote; with 0.1.6 installed, `cbstore links 1412` enumerates the actual
+links in the current world. Do **not** assume link IDs match the owner ID
+except where the game reports that explicitly. `resolve` searches only
+**loaded compatible storage candidates**, not players, NPCs, workstations,
+non-storage inventories, or unloaded entities.
+
+The pure `InventoryLinkIndex` is deterministic and **fails closed** for
+missing/duplicate/zero owner and link IDs, and for impossible link counts.
+An underlying link referenced by two different owners returns
+`Ambiguous`, never an arbitrary chest; an unobserved ID returns
+`NotFound`. Each mapping includes `magicByTemplate`, which remains a
+**name heuristic, not a verified Magic Chest entitlement**. The commands
+use the already-supported `Items.Read` API, not untrusted native offsets.
+
+This is groundwork for comparing future original-game staged payment journal
+observations with real storage owners. Neither a link mapping nor a
+staged payment proves that the engine authorised a remote Magic Chest or
+committed a withdrawal. The client UI and native payment resolver are still
+unmodified.
+
+Run the commands in a loaded world, from the game installation directory:
+
+```bash
+printf 'cbstore links 1412\n' > kiln/control/console/cblinks.tmp
+mv kiln/control/console/cblinks.tmp kiln/control/console/cblinks.cmd
+# Kiln may need one polling interval before it writes this file:
+cat kiln/control/console/cblinks.result.json
+
+printf 'cbstore resolve 1412\n' > kiln/control/console/cbresolve.tmp
+mv kiln/control/console/cbresolve.tmp kiln/control/console/cbresolve.cmd
+cat kiln/control/console/cbresolve.result.json
+```
+
+`resolve 1412` is an *example* only: the game could enumerate a different
+underlying ID after loading or saving. Use `links` output to select an
+actual linked inventory ID for a meaningful reverse lookup.
 
 ### Deterministic exact-item source quote (0.1.5)
 
@@ -184,4 +233,4 @@ KILN_SDK_VERSION=0.2.0-dev.local.20261107.61500 \
 bash scripts/build.sh CrossBaseStorage
 ```
 
-Output: `bin/Release/cross-base-storage-0.1.5.zip`. The workflow builds and uploads this prototype on pull requests and optionally publishes a GitHub **development pre-release** for a matching **numeric** `cross-base-storage-v0.1.5` tag. Future versions use `0.1.6`, `0.1.7`, etc., without an `-alpha.n` suffix. **It should not be presented as a playable cross-base storage release.**
+Output: `bin/Release/cross-base-storage-0.1.6.zip`. The workflow builds and uploads this prototype on pull requests and optionally publishes a GitHub **development pre-release** for a matching **numeric** `cross-base-storage-v0.1.6` tag. Future versions use `0.1.7`, `0.1.8`, etc., without an `-alpha.n` suffix. **It should not be presented as a playable cross-base storage release.**
