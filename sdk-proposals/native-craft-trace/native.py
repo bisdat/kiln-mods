@@ -5,10 +5,12 @@ No gameplay or inventory semantics are changed. The changes attach to existing
 kiln.rules detours, not new hooks. Requires an EXACT known upstream commit.
 """
 from pathlib import Path
+import os
 import subprocess
 import sys
 
-PIN = "77e525888ac0d5f4f6b16103e945ed7ac049b50e"
+# Historical dev snapshot remains the local default; CI always sets the newest
+# PUBLISHED release commit and then checks it against the checkout.\nPIN = os.environ.get("KILN_UPSTREAM_SHA", "77e525888ac0d5f4f6b16103e945ed7ac049b50e")
 if len(sys.argv) != 2:
     raise SystemExit("Usage: native.py <disposable-kiln-checkout>")
 root = Path(sys.argv[1]).resolve()
