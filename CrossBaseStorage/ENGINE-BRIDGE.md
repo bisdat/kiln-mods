@@ -269,8 +269,7 @@ The new twelve-case independent test harness is in
 the existing ten quote-planner tests. Initial [v0.1.6
 build](https://github.com/bisdat/kiln-mods/actions/runs/42573891495)
 passed read-only validation, **22 pure-logic tests**, pinned SDK build
-(0 compiler warnings/errors) and package generation. The new commands
-still need in-game validation with actual owner and linked inventory IDs.
+(0 compiler warnings/errors) and package generation. The linked-owner commands were subsequently validated in-game: `cbstore links 1412` returned nine real 8-slot links, and `cbstore resolve 1421` returned `Matched` to owner 1412 at link index 4; 52 scanned storage candidates, 464 linked inventories, zero ambiguous links (9 November 2026, 06:46:58 UTC). This is a read-only ownership check, not crafting-source authorisation.
 
 **What this closes:** source-journal inventory entities can now be mapped
 back to candidate loaded chest owners using existing managed Kiln APIs,
@@ -282,3 +281,116 @@ Flame Altar/base permission resolver, no typed category/water costs,
 and no client-side crafting/building source inclusion. The PR stays
 draft and v0.1.6 remains diagnostic-only.
 
+
+## Upstream Kiln dev20 review — 9 November 2026 (06:25–06:27 UTC)
+
+Compared the pinned *shipping SDK* revision
+[`eba9a5e`](https://github.com/frostdev-ops/kiln/commit/eba9a5e1e0e0044a9146fdd53021a751e2957030)
+(dev15), the existing native trace experiment's upstream source
+[`77e5258`](https://github.com/frostdev-ops/kiln/commit/77e525888ac0d5f4f6b16103e945ed7ac049b50e),
+and current [`main da1ad920`](https://github.com/frostdev-ops/kiln/commit/da1ad920fa5fc9be1696b5fa1d186399ccf8f9a8).
+The upstream [v0.2.0-dev.20 prerelease](https://github.com/frostdev-ops/kiln/releases/tag/v0.2.0-dev.20)
+was published 9 November 2026 at 06:27 UTC (release target `d35ee27`).
+Main's subsequent `da1ad920` commit completed release work.
+
+**Actual API changes relevant to our project:**
+
+- **`kiln.items` is v3:** public managed `Items.Move`,
+  `QuickStack`, `MoveAll`, `ContainerName`,
+  `Items.Transfers.Keep/KeepItem/Deny`, post-transfer events and
+  native `transfer_listen` handlers. [Inventory guide](https://github.com/frostdev-ops/kiln/blob/da1ad920/docs/kiln/modding/inventory.md),
+  [C ABI](https://github.com/frostdev-ops/kiln/blob/da1ad920/native/core/abi/services/kiln_items.h),
+  [managed v3 adapter](https://github.com/frostdev-ops/kiln/blob/da1ad920/managed/services/Kiln.Items/Moves.cs).
+  A move between two inventory *owners* uses the game's slot transfer and an
+  engine transaction **owned by that move**. It is not the recipe's own
+  transaction. `transfer_listen` is restricted to the original
+  quick-stack/move-all calls and is **not invoked by RecipeApply**.
+  The native callback may move additional stacks in that transfer's transaction,
+  but that does not make it a crafting hook.
+- The managed `Items.TryGetResult(Task<ItemsResult>, out ...)` and
+  `ResultPeekAvailable` allow early observation of **Kiln-submitted
+  Give/Take results**, useful for save timing. They are **not** a native
+  recipe-commit receipt or source-enrolment interface.
+- **Declarative ECS programs** (`EcsPrograms.Bind`, `kiln.programs.json`)
+  now run on worker threads with checked component access. They are separate
+  scheduled ECS jobs, **not callbacks inside the engine's RecipeApply payment**.
+- Building blocks for authored crafting stations and UI were expanded;
+  a mod-defined station's processing is still driven by its **own inputs**,
+  not a cross-base extension of vanilla material selection.
+- Game hooks already existed at the **dev15 pin**: the current
+  `mods/samples/HookSample/HookSampleMod.cs` is unchanged compared with
+  that pin. It shows `Hooks.Detour(..., call => call.CallOriginal())`
+  and shipped symbols, which can be used for *passive instrumentation*.
+  This is not evidence of a newly supported transaction-aware craft API.
+- No public v3 Items/Gameplay API or sample inspected here can register
+  remote Magic Chest providers for **vanilla client craftability and original
+  server recipe deduction**. We must add a specific upstream native bridge.
+
+**Most useful native implementation clue:** dev20
+[`native/services/items/engine.h`](https://github.com/frostdev-ops/kiln/blob/da1ad920/native/services/items/engine.h)
+declares internal `access_from_tx(tx, Access*)`, which builds/checks
+the component accessors from a *game-owned* transaction, and
+`move_stack_in(Access, tx, from, slot, to, ...)`, which uses a
+*caller-owned* transaction instead of implicitly committing a second
+one. [`engine.cpp`](https://github.com/frostdev-ops/kiln/blob/da1ad920/native/services/items/engine.cpp)
+validates accessors against component hashes, reads owners' inventory
+links, invokes the game's slot-transfer function, and has a separate
+commit/rollback path for standalone Move requests. These helpers are
+**private to the native service**, not public SDK entry points. The
+design shows how to preserve the game's transaction context, but
+`move_stack_in` itself needs destination inventory capacity and cannot
+serve as a complete remote crafting payer.
+
+**Useful `mods/` patterns (not a solution by themselves):**
+
+1. [`mods/tests/items-test/MovesTest.cs`](https://github.com/frostdev-ops/kiln/blob/da1ad920/mods/tests/items-test/MovesTest.cs):
+   source/destination stock conservation, dry-run rollback,
+   and item-entity preservation; adapt its assertions to an actual
+   recipe transaction.
+2. [`mods/tests/creative-test/CreativeTestMod.cs`](https://github.com/frostdev-ops/kiln/blob/da1ad920/mods/tests/creative-test/CreativeTestMod.cs):
+   starts **real server craft actions** with `Gameplay.Inject.Craft`,
+   then checks output and inputs; use this scaffolding but keep
+   `FreeCrafting` **disabled** when validating real debit.
+3. [`mods/samples/HookSample`](https://github.com/frostdev-ops/kiln/tree/da1ad920/mods/samples/HookSample):
+   a pass-through native-symbol detour and a callable original; candidate
+   for passive call-site tracing, **not** a safe place to implement
+   transaction mutation in ordinary C#.
+4. [`mods/samples/StationBlocks`](https://github.com/frostdev-ops/kiln/tree/da1ad920/mods/samples/StationBlocks)
+   and [`mods/tests/stations-test`](https://github.com/frostdev-ops/kiln/tree/da1ad920/mods/tests/stations-test):
+   test custom workbenches and stations with own inventory.
+   They do not augment vanilla remote sources.
+5. [`mods/samples/Claims`](https://github.com/frostdev-ops/kiln/tree/da1ad920/mods/samples/Claims):
+   spatial `Gameplay.Protect` can *deny* crafting, not grant
+   another player's Magic Chest permission. The real source security
+   and Flame Altar/base membership are still unresolved.
+
+**Recommended native implementation seam:**
+
+- Validate `RecipeApply`'s **both** payer call sites
+  (`InventoryPay` and `RecipePayAlt`), recipe inputs including
+  category alternatives, the transaction operator, and the requested
+  output amount. Leave the vanilla payer alone for unrelated actions.
+- Resolve loaded eligible Magic Chest *owners* and their linked 8-slot
+  inventory entities with native transaction-time access, **not** a
+  stale managed tick-thread snapshot. Determine the authoritative Magic
+  flag, base/altar scope, and ownership/permission policy before allowing
+  remote debit.
+- In an **isolated throwaway native test**, investigate whether the
+  game's `InventoryRemoveItems(out, tx, chestOwner, item, slot, amount)`
+  can append remote take operations within **that same original
+  RecipeApply transaction**. This is a *hypothesis*, not an
+  implemented/public API. Validate how the native payer handles
+  shortfalls, category inputs, queued partial takes, duplicate links,
+  transaction rollback and concurrent crafts. Do not return
+  'paid' unless the complete real cost has been staged and can be
+  committed atomically with the output.
+- Then implement client-side source counts/ingredient choices using
+  matching authority, without faking `UiCraftableAmount`. Station
+  queues and building are separate later integration paths.
+
+**Decision:** keep the shipping diagnostic Cross-base Storage **0.1.6**
+on the tested/pinned dev15 SDK and leave PR #7 **draft**. No auto-bump
+to dev20, no game DLL replacement, and no assertion that the
+new moves API enables cross-base crafting. The next development effort
+should be a disposable native original-transaction *payer/source probe*,
+not another chest scanner.
