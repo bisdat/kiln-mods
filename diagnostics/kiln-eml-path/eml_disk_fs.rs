@@ -8,7 +8,11 @@ use mod_loader_base::FileSystem;
 
 #[test]
 fn real_eml_reader_loads_nested_module_on_z_drive() -> io::Result<()> {
-    let parent = if std::env::var_os("KILN_EML_TEST_USE_CWD").is_some() {
+    let parent = if let Some(home) = std::env::var_os("KILN_EML_TEST_BASE") {
+        // Under Wine, this can be a Z:-mapped symlink to an Atomic-style
+        // /var/home tree, provided by the Linux workflow, not the test.
+        std::path::PathBuf::from(home)
+    } else if std::env::var_os("KILN_EML_TEST_USE_CWD").is_some() {
         std::env::current_dir()?
     } else {
         std::env::temp_dir()
