@@ -33,7 +33,7 @@ fn real_eml_reader_loads_nested_module_on_z_drive() -> io::Result<()> {
     let mut code = String::new();
     let outcome = eml_fs.read_file("src/mod.lua");
     match outcome {
-        Ok(mut reader) => reader.read_to_string(&mut code)?,
+        Ok(mut reader) => { reader.read_to_string(&mut code)?; },
         Err(e) => {
             eprintln!("EML src/mod.lua read failed: kind={:?}, os_error={:?}, error={e}", e.kind(), e.raw_os_error());
             return Err(e);
