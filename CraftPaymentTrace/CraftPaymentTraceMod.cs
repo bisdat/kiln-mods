@@ -33,8 +33,6 @@ public sealed class CraftPaymentTraceMod : Mod
             {
                 var lines = TraceReader.Read(typeof(Rules), item);
                 c.Reply($"{item}: {lines[0]}");
-                if (lines[0].StartsWith("UNAVAILABLE:", StringComparison.Ordinal))
-                    c.Reply(lines[0]);
             }
             c.Reply("Only a separately verified, matching experimental Kiln.Rules native+managed " +
                     "pair can supply raw traces. Do not replace your normal Kiln runtime for this command.");
