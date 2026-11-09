@@ -1,0 +1,74 @@
+name: Package Flame Altar Expanded (experimental)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'FlameAltarExpanded/**'
+      - '.github/workflows/flame-altar-expanded.yml'
+  pull_request:
+    paths:
+      - 'FlameAltarExpanded/**'
+      - '.github/workflows/flame-altar-expanded.yml'
+      - 'README.md'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    name: Validate and package EML mod
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
+
+      - name: Validate mod syntax and offline contracts
+        run: |
+          luac5.4 -p FlameAltarExpanded/src/mod.lua
+          luac5.4 -p FlameAltarExpanded/tests/test_patch.lua
+          lua5.4 FlameAltarExpanded/tests/test_patch.lua
+
+      - name: Check EML manifest
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          manifest=json.loads(Path('FlameAltarExpanded/mod.json').read_text())
+          assert manifest['id']=='flame-altar-expanded'
+          assert manifest['capabilities']==['patch']
+          assert manifest['version']=='0.1.0'
+          assert Path('FlameAltarExpanded/src/mod.lua').is_file()
+          print('EML manifest verified')
+          PY
+
+      - name: Package installable standalone EML mod
+        run: |
+          mkdir -p dist/flame-altar-expanded/src
+          cp FlameAltarExpanded/mod.json dist/flame-altar-expanded/mod.json
+          cp FlameAltarExpanded/src/mod.lua dist/flame-altar-expanded/src/mod.lua
+          cp FlameAltarExpanded/README.md dist/flame-altar-expanded/README.md
+          (cd dist && zip -q -r flame-altar-expanded-0.1.0.zip flame-altar-expanded)
+          python3 - <<'PY'
+          from zipfile import ZipFile
+          with ZipFile('dist/flame-altar-expanded-0.1.0.zip') as z:
+              assert sorted(z.namelist()) == sorted([
+                  'flame-altar-expanded/',
+                  'flame-altar-expanded/src/',
+                  'flame-altar-expanded/mod.json',
+                  'flame-altar-expanded/src/mod.lua',
+                  'flame-altar-expanded/README.md',
+              ])
+          print('Standalone EML package verified')
+          PY
+
+      - name: Upload experimental package
+        uses: actions/upload-artifact@v4
+        with:
+          name: flame-altar-expanded-experimental
+          path: dist/flame-altar-expanded-0.1.0.zip
+          if-no-files-found: error
+          retention-days: 90
