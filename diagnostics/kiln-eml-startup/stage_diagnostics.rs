@@ -74,7 +74,7 @@ fn outside_root_and_symlink_escape_remain_denied() -> io::Result<()> {
     let outside = fixture.base.parent().unwrap().join("not-a-real-mod.lua");
     fs::write(&outside, b"outside")?;
     let mut eml = fixture.fs()?;
-    let err = eml.read_file("../../not-a-real-mod.lua").err().expect("must fail");
+    let err = eml.read_file("../not-a-real-mod.lua").err().expect("must fail");
     assert_eq!(err.kind(), ErrorKind::PermissionDenied);
     fs::remove_file(&outside)?;
     Ok(())
