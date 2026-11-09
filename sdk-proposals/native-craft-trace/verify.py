@@ -46,4 +46,12 @@ assert "CT.alternative.fetch_add" in added
 assert "CT.ui.fetch_add" in added
 assert "KILN_WORLD_STARTED" in (root / "native/services/rules/rules.cpp").read_text()
 assert "return result;" in added
+assert "KilnRulesPaymentTrace" in added
+assert "paired_after(raw, journal, result)" in added
+assert "Services.Get<PaymentTable>" in added
+assert "TraceRecipePayment()" in added
+assert "const auto journal = kiln_rules_creative::journal_after" in added
+assert "const auto journal = journal_after" in added
+assert "g_paired_last = sample;" in added
+assert "sample.cost = raw.value;" in added and "sample.journal = journal;" in added
 print("PASS: 6 permitted source files; existing original paths preserved; no new detours or item transactions.")
