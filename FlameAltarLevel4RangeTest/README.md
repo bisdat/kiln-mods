@@ -1,5 +1,7 @@
 # Flame Altar Level 4 Range Test — experimental EML 0.1.0
 
+> **BLOCKED — DO NOT INSTALL (10 November 2026).** A user reports that Kiln fails to load with the test ZIP installed. This experiment used an incorrect separate mod identity/version (0.1.0 rather than a 0.1.2 iteration of Flame Altar Expanded). The cause of the loading failure is not yet established. Package publishing in CI has been disabled. Disable/remove `flame-altar-level4-range-test`, preserve diagnostic logs, and do not retry until investigated. This document below describes an **inactive historical test plan**, not instructions to execute now.
+
 **Purpose:** isolate Enshrouded's altar **build-zone size** mechanism from the unresolved fifth-tier recipe/upgrade UI logic in [issue #12](https://github.com/bisdat/kiln-mods/issues/12). This is a temporary diagnostic mod, **not an update to Flame Altar Expanded 0.1.1** and not a production release.
 
 ## Exact change
