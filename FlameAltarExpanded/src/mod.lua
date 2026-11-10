@@ -1,104 +1,46 @@
 -- SPDX-License-Identifier: MIT
--- Flame Altar Expanded: pregame Enshrouded data patch via Kiln's kiln-eml plugin.
--- Prototype: must be validated in-game on both client and server before release.
---
--- This is deliberately NOT a normal craft recipe. Flame Altar upgrades are
--- output-less recipes, which the pinned Kiln.Content new-recipe API cannot create.
--- All validations precede all writes: unknown game layouts fail closed.
+-- Flame Altar Expanded 0.1.2: pregame data-only range experiment for Kiln EML.
+-- Existing altar level 4 gets a 300m cube instead of 160m.
+-- Level 5 is NOT added; recipe registry and upgrade costs are NOT touched.
+-- Game/save persistence requires a separate controlled in-game test.
 
 assert(loader and loader.features and loader.features.patch,
     "flame-altar-expanded: requires Kiln kiln-eml with EML patch capability")
 
-local NEW_RECIPE = "FlameAltar_HomeBase_Upgrade_4" -- upgrade from altar 4 to 5
-local SOURCE_RECIPE = "FlameAltar_HomeBase_Upgrade_3" -- vanilla 3 to 4
-local RECIPE_GUID = "bce60e59-c9f2-40ea-9386-6c2d119ec705" -- fixed forever
-local LEVEL5_SIZE = 300
-local LEVEL5_COST = 10 -- Shroud Nexus; source is vanilla level-4 cost (5)
+local LEVEL4_SIZE = 300
 
--- EML exposes mapped game arrays/structs as userdata, not plain Lua tables.
--- Its custom table.insert handles typed arrays and clones inserted game values.
-local function is_array(value)
-    local kind = type(value)
-    return kind == "table" or kind == "userdata"
-end
-
-local balance_resources = game.assets.get_resources_by_type("keen::BalancingTable")
-assert(#balance_resources == 1,
+local resources = game.assets.get_resources_by_type("keen::BalancingTable")
+assert(resources and #resources == 1,
     "flame-altar-expanded: expected exactly one BalancingTable")
-local balance_resource = balance_resources[1]
-local balance = balance_resource.data
-assert(balance and balance.altarLevelMax == 5,
-    "flame-altar-expanded: expected vanilla altarLevelMax=5; game version or another mod changed it")
 
--- The game's array includes index 1 for level zero, then levels 1..5.
--- Refuse to rewrite other mods' balancing values or unrecognised layouts.
+local resource = resources[1]
+local balance = resource.data
+assert(balance and balance.altarLevelMax == 5,
+    "flame-altar-expanded: expected vanilla altarLevelMax=5")
+
 local sizes = balance.buildzoneSizesPerAltarLevel
-assert(is_array(sizes) and #sizes == 6,
-    "flame-altar-expanded: expected six altar build-zone entries (levels 0..5)")
-local expected = {40, 80, 120, 160, 160}
-for level, metres in ipairs(expected) do
+local kind = type(sizes)
+assert((kind == "userdata" or kind == "table") and #sizes == 6,
+    "flame-altar-expanded: expected six build-zone entries (levels 0..5)")
+
+-- Assert every known vanilla tier BEFORE the first write.
+-- The unused level-zero value is deliberately not guessed or modified.
+-- If any other mod changes a tier (including former 0.1.1's level 5),
+-- fail closed instead of overwriting or stacking patches.
+local vanilla = {40, 80, 120, 160, 160} -- levels 1..5
+for level, metres in ipairs(vanilla) do
     local zone = sizes[level + 1]
     assert(zone and zone.x == metres and zone.y == metres and zone.z == metres,
-        "flame-altar-expanded: unexpected build-zone dimensions at level " .. level)
+        "flame-altar-expanded: unexpected build-zone dimensions at level " ..
+        tostring(level) .. "; refusing to patch")
 end
 
-local registries = game.assets.get_resources_by_type("keen::RecipeRegistryResource")
-assert(#registries > 0, "flame-altar-expanded: no recipe registry")
+-- EML's arrays are Lua 1-based: level 4 lives at index 5.
+-- Do not touch level 5, the recipe registry or player progression.
+sizes[5].x, sizes[5].y, sizes[5].z =
+    LEVEL4_SIZE, LEVEL4_SIZE, LEVEL4_SIZE
+resource.data = balance
 
-local source, source_registry, source_data
-local new_id = game.guid.hash(RECIPE_GUID)
-for _, resource in ipairs(registries) do
-    local data = resource.data
-    assert(data and is_array(data.recipes),
-        "flame-altar-expanded: malformed RecipeRegistryResource")
-    for _, recipe in ipairs(data.recipes) do
-        assert(recipe.debugName ~= NEW_RECIPE,
-            "flame-altar-expanded: level-5 recipe already present (conflicting mod or game update)")
-        assert(recipe.recipeId and recipe.recipeId.value ~= new_id,
-            "flame-altar-expanded: new recipe id collides with an existing recipe")
-        if recipe.debugName == SOURCE_RECIPE then
-            assert(not source,
-                "flame-altar-expanded: more than one vanilla level-4 upgrade recipe")
-            source, source_registry, source_data = recipe, resource, data
-        end
-    end
-end
-assert(source, "flame-altar-expanded: vanilla level-4 upgrade recipe not found")
-assert(source.recipeId and source.recipeId.value and
-       source.input and #source.input == 1 and
-       source.output and #source.output == 0,
-    "flame-altar-expanded: vanilla altar upgrade no longer has one input and zero outputs")
-
-local input = source.input[1]
-assert(input.itemStack and input.itemStack.count == 5 and
-       input.itemStack.item and input.itemStack.item.value ~= 0 and
-       input.inputItemCategory and input.inputItemCategory.count == 0,
-    "flame-altar-expanded: vanilla altar level-4 ingredient is not the expected 5 direct items")
-
--- EML's typed-array insertion clones the recipe value, including nested
--- typed inputs and queries. Do not run our own copy(source): source is userdata,
--- which would alias the vanilla recipe and mutate level 4 instead of adding 5.
--- All layout assertions above finish before this first registry mutation.
-table.insert(source_data.recipes, source)
-local recipe = source_data.recipes[#source_data.recipes]
-recipe.recipeGuid = RECIPE_GUID
-recipe.recipeId = {value = new_id}
-recipe.debugName = NEW_RECIPE
-recipe.input[1].itemStack.count = LEVEL5_COST
-
--- The per-recipe 'crafted once' knowledge query, if it targets its own id,
--- must not keep referring to the previous tier.
-local completion = recipe.completionRequirementQuery
-if completion and completion.knowledgeOrQueryId and
-   completion.knowledgeOrQueryId.value == source.recipeId.value then
-    completion.knowledgeOrQueryId = {value = new_id}
-end
-
--- Complete the level-5 zone update and publish both modified resources.
-sizes[6].x, sizes[6].y, sizes[6].z =
-    LEVEL5_SIZE, LEVEL5_SIZE, LEVEL5_SIZE
-source_registry.data = source_data
-balance_resource.data = balance
-
-print("flame-altar-expanded: registered " .. NEW_RECIPE ..
-      " (10 Shroud Nexus); level-5 build zone = 300 x 300 x 300 m")
+print("flame-altar-expanded 0.1.2: level-4 build-zone 160x160x160 -> " ..
+      tostring(LEVEL4_SIZE) .. "x" .. tostring(LEVEL4_SIZE) .. "x" ..
+      tostring(LEVEL4_SIZE) .. " m; recipes and level 5 unchanged")
