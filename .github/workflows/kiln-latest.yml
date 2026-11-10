@@ -129,6 +129,7 @@ jobs:
               ;;
             SurvivalQoL)
               python3 -m unittest discover -s tests/survival-qol -p 'test_*.py' -v
+              dotnet run --project tests/survival-qol/DepletionMathTests/DepletionMathTests.csproj -c Release
               ;;
           esac
 
