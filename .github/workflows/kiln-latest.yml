@@ -9,6 +9,7 @@ on:
       - '.github/workflows/kiln-latest.yml'
       - 'scripts/resolve-kiln-release.py'
       - 'scripts/build-compat.sh'
+      - 'scripts/build-compat.py'
       - 'tests/kiln-release/**'
       - 'SurvivalQoL/**'
       - 'EndlessChests/**'
@@ -17,6 +18,7 @@ on:
       - '.github/workflows/kiln-latest.yml'
       - 'scripts/resolve-kiln-release.py'
       - 'scripts/build-compat.sh'
+      - 'scripts/build-compat.py'
       - 'tests/kiln-release/**'
   schedule:
     - cron: '17,47 * * * *'
@@ -59,8 +61,10 @@ jobs:
       - name: Test release selection without contacting GitHub
         run: python3 -m unittest discover -s tests/kiln-release -p 'test_*.py' -v
 
-      - name: Validate local compatibility installer syntax
-        run: bash -n scripts/build-compat.sh
+      - name: Validate compatibility build entrypoint syntax
+        run: |
+          bash -n scripts/build-compat.sh
+          python3 -m py_compile scripts/build-compat.py
 
       - name: Resolve newest complete published Kiln dev release
         id: release
