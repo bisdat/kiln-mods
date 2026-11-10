@@ -27,7 +27,7 @@ end
 
 local function run(opts)
     opts = opts or {}
-    local values = {zone(0), zone(40), zone(80), zone(120), zone(160), zone(160)}
+    local values = {zone(7), zone(40), zone(80), zone(120), zone(160), zone(160)}
     if opts.bad_tier ~= nil then
         values[opts.bad_tier + 1].y = 999
     end
@@ -73,7 +73,7 @@ test("change level 4 only from 160 to 300 on all three axes", function()
     local result = run()
     assert(result.ok, result.err)
     assert(result.writes == 1)
-    for level, n in ipairs({0, 40, 80, 120, 300, 160}) do
+    for level, n in ipairs({7, 40, 80, 120, 300, 160}) do
         local v = result.values[level]
         assert(v.x == n and v.y == n and v.z == n, "unexpected tier " .. tostring(level - 1))
     end
