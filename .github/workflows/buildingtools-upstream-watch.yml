@@ -1,6 +1,11 @@
 name: Check Building Tools upstream updates
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - 'BuildingToolsKiln/**'
+      - '.github/workflows/buildingtools-upstream-watch.yml'
   schedule:
     - cron: '17 7 * * *'
   workflow_dispatch:
