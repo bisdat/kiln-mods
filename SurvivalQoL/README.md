@@ -1,68 +1,72 @@
 # Survival QoL (Kiln SDK mod)
 
-A configurable, server-authoritative C# mod for Enshrouded, built with **Kiln.Sdk 0.2** and .NET 10. It runs on a dedicated Kiln server or a Kiln-enabled client hosting a world; clients need not install the server-side mod separately.
+A configurable, server-authoritative C# mod for Enshrouded using Kiln.Sdk 0.2 and .NET 10. It runs on a dedicated Kiln server or a Kiln-enabled client hosting a world; no separate client-side mod is necessary.
 
-**Status: v0.2.0 candidate for in-game acceptance.** The Kiln developer added the supported oxygen/body-heat write API in **0.2.0-dev.20**. The integration in this branch has not yet passed real-player underwater and freezing-biome tests. See [issue #2](https://github.com/bisdat/kiln-mods/issues/2).
+**Status: v0.2.0 test candidate.** On 10 November 2026, the player confirmed that the earlier **infinite oxygen** and **infinite frost/body-heat** refills both worked in-game on Kiln dev.21 (issue #2 / PR #22). At the player's request, this branch replaces those always-on infinite switches with **1x–10x duration sliders**. This new proportional-depletion behaviour still requires its own in-game acceptance.
 
 ## Features
 
 | Effect | Implementation | Status |
 | --- | --- | --- |
-| Infinite stamina | `Rules.Apply` with `MinStamina = 1` and `UnlimitedGliding` | Existing implementation; glider protection requires a Kiln client |
-| Infinite mana | `Rules.Apply` with `MinMana = 1` | Existing implementation |
-| Infinite underwater breath | On every server Pre tick, refill `GameAttribute.Oxygen` to the player's computed `Max` using `Kiln.Attributes.TrySet` | **New in v0.2.0; in-game verification pending** |
-| Infinite frost protection | On every server Pre tick, refill `GameAttribute.BodyHeat` to the player's computed `Max` | **New in v0.2.0; in-game verification pending** |
-| Fast health regeneration | `Combat.Heal` on the tick thread; 25 points/s by default | Existing implementation |
-| Fast mana regeneration | `Abilities.Attributes.Add` on the tick thread; 35 points/s by default | Existing implementation |
-| No fall damage | Cancel `EntityFallEvent` for players | Existing implementation |
-| Infinite weapon durability | `Settings.Set("enableDurability", false)` | Existing implementation; applies to **all equipment** |
+| Infinite stamina | `Rules.Apply` with `MinStamina = 1` and `UnlimitedGliding` | Existing; glider protection needs a Kiln client |
+| Infinite mana | `Rules.Apply` with `MinMana = 1` | Existing |
+| Underwater breath duration | `UnderwaterBreathMultiplier`, 1x–10x integer slider | **New; in-game duration verification pending** |
+| Frost resistance duration | `FrostResistanceMultiplier`, 1x–10x integer slider | **New; in-game duration verification pending** |
+| Fast health regeneration | `Combat.Heal`, default 25 points/s | Existing |
+| Fast mana regeneration | `Abilities.Attributes.Add`, default 35 points/s | Existing |
+| No fall damage | Cancel `EntityFallEvent` for players | Existing |
+| Infinite equipment durability | `Settings.Set("enableDurability", false)` | Existing; applies to all equipment |
 
-**Frost is not Shroud:** `FreezeShroudTimer` protects the Shroud timer, not the separate body-heat/frost resource. The new implementation uses `BodyHeat`, not `FreezeShroudTimer`.
+**Frost is not Shroud:** `GameAttribute.BodyHeat` controls frost protection. It is distinct from the Shroud timer.
 
-The new refills work independently of the health/mana regeneration toggles. They use the game's own current maximums, which may change with player level, equipment or buffs. They affect joined players on the authoritative server world only; they do not alter creatures, saved player maxima, or world-wide diving/body-heat settings. If the attribute service is unavailable, the mod logs a warning once and leaves normal depletion untouched.
+## How the multipliers work
 
-## Configuration and upgrade from v0.1.x
+Two independent Kiln configuration sliders use `[Range(1, 10)]` on integer properties:
 
-The generated `kiln/config/survival-qol.json` is hot-reloadable. Each option is individually configurable:
+- **Underwater Breath Multiplier** — `underwaterBreathMultiplier`, default **10**.
+- **Frost Resistance Multiplier** — `frostResistanceMultiplier`, default **10**.
 
-- `InfiniteUnderwaterBreath` — new, default `true`.
-- `InfiniteFrostProtection` — new, default `true`.
-- `DoubleUnderwaterBreath` — **deprecated compatibility gate**, default `true`.
-- `DoubleFrostResistance` — **deprecated compatibility gate**, default `true`.
+The end points are **1 = normal game depletion, no attribute writes**, and **10 = approximately one tenth of normal depletion (roughly ten times the usual duration)**. All integers between 1 and 10 are supported. The 10x default preserves a strong protective effect after replacing the older infinite option; select 1 to restore the normal game for a resource.
 
-The old options **no longer double** a global game setting. To avoid silently enabling features a player had disabled in v0.1.x, their previous `false` values still act as gates. Oxygen protection is enabled only when *both* `InfiniteUnderwaterBreath` and `DoubleUnderwaterBreath` are `true`; frost protection similarly requires *both* `InfiniteFrostProtection` and `DoubleFrostResistance`. To enable protection after having disabled the legacy 2× feature, enable both relevant switches. Keep the old switches for now; they will be removed only with an explicit configuration migration.
+On each authoritative server Pre tick, the mod compares the current oxygen/body-heat attribute with the last **corrected** value. It refunds a fraction `(multiplier - 1) / multiplier` of any loss using the supported `Kiln.Attributes.TrySet` API. Integer remainders are carried across ticks so repeated single-point losses scale correctly, without the rounding error of naive per-tick refills. The game still controls the attribute's maximum, surface/warm-area restoration, equipment and buffs.
 
-Only the durability option still changes a **global** world setting. The mod remembers the previous durability value and restores it when the option is disabled or the mod unloads, provided nobody else has changed that value. It does not call `Settings.Save()`. Neither oxygen nor body heat requires any world-setting restoration: disabling the option simply stops refilling that attribute, and vanilla depletion resumes.
+This is an **approximation of game duration** calculated from *net observed attribute loss*, not a modification to the engine's native timer or depletion program. Mixed depletion and healing in the same tick, very low tick rates, a maximum change, or unusual status effects may alter the exact resulting duration. The client gauge may briefly show a one-tick correction. Unlike the former infinite implementation, **10x is not infinite**.
 
-## Build
+The mod keeps separate baseline and remainder state for each player entity and each attribute. It resets state on reconnect, a changed maximum or slider, or whenever natural attribute restoration exceeds consumption. Both sliders run independently of the health/mana regeneration options. Neither changes global diving/body-heat settings.
 
-Requires `git`, the **.NET 10 SDK**, and internet access for the SDK and NuGet dependencies.
+## Upgrading the configuration
 
-From the repository root:
+`kiln/config/survival-qol.json` is hot-reloadable through Kiln's config UI. The previous **Infinite Underwater Breath**, **Infinite Frost Protection**, **Double Underwater Breath** and **Double Frost Resistance** boolean settings are all removed from the mod's config schema and should not appear as toggles in Kiln's config screen.
+
+**Kiln deliberately keeps unknown keys in old JSONC config files.** Consequently, when upgrading from v0.1.x or the earlier PR #22 test build, those old values might still be present as **inert unknown keys** in the on-disk JSON file and trigger an "unknown key" warning, even though they no longer appear in the UI or affect gameplay. You can remove those four old properties manually from `survival-qol.json` while preserving any other settings; Kiln will retain/generate the two new sliders. The mod does not rewrite unrelated config content itself. Back up the existing file before editing or resetting it.
+
+The old provisional 2x game-wide `playerDivingTimeFactor` and `playerBodyHeatFactor` overrides have been removed. **Only equipment durability** changes a global world setting; the mod restores its previous value on disabling/unloading when that value is still owned by this mod. Neither oxygen nor frost requires world-setting restoration: setting a slider back to 1x stops attribute writes immediately.
+
+## Build from source
+
+Requires git, .NET 10 SDK and internet access. From the repository root:
 
 ```bash
 python3 -m unittest discover -s tests/survival-qol -p 'test_*.py' -v
+dotnet run --project tests/survival-qol/DepletionMathTests/DepletionMathTests.csproj -c Release
 bash scripts/build.sh
 ```
 
-The build script pins Survival QoL to Kiln commit `346a3ae5de436db1ba64bbbf0a27f4b8d0ed5be5` (includes dev.21) and locally packages SDK `0.2.0-dev.local.20261110.62101`. The project version is **0.2.0**. The ordinary **Actions → Package Survival QoL** workflow also runs the source-contract tests and builds this pinned SDK.
+The normal build pins the Kiln SDK source to commit `346a3ae5de436db1ba64bbbf0a27f4b8d0ed5be5` (dev.21) and locally packages SDK `0.2.0-dev.local.20261110.62101`. The standard [Package Survival QoL workflow](../.github/workflows/build.yml) runs those checks and publishes a ready-to-install `survival-qol-0.2.0.zip` CI artifact.
 
-The [Follow latest Kiln development release](../.github/workflows/kiln-latest.yml) compatibility workflow independently compiles the mod against the latest **official published, checksum-verified** Kiln dev SDK and outputs `survival-qol-0.2.0.zip` with release provenance. Its builds are compatibility evidence, **not** gameplay acceptance. Both workflows build the mod; only the actual game can verify the oxygen and frost UI behaviour.
+The [Follow latest Kiln development release workflow](../.github/workflows/kiln-latest.yml) also runs the arithmetic tests and builds against the current officially published, checksum-verified Kiln dev SDK. Compatibility compilation is **not** game acceptance.
 
-Do not publish a stable `v0.2.0` tag before issue #2 is accepted. After validation, a matching `v0.2.0` tag will trigger the normal release workflow.
+Do not publish a stable `v0.2.0` tag until the new slider behaviour has passed the manual checklist.
 
-## Install and validate
+## Install and validation
 
-1. Update the Kiln runtime on the host/server to **0.2.0-dev.20 or newer** (dev.21 recommended); an older runtime does not implement the writable attributes.
-2. Download the `survival-qol-0.2.0.zip` build artifact from a successful CI run. Extract the contained `survival-qol/` directory into `kiln/mods/` on the host.
-3. Launch Enshrouded and check `kiln/logs/kiln.log` for the mod load message and absence of `Kiln.Attributes unavailable` warnings.
-4. Back up your world, then perform the following acceptance tests.
+1. Use **Kiln 0.2.0-dev.20 or newer** on the host/server (dev.21 recommended). The writable oxygen and body-heat attributes did not exist in older SDK runtimes.
+2. Download `survival-qol-0.2.0.zip` from a successful workflow run for **this updated PR revision**. Extract its `survival-qol/` directory to `kiln/mods/` on the host.
+3. Open the Kiln Configs screen and confirm only the **two new multiplier sliders** appear (not the old four toggles).
+4. In a backed-up test world, measure oxygen depletion and frost/body-heat depletion at **1x**, **2x**, **5x** and **10x**, ideally comparing the time required to lose a fixed quantity of the attribute at the same location/equipment.
+5. At **1x**, confirm both resources deplete at vanilla rates and no artificial refill occurs. At **10x**, confirm gradual depletion remains (not infinite) and lasts roughly ten times as long.
+6. With both health and mana regeneration disabled, confirm both multipliers still work.
+7. Change sliders live and reconnect; verify no stale accumulation, no unexpected instantaneous refill, and both gauge values remain consistent.
+8. Check stamina, mana, health regeneration, fall protection and equipment durability for regressions.
 
-- Dive longer than the normal and 2× limits; oxygen must stay full and the player must not drown. Turn off `InfiniteUnderwaterBreath`, verify normal depletion resumes, then enable it again.
-- Enter a freezing biome and remain longer than normal frost resistance allows; body heat must stay full. Disable `InfiniteFrostProtection`, verify frost depletes again, then re-enable it.
-- Turn **both** fast-regeneration options off while oxygen/frost remain enabled; both protections must continue working.
-- Check the old compatibility gates separately: setting `DoubleUnderwaterBreath=false` or `DoubleFrostResistance=false` must disable that corresponding protection, without changing a global world setting.
-- Check existing stamina, mana, regeneration, fall protection and equipment-durability behaviour for regressions.
-- Test disconnect/reconnect and hosted-world restarts, and check that disabling/unloading the mod stops both refills while restoring only world settings the mod owns.
-
-A successful build or lab SDK test does **not** establish real-client functionality. In particular, watch for a one-tick UI flicker, unexpected drowning/freezing damage, and mismatched client/server gauges, and report the Kiln version and `kiln.log` if observed.
+The earlier **infinite refill** tests are accepted; they do not prove the new **duration multipliers**. Report the selected multiplier, normal and modified times, Kiln version, and `kiln/logs/kiln.log` if anything behaves unexpectedly.
