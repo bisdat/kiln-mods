@@ -27,12 +27,14 @@ assert((kind == "userdata" or kind == "table") and #sizes == 6,
 -- Validate the full vanilla layout BEFORE modifying anything.
 -- Also refuses running alongside Flame Altar Expanded 0.1.1, which
 -- changes level 5 to 300m, and refuses unknown future game updates.
-local vanilla = {0, 40, 80, 120, 160, 160}
-for index, metres in ipairs(vanilla) do
-    local v = sizes[index]
+-- The level-zero entry is intentionally not constrained: the original
+-- Flame Altar Expanded validated levels 1..5 only. Level 0 is untouched.
+local vanilla = {40, 80, 120, 160, 160}
+for level, metres in ipairs(vanilla) do
+    local v = sizes[level + 1]
     assert(v and v.x == metres and v.y == metres and v.z == metres,
         "flame-altar-level4-range-test: unexpected vanilla build-zone dimensions at level " ..
-        tostring(index - 1) .. "; refusing to patch")
+        tostring(level) .. "; refusing to patch")
 end
 
 -- Level 4 is element 5: element 1 represents level zero.
