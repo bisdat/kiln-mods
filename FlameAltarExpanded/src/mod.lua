@@ -1,13 +1,19 @@
 -- SPDX-License-Identifier: MIT
--- Flame Altar Expanded 0.1.2: pregame data-only range experiment for Kiln EML.
--- Existing altar level 4 gets a 300m cube instead of 160m.
+-- Flame Altar Expanded 0.1.3: pregame data-only range experiment for Kiln EML.
+-- Existing altar level 4 gets a diagnostic 240m cube instead of 160m.
 -- Level 5 is NOT added; recipe registry and upgrade costs are NOT touched.
 -- Game/save persistence requires a separate controlled in-game test.
 
 assert(loader and loader.features and loader.features.patch,
     "flame-altar-expanded: requires Kiln kiln-eml with EML patch capability")
 
-local LEVEL4_SIZE = 300
+local LEVEL4_SIZE = 240
+
+-- Diagnostic only: 300m displayed as 44m in-game (300 modulo 256).
+-- The balance resource itself is float3; keep this test below 256 until
+-- the downstream conversion/authority path is characterized.
+assert(LEVEL4_SIZE > 160 and LEVEL4_SIZE < 256,
+    "flame-altar-expanded: diagnostic target must be 161..255 metres")
 
 local resources = game.assets.get_resources_by_type("keen::BalancingTable")
 assert(resources and #resources == 1,
@@ -41,6 +47,6 @@ sizes[5].x, sizes[5].y, sizes[5].z =
     LEVEL4_SIZE, LEVEL4_SIZE, LEVEL4_SIZE
 resource.data = balance
 
-print("flame-altar-expanded 0.1.2: level-4 build-zone 160x160x160 -> " ..
+print("flame-altar-expanded 0.1.3: level-4 build-zone 160x160x160 -> " ..
       tostring(LEVEL4_SIZE) .. "x" .. tostring(LEVEL4_SIZE) .. "x" ..
       tostring(LEVEL4_SIZE) .. " m; recipes and level 5 unchanged")
