@@ -56,8 +56,8 @@ jobs:
       - name: Upload installable Kiln package
         uses: actions/upload-artifact@v4
         with:
-          name: survival-qol-package
-          path: bin/Release/survival-qol-*.zip
+          name: survival-qol-v0.2.1-sliders
+          path: bin/Release/survival-qol-0.2.1.zip
           if-no-files-found: error
           retention-days: 90
 
@@ -72,12 +72,12 @@ jobs:
       - name: Download packaged mod
         uses: actions/download-artifact@v4
         with:
-          name: survival-qol-package
+          name: survival-qol-v0.2.1-sliders
           path: dist
 
       - name: Attach installable ZIP to versioned GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: dist/survival-qol-*.zip
+          files: dist/survival-qol-0.2.1.zip
           fail_on_unmatched_files: true
           generate_release_notes: true
