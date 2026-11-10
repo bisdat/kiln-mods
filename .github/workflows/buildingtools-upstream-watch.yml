@@ -1,0 +1,129 @@
+name: Check Building Tools upstream updates
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'BuildingToolsKiln/**'
+      - '.github/workflows/buildingtools-upstream-watch.yml'
+  schedule:
+    - cron: '17 7 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  check:
+    if: github.repository == 'bisdat/kiln-mods'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Find the newest official stable upstream release
+        id: latest
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          TAG=$(gh api repos/AleksanderWojtal-CC/Enshrouded-BuildingTools/releases/latest --jq .tag_name)
+          [[ "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || exit 1
+          VERSION=$(echo "$TAG" | cut -c2-)
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Official upstream: $TAG"
+      - name: Download original release and validate the published checksum
+        id: checksum
+        env:
+          VERSION: ${{ steps.latest.outputs.version }}
+        run: |
+          set -euo pipefail
+          BASE="https://github.com/AleksanderWojtal-CC/Enshrouded-BuildingTools/releases/download/v$VERSION"
+          curl -fsSL --retry 3 "$BASE/EnshroudedBuildingTools-$VERSION.zip" -o "/tmp/EnshroudedBuildingTools-$VERSION.zip"
+          curl -fsSL --retry 3 "$BASE/EnshroudedBuildingTools-$VERSION.zip.sha256" -o "/tmp/EnshroudedBuildingTools-$VERSION.zip.sha256"
+          python3 - <<'PY' >> "$GITHUB_OUTPUT"
+          import hashlib,os,pathlib,re
+          version=os.environ["VERSION"]
+          root=pathlib.Path("/tmp")
+          text=(root/f"EnshroudedBuildingTools-{version}.zip.sha256").read_text().strip()
+          match=re.fullmatch(r"([0-9a-fA-F]{64})(?:\s+\*?[^\r\n]+)?",text)
+          assert match, "Invalid official upstream checksum"
+          actual=hashlib.sha256((root/f"EnshroudedBuildingTools-{version}.zip").read_bytes()).hexdigest()
+          assert actual==match.group(1).lower(), "Upstream checksum mismatch"
+          print("sha256="+actual)
+          PY
+      - name: Prepare draft profile update, never transfer gameplay acceptance
+        id: propose
+        env:
+          VERSION: ${{ steps.latest.outputs.version }}
+          SHA256: ${{ steps.checksum.outputs.sha256 }}
+        run: |
+          set -euo pipefail
+          python3 BuildingToolsKiln/propose_update.py --upstream-version "$VERSION" --sha256 "$SHA256"
+          if git diff --quiet -- BuildingToolsKiln/release.json; then
+            echo "update=false" >> "$GITHUB_OUTPUT"
+            echo "CURRENT: no upstream change"
+          else
+            echo "update=true" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Test and package the new unapproved upstream candidate
+        if: steps.propose.outputs.update == 'true'
+        env:
+          VERSION: ${{ steps.latest.outputs.version }}
+        run: |
+          set -euo pipefail
+          python3 -m unittest discover -s BuildingToolsKiln/tests -p 'test_*.py' -v
+          python3 BuildingToolsKiln/package.py \
+            "/tmp/EnshroudedBuildingTools-$VERSION.zip" \
+            --checksum "/tmp/EnshroudedBuildingTools-$VERSION.zip.sha256" \
+            --output /tmp/building-tools-kiln-candidate.zip
+          python3 - <<'PY'
+          import json
+          p=json.load(open("BuildingToolsKiln/release.json"))
+          assert p["gameplay_verified_upstream_version"]!=p["upstream_version"]
+          print("PASS candidate built; release remains BLOCKED pending in-game test")
+          PY
+      - name: Create a draft PR; fall back to an issue if GitHub disallows PR creation
+        if: steps.propose.outputs.update == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ steps.latest.outputs.version }}
+          SHA256: ${{ steps.checksum.outputs.sha256 }}
+        run: |
+          set -euo pipefail
+          BRANCH="upstream/building-tools-v$VERSION"
+          ADAPTER=$(python3 -c 'import json; print(json.load(open("BuildingToolsKiln/release.json"))["adapter_version"])')
+          if ! git ls-remote --exit-code --heads origin "refs/heads/$BRANCH" >/dev/null 2>&1; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git switch -c "$BRANCH"
+            git add BuildingToolsKiln/release.json
+            git commit -m "Propose official Building Tools $VERSION for Kiln adapter $ADAPTER"
+            git push --set-upstream origin "$BRANCH"
+          fi
+          if [[ "$(gh pr list --head "$BRANCH" --state open --json number --jq 'length')" != 0 ]]; then
+            echo "Existing review PR already open"
+            exit 0
+          fi
+          cat > /tmp/buildingtools-upstream-review.md <<EOF
+          Official Building Tools upstream v$VERSION, SHA256 $SHA256.
+          Proposed Kiln wrapper adapter $ADAPTER.
+
+          DRAFT: not installed, tagged, released or gameplay-verified.
+          This is a binary wrapper update, NOT a merge of C++ source code.
+
+          Check the upstream changelog. Test the candidate package in-game
+          for the Magic Chest menu, cross-base crafting, actual ingredient
+          deductions and save/reload on a disposable world.
+          After acceptance, set gameplay_verified_upstream_version to
+          $VERSION in BuildingToolsKiln/release.json. Also verify the
+          tested_client_sha256 for a newer game executable.
+          Mark ready, review and merge only then.
+          EOF
+          if ! gh pr create --draft --base main --head "$BRANCH" \
+                 --title "Review Building Tools upstream v$VERSION for Kiln adapter $ADAPTER" \
+                 --body-file /tmp/buildingtools-upstream-review.md; then
+            gh issue create \
+              --title "Review upstream Building Tools v$VERSION for Kiln" \
+              --body "Official release SHA256: $SHA256. See branch $BRANCH. Create and review PR; do not merge until in-game test and gameplay verification gate are updated."
+          fi

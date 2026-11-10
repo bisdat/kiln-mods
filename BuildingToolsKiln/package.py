@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """Repackage an exact SHA256-pinned upstream Building Tools release as a
 supported Kiln native drop-in, without editing the DLL or any installed game
-files. Version pins are in tools/buildingtools-release.json.
+files. Version pins are in BuildingToolsKiln/release.json.
 
 Usage:
-  python3 tools/package-buildingtools-for-kiln.py UPSTREAM.zip \
+  python3 BuildingToolsKiln/package.py UPSTREAM.zip \
     --checksum UPSTREAM.zip.sha256 \
     --output dist/building-tools-kiln-1.0.0.zip
 
@@ -211,7 +211,7 @@ if __name__ == "__main__":
     parser.add_argument("--checksum", required=True, type=Path)
     parser.add_argument("--output", required=True, type=Path)
     parser.add_argument("--profile", type=Path,
-                        default=Path(__file__).with_name("buildingtools-release.json"))
+                        default=Path(__file__).with_name("release.json"))
     args = parser.parse_args()
     try:
         info = pack(args.archive, args.checksum, args.output,

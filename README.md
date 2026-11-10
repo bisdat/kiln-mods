@@ -27,7 +27,7 @@ The original [`endless-chests.defaults.ini`](EndlessChests/defaults/endless-ches
 
 **Kiln adapter v1.0.0 · upstream Building Tools v0.31.2**
 
-[Installation and settings](docs/BUILDINGTOOLS-KILN-ADAPTER.md) |
+[Building Tools for Kiln source and documentation](BuildingToolsKiln/README.md) |
 [Packaging workflow](.github/workflows/buildingtools-kiln-native-adapter.yml) |
 [Releases](https://github.com/bisdat/kiln-mods/releases)
 
