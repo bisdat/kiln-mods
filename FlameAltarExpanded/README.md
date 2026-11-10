@@ -1,45 +1,35 @@
-# Flame Altar Expanded
+# Flame Altar Expanded — 0.1.2 (level-4 range experiment)
 
-> **EXPERIMENTAL — LEVEL-5 UPGRADE NOT WORKING (10 November 2026).**
-> On official Kiln `v0.2.0-dev.21`, the user confirms Enshrouded starts with Flame Altar Expanded 0.1.1 in the profile; the **level-5 upgrade does not appear**. Earlier Kiln builds failed to start, but upstream Kiln PR #5 and dev.21 changed EML startup and fail-soft handling. A successful boot does **not** prove that EML applied this Lua patch: examine `kiln/state/eml.json` and `kiln/logs/eml.log` before changing recipe logic. **No approved working build; use only disposable test saves and do not publish or enable on valuable saves.** See [feature issue #12](https://github.com/bisdat/kiln-mods/issues/12), [startup history #14](https://github.com/bisdat/kiln-mods/issues/14) and [draft PR #13](https://github.com/bisdat/kiln-mods/pull/13).
+> **EXPERIMENTAL / NOT GAMEPLAY-ACCEPTED.** Version **0.1.2** retains the original **`flame-altar-expanded`** EML mod identity and tests a *different approach* from versions 0.1.0–0.1.1. Use only Kiln `v0.2.0-dev.21` or later and a disposable or backed-up world. The previous separately identified `flame-altar-level4-range-test` package caused a startup problem and was withdrawn. Do not enable that retired test package.
 
-**Experimental / not yet validated in-game.** Version 0.1.1 corrects EML userdata-array handling and clones the native upgrade recipe through EML's typed-array insertion; v0.1.0 must not be used. A separate [Kiln EML](https://github.com/frostdev-ops/kiln/blob/main/docs/kiln/eml.md) data-patch mod for *Enshrouded*.
+## What 0.1.2 actually changes
 
-## Intended behaviour
+**At an existing level-4 Flame Altar only:** the BalancingTable building volume changes from **160 × 160 × 160 m** (80 m half-width) to **300 × 300 × 300 m** (150 m half-width). All lower levels remain unchanged. The sixth entry (altar level 5) remains the vanilla 160 m. The maximum altar level is not modified.
 
-At a **level-4 Flame Altar** the normal altar menu should offer one further expansion to **level 5**, consuming **10 Shroud Nexus**, and raising that altar's building volume from **160 × 160 × 160 m** to **300 × 300 × 300 m**. Earlier tiers stay unchanged. This does not increase the world Flame strength or the number of altars.
+**No new upgrade button, recipe, ingredient cost, or fifth tier.** Upgrade Altar may remain disabled on a level-4 altar. This release is designed to find out whether game UI, construction permissions and save/persistence respond to altering the *existing level-4 size*, before deciding whether to resume the level-5 recipe investigation in [issue #12](https://github.com/bisdat/kiln-mods/issues/12).
 
-The vanilla game's balancing table currently already allows altar level 5, but its fifth size is still 160 m and the native upgrade recipe for level 5 is absent. The mod patches **both** the balancing data and the output-less altar recipe at game startup. It clones the vanilla level-4 upgrade, preserving the original ingredient item and engine recipe fields, and assigns a permanently fixed GUID to the new level-5 recipe.
+The Lua code edits **only** `keen::BalancingTable.buildzoneSizesPerAltarLevel[5]` (Lua's 1-based indexing, level 4), after verifying exactly one balancing table, six entries, vanilla tier values 1–5 and `altarLevelMax=5`. It writes no `RecipeRegistryResource`. Unknown layouts and another mod changing these values cause an explicit failure rather than a partial patch.
 
-## Requirements and installation
+## How to test safely
 
-This uses **Kiln's `kiln-eml` pregame plugin**, *not* the older `Kiln.Content` C# mod API. Your Kiln runtime must include `kiln/plugins/kiln-eml.dll`. Kiln's pinned SDK tag `v0.2.0-dev.15` does **not** include this plugin; it is documented in newer upstream Kiln development.
+1. Close Enshrouded and Kiln. **Disable/remove both previous Flame Altar packages** from the active Kiln profile, including the retired `flame-altar-level4-range-test`. Do not run two versions of the mod.
+2. If any EML patch was previously active, launch with **no EML mods enabled**, reach the game main menu, then quit. Kiln should restore the vanilla KFC from its managed backup. Do **not** delete KFC data, its backup, `.dat` files or the EML cache by hand.
+3. Import the **single installable `flame-altar-expanded-0.1.2.zip`** into Kiln Library by dragging it onto the launcher. Confirm its ID/name is **Flame Altar Expanded** and its version is **0.1.2** in the active profile. It must replace the older active version, not coexist.
+4. Launch Enshrouded and reach the main menu. If the **launcher or game fails to start, stop here**, disable the mod and capture `kiln/logs/proxy.log`, `kiln/logs/kiln.log`, `kiln/logs/eml.log`, `kiln/state/boot.json`, `kiln/state/eml.json` and (if applicable) the launcher log before another run. Successful EML patching on an uncached run should log the exact 0.1.2 level-4 message with `patched=1`, `phase=done`, `error=null`. Cached subsequent runs may have `patched=0` and `cached=true`.
+5. Only if startup succeeds, load a **disposable/copied world containing a level-4 altar**. Inspect its building-area text: expected **300 × 300 × 300 m** instead of 160 × 160 × 160 m. The upgrade option need not be enabled.
+6. If the menu shows 300 m, test in that disposable world whether a temporary block can be placed around **100 m horizontally from the altar centre** (outside the vanilla 80 m half-width, within the proposed 150 m), avoiding other altar zones and no-build areas. If it works, optionally test saving, quitting, and reopening with the mod *still enabled* before testing vertical limits.
+7. Report a screenshot of the level-4 altar UI, whether building works outside the vanilla radius, and `kiln/state/eml.json` and `kiln/logs/eml.log`. Distinguish patch success, displayed area, actual build permission, and persistence.
 
-**Previously proposed Kiln installation — SUSPENDED pending confirmed EML patch and upgrade UI diagnosis:**
+## Rollback and save boundaries
 
-1. Open the successful **Package Flame Altar Expanded (experimental)** GitHub Actions run, and download the artifact **`flame-altar-expanded-0.1.1-kiln`**. The downloaded file is already the **single installable ZIP**.
-2. **Drag that ZIP directly onto the Kiln launcher window**, as for your other mods. Do not extract or nest it inside another ZIP.
-3. Confirm **Flame Altar Expanded** appears in Kiln's **Library**, as an **EML** mod, and is **enabled in the active profile**. The launcher normally adds a dropped mod to the active profile unless that setting is disabled.
-4. Completely exit Enshrouded and start it again. Check Kiln **Logs → Engines → EML** or `kiln/state/eml.json` for the mod's successful loading.
+Disable 0.1.2 in Kiln and launch with no EML mods to allow the official Kiln EML backup restore. **Do not re-open a world containing construction/terraforming outside vanilla bounds without the mod.** Restore/discard your test world instead. Do not touch important saves, KFC backup files or the EML cache manually.
 
-The direct ZIP has `mod.json` at its root, and `src/mod.lua` beneath it. Previous CI artifacts used to contain an inner ZIP; **do not drag the old outer GitHub artifact into Kiln**, because the importer does not extract nested ZIP files.
-
-Advanced/manual installation is possible under `<Enshrouded>/kiln/eml/mods/flame-altar-expanded/`, but the **Kiln launcher drag-and-drop installer** is the supported default workflow for this repository. For multiplayer, enable the mod on the authoritative server and all participating clients (same version and compatible runtime).
-
-## Verification before use on a real save
-
-1. **Back up your world** or create a disposable test world; close the game/server before installing.
-2. Start the client and server with the EML plugin and confirm that both loaded the mod successfully; verify the logs show the level-5 size patch and no game-data assertion failures.
-3. At an altar upgraded through vanilla levels 1–4, check that a fifth upgrade **appears at level 4 only**; the expected cost is **10 Shroud Nexus**. Test that exactly 10 are consumed and altar level becomes 5.
-4. Place blocks and terraform just beyond the old **80 m half-width**, up to a **150 m half-width**, and test analogous vertical limits. Check client cursor, server permission, and saved terrain after a full restart.
-5. Check co-op and dedicated servers, including a reconnect. Confirm level-1 to level-4 altars and existing saves behave unchanged.
-
-**Important:** Client startup and two resource patches now pass under Kiln dev.21, but the user's **Riverreach 1** level-4 altar still displays **160 × 160 × 160 m**, with **Upgrade Altar disabled**. See [engine investigation](ENGINE-INVESTIGATION.md) for the documented gap between resource mutation and the native AltarUpgrade UI.  Check EML's recorded mod state and Lua errors first: dev.21 can disable a failing EML mod without preventing game startup. The plugin currently has only structural/mock coverage for successful registration, not a passing real Enshrouded gameplay test. A copied altar upgrade may need additional engine-specific unlock/UI plumbing; do **not** interpret a successful CI run as proof that the fifth upgrade appears or works. Report gameplay results on [issue #12](https://github.com/bisdat/kiln-mods/issues/12).
-
-**Uninstallation / save safety:** Do not remove this mod and then load/save a world containing builds or terraforming outside the vanilla level-4 area; those changes may fall outside the game's persistence boundary and be lost. Restore a world backup if reverting. The script refuses unexpected vanilla dimensions, upgrade ingredients, missing registries, and duplicate recipe IDs instead of guessing.
+For multiplayer, both the authoritative host/server and the clients must have matching patches; this has **not** been tested. Changes in KFC values do not establish how the game actually persists expanded building volumes.
 
 ## Development
 
-Source: `src/mod.lua`; manifest: `mod.json`. Run `lua5.4 tests/test_patch.lua` and `luac5.4 -p src/mod.lua` from this directory. The repository's `Package Flame Altar Expanded` GitHub Actions workflow runs mock tests and validates a single drag-and-drop ZIP layout, but **artifact publishing is disabled while the level-5 upgrade is missing**. No stable release is authorized.
+- Source: `src/mod.lua`; manifest: `mod.json`; offline userdata-backed Lua 5.4 regressions: `tests/test_patch.lua`.
+- Draft [PR #13](https://github.com/bisdat/kiln-mods/pull/13) keeps this experiment separate from stable releases. Offline tests and CI packaging do not establish in-game acceptance.
+- [Previous level-5 engine investigation](ENGINE-INVESTIGATION.md) is retained as research, not part of the 0.1.2 implementation.
 
-License: MIT (original patch code). Kiln's bundled EML engine is separately GPL-licensed, maintained upstream and not redistributed in this mod.
+MIT-licensed patch code; Kiln's bundled GPL-licensed EML runtime is maintained upstream and is not redistributed.
