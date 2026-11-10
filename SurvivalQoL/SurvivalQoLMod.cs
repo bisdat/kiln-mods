@@ -13,8 +13,7 @@ public sealed class SurvivalQoLMod : Mod
     private RuleSet? _resources;
     private readonly Dictionary<uint, Recovery> _recovery = new();
     private readonly WorldSettingOverride _durability = new("enableDurability", false);
-    private readonly WorldSettingOverride _diving = new("playerDivingTimeFactor", 2.0);
-    private readonly WorldSettingOverride _cold = new("playerBodyHeatFactor", 2.0);
+    private bool _attributesUnavailableWarned;
 
     private sealed class Recovery
     {
@@ -35,7 +34,7 @@ public sealed class SurvivalQoLMod : Mod
         else
             Log.Warn("Kiln.Rules unavailable: infinite stamina and mana cannot be applied.");
 
-        Log.Info("Survival QoL loaded. Oxygen and frost settings are only 2x extensions, not infinite.");
+        Log.Info("Survival QoL loaded. Infinite oxygen and frost protection use Kiln.Attributes (dev.20+).");
     }
 
     private void OnConfigChanged(ConfigChangedEvent _)
@@ -76,6 +75,29 @@ public sealed class SurvivalQoLMod : Mod
 
         if (!Players.Available) return;
         var options = _config.Value;
+
+        // Attribute refills MUST run independently of health/mana regeneration.
+        // Legacy 2x flags remain gates for users who disabled either in v0.1.x.
+        bool oxygen = options.InfiniteUnderwaterBreath && options.DoubleUnderwaterBreath;
+        bool heat = options.InfiniteFrostProtection && options.DoubleFrostResistance;
+        if (oxygen || heat)
+        {
+            if (Kiln.Attributes.Available)
+            {
+                _attributesUnavailableWarned = false;
+                foreach (var player in Players.All)
+                {
+                    if (oxygen) RefillAttribute(player.Entity, GameAttribute.Oxygen);
+                    if (heat) RefillAttribute(player.Entity, GameAttribute.BodyHeat);
+                }
+            }
+            else if (!_attributesUnavailableWarned)
+            {
+                Log.Warn("Kiln.Attributes unavailable: infinite oxygen and frost protection require Kiln dev.20 or newer.");
+                _attributesUnavailableWarned = true;
+            }
+        }
+
         if (!options.FastHealthRegen && !options.FastManaRegen) return;
 
         // WallDelta works on both dedicated and hosted worlds; cap long pauses to prevent bursts.
@@ -139,6 +161,16 @@ public sealed class SurvivalQoLMod : Mod
             if (!online.Contains(entity)) _recovery.Remove(entity);
     }
 
+    // Called only from Tick.Pre, the server tick thread required by Kiln.Attributes.
+    // The game may change max values with level, gear or buffs. Never hard-code them,
+    // and never change the player's computed maximum or any world-wide game setting.
+    private static void RefillAttribute(EntityId entity, GameAttribute attribute)
+    {
+        if (Kiln.Attributes.Get(entity, attribute) is { Max: int max } reading
+            && max > 0 && reading.Current != max)
+            Kiln.Attributes.TrySet(entity, attribute, max, out _);
+    }
+
     [Subscribe]
     private void OnFall(EntityFallEvent e)
     {
@@ -150,8 +182,6 @@ public sealed class SurvivalQoLMod : Mod
         if (!Settings.Ready) return;
         var options = _config.Value;
         _durability.Sync(options.InfiniteWeaponDurability, Log.Warn);
-        _diving.Sync(options.DoubleUnderwaterBreath, Log.Warn);
-        _cold.Sync(options.DoubleFrostResistance, Log.Warn);
     }
 
     public override void OnUnload()
@@ -159,8 +189,6 @@ public sealed class SurvivalQoLMod : Mod
         _resources?.Dispose();
         _resources = null;
         _durability.Restore(Log.Warn);
-        _diving.Restore(Log.Warn);
-        _cold.Restore(Log.Warn);
         _recovery.Clear();
         Log.Info("Survival QoL unloaded.");
     }
