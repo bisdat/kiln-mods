@@ -12,6 +12,7 @@ on:
       - 'scripts/build-compat.py'
       - 'tests/kiln-release/**'
       - 'SurvivalQoL/**'
+      - 'tests/survival-qol/**'
       - 'EndlessChests/**'
   pull_request:
     paths:
@@ -20,6 +21,7 @@ on:
       - 'scripts/build-compat.sh'
       - 'scripts/build-compat.py'
       - 'tests/kiln-release/**'
+      - 'tests/survival-qol/**'
   schedule:
     - cron: '17,47 * * * *'
   workflow_dispatch:
@@ -126,7 +128,7 @@ jobs:
               python3 scripts/test-chest-case.py
               ;;
             SurvivalQoL)
-              echo 'Survival QoL: source validation through Kiln SDK build'
+              python3 -m unittest discover -s tests/survival-qol -p 'test_*.py' -v
               ;;
           esac
 
