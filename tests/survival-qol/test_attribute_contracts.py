@@ -4,7 +4,6 @@ The CI SDK build checks API compatibility. These tests protect the wiring and
 configuration semantics; actual oxygen/frost behaviour needs in-game testing.
 """
 from pathlib import Path
-import re
 import unittest
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -46,7 +45,7 @@ class SurvivalAttributeContracts(unittest.TestCase):
 
     def test_refill_uses_current_calculated_max_and_nonthrowing_write(self):
         self.assertIn("Kiln.Attributes.Available", MOD)
-        self.assertRegex(MOD, r"Kiln\\.Attributes\\.Get\\(entity, attribute\\)")
+        self.assertIn("Kiln.Attributes.Get(entity, attribute)", MOD)
         self.assertIn("Max: int max", MOD)
         self.assertIn("reading.Current != max", MOD)
         self.assertIn("Kiln.Attributes.TrySet(entity, attribute, max, out _)", MOD)
@@ -55,7 +54,7 @@ class SurvivalAttributeContracts(unittest.TestCase):
     def test_only_durability_remains_a_world_setting(self):
         self.assertIn('WorldSettingOverride _durability = new("enableDurability", false)', MOD)
         self.assertIn("_durability.Restore(Log.Warn)", MOD)
-        self.assertEqual(MOD.count("new WorldSettingOverride("), 0)  # named field uses target-typed new
+        self.assertEqual(MOD.count("private readonly WorldSettingOverride"), 1)
 
     def test_pinned_sdk_includes_attribute_api(self):
         self.assertIn('Kiln.Sdk/0.2.0-dev.local.20261110.62101', PROJECT)
