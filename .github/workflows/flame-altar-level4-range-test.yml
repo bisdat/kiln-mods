@@ -74,6 +74,8 @@ jobs:
           PY
 
       - name: Upload TEST-ONLY direct-install EML artifact
+        # BLOCKED: user reports Kiln fails to load with this test ZIP; do not distribute.
+        if: ${{ false }}
         uses: actions/upload-artifact@v4
         with:
           name: flame-altar-level4-range-test-0.1.0
