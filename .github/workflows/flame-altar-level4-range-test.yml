@@ -1,0 +1,82 @@
+name: Flame Altar Level 4 Range — disposable world experiment
+
+on:
+  push:
+    branches: [experiment/flame-altar-level4-range]
+    paths:
+      - 'FlameAltarLevel4RangeTest/**'
+      - '.github/workflows/flame-altar-level4-range-test.yml'
+  pull_request:
+    paths:
+      - 'FlameAltarLevel4RangeTest/**'
+      - '.github/workflows/flame-altar-level4-range-test.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test-and-package:
+    name: Validate and package level-4-only EML test
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
+
+      - name: Validate Lua syntax and user-data contract tests
+        run: |
+          luac5.4 -p FlameAltarLevel4RangeTest/src/mod.lua
+          luac5.4 -p FlameAltarLevel4RangeTest/tests/test_patch.lua
+          lua5.4 FlameAltarLevel4RangeTest/tests/test_patch.lua
+
+      - name: Verify the isolated EML manifest and no level-5 recipe implementation
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          root = Path('FlameAltarLevel4RangeTest')
+          m = json.loads((root / 'mod.json').read_text(encoding='utf-8'))
+          assert m['id'] == 'flame-altar-level4-range-test'
+          assert m['version'] == '0.1.0'
+          assert m['capabilities'] == ['patch']
+          assert not m['dependencies']
+          src = (root / 'src/mod.lua').read_text(encoding='utf-8')
+          assert 'sizes[5].x, sizes[5].y, sizes[5].z = range, range, range' in src
+          assert 'resource.data = balance' in src
+          assert 'keen::RecipeRegistryResource' not in src
+          assert 'table.insert' not in src
+          assert 'altarLevelMax == 5' in src
+          print('Guarded level-4-only BalancingTable patch and manifest verified')
+          PY
+
+      - name: Stage directly installable EML mod root and verify ZIP layout
+        run: |
+          mkdir -p dist/flame-altar-level4-range-test/src
+          cp FlameAltarLevel4RangeTest/mod.json dist/flame-altar-level4-range-test/mod.json
+          cp FlameAltarLevel4RangeTest/src/mod.lua dist/flame-altar-level4-range-test/src/mod.lua
+          cp FlameAltarLevel4RangeTest/README.md dist/flame-altar-level4-range-test/README.md
+          python3 - <<'PY'
+          from pathlib import Path
+          from zipfile import ZipFile, ZIP_DEFLATED
+          folder = Path('dist/flame-altar-level4-range-test')
+          files = sorted(p.relative_to(folder).as_posix() for p in folder.rglob('*') if p.is_file())
+          assert files == ['README.md', 'mod.json', 'src/mod.lua'], files
+          # GitHub artifact preserves these three entries at the root.
+          with ZipFile('dist/layout-check.zip', 'w', ZIP_DEFLATED) as z:
+              for file in files:
+                  z.write(folder / file, file)
+          with ZipFile('dist/layout-check.zip') as z:
+              assert sorted(z.namelist()) == files
+              assert z.read('src/mod.lua').startswith(b'-- SPDX-License-Identifier: MIT')
+          print('Direct Kiln drag-and-drop archive layout PASS (no nested ZIP)')
+          PY
+
+      - name: Upload TEST-ONLY direct-install EML artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: flame-altar-level4-range-test-0.1.0
+          path: dist/flame-altar-level4-range-test/
+          if-no-files-found: error
+          retention-days: 30
