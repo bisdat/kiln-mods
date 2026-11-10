@@ -31,6 +31,8 @@ local function run(opts)
     if opts.bad_tier ~= nil then
         values[opts.bad_tier + 1].y = 999
     end
+    -- Capture the actual pre-test state, including deliberately invalid values.
+    local before_level4 = {x=values[5].x, y=values[5].y, z=values[5].z}
     local balance = {
         altarLevelMax = opts.bad_max and 4 or 5,
         buildzoneSizesPerAltarLevel = typed_array(values),
@@ -65,7 +67,8 @@ local function run(opts)
     local ok, err = pcall(chunk)
     return {
         ok = ok, err = tostring(err),
-        values = values, writes = writes, registry_reads = registry_reads,
+        values = values, before_level4 = before_level4,
+        writes = writes, registry_reads = registry_reads,
     }
 end
 
@@ -86,7 +89,8 @@ local function rejected(label, options, expected)
         assert(not result.ok, "expected fail-closed")
         assert(result.err:find(expected, 1, true), result.err)
         assert(result.writes == 0, "resource written on invalid data")
-        assert(result.values[5].x == 160 and result.values[5].y == 160 and result.values[5].z == 160,
+        local now, before = result.values[5], result.before_level4
+        assert(now.x == before.x and now.y == before.y and now.z == before.z,
             "invalid patch changed level 4")
     end)
 end
