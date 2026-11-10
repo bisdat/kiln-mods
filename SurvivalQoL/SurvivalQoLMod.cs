@@ -21,6 +21,27 @@ public sealed class SurvivalQoLMod : Mod
         public ulong JoinedStep;
         public double HealthRemainder;
         public double ManaRemainder;
+        public readonly ResourceScale Oxygen = new();
+        public readonly ResourceScale BodyHeat = new();
+    }
+
+    // Baselines are per player identity, per attribute and per selected slider
+    // value. Reconnection, a changed maximum or a changed multiplier resets
+    // the baseline instead of interpreting the change as natural depletion.
+    private sealed class ResourceScale
+    {
+        public int? PreviousAdjusted;
+        public int? PreviousMax;
+        public int Multiplier;
+        public int Remainder;
+
+        public void Reset()
+        {
+            PreviousAdjusted = null;
+            PreviousMax = null;
+            Multiplier = 0;
+            Remainder = 0;
+        }
     }
 
     public override void OnLoad()
@@ -34,7 +55,7 @@ public sealed class SurvivalQoLMod : Mod
         else
             Log.Warn("Kiln.Rules unavailable: infinite stamina and mana cannot be applied.");
 
-        Log.Info("Survival QoL loaded. Infinite oxygen and frost protection use Kiln.Attributes (dev.20+).");
+        Log.Info("Survival QoL loaded. Oxygen and frost 1x-10x duration modifiers use Kiln.Attributes (dev.20+).");
     }
 
     private void OnConfigChanged(ConfigChangedEvent _)
@@ -73,37 +94,27 @@ public sealed class SurvivalQoLMod : Mod
         // Settings.Ready is false at initial OnLoad and becomes true after a world step.
         ApplySettings();
 
-        if (!Players.Available) return;
-        var options = _config.Value;
-
-        // Attribute refills MUST run independently of health/mana regeneration.
-        // Legacy 2x flags remain gates for users who disabled either in v0.1.x.
-        bool oxygen = options.InfiniteUnderwaterBreath && options.DoubleUnderwaterBreath;
-        bool heat = options.InfiniteFrostProtection && options.DoubleFrostResistance;
-        if (oxygen || heat)
+        if (!Players.Available)
         {
-            if (Kiln.Attributes.Available)
-            {
-                _attributesUnavailableWarned = false;
-                foreach (var player in Players.All)
-                {
-                    if (oxygen) RefillAttribute(player.Entity, GameAttribute.Oxygen);
-                    if (heat) RefillAttribute(player.Entity, GameAttribute.BodyHeat);
-                }
-            }
-            else if (!_attributesUnavailableWarned)
-            {
-                Log.Warn("Kiln.Attributes unavailable: infinite oxygen and frost protection require Kiln dev.20 or newer.");
-                _attributesUnavailableWarned = true;
-            }
+            _recovery.Clear();
+            return;
         }
 
-        if (!options.FastHealthRegen && !options.FastManaRegen) return;
+        var options = _config.Value;
+        bool needsAttributes = options.UnderwaterBreathMultiplier > 1
+            || options.FrostResistanceMultiplier > 1;
+        bool canScale = needsAttributes && Kiln.Attributes.Available;
+        if (canScale)
+            _attributesUnavailableWarned = false;
+        else if (needsAttributes && !_attributesUnavailableWarned)
+        {
+            Log.Warn("Kiln.Attributes unavailable: oxygen and frost multipliers require Kiln dev.20 or newer.");
+            _attributesUnavailableWarned = true;
+        }
 
-        // WallDelta works on both dedicated and hosted worlds; cap long pauses to prevent bursts.
+        // Run on every server Pre tick, separately from health/mana regeneration.
+        // WallDelta is only used for the existing regeneration point budgets.
         double seconds = Math.Clamp(tick.WallDelta.TotalSeconds, 0.0, 0.25);
-        if (seconds <= 0.0) return;
-
         var online = new HashSet<uint>();
         foreach (var player in Players.All)
         {
@@ -117,6 +128,19 @@ public sealed class SurvivalQoLMod : Mod
                 state = new Recovery { SteamId = player.SteamId, JoinedStep = player.JoinedStep };
                 _recovery[entity] = state;
             }
+
+            if (canScale)
+            {
+                ScaleAttribute(player.Entity, GameAttribute.Oxygen, options.UnderwaterBreathMultiplier, state.Oxygen);
+                ScaleAttribute(player.Entity, GameAttribute.BodyHeat, options.FrostResistanceMultiplier, state.BodyHeat);
+            }
+            else
+            {
+                state.Oxygen.Reset();
+                state.BodyHeat.Reset();
+            }
+
+            if (seconds <= 0.0) continue;
 
             if (options.FastHealthRegen && Combat.Available)
             {
@@ -161,14 +185,70 @@ public sealed class SurvivalQoLMod : Mod
             if (!online.Contains(entity)) _recovery.Remove(entity);
     }
 
-    // Called only from Tick.Pre, the server tick thread required by Kiln.Attributes.
-    // The game may change max values with level, gear or buffs. Never hard-code them,
-    // and never change the player's computed maximum or any world-wide game setting.
-    private static void RefillAttribute(EntityId entity, GameAttribute attribute)
+    // Called only on the authoritative Tick.Pre. Measure the loss since the last
+    // corrected sample and refund (multiplier-1)/multiplier of it. Keeping the
+    // integer remainder spreads 1-point spends correctly: at 10x, nine out of
+    // every ten consumed points are eventually returned.
+    //
+    // This scales *net observed depletion*, not the engine's maximum, timer or
+    // world settings. Surface refills, gear changes and config edits reset the
+    // accumulator rather than producing spurious bonus resource points.
+    private static void ScaleAttribute(EntityId entity, GameAttribute attribute,
+        int multiplier, ResourceScale state)
     {
-        if (Kiln.Attributes.Get(entity, attribute) is { Max: int max } reading
-            && max > 0 && reading.Current != max)
-            Kiln.Attributes.TrySet(entity, attribute, max, out _);
+        if (multiplier <= 1)
+        {
+            state.Reset(); // 1x is strictly vanilla: no attribute writes.
+            return;
+        }
+
+        if (Kiln.Attributes.Get(entity, attribute) is not { Max: int max } reading
+            || max <= 0 || reading.Current < 0)
+        {
+            state.Reset();
+            return;
+        }
+
+        int current = reading.Current;
+        if (state.PreviousMax == max && state.Multiplier == multiplier
+            && state.PreviousAdjusted is int previous)
+        {
+            if (current < previous)
+            {
+                int lost = previous - current;
+                var (refund, remainder) = DepletionMath.Refund(lost, multiplier, state.Remainder);
+                if (refund > 0)
+                {
+                    int requested = Math.Min(max - current, refund);
+                    if (requested > 0
+                        && Kiln.Attributes.TrySet(entity, attribute, current + requested, out var updated))
+                    {
+                        current = updated.Current;
+                        // A different result means another clamp/formula intervened:
+                        // discard the credit, never accumulate unearned refunds.
+                        state.Remainder = current - reading.Current == requested ? remainder : 0;
+                    }
+                    else
+                    {
+                        state.Reset();
+                        return;
+                    }
+                }
+                else state.Remainder = remainder;
+            }
+            else if (current > previous)
+            {
+                // E.g. breathing on the surface or entering a warm area.
+                state.Remainder = 0;
+            }
+        }
+        else state.Remainder = 0; // New player, equipment maximum or multiplier.
+
+        if (current >= max)
+            state.Remainder = 0;
+        state.PreviousAdjusted = current;
+        state.PreviousMax = max;
+        state.Multiplier = multiplier;
     }
 
     [Subscribe]
