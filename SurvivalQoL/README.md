@@ -1,71 +1,68 @@
 # Survival QoL (Kiln SDK mod)
 
-A configurable, server-authoritative C# mod for Enshrouded built with **Kiln.Sdk 0.2** and .NET 10. It runs on a dedicated Kiln server or a Kiln-enabled client hosting an offline/co-op world. It does not need the mod on every connecting client.
+A configurable, server-authoritative C# mod for Enshrouded, built with **Kiln.Sdk 0.2** and .NET 10. It runs on a dedicated Kiln server or a Kiln-enabled client hosting a world; clients need not install the server-side mod separately.
+
+**Status: v0.2.0 candidate for in-game acceptance.** The Kiln developer added the supported oxygen/body-heat write API in **0.2.0-dev.20**. The integration in this branch has not yet passed real-player underwater and freezing-biome tests. See [issue #2](https://github.com/bisdat/kiln-mods/issues/2).
 
 ## Features
 
-| Requested effect | Implementation | Status |
+| Effect | Implementation | Status |
 | --- | --- | --- |
-| Infinite Stamina | `Rules.Apply` with `MinStamina = 1` and `UnlimitedGliding` | Implemented; glider-specific protection requires a Kiln client |
-| Infinite Mana | `Rules.Apply` with `MinMana = 1` | Implemented |
-| Infinite Underwater Breath | `playerDivingTimeFactor = 2.0` (maximum supported) | **Only 2× breath, NOT infinite** |
-| Infinite Frost Timer | `playerBodyHeatFactor = 2.0` (maximum supported) | **Only 2× body heat, NOT infinite** |
-| Fast Health Regen | `Combat.Heal` on the tick thread, 25 points/s by default | Implemented |
-| Fast Mana Regen | `Abilities.Attributes.Add` on the tick thread, 35 points/s by default | Implemented |
-| No Fall Damage | Cancel `EntityFallEvent` for players | Implemented |
-| Infinite Weapon Durability | `Settings.Set("enableDurability", false)` | Implemented; **all equipment** durability is disabled |
+| Infinite stamina | `Rules.Apply` with `MinStamina = 1` and `UnlimitedGliding` | Existing implementation; glider protection requires a Kiln client |
+| Infinite mana | `Rules.Apply` with `MinMana = 1` | Existing implementation |
+| Infinite underwater breath | On every server Pre tick, refill `GameAttribute.Oxygen` to the player's computed `Max` using `Kiln.Attributes.TrySet` | **New in v0.2.0; in-game verification pending** |
+| Infinite frost protection | On every server Pre tick, refill `GameAttribute.BodyHeat` to the player's computed `Max` | **New in v0.2.0; in-game verification pending** |
+| Fast health regeneration | `Combat.Heal` on the tick thread; 25 points/s by default | Existing implementation |
+| Fast mana regeneration | `Abilities.Attributes.Add` on the tick thread; 35 points/s by default | Existing implementation |
+| No fall damage | Cancel `EntityFallEvent` for players | Existing implementation |
+| Infinite weapon durability | `Settings.Set("enableDurability", false)` | Existing implementation; applies to **all equipment** |
 
-The SDK currently has **no supported oxygen refill / depletion-cancellation API** and **no supported frost-depletion hook**. The two 2× options are explicit, temporary approximations rather than fake 'infinite' implementations. In particular, **Frost is not the Shroud timer**: `FreezeShroudTimer` does not grant frost protection.
+**Frost is not Shroud:** `FreezeShroudTimer` protects the Shroud timer, not the separate body-heat/frost resource. The new implementation uses `BodyHeat`, not `FreezeShroudTimer`.
 
-The durability, diving and body-heat options change **global world settings**, so they affect all players. For each setting, the mod records the prior value, changes it only if necessary, and restores it on disabling/unloading only if no one has changed it in the meantime. It does **not** call `Settings.Save()`.
+The new refills work independently of the health/mana regeneration toggles. They use the game's own current maximums, which may change with player level, equipment or buffs. They affect joined players on the authoritative server world only; they do not alter creatures, saved player maxima, or world-wide diving/body-heat settings. If the attribute service is unavailable, the mod logs a warning once and leaves normal depletion untouched.
 
-## Build from source
+## Configuration and upgrade from v0.1.x
 
-Requirements: `git`, the **.NET 10 SDK**, internet access (GitHub / NuGet), Linux or WSL.
+The generated `kiln/config/survival-qol.json` is hot-reloadable. Each option is individually configurable:
+
+- `InfiniteUnderwaterBreath` — new, default `true`.
+- `InfiniteFrostProtection` — new, default `true`.
+- `DoubleUnderwaterBreath` — **deprecated compatibility gate**, default `true`.
+- `DoubleFrostResistance` — **deprecated compatibility gate**, default `true`.
+
+The old options **no longer double** a global game setting. To avoid silently enabling features a player had disabled in v0.1.x, their previous `false` values still act as gates. Oxygen protection is enabled only when *both* `InfiniteUnderwaterBreath` and `DoubleUnderwaterBreath` are `true`; frost protection similarly requires *both* `InfiniteFrostProtection` and `DoubleFrostResistance`. To enable protection after having disabled the legacy 2× feature, enable both relevant switches. Keep the old switches for now; they will be removed only with an explicit configuration migration.
+
+Only the durability option still changes a **global** world setting. The mod remembers the previous durability value and restores it when the option is disabled or the mod unloads, provided nobody else has changed that value. It does not call `Settings.Save()`. Neither oxygen nor body heat requires any world-setting restoration: disabling the option simply stops refilling that attribute, and vanilla depletion resumes.
+
+## Build
+
+Requires `git`, the **.NET 10 SDK**, and internet access for the SDK and NuGet dependencies.
 
 From the repository root:
 
 ```bash
+python3 -m unittest discover -s tests/survival-qol -p 'test_*.py' -v
 bash scripts/build.sh
 ```
 
-This clones upstream Kiln into the ignored `.kiln-upstream/`, checks out commit `9b9adada835c5f0a68b36567f939dc645cc1ef94`, packages its SDK and services into the ignored `.kiln-mdk/nuget/`, builds this project and invokes `KilnPack`. The SDK package version is pinned to `0.2.0-dev.local.20261107.62100`.
+The build script pins Survival QoL to Kiln commit `346a3ae5de436db1ba64bbbf0a27f4b8d0ed5be5` (includes dev.21) and locally packages SDK `0.2.0-dev.local.20261110.62101`. The project version is **0.2.0**. The ordinary **Actions → Package Survival QoL** workflow also runs the source-contract tests and builds this pinned SDK.
 
-Alternatively open **Actions → Package Survival QoL**, choose a successful run and download the **survival-qol-package** artifact. The artifact download contains the installable `survival-qol-<version>.zip` made by KilnPack.
+The [Follow latest Kiln development release](../.github/workflows/kiln-latest.yml) compatibility workflow independently compiles the mod against the latest **official published, checksum-verified** Kiln dev SDK and outputs `survival-qol-0.2.0.zip` with release provenance. Its builds are compatibility evidence, **not** gameplay acceptance. Both workflows build the mod; only the actual game can verify the oxygen and frost UI behaviour.
 
-## CI packaging and releases
+Do not publish a stable `v0.2.0` tag before issue #2 is accepted. After validation, a matching `v0.2.0` tag will trigger the normal release workflow.
 
-The [packaging workflow](../.github/workflows/build.yml) runs on mod or build-script changes to `main`, for pull requests, and on demand via **Actions → Package Survival QoL → Run workflow**. It rebuilds the pinned Kiln SDK, compiles the mod, and retains the installable ZIP as a GitHub Actions artifact for 90 days.
+## Install and validate
 
-To publish a versioned GitHub Release from the current `main` revision, push a tag that matches the `<Version>` in `SurvivalQoL.csproj`:
+1. Update the Kiln runtime on the host/server to **0.2.0-dev.20 or newer** (dev.21 recommended); an older runtime does not implement the writable attributes.
+2. Download the `survival-qol-0.2.0.zip` build artifact from a successful CI run. Extract the contained `survival-qol/` directory into `kiln/mods/` on the host.
+3. Launch Enshrouded and check `kiln/logs/kiln.log` for the mod load message and absence of `Kiln.Attributes unavailable` warnings.
+4. Back up your world, then perform the following acceptance tests.
 
-```bash
-git checkout main
-git pull --ff-only
-git tag v0.1.0
-git push origin v0.1.0
-```
+- Dive longer than the normal and 2× limits; oxygen must stay full and the player must not drown. Turn off `InfiniteUnderwaterBreath`, verify normal depletion resumes, then enable it again.
+- Enter a freezing biome and remain longer than normal frost resistance allows; body heat must stay full. Disable `InfiniteFrostProtection`, verify frost depletes again, then re-enable it.
+- Turn **both** fast-regeneration options off while oxygen/frost remain enabled; both protections must continue working.
+- Check the old compatibility gates separately: setting `DoubleUnderwaterBreath=false` or `DoubleFrostResistance=false` must disable that corresponding protection, without changing a global world setting.
+- Check existing stamina, mana, regeneration, fall protection and equipment-durability behaviour for regressions.
+- Test disconnect/reconnect and hosted-world restarts, and check that disabling/unloading the mod stops both refills while restoring only world settings the mod owns.
 
-A `v*` tag triggers the same package build, checks the tag matches the project version, and attaches `survival-qol-0.1.0.zip` directly to the GitHub Release. For subsequent releases, first update the project version and then tag `v<new-version>`. No tag is needed to download packages from successful Actions runs.
-
-## Install and configure
-
-1. Install/update Kiln from [upstream](https://github.com/frostdev-ops/kiln) on your game/host or dedicated server. A newer Kiln runtime may be needed if it predates the pinned SDK's APIs.
-2. Extract `survival-qol-0.1.0.zip` into the game/server's `kiln/mods/` folder. The archive contains a `survival-qol/` directory with the generated `kiln.mod.json` and compiled DLL.
-3. Launch your game/server with Kiln enabled. Check `kiln/logs/kiln.log` for the mod load message.
-4. Edit `kiln/config/survival-qol.json` to enable/disable individual effects and set regeneration rates. The config is created at first load and changes are hot-reloaded.
-
-Defaults turn on the six supported effects and the two *2× extensions*. Disable either extension if you would rather preserve the game's normal oxygen/body-heat limits.
-
-## Validation checklist
-
-Build success does **not** prove functionality in Enshrouded. Test in a backup or separate world before using an existing save:
-
-- Sprint, dodge and repeatedly cast spells; confirm stamina and mana refill and remain usable. Note that the client HUD may briefly predict a spend before server correction.
-- Take non-lethal damage and observe quick health recovery; spend mana with the infinite-mana toggle off to check its separate regeneration.
-- Fall far enough to normally take damage; confirm no health loss or hard-landing stagger.
-- Use a weapon repeatedly; check that durability is no longer spent (the setting also applies to other equipment).
-- Dive and enter a freezing environment: verify **approximately doubled** limits, not infinity.
-- Edit the configuration live, then unload the mod; verify the world's normal durability/diving/heat settings return.
-
-Informal in-game testing has reported the six fully implemented features working. The actual 2× oxygen and body-heat limits have not been independently measured in the game UI, and dedicated-server and unload/reload behaviour have not received formal validation.
+A successful build or lab SDK test does **not** establish real-client functionality. In particular, watch for a one-tick UI flicker, unexpected drowning/freezing damage, and mismatched client/server gauges, and report the Kiln version and `kiln.log` if observed.
