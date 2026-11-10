@@ -1,0 +1,10 @@
+{
+  "id": "flame-altar-level4-range-test",
+  "name": "Flame Altar Level 4 Range Test",
+  "version": "0.1.0",
+  "description": "EXPERIMENTAL: change only existing level-4 Flame Altar building area from 160m to 300m on each axis; no new recipes or tiers.",
+  "authors": ["bisdat"],
+  "license": "MIT",
+  "dependencies": [],
+  "capabilities": ["patch"]
+}
