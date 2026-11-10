@@ -32,9 +32,11 @@ public sealed class SurvivalQoLConfig
     [Comment("Disable ALL equipment durability loss in the game world, not weapons only. This is a global game setting.")]
     public bool InfiniteWeaponDurability { get; set; } = true;
 
-    [Comment("PROVISIONAL: double maximum diving oxygen via the world setting. NOT infinite underwater breath.")]
-    public bool DoubleUnderwaterBreath { get; set; } = true;
+    [Comment("Underwater oxygen duration multiplier: 1x = normal game, 10x = ten times longer. Integer steps.")]
+    [Range(1, 10)]
+    public int UnderwaterBreathMultiplier { get; set; } = 10;
 
-    [Comment("PROVISIONAL: double maximum body heat via the world setting. NOT an infinite frost timer.")]
-    public bool DoubleFrostResistance { get; set; } = true;
+    [Comment("Body heat/frost duration multiplier: 1x = normal game, 10x = ten times longer. Not the Shroud timer.")]
+    [Range(1, 10)]
+    public int FrostResistanceMultiplier { get; set; } = 10;
 }

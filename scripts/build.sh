@@ -5,15 +5,23 @@ set -euo pipefail
 repo="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 mod="${1:-SurvivalQoL}"
 case "$mod" in
-  SurvivalQoL) mod_id="survival-qol" ;;
-  EndlessChests) mod_id="endless-chests-kiln" ;;
+  SurvivalQoL)
+    mod_id="survival-qol"
+    default_sdk_version="0.2.0-dev.local.20261110.62101"
+    default_kiln_sha="346a3ae5de436db1ba64bbbf0a27f4b8d0ed5be5" # includes dev.21 attribute API
+    ;;
+  EndlessChests)
+    mod_id="endless-chests-kiln"
+    default_sdk_version="0.2.0-dev.local.20261107.62100"
+    default_kiln_sha="9b9adada835c5f0a68b36567f939dc645cc1ef94" # unchanged
+    ;;
   *) echo "Unknown mod: $mod" >&2; exit 2 ;;
 esac
 project="$repo/$mod/$mod.csproj"
 upstream="$repo/.kiln-upstream"
 export KILN_OUT="$repo/.kiln-mdk"
-export KILN_SDK_VERSION="${KILN_SDK_VERSION:-0.2.0-dev.local.20261107.62100}"
-kiln_sha="${KILN_UPSTREAM_SHA:-9b9adada835c5f0a68b36567f939dc645cc1ef94}"
+export KILN_SDK_VERSION="${KILN_SDK_VERSION:-$default_sdk_version}"
+kiln_sha="${KILN_UPSTREAM_SHA:-$default_kiln_sha}"
 
 command -v git >/dev/null || { echo "git is required" >&2; exit 1; }
 command -v dotnet >/dev/null || { echo ".NET SDK 10 is required" >&2; exit 1; }
