@@ -1,18 +1,31 @@
 name: Follow latest Kiln development release
 
-# Scheduled workflows run only from main. While Cross-base Storage is in
-# its draft PR, compile that branch; after merge, compile main instead.
+# Compatibility builds track official published Kiln development releases.
+# CrossBaseStorage was archived: only active, shipped mods are built.
 on:
   push:
     branches: [main]
     paths:
       - '.github/workflows/kiln-latest.yml'
+      - 'scripts/resolve-kiln-release.py'
+      - 'scripts/build-compat.sh'
+      - 'scripts/build-compat.py'
+      - 'tests/kiln-release/**'
+      - 'SurvivalQoL/**'
+      - 'EndlessChests/**'
+  pull_request:
+    paths:
+      - '.github/workflows/kiln-latest.yml'
+      - 'scripts/resolve-kiln-release.py'
+      - 'scripts/build-compat.sh'
+      - 'scripts/build-compat.py'
+      - 'tests/kiln-release/**'
   schedule:
     - cron: '17,47 * * * *'
   workflow_dispatch:
     inputs:
       force:
-        description: Rebuild even if this release was already verified
+        description: Rebuild even if this release and source revision already passed
         type: boolean
         default: false
 
@@ -25,9 +38,9 @@ concurrency:
 
 jobs:
   check:
+    name: Verify official Kiln release and active source
     runs-on: ubuntu-24.04
     outputs:
-      source_ref: ${{ steps.branch.outputs.ref }}
       source_sha: ${{ steps.source.outputs.sha }}
       source_short: ${{ steps.source.outputs.short }}
       release_tag: ${{ steps.release.outputs.tag }}
@@ -36,20 +49,8 @@ jobs:
       cache_hit: ${{ steps.cache.outputs.cache-hit }}
     steps:
       - uses: actions/checkout@v4
-      - name: Select active Cross-base Storage development branch, then main
-        id: branch
-        shell: bash
-        run: |
-          if git ls-remote --exit-code --heads origin feature/cross-base-storage-kiln >/dev/null; then
-            echo 'ref=feature/cross-base-storage-kiln' >> "$GITHUB_OUTPUT"
-          else
-            echo 'ref=main' >> "$GITHUB_OUTPUT"
-          fi
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ steps.branch.outputs.ref }}
-          clean: true
-      - name: Record exact mod source revision
+
+      - name: Record exact active mod source revision
         id: source
         shell: bash
         run: |
@@ -57,30 +58,39 @@ jobs:
           echo "sha=$sha" >> "$GITHUB_OUTPUT"
           echo "short=${sha:0:12}" >> "$GITHUB_OUTPUT"
 
-      - name: Resolve the latest published Kiln dev release
+      - name: Test release selection without contacting GitHub
+        run: python3 -m unittest discover -s tests/kiln-release -p 'test_*.py' -v
+
+      - name: Validate compatibility build entrypoint syntax
+        run: |
+          bash -n scripts/build-compat.sh
+          python3 -m py_compile scripts/build-compat.py
+
+      - name: Resolve newest complete published Kiln dev release
         id: release
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: python3 scripts/resolve-kiln-release.py
-      - name: Check previously verified release and mod-source revision
+
+      - name: Find prior successful build for exact release + mod source
         id: cache
         uses: actions/cache/restore@v4
         with:
           path: .kiln-release-success.txt
           key: kiln-release-verified-${{ steps.release.outputs.version }}-r${{ steps.source.outputs.short }}
           lookup-only: true
-      - name: Rebuild for a new Kiln release OR a changed mod source
+
+      - name: Build on PR, new published release, changed source, or force
         id: gate
-        shell: bash
         env:
           CACHE_HIT: ${{ steps.cache.outputs.cache-hit }}
           FORCE: ${{ inputs.force }}
         run: |
-          if [[ "$FORCE" == "true" || "$CACHE_HIT" != "true" ]]; then
+          if [[ "$GITHUB_EVENT_NAME" == "pull_request" || "$FORCE" == "true" || "$CACHE_HIT" != "true" ]]; then
             echo 'build=true' >> "$GITHUB_OUTPUT"
           else
             echo 'build=false' >> "$GITHUB_OUTPUT"
-            echo 'This exact Kiln release + mod source revision already passed the three builds.'
+            echo 'Exact published release and source revision already built, tested and published.'
           fi
 
   package:
@@ -90,45 +100,53 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        mod: [SurvivalQoL, EndlessChests, CrossBaseStorage]
+        mod: [SurvivalQoL, EndlessChests]
     runs-on: ubuntu-24.04
     env:
       GITHUB_TOKEN: ${{ github.token }}
       KILN_RELEASE_TAG: ${{ needs.check.outputs.release_tag }}
+      KILN_SDK_VERSION: ${{ needs.check.outputs.release_version }}
     steps:
-      - uses: actions/checkout@v4
+      - name: Check out exact verified mod source
+        uses: actions/checkout@v4
         with:
-          ref: ${{ needs.check.outputs.source_ref }}
+          ref: ${{ needs.check.outputs.source_sha }}
+
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.0.x'
-      - name: Check release selection
-        run: python3 -m unittest discover -s tests/kiln-release -p 'test_*.py' -v
-      - name: Validate mod safety and source-data contracts
+
+      - name: Validate mod-specific source contracts
         shell: bash
         run: |
           case "${{ matrix.mod }}" in
-            CrossBaseStorage)
-              python3 scripts/validate-cross-base.py
-              dotnet run --project tests/material-quote/MaterialQuote.Tests.csproj -c Release
-              dotnet run --project tests/inventory-links/InventoryLinks.Tests.csproj -c Release ;;
             EndlessChests)
               python3 scripts/validate-endless-ini.py
               python3 scripts/test-chest-name-hashes.py
-              python3 scripts/test-chest-case.py ;;
-            SurvivalQoL) echo 'Survival QoL: build verification' ;;
+              python3 scripts/test-chest-case.py
+              ;;
+            SurvivalQoL)
+              echo 'Survival QoL: source validation through Kiln SDK build'
+              ;;
           esac
-      - name: Build and package against the exact selected release
-        run: bash scripts/build.sh "${{ matrix.mod }}"
-      - name: Include standalone INI for Endless Chests
-        if: matrix.mod == 'EndlessChests'
-        run: cp EndlessChests/defaults/endless-chests.defaults.ini bin/Release/endless-chests.defaults.ini
-      - name: Give every mod an unambiguous provenance filename
-        shell: bash
-        run: |
-          cp bin/Release/kiln-sdk-provenance.json "bin/Release/kiln-sdk-provenance-${{ matrix.mod }}.json"
 
-      - name: Upload package with exact Kiln SDK provenance
+      - name: Package using checksum-verified official release SDK
+        run: bash scripts/build-compat.sh "${{ matrix.mod }}"
+
+      - name: Verify Endless Chests item IDs from exact tagged source
+        if: matrix.mod == 'EndlessChests'
+        run: python3 scripts/test-endless-item-ids.py
+
+      - name: Stage standalone Endless Chests INI
+        if: matrix.mod == 'EndlessChests'
+        run: |
+          cp EndlessChests/defaults/endless-chests.defaults.ini bin/Release/endless-chests.defaults.ini
+          cmp EndlessChests/defaults/endless-chests.defaults.ini bin/Release/endless-chests.defaults.ini
+
+      - name: Give this mod's provenance an unambiguous filename
+        run: cp bin/Release/kiln-sdk-provenance.json "bin/Release/kiln-sdk-provenance-${{ matrix.mod }}.json"
+
+      - name: Upload verified compatibility package
         uses: actions/upload-artifact@v4
         with:
           name: "kiln-${{ needs.check.outputs.release_version }}-${{ matrix.mod }}"
@@ -140,9 +158,9 @@ jobs:
           retention-days: 90
 
   publish:
-    name: Publish GitHub compatibility prerelease
+    name: Publish exact compatibility prerelease
     needs: [check, package]
-    if: needs.check.outputs.build == 'true' && needs.package.result == 'success'
+    if: github.event_name != 'pull_request' && needs.check.outputs.build == 'true' && needs.package.result == 'success'
     runs-on: ubuntu-24.04
     permissions:
       contents: write
@@ -152,14 +170,14 @@ jobs:
       KILN_RELEASE_VERSION: ${{ needs.check.outputs.release_version }}
       EXPECTED_SOURCE_SHA: ${{ needs.check.outputs.source_sha }}
     steps:
-      - name: Download all three tested mod artifacts
+      - name: Download both completed, verified packages
         uses: actions/download-artifact@v4
         with:
           pattern: kiln-${{ needs.check.outputs.release_version }}-*
           path: dist
           merge-multiple: false
 
-      - name: Verify complete package set and matching provenance before publication
+      - name: Fail closed on missing packages or mismatched provenance
         shell: bash
         run: |
           python3 - <<'PY'
@@ -168,57 +186,66 @@ jobs:
           from pathlib import Path
           from shutil import copy2
 
-          root = Path("dist")
-          output = Path("publish")
+          root, output = Path("dist"), Path("publish")
           output.mkdir(exist_ok=True)
-          required = {
+          specs = {
               "SurvivalQoL": "survival-qol-*.zip",
               "EndlessChests": "endless-chests-kiln-*.zip",
-              "CrossBaseStorage": "cross-base-storage-*.zip",
           }
           version = os.environ["KILN_RELEASE_VERSION"]
           tag = os.environ["KILN_RELEASE_TAG"]
-          upstream_sha = None
+          source_sha = os.environ["EXPECTED_SOURCE_SHA"]
+          kiln_sha = None
+          asset_hashes = None
           published = []
-          for mod, pattern in required.items():
+          for mod, pattern in specs.items():
               folder = root / f"kiln-{version}-{mod}"
               if not folder.is_dir():
-                  raise SystemExit(f"Missing successful build artifact for {mod}")
+                  raise SystemExit(f"Missing {mod} build artifact")
               zips = list(folder.glob(pattern))
               if len(zips) != 1 or zips[0].stat().st_size == 0:
-                  raise SystemExit(f"Expected exactly one nonempty installable ZIP for {mod}: {zips}")
-              provenance = folder / f"kiln-sdk-provenance-{mod}.json"
-              if not provenance.is_file():
-                  raise SystemExit(f"Missing provenance for {mod}")
-              data = json.loads(provenance.read_text(encoding="utf-8"))
-              if data.get("tag") != tag or data.get("version") != version:
-                  raise SystemExit(f"Provenance mismatch for {mod}: {data}")
-              sha = data.get("checked_out_sha")
-              if not isinstance(sha, str) or len(sha) != 40:
-                  raise SystemExit(f"Unverified SDK checkout SHA for {mod}")
-              if upstream_sha is not None and upstream_sha != sha:
-                  raise SystemExit("Mod artifacts were compiled from different Kiln source commits")
-              upstream_sha = sha
-              for item in (zips[0], provenance):
-                  dest = output / item.name
+                  raise SystemExit(f"Expected one nonempty ZIP for {mod}: {zips}")
+              metadata = folder / f"kiln-sdk-provenance-{mod}.json"
+              if not metadata.is_file():
+                  raise SystemExit(f"Missing SDK provenance for {mod}")
+              data = json.loads(metadata.read_text(encoding="utf-8"))
+              if (data.get("tag"), data.get("version"), data.get("mod")) != (tag, version, mod):
+                  raise SystemExit(f"Wrong release/mod provenance for {mod}: {data}")
+              if data.get("mod_source_sha") != source_sha:
+                  raise SystemExit(f"Source revision mismatch for {mod}")
+              checked = data.get("checked_out_sha")
+              if not isinstance(checked, str) or len(checked) != 40:
+                  raise SystemExit(f"Missing exact upstream commit for {mod}")
+              if checked != data.get("release_target"):
+                  raise SystemExit(f"Upstream tag differs from release target for {mod}")
+              hashes = data.get("official_assets_sha256", {})
+              wanted = {f"Kiln.Sdk.{version}.nupkg", f"Kiln.Api.{version}.nupkg"}
+              if set(hashes) != wanted or any(len(h) != 64 for h in hashes.values()):
+                  raise SystemExit(f"Missing verified official NuGet checksums for {mod}")
+              if kiln_sha is not None and kiln_sha != checked:
+                  raise SystemExit("Two mods used different Kiln commits")
+              if asset_hashes is not None and asset_hashes != hashes:
+                  raise SystemExit("Two mods used different official SDK packages")
+              kiln_sha, asset_hashes = checked, hashes
+              for asset in (zips[0], metadata):
+                  dest = output / asset.name
                   if dest.exists():
-                      raise SystemExit(f"Duplicate release asset: {item.name}")
-                  copy2(item, dest)
-                  published.append(item.name)
+                      raise SystemExit(f"Duplicate distribution asset: {dest.name}")
+                  copy2(asset, dest)
+                  published.append(dest.name)
           ini = root / f"kiln-{version}-EndlessChests" / "endless-chests.defaults.ini"
           if not ini.is_file() or ini.stat().st_size == 0:
-              raise SystemExit("Missing Endless Chests reference INI")
+              raise SystemExit("Missing Endless Chests editable defaults INI")
           copy2(ini, output / ini.name)
           published.append(ini.name)
-          if len(published) != 7:
-              raise SystemExit(f"Wrong asset count: {published}")
-          print(f"Publishing {os.environ['RELEASE_TAG']} against upstream {upstream_sha}")
-          print("Source commit:", os.environ["EXPECTED_SOURCE_SHA"])
-          for name in published:
-              print("Asset:", name)
+          if len(published) != 5:
+              raise SystemExit(f"Incorrect asset count: {published}")
+          print(f"Verified official Kiln {tag}@{kiln_sha} for mod source {source_sha}")
+          for asset in published:
+              print("Ready:", asset)
           PY
 
-      - name: Publish or update this exact source-and-Kiln prerelease
+      - name: Publish source-and-release-specific GitHub prerelease
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ env.RELEASE_TAG }}
@@ -227,29 +254,26 @@ jobs:
           prerelease: true
           draft: false
           overwrite_files: true
-          fail_on_unmatched_files: true
+          fail_on-unmatched-files: true
           files: publish/*
           body: |
-            Automated compatibility build for **Kiln ${{ needs.check.outputs.release_tag }}**.
-            This release contains independently tested packages for **Survival QoL**, **Endless Chests**, and **Cross-base Storage**, plus the Endless Chests reference INI.
+            Automated compatibility build for **official Kiln ${{ needs.check.outputs.release_tag }}**.
 
-            - **Kiln release:** ${{ needs.check.outputs.release_tag }}
-            - **Mod source commit:** ${{ needs.check.outputs.source_sha }} (${{ needs.check.outputs.source_ref }})
-            - **CI tests:** all three packaging jobs passed; see [workflow run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}).
-            - **Provenance:** each mod has its own `kiln-sdk-provenance-<mod>.json` listing the exact upstream tag and Git commit.
-            - **Important:** Cross-base Storage remains **read-only diagnostics**; vanilla cross-base crafting/building has **not** been implemented.
+            - **Mods built:** Survival QoL and Endless Chests. Cross-base Storage research is archived, not shipped.
+            - **Mod source:** ${{ needs.check.outputs.source_sha }}
+            - **Checks:** release tag matches its published Git commit, official NuGet checksums verified, both mod builds and contract tests passed.
+            - **Provenance:** separate kiln-sdk-provenance-<mod>.json per mod, including the exact Kiln release, Git SHA and official SDK hashes.
 
-            **Install manually using Kiln Library.** These are *development compatibility prereleases*, not new stable mod versions, nor proof of in-game runtime compatibility. Back up your saves before testing.
-
-            This tag is unique to the Kiln version **and the mod source commit**; rerunning the same build updates its assets instead of creating duplicate releases. Mod version tags (`v*`, `endless-chests-v*`, `cross-base-storage-v*`) remain independent.
+            These are development compatibility prereleases, **not stable mod version upgrades or in-game acceptance**. Install manually through Kiln Library and back up saves before testing.
 
   mark-success:
+    name: Record completed Kiln release compatibility only after publication
     needs: [check, package, publish]
-    if: needs.check.outputs.build == 'true' && needs.check.outputs.cache_hit != 'true' && needs.package.result == 'success' && needs.publish.result == 'success'
+    if: github.event_name != 'pull_request' && needs.check.outputs.build == 'true' && needs.check.outputs.cache_hit != 'true' && needs.package.result == 'success' && needs.publish.result == 'success'
     runs-on: ubuntu-24.04
     steps:
-      - name: Record verified Kiln release AND mod source only after prerelease publication
-        run: echo "${{ needs.check.outputs.release_version }}" > .kiln-release-success.txt
+      - name: Save exact verified release + source revision
+        run: echo "${{ needs.check.outputs.release_tag }} ${{ needs.check.outputs.source_sha }}" > .kiln-release-success.txt
       - uses: actions/cache/save@v4
         with:
           path: .kiln-release-success.txt
