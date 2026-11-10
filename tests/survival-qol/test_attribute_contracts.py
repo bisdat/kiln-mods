@@ -78,6 +78,9 @@ class SurvivalAttributeContracts(unittest.TestCase):
         self.assertIn("_durability.Restore(Log.Warn)", MOD)
         self.assertEqual(MOD.count("private readonly WorldSettingOverride"), 1)
 
+    def test_slider_candidate_has_distinct_library_version(self):
+        self.assertIn("<Version>0.2.1</Version>", PROJECT)
+
     def test_pinned_sdk_includes_attribute_api(self):
         self.assertIn("Kiln.Sdk/0.2.0-dev.local.20261110.62101", PROJECT)
         self.assertIn('default_sdk_version="0.2.0-dev.local.20261110.62101"', BUILD)
