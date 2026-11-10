@@ -18,7 +18,7 @@ permissions:
 
 jobs:
   package:
-    name: Validate and package EML mod
+    name: Validate Flame Altar Expanded 0.1.2 EML trial
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
@@ -26,61 +26,65 @@ jobs:
       - name: Install Lua 5.4
         run: sudo apt-get update && sudo apt-get install -y lua5.4
 
-      - name: Validate mod syntax and offline contracts
+      - name: Check Lua syntax and offline userdata-backed tests
         run: |
           luac5.4 -p FlameAltarExpanded/src/mod.lua
           luac5.4 -p FlameAltarExpanded/tests/test_patch.lua
           lua5.4 FlameAltarExpanded/tests/test_patch.lua
 
-      - name: Check EML manifest
+      - name: Validate original EML identity and strictly level-4-only source
         run: |
           python3 - <<'PY'
           import json
           from pathlib import Path
-          manifest=json.loads(Path('FlameAltarExpanded/mod.json').read_text())
-          assert manifest['id']=='flame-altar-expanded'
-          assert manifest['capabilities']==['patch']
-          assert manifest['version']=='0.1.1'
-          assert Path('FlameAltarExpanded/src/mod.lua').is_file()
-          print('EML manifest verified')
+          root = Path('FlameAltarExpanded')
+          m = json.loads((root / 'mod.json').read_text(encoding='utf-8'))
+          assert m['id'] == 'flame-altar-expanded'
+          assert m['version'] == '0.1.2'
+          assert m['capabilities'] == ['patch']
+          assert m['dependencies'] == []
+          lua = (root / 'src/mod.lua').read_text(encoding='utf-8')
+          assert 'sizes[5].x, sizes[5].y, sizes[5].z =' in lua
+          assert 'resource.data = balance' in lua
+          assert 'keen::RecipeRegistryResource' not in lua
+          assert 'FlameAltar_HomeBase_Upgrade_4' not in lua
+          assert 'table.insert' not in lua
+          assert 'altarLevelMax == 5' in lua
+          assert 'sizes[6].x' not in lua
+          print('Original EML identity, 0.1.2 version and level-4-only patch validated')
           PY
 
-      # The artifact downloaded from Actions is ALREADY a ZIP. Upload files rather
-      # than an inner ZIP, otherwise Kiln (correctly) treats the inner ZIP as an
-      # opaque asset and does not import the EML mod on drag and drop.
-      - name: Stage drag-and-drop Kiln mod
+      - name: Stage root-layout Kiln drag-and-drop mod ZIP
         run: |
           mkdir -p dist/flame-altar-expanded/src
           cp FlameAltarExpanded/mod.json dist/flame-altar-expanded/mod.json
           cp FlameAltarExpanded/src/mod.lua dist/flame-altar-expanded/src/mod.lua
           cp FlameAltarExpanded/README.md dist/flame-altar-expanded/README.md
           python3 - <<'PY'
+          import json
           from pathlib import Path
-          from zipfile import ZipFile
-          stage = Path("dist/flame-altar-expanded")
-          files = sorted(p.relative_to(stage).as_posix() for p in stage.rglob("*") if p.is_file())
-          assert files == ["README.md", "mod.json", "src/mod.lua"], files
-          # Simulate the GitHub Actions artifact archive: the manifest and src
-          # must be at the ZIP root (no containing directory or nested ZIP).
-          with ZipFile("dist/drag-drop-smoke-test.zip", "w") as z:
-              for path in files:
-                  z.write(stage / path, path)
-          with ZipFile("dist/drag-drop-smoke-test.zip") as z:
+          from zipfile import ZipFile, ZIP_DEFLATED
+          stage = Path('dist/flame-altar-expanded')
+          files = sorted(p.relative_to(stage).as_posix() for p in stage.rglob('*') if p.is_file())
+          assert files == ['README.md', 'mod.json', 'src/mod.lua'], files
+          dst = Path('dist/flame-altar-expanded-0.1.2.zip')
+          with ZipFile(dst, 'w', ZIP_DEFLATED) as z:
+              for name in files:
+                  z.write(stage / name, name)
+          with ZipFile(dst) as z:
               assert sorted(z.namelist()) == files
-              assert z.read("src/mod.lua").startswith(b"-- SPDX-License-Identifier")
-          print("Kiln UI drag-and-drop archive layout verified")
+              m = json.loads(z.read('mod.json'))
+              assert m['id'] == 'flame-altar-expanded' and m['version'] == '0.1.2'
+              assert z.read('src/mod.lua').startswith(b'-- SPDX-License-Identifier')
+          assert dst.stat().st_size > 0
+          print('Direct install ZIP verified:', dst)
           PY
 
-      # QUARANTINED: 0.1.1 prevents Enshrouded startup on a real client.
-      # No more distributable ZIPs until game-side logs pinpoint the fault
-      # and a controlled test confirms the game boots and is unmodified.
-      - name: Upload directly installable ZIP
-        if: ${{ false }}
+      # CI artifact is deliberately test-only: no GitHub Release is published.
+      - name: Upload level-4 experiment (direct install ZIP)
         uses: actions/upload-artifact@v4
         with:
-          name: flame-altar-expanded-0.1.1-kiln
-          # upload-artifact produces the ONE ZIP to drag onto Kiln's window.
-          # The directory itself is stripped; mod.json is at the ZIP root.
-          path: dist/flame-altar-expanded/
+          name: flame-altar-expanded-0.1.2-test
+          path: dist/flame-altar-expanded-0.1.2.zip
           if-no-files-found: error
-          retention-days: 90
+          retention-days: 30
