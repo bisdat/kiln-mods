@@ -17,7 +17,7 @@ BUILD = (ROOT / "scripts" / "build.sh").read_text(encoding="utf-8")
 class SurvivalAttributeContracts(unittest.TestCase):
     def test_new_options_are_independent_and_default_on(self):
         for name in ("InfiniteUnderwaterBreath", "InfiniteFrostProtection"):
-            self.assertRegex(CONFIG, rf"public bool {name} \\{{ get; set; \\}} = true;")
+            self.assertIn(f"public bool {name} {{ get; set; }} = true;", CONFIG)
             self.assertIn("options." + name, MOD)
 
     def test_legacy_disabled_toggles_remain_gates_without_world_writes(self):
