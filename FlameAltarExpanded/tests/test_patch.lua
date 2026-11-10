@@ -71,13 +71,13 @@ local function test(name, fn)
     print("PASS " .. name)
 end
 
-test("level 4 only: 160m -> 300m on all axes, exactly one resource written", function()
+test("level 4 only: 160m -> 240m on all axes, exactly one resource written", function()
     local result = setup()
     assert(result.ok, result.err)
     assert(result.writes == 1, "expected exactly one resource update")
     assert(#result.reads == 1 and result.reads[1] == "keen::BalancingTable")
     assert(#result.prints == 1 and result.prints[1]:find("level-4 build-zone", 1, true))
-    for level, expected in ipairs({7, 40, 80, 120, 300, 160}) do
+    for level, expected in ipairs({7, 40, 80, 120, 240, 160}) do
         local v = result.values[level]
         assert(v.x == expected and v.y == expected and v.z == expected,
             "unexpected dimensions at level " .. tostring(level - 1))
@@ -115,4 +115,4 @@ rejected("refuse altered level 4",
 rejected("refuse changed level 5 (e.g. old 0.1.1 still active)",
     {bad_tier=5}, "unexpected build-zone dimensions at level 5")
 
-print("Flame Altar Expanded 0.1.2: " .. passed .. " offline tests passed; in-game test pending")
+print("Flame Altar Expanded 0.1.3: " .. passed .. " offline tests passed; in-game test pending")
