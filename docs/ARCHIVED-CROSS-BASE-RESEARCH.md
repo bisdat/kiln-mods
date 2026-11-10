@@ -23,4 +23,4 @@ No old experimental source is built or packaged in the production
 adapter's branch or release.
 
 Current user documentation:
-[Building Tools for Kiln](BUILDINGTOOLS-KILN-ADAPTER.md).
+[Building Tools for Kiln](../BuildingToolsKiln/README.md).

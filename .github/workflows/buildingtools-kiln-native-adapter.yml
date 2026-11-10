@@ -2,16 +2,11 @@ name: Package Building Tools for Kiln
 
 on:
   push:
-    branches:
-      - main
-      - feature/cross-base-storage-kiln
-    tags:
-      - 'building-tools-kiln-v*'
+    branches: [main]
+    tags: ['building-tools-kiln-v*']
   pull_request:
     paths:
-      - 'tools/package-buildingtools-for-kiln.py'
-      - 'tools/buildingtools-release.json'
-      - 'tests/test_buildingtools_adapter.py'
+      - 'BuildingToolsKiln/**'
       - '.github/workflows/buildingtools-kiln-native-adapter.yml'
   workflow_dispatch:
 
@@ -23,79 +18,83 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
-      - name: Regression-test packaging, hostile archives and reproducibility
-        run: python3 -m unittest discover -s tests -p 'test_buildingtools_adapter.py' -v
-      - name: Verify production upstream version, exact pin and release version
+      - name: Packaging and upstream-update regression tests
+        run: python3 -m unittest discover -s BuildingToolsKiln/tests -p 'test_*.py' -v
+      - name: Load reviewed release profile
+        id: pin
         shell: bash
         run: |
           set -euo pipefail
-          python3 - <<'PY'
-          import json
-          p=json.load(open("tools/buildingtools-release.json"))
-          assert p["adapter_version"]=="1.0.0"
-          assert p["upstream_version"]=="0.31.2"
-          assert p["upstream_sha256"]=="416b615ff854b6bd332074eb52731a4bc485fb510cc1779b772258dfeb5ec5fe"
-          print("PASS pinned upstream release and production adapter 1.0.0")
+          python3 - <<'PY' >> "$GITHUB_OUTPUT"
+          import json,re
+          p=json.load(open("BuildingToolsKiln/release.json"))
+          for key in ("adapter_version","upstream_version","gameplay_verified_upstream_version"):
+              assert re.fullmatch(r"\d+\.\d+\.\d+",p[key]),key
+          assert re.fullmatch(r"[0-9a-f]{64}",p["upstream_sha256"])
+          print("adapter="+p["adapter_version"])
+          print("upstream="+p["upstream_version"])
+          print("checksum="+p["upstream_sha256"])
           PY
-      - name: Download official pinned Building Tools release and published SHA256
-        shell: bash
+      - name: Download official pinned upstream ZIP and checksum
+        env:
+          UPSTREAM: ${{ steps.pin.outputs.upstream }}
+          PIN: ${{ steps.pin.outputs.checksum }}
         run: |
           set -euo pipefail
-          BASE=https://github.com/AleksanderWojtal-CC/Enshrouded-BuildingTools/releases/download/v0.31.2
-          curl --fail --location --retry 3 "$BASE/EnshroudedBuildingTools-0.31.2.zip" -o /tmp/EnshroudedBuildingTools-0.31.2.zip
-          curl --fail --location --retry 3 "$BASE/EnshroudedBuildingTools-0.31.2.zip.sha256" -o /tmp/EnshroudedBuildingTools-0.31.2.zip.sha256
-          printf '%s  %s\n' \
-            416b615ff854b6bd332074eb52731a4bc485fb510cc1779b772258dfeb5ec5fe \
-            /tmp/EnshroudedBuildingTools-0.31.2.zip | sha256sum --check
-      - name: Build stable Kiln native mod package
-        shell: bash
+          BASE="https://github.com/AleksanderWojtal-CC/Enshrouded-BuildingTools/releases/download/v$UPSTREAM"
+          curl -fsSL --retry 3 "$BASE/EnshroudedBuildingTools-$UPSTREAM.zip" -o "/tmp/EnshroudedBuildingTools-$UPSTREAM.zip"
+          curl -fsSL --retry 3 "$BASE/EnshroudedBuildingTools-$UPSTREAM.zip.sha256" -o "/tmp/EnshroudedBuildingTools-$UPSTREAM.zip.sha256"
+          printf '%s  %s\n' "$PIN" "/tmp/EnshroudedBuildingTools-$UPSTREAM.zip" | sha256sum --check
+      - name: Produce versioned install ZIP and checksum
+        env:
+          ADAPTER: ${{ steps.pin.outputs.adapter }}
+          UPSTREAM: ${{ steps.pin.outputs.upstream }}
         run: |
           set -euo pipefail
           mkdir -p dist
-          python3 tools/package-buildingtools-for-kiln.py \
-            /tmp/EnshroudedBuildingTools-0.31.2.zip \
-            --checksum /tmp/EnshroudedBuildingTools-0.31.2.zip.sha256 \
-            --output dist/building-tools-kiln-1.0.0.zip
-          (cd dist && sha256sum building-tools-kiln-1.0.0.zip > building-tools-kiln-1.0.0.zip.sha256)
-      - name: Validate exact upstream DLL/LICENCE and stable package contents
-        shell: bash
+          python3 BuildingToolsKiln/package.py \
+            "/tmp/EnshroudedBuildingTools-$UPSTREAM.zip" \
+            --checksum "/tmp/EnshroudedBuildingTools-$UPSTREAM.zip.sha256" \
+            --output "dist/building-tools-kiln-$ADAPTER.zip"
+          (cd dist && sha256sum "building-tools-kiln-$ADAPTER.zip" > "building-tools-kiln-$ADAPTER.zip.sha256")
+      - name: Validate DLL, licence, native manifest and reproducible bytes
+        env:
+          ADAPTER: ${{ steps.pin.outputs.adapter }}
+          UPSTREAM: ${{ steps.pin.outputs.upstream }}
         run: |
           set -euo pipefail
           python3 - <<'PY'
-          import json,zipfile
-          base="kiln/native/building-tools/"
-          with zipfile.ZipFile("dist/building-tools-kiln-1.0.0.zip") as pkg, \
-              zipfile.ZipFile("/tmp/EnshroudedBuildingTools-0.31.2.zip") as upstream:
-              names=set(pkg.namelist())
-              assert "dinput8.dll" not in names
-              assert not any(n.endswith("/dinput8.dll") for n in names)
+          import json,os,zipfile
+          p=json.load(open("BuildingToolsKiln/release.json"))
+          root="kiln/native/building-tools/"
+          with zipfile.ZipFile("dist/building-tools-kiln-"+os.environ["ADAPTER"]+".zip") as z, \
+               zipfile.ZipFile("/tmp/EnshroudedBuildingTools-"+os.environ["UPSTREAM"]+".zip") as u:
+              names=set(z.namelist())
               assert not any(n.startswith("/") or ".." in n.split("/") for n in names)
-              assert pkg.read(base+"BuildingTools.dll")==upstream.read("dinput8.dll")
-              assert pkg.read(base+"BuildingTools-LICENSE.txt")==upstream.read("BuildingTools-LICENSE.txt")
-              assert pkg.read(base+"BuildingTools-README.txt")==upstream.read("BuildingTools-README.txt")
-              manifest=json.loads(pkg.read(base+"native.json"))
-              assert manifest["id"]=="building-tools"
-              assert manifest["version"]=="1.0.0" and manifest["phase"]=="boot"
-              assert manifest["side"]=="client" and manifest["dlls"]==["BuildingTools.dll"]
-              assert manifest["init"] is None
-              assert "BuildingTools-Languages/en.txt" in names
-              provenance=json.loads(pkg.read(base+"provenance.json"))
-              assert provenance["upstream_archive_sha256"]=="416b615ff854b6bd332074eb52731a4bc485fb510cc1779b772258dfeb5ec5fe"
-          print("PASS: upstream bytes unchanged, licence retained, proper Kiln manifest, no loader replacement")
+              assert not any(n.casefold()=="dinput8.dll" or n.casefold().endswith("/dinput8.dll") for n in names)
+              assert z.read(root+"BuildingTools.dll")==u.read("dinput8.dll")
+              assert z.read(root+"BuildingTools-LICENSE.txt")==u.read("BuildingTools-LICENSE.txt")
+              assert z.read(root+"BuildingTools-README.txt")==u.read("BuildingTools-README.txt")
+              assert any(n.startswith("BuildingTools-Languages/") for n in names)
+              m=json.loads(z.read(root+"native.json"))
+              assert m["id"]=="building-tools" and m["version"]==p["adapter_version"]
+              assert m["dlls"]==["BuildingTools.dll"] and m["side"]=="client"
+              prov=json.loads(z.read(root+"provenance.json"))
+              assert prov["upstream_archive_sha256"]==p["upstream_sha256"]
+          print("PASS upstream bytes identical, licence and translations retained, Kiln dinput8.dll untouched")
           PY
-          python3 tools/package-buildingtools-for-kiln.py \
-            /tmp/EnshroudedBuildingTools-0.31.2.zip \
-            --checksum /tmp/EnshroudedBuildingTools-0.31.2.zip.sha256 \
-            --output /tmp/building-tools-kiln-1.0.0-repeat.zip
-          cmp dist/building-tools-kiln-1.0.0.zip /tmp/building-tools-kiln-1.0.0-repeat.zip
-          echo "PASS deterministic full ZIP bytes"
-      - name: Upload installable package and checksum
-        uses: actions/upload-artifact@v4
+          python3 BuildingToolsKiln/package.py \
+            "/tmp/EnshroudedBuildingTools-$UPSTREAM.zip" \
+            --checksum "/tmp/EnshroudedBuildingTools-$UPSTREAM.zip.sha256" \
+            --output "/tmp/building-tools-kiln-$ADAPTER-repeat.zip"
+          cmp "dist/building-tools-kiln-$ADAPTER.zip" "/tmp/building-tools-kiln-$ADAPTER-repeat.zip"
+          echo "PASS deterministic build"
+      - uses: actions/upload-artifact@v4
         with:
-          name: building-tools-kiln-1.0.0
+          name: building-tools-kiln-${{ steps.pin.outputs.adapter }}
           path: |
-            dist/building-tools-kiln-1.0.0.zip
-            dist/building-tools-kiln-1.0.0.zip.sha256
+            dist/building-tools-kiln-${{ steps.pin.outputs.adapter }}.zip
+            dist/building-tools-kiln-${{ steps.pin.outputs.adapter }}.zip.sha256
           retention-days: 30
           if-no-files-found: error
 
@@ -107,11 +106,23 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v4
-      - name: Tag approved version on main, or validate an existing release tag
-        shell: bash
+      - name: Gate publication on explicit upstream gameplay acceptance
+        id: pin
         run: |
           set -euo pipefail
-          TAG=building-tools-kiln-v1.0.0
+          python3 - <<'PY' >> "$GITHUB_OUTPUT"
+          import json
+          p=json.load(open("BuildingToolsKiln/release.json"))
+          assert p["upstream_version"]==p["gameplay_verified_upstream_version"], "New upstream version requires manual game acceptance before release"
+          print("adapter="+p["adapter_version"])
+          print("upstream="+p["upstream_version"])
+          PY
+      - name: Create approved version tag, or verify existing tag
+        env:
+          ADAPTER: ${{ steps.pin.outputs.adapter }}
+        run: |
+          set -euo pipefail
+          TAG="building-tools-kiln-v$ADAPTER"
           if [[ "$GITHUB_REF" == refs/tags/* ]]; then
             test "$GITHUB_REF_NAME" = "$TAG"
           else
@@ -120,45 +131,38 @@ jobs:
             if ! git rev-parse "refs/tags/$TAG" >/dev/null 2>&1; then
               git tag "$TAG" "$GITHUB_SHA"
               git push origin "refs/tags/$TAG"
-              echo "Created version tag $TAG at main commit $GITHUB_SHA"
             fi
           fi
       - uses: actions/download-artifact@v4
         with:
-          name: building-tools-kiln-1.0.0
+          name: building-tools-kiln-${{ steps.pin.outputs.adapter }}
           path: dist
-      - name: Publish versioned release with its checksum
+      - name: Publish immutable versioned ZIP and SHA256 on GitHub
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        shell: bash
+          ADAPTER: ${{ steps.pin.outputs.adapter }}
+          UPSTREAM: ${{ steps.pin.outputs.upstream }}
         run: |
           set -euo pipefail
-          (cd dist && sha256sum --check building-tools-kiln-1.0.0.zip.sha256)
-          cat > release-notes.md <<'NOTES'
-          Official Enshrouded Building Tools 0.31.2 by Aleksander Wojtal (MIT),
-          packaged as a Kiln-native mod without changing its original DLL.
-
-          The adapted loader and cross-base Magic Chest access have been
-          confirmed working by a user under Kiln on Linux Steam/Proton.
-          Exact-once remote debit, rollback, multiplayer and newer game
-          builds are not yet separately verified.
-
-          Install: extract building-tools-kiln-1.0.0.zip into the folder
-          containing enshrouded.exe. Keep Kiln's original dinput8.dll.
-          Enable: Home > Options > Magic chests of all bases.
-          Existing BuildingTools.ini is never overwritten.
-
-          Previous experimental native research is archived on branch
-          archive/cross-base-storage-native-research-2026-11-09.
-          NOTES
-          TAG=building-tools-kiln-v1.0.0
+          (cd dist && sha256sum --check "building-tools-kiln-$ADAPTER.zip.sha256")
+          TAG="building-tools-kiln-v$ADAPTER"
           if gh release view "$TAG" >/dev/null 2>&1; then
-            echo "Release $TAG already exists; leaving its assets untouched"
+            echo "Existing release retained; no assets overwritten"
             exit 0
           fi
+          cat > /tmp/buildingtools-release.md <<NOTES
+          Building Tools for Kiln $ADAPTER. Official upstream Building Tools
+          $UPSTREAM by Aleksander Wojtal, MIT-licensed, unchanged DLL.
+
+          No replacement of Kiln's dinput8.dll. Install the ZIP in the
+          Enshrouded game root, preserving your BuildingTools.ini.
+          Enable cross-base Magic Chests via Home > Options.
+          Source and upstream update process:
+          https://github.com/bisdat/kiln-mods/tree/main/BuildingToolsKiln
+          NOTES
           gh release create "$TAG" \
-            dist/building-tools-kiln-1.0.0.zip \
-            dist/building-tools-kiln-1.0.0.zip.sha256 \
+            "dist/building-tools-kiln-$ADAPTER.zip" \
+            "dist/building-tools-kiln-$ADAPTER.zip.sha256" \
             --verify-tag --latest=false \
-            --title "Building Tools for Kiln 1.0.0" \
-            --notes-file release-notes.md
+            --title "Building Tools for Kiln $ADAPTER" \
+            --notes-file /tmp/buildingtools-release.md

@@ -9,7 +9,7 @@ import tempfile
 import unittest
 import zipfile
 
-SCRIPT = Path(__file__).resolve().parents[1] / "tools" / "package-buildingtools-for-kiln.py"
+SCRIPT = Path(__file__).resolve().parents[1] / "package.py"
 spec = importlib.util.spec_from_file_location("buildingtools_adapter", SCRIPT)
 mod = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(mod)
