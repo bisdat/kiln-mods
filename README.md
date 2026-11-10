@@ -8,9 +8,9 @@ Enshrouded mods using the [Kiln SDK](https://github.com/frostdev-ops/kiln), main
 
 Implements infinite stamina, infinite mana, fast health regeneration, fast mana regeneration, no fall damage and disabled equipment durability loss using Kiln's supported services.
 
-**Survival QoL v0.2.0 test candidate:** Infinite oxygen and frost refills were **confirmed working in-game** on Kiln dev.21. At the player's request they are now **independent 1×–10× duration sliders** (10× initially selected; 1× is vanilla). The new proportional-depletion behaviour awaits in-game acceptance. The obsolete 2× and infinite toggles have been removed from the UI; existing JSONC files can retain inert unknown keys. See [issue #2](https://github.com/bisdat/kiln-mods/issues/2).
+**Survival QoL v0.2.1 test candidate:** Infinite oxygen and frost refills were **confirmed working in-game** on Kiln dev.21. At the player's request they are now **independent 1×–10× duration sliders** (10× initially selected; 1× is vanilla). The new proportional-depletion behaviour awaits in-game acceptance. The obsolete 2× and infinite toggles have been removed from the UI; existing JSONC files can retain inert unknown keys. See [issue #2](https://github.com/bisdat/kiln-mods/issues/2).
 
-Build with `bash scripts/build.sh` (requires git, .NET 10 and internet access), or use **Actions → Package Survival QoL** to download the `survival-qol-package` artifact from a successful run. Pushing a matching version tag (e.g. `v0.1.0`) also attaches the ready-to-install ZIP to a GitHub Release. Configuration is hot-reloadable.
+Build with `bash scripts/build.sh` (requires git, .NET 10 and internet access), or use **Actions → Package Survival QoL** to download the `survival-qol-package` artifact from a successful run. Pushing a matching version tag (e.g. `v0.2.1`) also attaches the ready-to-install ZIP to a GitHub Release. Configuration is hot-reloadable.
 
 See the mod README for limitations, installation, SDK pin and testing instructions.
 
