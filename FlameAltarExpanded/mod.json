@@ -1,8 +1,8 @@
 {
   "id": "flame-altar-expanded",
   "name": "Flame Altar Expanded",
-  "version": "0.1.2",
-  "description": "EXPERIMENTAL: changes existing level-4 Flame Altar building area from 160 to 300 metres on each axis; does not add level 5 or upgrade recipes.",
+  "version": "0.1.3",
+  "description": "EXPERIMENTAL diagnostic: expands existing level-4 Flame Altar from 160m to 240m on each axis; 300m caused a 44m display. No extra tiers or recipes.",
   "authors": [
     "bisdat"
   ],
