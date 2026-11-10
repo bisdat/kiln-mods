@@ -2,7 +2,7 @@ name: Package Flame Altar Expanded (experimental)
 
 on:
   push:
-    branches: [main]
+    branches: [main, feature/flame-altar-expanded]
     paths:
       - 'FlameAltarExpanded/**'
       - '.github/workflows/flame-altar-expanded.yml'
