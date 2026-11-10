@@ -2,7 +2,7 @@
   <PropertyGroup>
     <KilnModId>survival-qol</KilnModId>
     <KilnModName>Survival QoL</KilnModName>
-    <Version>0.2.0</Version>
+    <Version>0.2.1</Version>
     <Authors>bisdat</Authors>
     <Description>Configurable survival QoL with 1x-10x underwater breath and frost resistance using Kiln services.</Description>
     <PackageProjectUrl>https://github.com/bisdat/kiln-mods</PackageProjectUrl>
