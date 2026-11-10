@@ -22,10 +22,11 @@ An independent Kiln-native storage refill mod. Version **0.4.2** uses the comple
 
 The original [`endless-chests.defaults.ini`](EndlessChests/defaults/endless-chests.defaults.ini) has **195 group names sorted alphabetically** within `[Groups]`, with the other INI sections sorted by their keys too. Each group's item list and all original settings are unchanged. Starting with the **`endless-chests-v0.4.2` GitHub Release**, download the **standalone `endless-chests.defaults.ini`** directly from the release's Assets alongside the installable `endless-chests-kiln-0.4.2.zip`. The INI is a readable reference/customization template, not a Kiln-installable mod; upgrading does not overwrite an existing user-modified `endless-chests.ini`.
 
-## Flame Altar Expanded — BLOCKED (do not install)
+## Flame Altar Expanded — 0.1.2 (test only)
 
-[Mod documentation](FlameAltarExpanded/README.md) | [Build workflow](.github/workflows/flame-altar-expanded.yml) | [Issue #12](https://github.com/bisdat/kiln-mods/issues/12)
+[Mod documentation](FlameAltarExpanded/README.md) | [Test workflow](.github/workflows/flame-altar-expanded.yml) | [Draft PR #13](https://github.com/bisdat/kiln-mods/pull/13) | [Issue #12](https://github.com/bisdat/kiln-mods/issues/12)
 
-**Do not use 0.1.0 or 0.1.1 on a valuable save.** A controlled client test on official Kiln `v0.2.0-dev.21` confirms the game now starts with 0.1.1 in its active profile, but **no level-5 altar upgrade appears**. Kiln dev.21 can fail-soft a broken EML mod, so successful startup does not yet establish that the patch applied. See [feature issue #12](https://github.com/bisdat/kiln-mods/issues/12) and [earlier startup blocker #14](https://github.com/bisdat/kiln-mods/issues/14). Draft PR #13 remains unmerged and downloadable artifacts are disabled. **Not a functional release.**
+**Experimental, not approved for a valuable save.** This is the **existing** `flame-altar-expanded` EML mod, updated to **0.1.2**. In response to the failed level-5 recipe experiment (0.1.1), this build changes **only existing level-4 altar building dimensions**, from 160 × 160 × 160 m to 300 × 300 × 300 m. No level-5 recipe, ingredient, new tier or maximum-level change.
 
-An **experimental Kiln-hosted EML data patch** to add a new Flame Altar upgrade from level 4 to level 5: **300 × 300 × 300 m** rather than the vanilla 160 m cube. The proposed level-5 upgrade costs **10 Shroud Nexus**. Requires a Kiln installation with the newer `kiln-eml` plugin on client and server; the pinned `v0.2.0-dev.15` SDK alone does not include it. **Not yet verified in-game; do not use on an irreplaceable save.** The Action packages a standalone EML mod ZIP, not a C# DLL.
+Test on official Kiln dev.21 or newer, with older 0.1.1 and the **retired separately identified level-4 test mod both removed or disabled**. Use a disposable world. EML patch success, in-game displayed area, actual building permission and save persistence must be tested separately. The previous separate test package reportedly prevented Kiln from loading; no working gameplay claim is made for 0.1.2.
+
