@@ -2,7 +2,7 @@
 
 A configurable, server-authoritative C# mod for Enshrouded using Kiln.Sdk 0.2 and .NET 10. It runs on a dedicated Kiln server or a Kiln-enabled client hosting a world; no separate client-side mod is necessary.
 
-**Status: v0.2.0 test candidate.** On 10 November 2026, the player confirmed that the earlier **infinite oxygen** and **infinite frost/body-heat** refills both worked in-game on Kiln dev.21 (issue #2 / PR #22). At the player's request, this branch replaces those always-on infinite switches with **1x–10x duration sliders**. This new proportional-depletion behaviour still requires its own in-game acceptance.
+**Status: v0.2.1 test candidate.** On 10 November 2026, the player confirmed that the earlier **infinite oxygen** and **infinite frost/body-heat** refills both worked in-game on Kiln dev.21 (issue #2 / PR #22). At the player's request, this branch replaces those always-on infinite switches with **1x–10x duration sliders**. This new proportional-depletion behaviour still requires its own in-game acceptance.
 
 ## Features
 
@@ -52,16 +52,22 @@ dotnet run --project tests/survival-qol/DepletionMathTests/DepletionMathTests.cs
 bash scripts/build.sh
 ```
 
-The normal build pins the Kiln SDK source to commit `346a3ae5de436db1ba64bbbf0a27f4b8d0ed5be5` (dev.21) and locally packages SDK `0.2.0-dev.local.20261110.62101`. The standard [Package Survival QoL workflow](../.github/workflows/build.yml) runs those checks and publishes a ready-to-install `survival-qol-0.2.0.zip` CI artifact.
+The normal build pins the Kiln SDK source to commit `346a3ae5de436db1ba64bbbf0a27f4b8d0ed5be5` (dev.21) and locally packages SDK `0.2.0-dev.local.20261110.62101`. The standard [Package Survival QoL workflow](../.github/workflows/build.yml) runs those checks and publishes a ready-to-install `survival-qol-0.2.1.zip` CI artifact.
 
 The [Follow latest Kiln development release workflow](../.github/workflows/kiln-latest.yml) also runs the arithmetic tests and builds against the current officially published, checksum-verified Kiln dev SDK. Compatibility compilation is **not** game acceptance.
 
-Do not publish a stable `v0.2.0` tag until the new slider behaviour has passed the manual checklist.
+Do not publish a stable `v0.2.1` tag until the new slider behaviour has passed the manual checklist.
+
+### Kiln Library activation — do not reuse the old 0.2.0
+
+Kiln identifies Library versions from the mod's **manifest version**, not from the Kiln runtime's dev.21 label. The previous infinite-toggle mod used version **0.2.0**. This slider candidate deliberately uses **0.2.1** so the Library can distinguish the two.
+
+Install `survival-qol-0.2.1.zip` into Kiln's Library, **select version 0.2.1 in the active profile and reactivate/apply that profile**, then restart Enshrouded. Merely copying the ZIP into `kiln/mods/` or editing `survival-qol.json` is not enough when the profile has `dropins: false` and still points at the older Library version. After launching, verify the loaded mod version with `kiln/state/mods.json` and confirm that the config UI shows `underwaterBreathMultiplier` and `frostResistanceMultiplier`.
 
 ## Install and validation
 
 1. Use **Kiln 0.2.0-dev.20 or newer** on the host/server (dev.21 recommended). The writable oxygen and body-heat attributes did not exist in older SDK runtimes.
-2. Download `survival-qol-0.2.0.zip` from a successful workflow run for **this updated PR revision**. Extract its `survival-qol/` directory to `kiln/mods/` on the host.
+2. Download `survival-qol-0.2.1.zip` from a successful workflow run for **this updated PR revision**. For a Library-managed client, import it into the Library and activate **0.2.1** in the selected profile. Only use direct extraction to `kiln/mods/` for legacy/drop-in installations.
 3. Open the Kiln Configs screen and confirm only the **two new multiplier sliders** appear (not the old four toggles).
 4. In a backed-up test world, measure oxygen depletion and frost/body-heat depletion at **1x**, **2x**, **5x** and **10x**, ideally comparing the time required to lose a fixed quantity of the attribute at the same location/equipment.
 5. At **1x**, confirm both resources deplete at vanilla rates and no artificial refill occurs. At **10x**, confirm gradual depletion remains (not infinite) and lasts roughly ten times as long.
