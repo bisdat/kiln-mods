@@ -1,0 +1,12 @@
+{
+  "id": "enhanced-fishing-rod",
+  "name": "Enhanced Fishing Rod",
+  "version": "0.1.0",
+  "description": "Doubles the Excellent Fishing Rod's fishing strength and endurance.",
+  "authors": ["bisdat"],
+  "license": "MIT",
+  "url": "https://github.com/bisdat/kiln-mods",
+  "apiVersion": "0.2",
+  "side": "both",
+  "clients": "kiln"
+}

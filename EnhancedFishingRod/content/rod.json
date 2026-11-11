@@ -1,0 +1,10 @@
+{
+  "format": 1,
+  "comment": "Overrides only the Excellent Fishing Rod (Tool_T6_FishingRod_epic). No new items, recipes, rarities, loot multipliers or other rods are changed.",
+  "items": {
+    "Tool_T6_FishingRod_epic": {
+      "impactValues.FishingStrength": 5.0,
+      "impactValues.FishingEndurance": 110.0
+    }
+  }
+}
