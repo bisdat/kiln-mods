@@ -36,7 +36,7 @@ jobs:
 
   release:
     name: Attach ZIP to tagged GitHub release
-    if: startsWith(github.ref, 'refs/tags/enhanced-fishing-rod-v')
+    if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || startsWith(github.ref, 'refs/tags/enhanced-fishing-rod-v')
     needs: package
     runs-on: ubuntu-24.04
     permissions:
@@ -49,9 +49,19 @@ jobs:
       - name: Validate independent tag
         shell: bash
         run: |
-          [[ "$GITHUB_REF_NAME" == "enhanced-fishing-rod-v0.1.0" ]] || { echo "::error::Tag must be enhanced-fishing-rod-v0.1.0"; exit 1; }
+          [[ "$GITHUB_REF_NAME" == "main" || "$GITHUB_REF_NAME" == "enhanced-fishing-rod-v0.1.0" ]] || { echo "::error::Release must run on main or enhanced-fishing-rod-v0.1.0"; exit 1; }
       - uses: softprops/action-gh-release@v2
         with:
+          tag_name: enhanced-fishing-rod-v0.1.0
+          target_commitish: ${{ github.sha }}
+          name: Enhanced Fishing Rod v0.1.0
+          draft: false
+          prerelease: false
+          body: |
+            Stable data-only Kiln mod **Enhanced Fishing Rod v0.1.0** (accepted in-game).
+            Doubles the Excellent Fishing Rod's Fishing Strength (2.5 → 5) and Fishing Endurance (55 → 110).
+            Other rods, items, recipes and loot chances are unchanged.
+            Requires Kiln 0.2.0-dev.22 or newer.
           files: dist/enhanced-fishing-rod-0.1.0.zip
           fail_on_unmatched_files: true
           generate_release_notes: true
