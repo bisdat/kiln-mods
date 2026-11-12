@@ -36,7 +36,7 @@ class DebugToolsContractTests(unittest.TestCase):
 
     def test_explicit_client_and_rules_dependency(self):
         self.assertIn("<KilnClients>kiln</KilnClients>", self.project)
-        self.assertIn("<KilnServices>Rules</KilnServices>", self.project)
+        self.assertIn("<KilnServices>Rules;Chat</KilnServices>", self.project)
         self.assertIn("Rules.ClientOf(player)", self.mod)
         self.assertIn("hooks.BuildingZone", self.mod)
         self.assertIn("hooks.Placement", self.mod)
