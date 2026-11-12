@@ -57,3 +57,13 @@ separate acceptance testing; see the user guide.
 [Packaging workflow](.github/workflows/enhanced-fishing-rod.yml)
 
 Standalone data-only Kiln mod v0.1.0: changes `Tool_T6_FishingRod_epic` Fishing Strength from **2.5 to 5.0** and Fishing Endurance from **55 to 110**, without changing its crafting recipe, rarity, other rods or hidden loot multipliers. Requires Kiln dev.22 or newer. This is a **test candidate** awaiting in-game confirmation; package with `python3 EnhancedFishingRod/package.py` or use the GitHub Actions ZIP.
+
+## Licence
+
+Original code, scripts and documentation in this repository are available under
+the [MIT License](LICENSE), copyright © 2026 bisdat.
+
+Third-party material is **not relicensed** by this notice. In particular,
+Building Tools remains © Aleksander Wojtal under its own MIT licence, and the
+Endless Chests catalogue incorporates material attributed to HipShot808.
+See [Third-party notices](THIRD_PARTY_NOTICES.md) for attribution and scope.
