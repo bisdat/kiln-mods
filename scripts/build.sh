@@ -10,6 +10,11 @@ case "$mod" in
     default_sdk_version="0.2.0-dev.local.20261110.62101"
     default_kiln_sha="346a3ae5de436db1ba64bbbf0a27f4b8d0ed5be5" # includes dev.21 attribute API
     ;;
+  DebugTools)
+    mod_id="debug-tools"
+    default_sdk_version="0.2.0-dev.local.20261110.62101"
+    default_kiln_sha="346a3ae5de436db1ba64bbbf0a27f4b8d0ed5be5" # dev.21 supports build placement PlayerRules
+    ;;
   EndlessChests)
     mod_id="endless-chests-kiln"
     default_sdk_version="0.2.0-dev.local.20261107.62100"

@@ -1,0 +1,14 @@
+<Project Sdk="Kiln.Sdk/0.2.0-dev.local.20261110.62101">
+  <PropertyGroup>
+    <KilnModId>debug-tools</KilnModId>
+    <KilnModName>Debug Tools</KilnModName>
+    <Version>0.1.0</Version>
+    <Authors>bisdat</Authors>
+    <Description>Admin-only, per-player building debug rules for the Shroud, dungeons and locations outside Flame Altar bases.</Description>
+    <PackageProjectUrl>https://github.com/bisdat/kiln-mods</PackageProjectUrl>
+    <KilnSide>server</KilnSide>
+    <KilnClients>kiln</KilnClients>
+    <KilnServices>Rules</KilnServices>
+    <KilnGameIds>None</KilnGameIds>
+  </PropertyGroup>
+</Project>

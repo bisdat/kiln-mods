@@ -58,6 +58,12 @@ separate acceptance testing; see the user guide.
 
 Standalone data-only Kiln mod v0.1.0: changes `Tool_T6_FishingRod_epic` Fishing Strength from **2.5 to 5.0** and Fishing Endurance from **55 to 110**, without changing its crafting recipe, rarity, other rods or hidden loot multipliers. Requires Kiln dev.22 or newer. This is a **test candidate** awaiting in-game confirmation; package with `python3 EnhancedFishingRod/package.py` or use the GitHub Actions ZIP.
 
+## Debug Tools — build anywhere (test candidate)
+
+[Debug Tools documentation](DebugTools/README.md) | [Packaging workflow](.github/workflows/debug-tools.yml)
+
+An independent, administrator-only, **per-player** `/debugbuild on|off|status` command. Kiln's supported placement rules lift the outside-Flame-Altar, Shroud and dungeon/POI no-build restrictions, with optional persistence and free construction. All debug building starts **off**; other players' base permissions are unchanged. **Flame Altar placement in the Shroud and dungeons requires in-game testing** because independent altar limits are not bypassed. Version 0.1.0 is not accepted or released yet.
+
 ## Licence
 
 Original code, scripts and documentation in this repository are available under
