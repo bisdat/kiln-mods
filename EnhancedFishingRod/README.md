@@ -11,7 +11,7 @@ The game normally rounds the rod's strength to +3 in its item tooltip. This mod 
 
 ## Install
 
-1. Download the `enhanced-fishing-rod-0.1.0.zip` artifact from the **Package Enhanced Fishing Rod** GitHub Actions run, or the equivalent release asset after acceptance.
+1. Download the `enhanced-fishing-rod-0.1.0.zip` artifact from the **Package Enhanced Fishing Rod** GitHub Actions run, or the equivalent asset on the `enhanced-fishing-rod-v0.1.0` GitHub Release when publication completes.
 2. Import the ZIP in Kiln, or unzip it so the files are in `Enshrouded/kiln/mods/enhanced-fishing-rod/kiln.mod.json` and `Enshrouded/kiln/mods/enhanced-fishing-rod/content/rod.json`.
 3. Use Kiln **0.2.0-dev.22 or newer** (manifest-only/data-only mod support), enable the mod and launch a hosted or solo world.
 4. Equip an **existing** Excellent Fishing Rod. Check the tooltip and catch a few fish. Expected fishing stats are strength 5 and endurance 110. If the tooltip remains unchanged, inspect `kiln/logs/kiln.log` and `kiln/logs/mods.txt` for pack errors; client-side Kiln content sync/UI may also be relevant.
@@ -21,7 +21,7 @@ The game normally rounds the rod's strength to +3 in its item tooltip. This mod 
 
 The only game-data rules are `impactValues.FishingStrength` and `impactValues.FishingEndurance` under `items.Tool_T6_FishingRod_epic`. These paths are verified against the upstream Kiln item-block compiler and fishing-rod test (`frostdev-ops/kiln`). No DLL, native hooks, generated items, crafting changes or persistent save modifications.
 
-Static package tests run on every PR, but **in-game loading, displayed stats and actual fishing behaviour remain to be tested**. If a mod uses the same fields, Kiln's last-applied layer wins, and it logs conflicts.
+Static package tests run on every PR. **The mod has been tested and accepted in-game by the maintainer.** CI tests verify the ZIP structure and data contracts; they do not simulate actual fishing. If another mod uses the same fields, Kiln's last-applied layer wins and it logs conflicts.
 
 ### Packaging
 
