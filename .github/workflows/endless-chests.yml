@@ -66,6 +66,9 @@ jobs:
       - name: Verify Endless Chests item identities against pinned SDK data
         run: python3 scripts/test-endless-item-ids.py
 
+      - name: Verify variant-suffixed catalogue items against pinned SDK data
+        run: python3 scripts/test-endless-variant-ids.py
+
       - name: Stage editable INI catalogue for the release
         run: |
           cp EndlessChests/defaults/endless-chests.defaults.ini bin/Release/endless-chests.defaults.ini
