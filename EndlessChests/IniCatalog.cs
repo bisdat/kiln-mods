@@ -86,8 +86,28 @@ internal sealed class IniCatalog
         return item;
     }
 
+    // The original catalogue used names that no longer exist in the game.
+    // The two recovered pieces now share the same display name, so a lookup
+    // by that name would silently return only one of the two halves.
+    private static readonly IReadOnlyDictionary<string, (uint Id, string DebugName)> LegacyWallHangingIds =
+        new Dictionary<string, (uint Id, string DebugName)>(StringComparer.OrdinalIgnoreCase)
+    {
+        ["Alchemist Hanging I"] = (2365197861u, "Collection_Alchemist_WallHang_Piece_01"),
+        ["Alchemist Hanging II"] = (1372134498u, "Collection_Alchemist_WallHang_Piece_02"),
+    };
+
     private static ItemInfo? LookupItem(string name)
     {
+        if (LegacyWallHangingIds.TryGetValue(name, out var hanging))
+        {
+            // Keep user-owned pre-0.4.4 INIs working without replacing them.
+            var item = GetVerifiedVariant("Ripped Alchemist's Wall Hanging", hanging.Id,
+                regularVanity: false);
+            return item is not null &&
+                string.Equals(item.Name, hanging.DebugName, StringComparison.Ordinal)
+                ? item : null;
+        }
+
         if (name.Equals("Rough Wood Block", StringComparison.OrdinalIgnoreCase))
         {
             // Fail closed on game data changes; never fall back to a quest icon.
