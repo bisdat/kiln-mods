@@ -41,14 +41,36 @@ internal sealed class IniCatalog
 
     private static ItemInfo? LookupItem(string name)
     {
-        if (!name.Equals("Rough Wood Block", StringComparison.OrdinalIgnoreCase))
-            return Items.Lookup(name);
+        if (name.Equals("Rough Wood Block", StringComparison.OrdinalIgnoreCase))
+        {
+            // Fail closed on game data changes; never fall back to a quest icon.
+            var matched = Items.Get(new ItemId(RoughWoodBlockId));
+            return matched is not null && !matched.IsBlueprint &&
+                string.Equals(matched.Name, RoughWoodBlockDebugName, StringComparison.Ordinal)
+                ? matched : null;
+        }
 
-        // Fail closed on game data changes; never fall back to a quest icon.
-        var matched = Items.Get(new ItemId(RoughWoodBlockId));
-        return matched is not null && !matched.IsBlueprint &&
-            string.Equals(matched.Name, RoughWoodBlockDebugName, StringComparison.Ordinal)
-            ? matched : null;
+        // The original INI contains entries such as "Mirage Variant 1165213726".
+        // "Variant <decimal ID>" is a catalogue disambiguator, not part of the
+        // game's display name. Never resolve these by display name alone:
+        // Mirage is also the name of a weapon, not just a song sheet.
+        const string variantMarker = " Variant ";
+        var at = name.LastIndexOf(variantMarker, StringComparison.OrdinalIgnoreCase);
+        if (at > 0)
+        {
+            var label = name[..at];
+            var idText = name.AsSpan(at + variantMarker.Length);
+            if (!uint.TryParse(idText, System.Globalization.NumberStyles.None,
+                    System.Globalization.CultureInfo.InvariantCulture, out var id))
+                return null;
+
+            var matched = Items.Get(new ItemId(id));
+            return matched is not null && !matched.IsBlueprint &&
+                string.Equals(matched.DisplayName, label, StringComparison.OrdinalIgnoreCase)
+                ? matched : null;  // An ID mismatch must never fall back to a weapon.
+        }
+
+        return Items.Lookup(name);
     }
 
     public int RecognizedNames => _nameMatcher.Count;
