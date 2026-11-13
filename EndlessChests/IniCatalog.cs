@@ -39,16 +39,108 @@ internal sealed class IniCatalog
         _indexedItems = all;
     }
 
+    // Pre-0.4.4 user INIs contain 22 incomplete "Variant" labels without
+    // the numeric item ID. Do not overwrite these user files on upgrade.
+    // Map only verified legacy names to regular vanity items, never to
+    // Twitch-drop or ordinary combat armour variants.
+    private static readonly IReadOnlyDictionary<string, uint> LegacyUnnumberedVariantIds =
+        new Dictionary<string, uint>(StringComparer.OrdinalIgnoreCase)
+    {
+        ["Hunter Boots Variant"] = 1965220207u,
+        ["Flame Pact Gloves Variant"] = 3829626055u,
+        ["Flame Pact Pants Variant"] = 4269102990u,
+        ["Flame Pact Boots Variant"] = 2773433885u,
+        ["Fluffy Tunic Variant"] = 2027100358u,
+        ["Fluffy Boots Variant"] = 3816235332u,
+        ["Exclusive Hollow Helmet Variant"] = 3619572274u,
+        ["Exclusive Hollow Gloves Variant"] = 2808491855u,
+        ["Exclusive Hollow Boots Variant"] = 2327796444u,
+        ["Scholar Of The Empyrean Gloves Variant"] = 1478039844u,
+        ["Siren Seeker Headband Variant"] = 2593898800u,
+        ["Siren Seeker Pants Variant"] = 4095098411u,
+        ["Blood Rose Mail Coif Variant"] = 4093332456u,
+        ["Blood Rose Boots Variant"] = 2730010681u,
+        ["Efflorescent Hope Gloves Variant"] = 4187113723u,
+        ["Fae Deer Farmer Hood Variant"] = 4017962470u,
+        ["Fae Deer Farmer Shirt Variant"] = 3296109637u,
+        ["Fae Deer Farmer Overalls Variant"] = 2254763513u,
+        ["Fae Deer Farmer Boots Variant"] = 4188603863u,
+        ["Artificer's Helmet Variant"] = 3635860469u,
+        ["Artificer's Chest Variant"] = 605709950u,
+        ["Artificer's Gloves Variant"] = 3961937115u,
+    };
+
+    private static ItemInfo? GetVerifiedVariant(string label, uint id, bool regularVanity)
+    {
+        var item = Items.Get(new ItemId(id));
+        if (item is null || item.IsBlueprint ||
+            !string.Equals(item.DisplayName, label, StringComparison.OrdinalIgnoreCase))
+            return null;
+
+        // A legacy label is ambiguous unless the expected ID still belongs
+        // to a regular vanity item. Fail closed if game data has changed.
+        if (regularVanity &&
+            (!item.Name.StartsWith("Vanity_", StringComparison.OrdinalIgnoreCase) ||
+             item.Name.Contains("TwitchDrop", StringComparison.OrdinalIgnoreCase)))
+            return null;
+        return item;
+    }
+
+    // The original catalogue used names that no longer exist in the game.
+    // The two recovered pieces now share the same display name, so a lookup
+    // by that name would silently return only one of the two halves.
+    private static readonly IReadOnlyDictionary<string, (uint Id, string DebugName)> LegacyWallHangingIds =
+        new Dictionary<string, (uint Id, string DebugName)>(StringComparer.OrdinalIgnoreCase)
+    {
+        ["Alchemist Hanging I"] = (2365197861u, "Collection_Alchemist_WallHang_Piece_01"),
+        ["Alchemist Hanging II"] = (1372134498u, "Collection_Alchemist_WallHang_Piece_02"),
+    };
+
     private static ItemInfo? LookupItem(string name)
     {
-        if (!name.Equals("Rough Wood Block", StringComparison.OrdinalIgnoreCase))
-            return Items.Lookup(name);
+        if (LegacyWallHangingIds.TryGetValue(name, out var hanging))
+        {
+            // Keep user-owned pre-0.4.4 INIs working without replacing them.
+            var item = GetVerifiedVariant("Ripped Alchemist's Wall Hanging", hanging.Id,
+                regularVanity: false);
+            return item is not null &&
+                string.Equals(item.Name, hanging.DebugName, StringComparison.Ordinal)
+                ? item : null;
+        }
 
-        // Fail closed on game data changes; never fall back to a quest icon.
-        var matched = Items.Get(new ItemId(RoughWoodBlockId));
-        return matched is not null && !matched.IsBlueprint &&
-            string.Equals(matched.Name, RoughWoodBlockDebugName, StringComparison.Ordinal)
-            ? matched : null;
+        if (name.Equals("Rough Wood Block", StringComparison.OrdinalIgnoreCase))
+        {
+            // Fail closed on game data changes; never fall back to a quest icon.
+            var matched = Items.Get(new ItemId(RoughWoodBlockId));
+            return matched is not null && !matched.IsBlueprint &&
+                string.Equals(matched.Name, RoughWoodBlockDebugName, StringComparison.Ordinal)
+                ? matched : null;
+        }
+
+        // Old installations retain their user-customised INI with bare
+        // "Variant" suffixes. Resolve only the 22 audited entries, never
+        // guess a game ID for an arbitrary incomplete label.
+        const string bareMarker = " Variant";
+        if (name.EndsWith(bareMarker, StringComparison.OrdinalIgnoreCase))
+            return LegacyUnnumberedVariantIds.TryGetValue(name, out var legacyId)
+                ? GetVerifiedVariant(name[..^bareMarker.Length], legacyId, regularVanity: true)
+                : null;
+
+        // "Mirage Variant 1165213726" denotes a specific song-sheet ID.
+        // The name alone is ambiguous because a Mirage staff also exists.
+        const string variantMarker = " Variant ";
+        var at = name.LastIndexOf(variantMarker, StringComparison.OrdinalIgnoreCase);
+        if (at > 0)
+        {
+            var label = name[..at];
+            var idText = name.AsSpan(at + variantMarker.Length);
+            if (!uint.TryParse(idText, System.Globalization.NumberStyles.None,
+                    System.Globalization.CultureInfo.InvariantCulture, out var id))
+                return null;
+            return GetVerifiedVariant(label, id, regularVanity: false);
+        }
+
+        return Items.Lookup(name);
     }
 
     public int RecognizedNames => _nameMatcher.Count;
