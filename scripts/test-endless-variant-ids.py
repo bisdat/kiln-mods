@@ -46,7 +46,7 @@ for group, names in groups.items():
         )
         variants.append((group, label, item_id, debug, category))
 
-assert len(variants) == 88, f"Expected 88 disambiguated items, got {len(variants)}"
+assert len(variants) == 90, f"Expected 90 disambiguated items, got {len(variants)}"
 assert ("Songs", "Mirage", 1165213726, "8kLoreText_scroll_bard_song_12",
         "Collectibles") in variants, "Mirage sheet not mapped correctly"
 assert items[1992044990] == ("Weapon_T4_2H_StaffEpic_01", "Mirage", "Weapons")
@@ -62,6 +62,30 @@ assert 'string.Equals(item.DisplayName, label, StringComparison.OrdinalIgnoreCas
 assert 'ItemInfo? info = LookupItem(name);' in source
 assert 'return Items.Lookup(name);' in source, "ordinary names must still work"
 assert "RoughWoodBlockId" in source, "issue #16 fix must remain intact"
+
+# Two former group labels have been renamed in the game, and both new
+# collectibles have the same displayed name; raw display-name lookup would
+# collapse them to only one item. IDs and debug identities must remain distinct.
+expected_hanging = [
+    "Ripped Alchemist's Wall Hanging Variant 2365197861",
+    "Ripped Alchemist's Wall Hanging Variant 1372134498",
+]
+assert groups["Alchemist Wall Hanging"] == expected_hanging
+assert items[2365197861] == (
+    "Collection_Alchemist_WallHang_Piece_01",
+    "Ripped Alchemist's Wall Hanging", "Collectibles"
+)
+assert items[1372134498] == (
+    "Collection_Alchemist_WallHang_Piece_02",
+    "Ripped Alchemist's Wall Hanging", "Collectibles"
+)
+assert 'LegacyWallHangingIds.TryGetValue(name, out var hanging)' in source
+assert 'GetVerifiedVariant("Ripped Alchemist\'s Wall Hanging", hanging.Id,' in source
+assert 'string.Equals(item.Name, hanging.DebugName, StringComparison.Ordinal)' in source
+assert ('["Alchemist Hanging I"] = (2365197861u, "Collection_Alchemist_WallHang_Piece_01")'
+        in source)
+assert ('["Alchemist Hanging II"] = (1372134498u, "Collection_Alchemist_WallHang_Piece_02")'
+        in source)
 
 # The 22 unnumbered vanity entries from the pre-0.4.4 user INI must
 # continue resolving without modifying that saved user file.
@@ -98,6 +122,7 @@ assert not any(
     for entry in names
 ), "shipped defaults must not contain unnumbered Variant suffixes"
 
-print("PASS: 88 valid Variant <ID> entries (66 original numbered + 22 repaired) "
-      "in 195 original groups; Mirage song sheet not weapon; "
-      "22 legacy unnumbered labels resolve to audited non-Twitch vanity IDs")
+print("PASS: 90 verified Variant <ID> entries (66 original numbered, "
+      "22 repaired, 2 Alchemist wall hanging pieces), in 195 groups; "
+      "Mirage sheet not weapon; 22 legacy vanity and 2 legacy "
+      "Alchemist labels resolve by verified identities")
