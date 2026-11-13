@@ -46,7 +46,7 @@ for group, names in groups.items():
         )
         variants.append((group, label, item_id, debug, category))
 
-assert len(variants) == 66, f"Expected 66 disambiguated items, got {len(variants)}"
+assert len(variants) == 88, f"Expected 88 disambiguated items, got {len(variants)}"
 assert ("Songs", "Mirage", 1165213726, "8kLoreText_scroll_bard_song_12",
         "Collectibles") in variants, "Mirage sheet not mapped correctly"
 assert items[1992044990] == ("Weapon_T4_2H_StaffEpic_01", "Mirage", "Weapons")
@@ -58,11 +58,46 @@ assert 'const string variantMarker = " Variant ";' in source
 assert 'name.LastIndexOf(variantMarker, StringComparison.OrdinalIgnoreCase)' in source
 assert 'uint.TryParse(idText, System.Globalization.NumberStyles.None' in source
 assert 'Items.Get(new ItemId(id))' in source
-assert 'string.Equals(matched.DisplayName, label, StringComparison.OrdinalIgnoreCase)' in source
+assert 'string.Equals(item.DisplayName, label, StringComparison.OrdinalIgnoreCase)' in source
 assert 'ItemInfo? info = LookupItem(name);' in source
 assert 'return Items.Lookup(name);' in source, "ordinary names must still work"
 assert "RoughWoodBlockId" in source, "issue #16 fix must remain intact"
 
-print("PASS: 66 valid Variant <ID> entries in 195 original groups, "
-      "Mirage collectible selected over same-named weapon, "
-      "verified ID/display guard, and original catalogue preserved")
+# The 22 unnumbered vanity entries from the pre-0.4.4 user INI must
+# continue resolving without modifying that saved user file.
+legacy = dict(
+    (label, int(item_id))
+    for label, item_id in re.findall(r'\["([^"]+ Variant)"\] = (\d+)u,', source)
+)
+assert len(legacy) == 22, f"expected 22 legacy vanity identities, got {len(legacy)}"
+assert "LegacyUnnumberedVariantIds.TryGetValue(name, out var legacyId)" in source
+assert 'name.EndsWith(bareMarker, StringComparison.OrdinalIgnoreCase)' in source
+assert 'GetVerifiedVariant(name[..^bareMarker.Length], legacyId, regularVanity: true)' in source
+assert 'item.Name.StartsWith("Vanity_", StringComparison.OrdinalIgnoreCase)' in source
+assert 'item.Name.Contains("TwitchDrop", StringComparison.OrdinalIgnoreCase)' in source
+assert ("Flame Pact Gloves Variant" in legacy
+        and legacy["Flame Pact Gloves Variant"] == 3829626055)
+assert ("Hunter Boots Variant" in legacy
+        and legacy["Hunter Boots Variant"] == 1965220207)
+
+for label, item_id in legacy.items():
+    plain_label = label.removesuffix(" Variant")
+    assert any(group.startswith("Vanity Outfits ") and display == plain_label
+               and numeric_id == item_id
+               for group, display, numeric_id, _debug, _category in variants), (
+        f"legacy name {label} must have the same explicit ID in the shipped INI"
+    )
+    debug, display, category = items[item_id]
+    assert category == "Equipment" and display.casefold() == plain_label.casefold()
+    assert debug.startswith("Vanity_") and "twitchdrop" not in debug.casefold(), (
+        f"legacy variant must resolve to the regular vanity identity: {label}"
+    )
+assert not any(
+    entry.endswith(" Variant")
+    for names in groups.values()
+    for entry in names
+), "shipped defaults must not contain unnumbered Variant suffixes"
+
+print("PASS: 88 valid Variant <ID> entries (66 original numbered + 22 repaired) "
+      "in 195 original groups; Mirage song sheet not weapon; "
+      "22 legacy unnumbered labels resolve to audited non-Twitch vanity IDs")
