@@ -14,6 +14,8 @@ on:
       - 'SurvivalQoL/**'
       - 'tests/survival-qol/**'
       - 'EndlessChests/**'
+      - 'NoClipToggle/**'
+      - 'tests/noclip-toggle/**'
   pull_request:
     paths:
       - '.github/workflows/kiln-latest.yml'
@@ -22,6 +24,8 @@ on:
       - 'scripts/build-compat.py'
       - 'tests/kiln-release/**'
       - 'tests/survival-qol/**'
+      - 'NoClipToggle/**'
+      - 'tests/noclip-toggle/**'
   schedule:
     - cron: '17,47 * * * *'
   workflow_dispatch:
@@ -102,7 +106,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        mod: [SurvivalQoL, EndlessChests]
+        mod: [SurvivalQoL, EndlessChests, NoClipToggle]
     runs-on: ubuntu-24.04
     env:
       GITHUB_TOKEN: ${{ github.token }}
@@ -130,6 +134,9 @@ jobs:
             SurvivalQoL)
               python3 -m unittest discover -s tests/survival-qol -p 'test_*.py' -v
               dotnet run --project tests/survival-qol/DepletionMathTests/DepletionMathTests.csproj -c Release
+              ;;
+            NoClipToggle)
+              python3 -m unittest discover -s tests/noclip-toggle -p 'test_*.py' -v
               ;;
           esac
 
@@ -173,7 +180,7 @@ jobs:
       KILN_RELEASE_VERSION: ${{ needs.check.outputs.release_version }}
       EXPECTED_SOURCE_SHA: ${{ needs.check.outputs.source_sha }}
     steps:
-      - name: Download both completed, verified packages
+      - name: Download all three completed, verified packages
         uses: actions/download-artifact@v4
         with:
           pattern: kiln-${{ needs.check.outputs.release_version }}-*
@@ -194,6 +201,7 @@ jobs:
           specs = {
               "SurvivalQoL": "survival-qol-*.zip",
               "EndlessChests": "endless-chests-kiln-*.zip",
+              "NoClipToggle": "noclip-toggle-*.zip",
           }
           version = os.environ["KILN_RELEASE_VERSION"]
           tag = os.environ["KILN_RELEASE_TAG"]
@@ -226,9 +234,9 @@ jobs:
               if set(hashes) != wanted or any(len(h) != 64 for h in hashes.values()):
                   raise SystemExit(f"Missing verified official NuGet checksums for {mod}")
               if kiln_sha is not None and kiln_sha != checked:
-                  raise SystemExit("Two mods used different Kiln commits")
+                  raise SystemExit("Mods used different Kiln commits")
               if asset_hashes is not None and asset_hashes != hashes:
-                  raise SystemExit("Two mods used different official SDK packages")
+                  raise SystemExit("Mods used different official SDK packages")
               kiln_sha, asset_hashes = checked, hashes
               for asset in (zips[0], metadata):
                   dest = output / asset.name
@@ -241,7 +249,7 @@ jobs:
               raise SystemExit("Missing Endless Chests editable defaults INI")
           copy2(ini, output / ini.name)
           published.append(ini.name)
-          if len(published) != 5:
+          if len(published) != 7:
               raise SystemExit(f"Incorrect asset count: {published}")
           print(f"Verified official Kiln {tag}@{kiln_sha} for mod source {source_sha}")
           for asset in published:
@@ -262,9 +270,9 @@ jobs:
           body: |
             Automated compatibility build for **official Kiln ${{ needs.check.outputs.release_tag }}**.
 
-            - **Mods built:** Survival QoL and Endless Chests. Cross-base Storage research is archived, not shipped.
+            - **Mods built:** Survival QoL, Endless Chests and NoClip Toggle. Cross-base Storage research is archived, not shipped.
             - **Mod source:** ${{ needs.check.outputs.source_sha }}
-            - **Checks:** release tag matches its published Git commit, official NuGet checksums verified, both mod builds and contract tests passed.
+            - **Checks:** release tag matches its published Git commit, official NuGet checksums verified, all three mod builds and contract tests passed.
             - **Provenance:** separate kiln-sdk-provenance-<mod>.json per mod, including the exact Kiln release, Git SHA and official SDK hashes.
 
             These are development compatibility prereleases, **not stable mod version upgrades or in-game acceptance**. Install manually through Kiln Library and back up saves before testing.
