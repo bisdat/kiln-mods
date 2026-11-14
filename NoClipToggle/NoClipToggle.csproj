@@ -1,0 +1,15 @@
+<Project Sdk="Kiln.Sdk/0.2.0-dev.27">
+  <PropertyGroup>
+    <KilnModId>noclip-toggle</KilnModId>
+    <KilnModName>NoClip Toggle</KilnModName>
+    <Version>0.1.0</Version>
+    <Authors>bisdat</Authors>
+    <Description>Remappable in-game NoClip toggle using Kiln's built-in safe movement rules.</Description>
+    <PackageProjectUrl>https://github.com/bisdat/kiln-mods</PackageProjectUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <KilnSide>both</KilnSide>
+    <KilnClients>none</KilnClients>
+    <KilnServices>Client;Ui;Network;Rules;Players;Permissions</KilnServices>
+    <KilnGameIds>None</KilnGameIds>
+  </PropertyGroup>
+</Project>

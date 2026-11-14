@@ -18,7 +18,7 @@ import time
 from urllib.request import Request, urlopen
 
 ROOT = Path(__file__).resolve().parents[1]
-MOD_IDS = {"SurvivalQoL": "survival-qol", "EndlessChests": "endless-chests-kiln"}
+MOD_IDS = {"SurvivalQoL": "survival-qol", "EndlessChests": "endless-chests-kiln", "NoClipToggle": "noclip-toggle"}
 SHA = re.compile(r"[0-9a-f]{40}")
 DIGEST = re.compile(r"[0-9a-fA-F]{64}")
 TAG = re.compile(r"v\d+\.\d+\.\d+-dev\.\d+")
@@ -141,7 +141,7 @@ def build(mod: str) -> None:
 def main() -> int:
     try:
         if len(sys.argv) != 2:
-            raise ValueError("usage: build-compat.py SurvivalQoL|EndlessChests")
+            raise ValueError("usage: build-compat.py SurvivalQoL|EndlessChests|NoClipToggle")
         build(sys.argv[1])
     except (OSError, ValueError, subprocess.CalledProcessError) as exc:
         print(f"Kiln compatibility build FAILED: {exc}", file=sys.stderr)
