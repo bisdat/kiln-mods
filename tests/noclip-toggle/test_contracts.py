@@ -16,7 +16,8 @@ class NoClipToggleContractTests(unittest.TestCase):
         self.assertIn('<KilnClients>none</KilnClients>', PROJECT)
 
     def test_key_schedules_to_server_tick(self):
-        self.assertIn('"Ctrl+F10"', SOURCE)
+        self.assertIn('"Backquote"', SOURCE)
+        self.assertNotIn('"Ctrl+F10"', SOURCE)
         self.assertIn('KeyBindings.Register(', SOURCE)
         self.assertIn('Context.Scheduler.Post(', SOURCE)
 

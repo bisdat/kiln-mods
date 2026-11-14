@@ -4,8 +4,8 @@ A tiny client/server Kiln mod that provides a **remappable hotkey** for Kiln's
 native NoClip feature. This mod changes **no movement physics, collisions or
 terrain**; Kiln 0.2.0-dev.27+ performs flight and safe-position recovery.
 
-**Version:** 0.1.0 (first test candidate; in-game hotkey untested)  
-**Default shortcut:** **Ctrl+F10**
+**Version:** 0.1.0 (initial Ctrl+F10 hotkey passed in-game; backtick default awaits verification)  
+**Default shortcut:** **backtick (`)**
 
 ## Usage
 
@@ -13,11 +13,16 @@ terrain**; Kiln 0.2.0-dev.27+ performs flight and safe-position recovery.
    enable it in your `core-mods` profile, and start Enshrouded with Kiln dev.27+.
 2. In the active profile's `config/rules.json` set `"allowNoClip": true`.
    The server/world owner must permit NoClip.
-3. Enter your hosted world, press **Ctrl+F10** once to enable, again to disable.
+3. Enter your hosted world, press **backtick (`)** once to enable, again to disable.
    The HUD shows `NoClip ON`, `NoClip OFF`, or Kiln's refusal reason.
 4. Open the in-game Kiln menu with **Insert**, choose **Keys**, and remap
    **NoClip Toggle** to another key. Kiln saves that in the profile's
    `config/keybinds.json`.
+
+**Upgrading from the earlier Ctrl+F10 build:** Kiln remembers the key you
+previously used, so the new default does **not** override an existing
+binding. In **Insert → Keys**, reset **NoClip Toggle** to its default
+(or rebind it directly to the backtick key) to switch to backtick (`).
 
 The mod supports a local hosted world directly on the server tick. It also
 has an optional client/server channel for a Kiln multiplayer server with this

@@ -40,10 +40,10 @@ public sealed class NoClipToggleMod : Mod
             .Register<ToggleReply>((reply, _) => Show(reply), NetDirection.ToClient);
 
         if (Client.Available && Client.IsClient && Ui.Available)
-            _key = KeyBindings.Register(BindingId, "Ctrl+F10", OnHotkey,
+            _key = KeyBindings.Register(BindingId, "Backquote", OnHotkey,
                 "Toggle Kiln NoClip", "NoClip Toggle");
 
-        Log.Info("NoClip Toggle v0.1.0 loaded; configurable key Ctrl+F10. Kiln 0.2.0-dev.27+ required.");
+        Log.Info("NoClip Toggle v0.1.0 loaded; configurable key Backquote. Kiln 0.2.0-dev.27+ required.");
     }
 
     private void OnHotkey()

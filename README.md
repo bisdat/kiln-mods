@@ -63,7 +63,7 @@ Standalone data-only Kiln mod v0.1.0: changes `Tool_T6_FishingRod_epic` Fishing 
 [NoClip Toggle guide](NoClipToggle/README.md) |
 [Packaging workflow](.github/workflows/noclip-toggle.yml)
 
-Standalone Kiln mod v0.1.0 (test candidate) for Kiln 0.2.0-dev.27 or newer. **Ctrl+F10** toggles Kiln's native NoClip with HUD feedback; remap the shortcut under Kiln → Keys. Unlike implementing separate collision handling, this mod delegates flight and safe-position recovery to Kiln. Hosted single-player uses the authoritative world tick; optional multiplayer requests are checked against Kiln's NoClip admin permission. The underlying Kiln NoClip behaviour passed Bazzite/Proton gameplay acceptance; this new keyboard convenience mod still needs in-game verification.
+Standalone Kiln mod v0.1.0 (test candidate) for Kiln 0.2.0-dev.27 or newer. **backtick (`)** toggles Kiln's native NoClip with HUD feedback; remap the shortcut under Kiln → Keys. Unlike implementing separate collision handling, this mod delegates flight and safe-position recovery to Kiln. Hosted single-player uses the authoritative world tick; optional multiplayer requests are checked against Kiln's NoClip admin permission. Kiln's native NoClip and the initial toggle passed in-game on Bazzite/Proton. If an earlier keybinding was saved, reset it under Kiln → Keys to adopt the new backtick default.
 
 ## Licence
 
