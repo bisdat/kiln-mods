@@ -22,7 +22,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: noclip-toggle-build
+  group: noclip-toggle-build-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -47,3 +47,41 @@ jobs:
             bin/Release/kiln-sdk-provenance.json
           if-no-files-found: error
           retention-days: 90
+
+  release:
+    name: Publish accepted NoClip Toggle v0.1.1
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: package
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: noclip-toggle-0.1.1
+          path: dist
+      - name: Check release package
+        shell: bash
+        run: test -s dist/noclip-toggle-0.1.1.zip
+      - name: Publish independent versioned GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: noclip-toggle-v0.1.1
+          target_commitish: ${{ github.sha }}
+          name: NoClip Toggle v0.1.1
+          draft: false
+          prerelease: false
+          fail_on_unmatched_files: true
+          generate_release_notes: true
+          body: |
+            NoClip Toggle v0.1.1: remappable unmodified backtick key, tested in-game
+            on Bazzite Linux/Steam Proton. Uses Kiln's built-in NoClip instead of
+            adding collision or flight hooks.
+
+            Requires Kiln 0.2.0-dev.27+ and allowNoClip: true in the active profile's
+            rules.json. NoClip ends safely inside terrain using Kiln's native recovery.
+
+            Upgrading from the original Ctrl+F10 test build? In the Kiln Keys menu,
+            reset NoClip Toggle to its default to use backtick. Kiln preserves
+            previously chosen bindings.
+          files: dist/noclip-toggle-0.1.1.zip
