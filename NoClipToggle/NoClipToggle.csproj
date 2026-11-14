@@ -2,7 +2,7 @@
   <PropertyGroup>
     <KilnModId>noclip-toggle</KilnModId>
     <KilnModName>NoClip Toggle</KilnModName>
-    <Version>0.1.0</Version>
+    <Version>0.1.1</Version>
     <Authors>bisdat</Authors>
     <Description>Remappable in-game NoClip toggle using Kiln's built-in safe movement rules.</Description>
     <PackageProjectUrl>https://github.com/bisdat/kiln-mods</PackageProjectUrl>

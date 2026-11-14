@@ -4,12 +4,12 @@ A tiny client/server Kiln mod that provides a **remappable hotkey** for Kiln's
 native NoClip feature. This mod changes **no movement physics, collisions or
 terrain**; Kiln 0.2.0-dev.27+ performs flight and safe-position recovery.
 
-**Version:** 0.1.0 (initial Ctrl+F10 hotkey passed in-game; backtick default awaits verification)  
+**Version:** 0.1.1 (backtick shortcut and NoClip toggle accepted in-game on Bazzite/Proton)  
 **Default shortcut:** **backtick key**
 
 ## Usage
 
-1. Install the packaged `noclip-toggle-0.1.0.zip` through the Kiln Launcher,
+1. Install the packaged `noclip-toggle-0.1.1.zip` through the Kiln Launcher,
    enable it in your `core-mods` profile, and start Enshrouded with Kiln dev.27+.
 2. In the active profile's `config/rules.json` set `"allowNoClip": true`.
    The server/world owner must permit NoClip.
@@ -44,10 +44,10 @@ Offline single-player does not have normal chat input. For the local
 Run `bash scripts/build-compat.sh NoClipToggle` from the repository root.
 The builder selects the latest **published** Kiln dev release, verifies its
 release SHA and SDK archive checksums, compiles with .NET 10, then runs
-`KilnPack`. The output is `bin/Release/noclip-toggle-0.1.0.zip`.
+`KilnPack`. The output is `bin/Release/noclip-toggle-0.1.1.zip`.
 
 Alternatively use the **Package NoClip Toggle** GitHub Actions workflow
-and download its `noclip-toggle-0.1.0` artifact from a successful build.
+and download its `noclip-toggle-0.1.1` artifact from a successful build.
 
 ## Acceptance checklist
 

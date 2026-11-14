@@ -41,9 +41,9 @@ jobs:
       - name: Upload installable ZIP and SDK provenance
         uses: actions/upload-artifact@v4
         with:
-          name: noclip-toggle-0.1.0
+          name: noclip-toggle-0.1.1
           path: |
-            bin/Release/noclip-toggle-0.1.0.zip
+            bin/Release/noclip-toggle-0.1.1.zip
             bin/Release/kiln-sdk-provenance.json
           if-no-files-found: error
           retention-days: 90
