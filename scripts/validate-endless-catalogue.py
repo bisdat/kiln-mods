@@ -16,7 +16,7 @@ RESOLVER = ROOT / "EndlessChests/ItemCatalogue.cs"
 MOD = ROOT / "EndlessChests/EndlessChestsMod.cs"
 assert SDK.is_file(), "Build the workflow-pinned Kiln SDK before validation"
 data = json.loads(CAT.read_text(encoding="utf-8"))
-assert data["schemaVersion"] == 1
+assert data["schemaVersion"] == 2
 assert data["kilnSdkCommit"] == "eba9a5e1e0e0044a9146fdd53021a751e2957030"
 
 registry = {}
@@ -28,7 +28,7 @@ for line in SDK.read_text(encoding="utf-8").splitlines():
 
 items, groups = data["items"], data["groups"]
 assert len(groups) == 195
-assert len(items) == 2908
+assert len(items) == 2934
 assert len(groups) == len(set(name.casefold() for name in groups)), "case-colliding groups"
 
 for raw_id, item in items.items():
@@ -40,7 +40,7 @@ for raw_id, item in items.items():
     assert expected[0] == actual[0] and expected[1].casefold() == actual[1].casefold()
     assert expected[2] == actual[2], (raw_id, expected, actual)
 
-total = resolved = unresolved = 0
+total = resolved = unresolved = variants = variant_refs = 0
 used = set()
 for group, members in groups.items():
     assert isinstance(group, str) and group and isinstance(members, list) and members
@@ -53,15 +53,31 @@ for group, members in groups.items():
             resolved += 1
         else:
             assert isinstance(entry, dict), (group, entry)
-            assert set(entry).issubset({"unresolved", "candidates"})
-            assert isinstance(entry.get("unresolved"), str) and entry["unresolved"]
-            if "candidates" in entry:
-                assert isinstance(entry["candidates"], list)
-                assert all(isinstance(x, int) and x in registry for x in entry["candidates"])
-            unresolved += 1
+            if "variants" in entry:
+                assert set(entry) == {"variants"}, (group, entry)
+                refs = entry["variants"]
+                assert isinstance(refs, list) and 2 <= len(refs) <= 64
+                assert all(type(x) is int and str(x) in items for x in refs), (group, entry)
+                assert len(set(refs)) == len(refs), (group, entry)
+                variants += 1
+                variant_refs += len(refs)
+                used.update(str(x) for x in refs)
+                resolved += 1
+            else:
+                assert set(entry).issubset({"unresolved", "candidates"})
+                assert isinstance(entry.get("unresolved"), str) and entry["unresolved"]
+                if "candidates" in entry:
+                    assert isinstance(entry["candidates"], list)
+                    assert all(isinstance(x, int) and x in registry for x in entry["candidates"])
+                unresolved += 1
 assert total == 3464, total
-assert resolved == 3437, resolved
-assert unresolved == 27, unresolved
+assert resolved == 3464, resolved
+assert unresolved == 0, unresolved
+assert variants == 11 and variant_refs == 39, (variants, variant_refs)
+assert all(
+    sum(len(e["variants"]) if isinstance(e, dict) and "variants" in e else 1 for e in members) <= 72
+    for members in groups.values()
+), "Group exceeds maximum 72 Magic Chest slots"
 assert set(items) == used, "Unreferenced item definitions or missing IDs"
 
 def contains(group, item_id):
@@ -116,14 +132,26 @@ assert groups["Treasure Maps"][0] == 2381061644 # lore map at original unresolve
 assert groups["Treasure Maps"][1] == 3491672504 # separate valid decorative treasure map
 assert contains("Vanity Outfits 1", 3203382450) # real Royal Gloves, not NO_ placeholder
 
+# Final 27 catalogue slots now point to current IDs or explicit variant sets.
+assert contains("Backpacks", 3728213390)  # Current craftable Small Backpack
+assert contains("Backpacks", 3773368910)  # Current craftable Medium Backpack
+assert contains("Backpacks", 996296787)   # Current craftable Large Backpack
+assert 4231879756 not in groups["Backpacks"] # Old Small Backpack with no current recipe
+assert contains("Flower Pots 1", 673405648) # distinct unsized CNY Fern pot
+assert contains("Miscellaneous 2", 1313835688) # SDK spells Resource<two spaces>Bundle I
+assert registry[1313835688] == (
+    "Prop_Decoration_T1_RessourceBundle_01", "Resource  Bundle I", "BuildTools")
+assert any(isinstance(e, dict) and len(e.get("variants", [])) == 14 for e in groups["Books"])
+
+
 # All 133 old '<name> Loot' references now point to their unique _Loot
 # identities. Their game display names do not have the word 'Loot'.
 loot = sum(
-    entry.endswith("_Loot")
-    for group in groups.values()
-    for id_ in group
-    if isinstance(id_, int)
-    for entry in [items[str(id_)]["debugName"]]
+    items[str(id_)]["debugName"].endswith("_Loot")
+    for members in groups.values()
+    for slot in members
+    for id_ in (slot["variants"] if isinstance(slot, dict) and "variants" in slot else
+                [slot] if isinstance(slot, int) else [])
 )
 assert loot >= 133, loot
 
@@ -143,7 +171,8 @@ assert "continue;" in runtime.split('if (!result.Succeeded)', 1)[-1]
 
 print(
     f"PASS: {len(groups)} canonical groups, {total} positions, "
-    f"{resolved} identity-verified references ({len(items)} distinct IDs), "
+    f"{resolved} resolved catalogue positions ({len(items)} distinct IDs, "
+    f"{variants} multi-variant groups / {variant_refs} variant IDs), "
     f"{unresolved} explicit unresolved; Mycelium, Indigo, Basalt, "
     "Grasshopper, Scarab, Torch, Oven, Loot and previous fixes pinned"
 )
