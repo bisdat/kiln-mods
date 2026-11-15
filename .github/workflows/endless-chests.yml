@@ -66,6 +66,9 @@ jobs:
       - name: Verify all JSON identities and unresolved entries against pinned SDK data
         run: python3 scripts/validate-endless-catalogue.py
 
+      - name: Verify 100 audited catalogue identity repairs
+        run: python3 scripts/test-endless-catalogue-repairs.py
+
       - name: Stage editable settings and canonical JSON for the release
         run: |
           cp EndlessChests/defaults/endless-chests.defaults.ini bin/Release/endless-chests.defaults.ini

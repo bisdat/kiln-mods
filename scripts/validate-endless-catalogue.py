@@ -28,7 +28,7 @@ for line in SDK.read_text(encoding="utf-8").splitlines():
 
 items, groups = data["items"], data["groups"]
 assert len(groups) == 195
-assert len(items) == 2812
+assert len(items) == 2908
 assert len(groups) == len(set(name.casefold() for name in groups)), "case-colliding groups"
 
 for raw_id, item in items.items():
@@ -60,8 +60,8 @@ for group, members in groups.items():
                 assert all(isinstance(x, int) and x in registry for x in entry["candidates"])
             unresolved += 1
 assert total == 3464, total
-assert resolved == 3337, resolved
-assert unresolved == 127, unresolved
+assert resolved == 3437, resolved
+assert unresolved == 27, unresolved
 assert set(items) == used, "Unreferenced item definitions or missing IDs"
 
 def contains(group, item_id):
@@ -95,6 +95,26 @@ for group in ("Cooking Stations", "Production Places"):
 assert contains("Fishing Bait", 2342031255)  # Grasshopper
 assert contains("Fishing Bait", 700318057)  # Scarab
 assert registry[2342031255][2] == registry[700318057][2] == "Ammunition"
+
+# Reconciled legacy IDs: verify semantics and numerical selection.
+assert contains("Magic Chests", 4044650321) # 24-slot magic storage
+assert contains("Magic Chests", 30818586) # 72-slot magic storage
+assert contains("Flower Pots 1", 4272163256) # tiny pink flower pot
+assert contains("Flower Pots 1", 3643820464) # long yellow wall flower pot
+assert contains("Flower Pots 2", 523366717) # small monstera plant pot
+assert contains("Cemetery", 1653941305) # tombstone inscription (quoted display)
+assert contains("Mannequin", 2681848943) # Back Off pose (quoted display)
+assert contains("Wall Decorations 1", 1688806746) # Wolf's Choir (quoted display)
+assert contains("Queen Pikemead Statue", 3883219916) # collectible piece I
+assert contains("Queen Pikemead Statue", 1556757497) # collectible piece II
+assert contains("Queen Pikemead Statue", 2624605842) # collectible piece III
+assert contains("Wall Tapestry", 3603348812) # tapestry piece I
+assert contains("Wall Tapestry", 2252200136) # tapestry piece II
+assert contains("Throwables", 1462961786) # fire grenade, not test ball
+assert not contains("Throwables", 1036114942)
+assert groups["Treasure Maps"][0] == 2381061644 # lore map at original unresolved position
+assert groups["Treasure Maps"][1] == 3491672504 # separate valid decorative treasure map
+assert contains("Vanity Outfits 1", 3203382450) # real Royal Gloves, not NO_ placeholder
 
 # All 133 old '<name> Loot' references now point to their unique _Loot
 # identities. Their game display names do not have the word 'Loot'.

@@ -47,6 +47,11 @@
       "debugName": "Food_T2_processed_meat_GrilledGame",
       "category": "Consumables"
     },
+    "19079311": {
+      "displayName": "\"Round-Billed Sailer On One Leg\"",
+      "debugName": "Prop_Decoration_Comfort_T4_Wall_Painting_4",
+      "category": "BuildTools"
+    },
     "19466408": {
       "displayName": "Spider Web I",
       "debugName": "Prop_Decoration_T5_SpiderWeb_01",
@@ -71,6 +76,11 @@
       "displayName": "Ornate Handpan",
       "debugName": "Instrument_Hangdrum_Rare",
       "category": "Instrument"
+    },
+    "30818586": {
+      "displayName": "Enormous Magic Chest",
+      "debugName": "Prop_Storage_72_T6_Magic",
+      "category": "BuildTools"
     },
     "31257423": {
       "displayName": "Grilled Fatty Meat",
@@ -232,6 +242,11 @@
       "debugName": "Block_T4_Sandstone_Rough_CRAFTING",
       "category": "BuildTools"
     },
+    "75272151": {
+      "displayName": "Tombstone \"Together Again\"",
+      "debugName": "Prop_Decoration_T3_Tombstone9",
+      "category": "BuildTools"
+    },
     "78841720": {
       "displayName": "Fell Wispwyvern Trophy",
       "debugName": "Prop_Decoration_Boss_Trophy_Fell_Lizard_01_wood",
@@ -357,6 +372,11 @@
       "debugName": "Prop_Decoration_T4_Bucket_Iron",
       "category": "BuildTools"
     },
+    "120176694": {
+      "displayName": "White Flower",
+      "debugName": "Flower_Pot_Small_Ground_White",
+      "category": "BuildTools"
+    },
     "120961786": {
       "displayName": "Small Polished Wooden Cabinet",
       "debugName": "Prop_Decoration_T2_Cabinet_Small_Ornamented_Wooden",
@@ -472,6 +492,11 @@
       "debugName": "Prop_Decoration_T6_Fence_Wood_Simple_01",
       "category": "BuildTools"
     },
+    "157147909": {
+      "displayName": "Red Flower",
+      "debugName": "Flower_Pot_Small_Ground_Red",
+      "category": "BuildTools"
+    },
     "159114158": {
       "displayName": "Iron Bars",
       "debugName": "Material_T4_Iron_Bar",
@@ -486,6 +511,11 @@
       "displayName": "Greatsword Gauntlets",
       "debugName": "Armor_T6_Unique_Greatsword_Arms",
       "category": "Equipment"
+    },
+    "163823517": {
+      "displayName": "Yellow Flower",
+      "debugName": "Flower_Pot_Long_Ground_Yellow",
+      "category": "BuildTools"
     },
     "166917849": {
       "displayName": "Wet Boot",
@@ -511,6 +541,11 @@
       "displayName": "Large Dark Crystal",
       "debugName": "Collection_skeletons_01_crystals_crystal_01",
       "category": "Collectibles"
+    },
+    "171960142": {
+      "displayName": "Pikemead Statue Showcase",
+      "debugName": "Prop_Collection_06_Statues_Showcase_PikeMead",
+      "category": "BuildTools"
     },
     "173591857": {
       "displayName": "Gem of Soul Reaping",
@@ -602,6 +637,11 @@
       "debugName": "Prop_Decoration_T3_Basket_05",
       "category": "BuildTools"
     },
+    "209497692": {
+      "displayName": "Greater Shroud Survival Flask",
+      "debugName": "Consumable_Potion_Flask_Fog_Survival_Flask_T3",
+      "category": "Consumables"
+    },
     "210614111": {
       "displayName": "Large Round Stone Window Frame",
       "debugName": "Prop_Decoration_T3_Window_Round_Ornamented_Large_Stone_Frame",
@@ -615,6 +655,11 @@
     "213165869": {
       "displayName": "Small Salon Mirror",
       "debugName": "Prop_Decoration_T5_Mirror_Small",
+      "category": "BuildTools"
+    },
+    "213939880": {
+      "displayName": "Small Chest",
+      "debugName": "Prop_Storage_24_T1_Box",
       "category": "BuildTools"
     },
     "215344206": {
@@ -787,6 +832,11 @@
       "debugName": "Food_T7_dish_fruit_FruitSalad",
       "category": "Consumables"
     },
+    "274681682": {
+      "displayName": "Cactus Plant",
+      "debugName": "Flower_Pot_Round_Large_Cactus",
+      "category": "BuildTools"
+    },
     "276744828": {
       "displayName": "Iron Block",
       "debugName": "Block_T4_Metal_Iron_CRAFTING",
@@ -892,6 +942,11 @@
       "debugName": "_Prop_Decoration_T5_Door_Vault_Round",
       "category": "BuildTools"
     },
+    "308344880": {
+      "displayName": "Pink Flower",
+      "debugName": "Flower_Pot_Long_Ground_Pink",
+      "category": "BuildTools"
+    },
     "310129061": {
       "displayName": "Well Block",
       "debugName": "Block_T4_Dungeon_Stone_WellWall_REWARD",
@@ -907,6 +962,11 @@
       "debugName": "Prop_Decoration_DLC_EarlyAccessReward_LogoSymbol",
       "category": "BuildTools"
     },
+    "311508484": {
+      "displayName": "Cauldron",
+      "debugName": "Prop_Component_T5_Black_Cauldron",
+      "category": "BuildTools"
+    },
     "312775854": {
       "displayName": "Gem of Cleansing",
       "debugName": "T7_Gem_GemOfCleansing",
@@ -915,6 +975,11 @@
     "313933079": {
       "displayName": "Bamboo Barricade III",
       "debugName": "Prop_Decoration_T6_Barricade_Bamboo_01_C",
+      "category": "BuildTools"
+    },
+    "320245652": {
+      "displayName": "Mannequin \"Look At Me\"",
+      "debugName": "Prop_Collection_Mannequin_Armor_pose02",
       "category": "BuildTools"
     },
     "321715549": {
@@ -1367,6 +1432,11 @@
       "debugName": "Prop_Decoration_Comfort2_T1_Table_Large",
       "category": "BuildTools"
     },
+    "467801292": {
+      "displayName": "Embervale Miniature Model",
+      "debugName": "Prop_Decoration_T7_Embervale_Miniature_WorldMap",
+      "category": "BuildTools"
+    },
     "468594079": {
       "displayName": "Snowfall",
       "debugName": "ColorPalette_T5_ColorPalette_03",
@@ -1447,6 +1517,11 @@
       "debugName": "_Prop_Decoration_Boss_Trophy_critterQueen_04_gold",
       "category": "BuildTools"
     },
+    "501208175": {
+      "displayName": "Mannequin \"Let Me Serve You\"",
+      "debugName": "Prop_Collection_Mannequin_Armor_pose06",
+      "category": "BuildTools"
+    },
     "506636559": {
       "displayName": "Papyrus Seedling",
       "debugName": "_T6_Seedling_Tree_Papyrus",
@@ -1497,6 +1572,11 @@
       "debugName": "Ammo_T3_Spell_Ice_Bolt_lvl15_Eternal",
       "category": "Ammunition"
     },
+    "523366717": {
+      "displayName": "Monstera Plant",
+      "debugName": "Flower_Pot_Small_Monstera",
+      "category": "BuildTools"
+    },
     "523691097": {
       "displayName": "Collection Of Books III",
       "debugName": "Prop_Decoration_Book_Pile_06_F",
@@ -1545,6 +1625,11 @@
     "533387743": {
       "displayName": "Water Barrel",
       "debugName": "Prop_Decoration_T2_Barrel_Wooden_water_container",
+      "category": "BuildTools"
+    },
+    "533905592": {
+      "displayName": "Pink Wall Flower",
+      "debugName": "Flower_Pot_Small_Wall_Pink",
       "category": "BuildTools"
     },
     "536528154": {
@@ -1997,6 +2082,11 @@
       "debugName": "Prop_Decoration_T6_ThroneRoom_Column_Base",
       "category": "BuildTools"
     },
+    "674281730": {
+      "displayName": "Drak Stone Totem I",
+      "debugName": "Prop_Decoration_T6_StoneTotem_01_A",
+      "category": "BuildTools"
+    },
     "675151487": {
       "displayName": "Bamboo Container I",
       "debugName": "Prop_Decoration_T6_Container_01",
@@ -2372,6 +2462,11 @@
       "debugName": "Prop_Collection_Drink_Coaster_01",
       "category": "BuildTools"
     },
+    "811648475": {
+      "displayName": "Yellow Flower",
+      "debugName": "Flower_Pot_Tiny_Yellow",
+      "category": "BuildTools"
+    },
     "813310886": {
       "displayName": "Iron Prison Door",
       "debugName": "Prop_Decoration_T4_Door_Iron_Prison",
@@ -2381,6 +2476,11 @@
       "displayName": "Ginger",
       "debugName": "Food_T6_raw_vegetable_Ginger",
       "category": "Consumables"
+    },
+    "814558577": {
+      "displayName": "Grass",
+      "debugName": "Flower_Pot_Square_Gras",
+      "category": "BuildTools"
     },
     "814867063": {
       "displayName": "Ultimate Mana Potion +",
@@ -2952,6 +3052,11 @@
       "debugName": "Prop_Decoration_T2_Farm_Wheelbarrow",
       "category": "BuildTools"
     },
+    "1008591425": {
+      "displayName": "Room Divider \"Dragon\"",
+      "debugName": "Prop_Decoration_T5_CNY_Divider_04",
+      "category": "BuildTools"
+    },
     "1010285014": {
       "displayName": "Obsidian Block",
       "debugName": "Block_T5_Stone_Obsidian_Polished_REWARD",
@@ -3312,6 +3417,11 @@
       "debugName": "Prop_Decoration_T6_Basket_02",
       "category": "BuildTools"
     },
+    "1108531204": {
+      "displayName": "Room Divider \"Fish\"",
+      "debugName": "Prop_Decoration_T5_CNY_Divider_02",
+      "category": "BuildTools"
+    },
     "1109330340": {
       "displayName": "Gloom Monarch Helmet",
       "debugName": "Armor_T4_Warrior_Brawler_Helmet_Loot",
@@ -3552,6 +3662,11 @@
       "debugName": "Prop_Decoration_Comfort_T1_IlluminationFloor_StandingTorch",
       "category": "BuildTools"
     },
+    "1193821325": {
+      "displayName": "Mannequin \"Victory\"",
+      "debugName": "Prop_Collection_Mannequin_Armor_pose01",
+      "category": "BuildTools"
+    },
     "1195343032": {
       "displayName": "Fae Deer",
       "debugName": "Animal_Farming_Catdeer",
@@ -3597,9 +3712,19 @@
       "debugName": "Ammo_T7_Spell_Lightning_Wisp_lvl45_Eternal",
       "category": "Ammunition"
     },
+    "1209952398": {
+      "displayName": "Room Divider \"Flower\"",
+      "debugName": "Prop_Decoration_T5_CNY_Divider_01",
+      "category": "BuildTools"
+    },
     "1210445973": {
       "displayName": "Wall Banner",
       "debugName": "Prop_Decoration_T4_Banner_Wall",
+      "category": "BuildTools"
+    },
+    "1212068557": {
+      "displayName": "Yellow Flower",
+      "debugName": "Flower_Pot_Medium_Yellow",
       "category": "BuildTools"
     },
     "1212327967": {
@@ -3657,6 +3782,11 @@
       "debugName": "Build_TerrainMaterial_T2_TallTree_Bark",
       "category": "Materials"
     },
+    "1228884892": {
+      "displayName": "Fern",
+      "debugName": "Flower_Pot_Medium_Fern",
+      "category": "BuildTools"
+    },
     "1229707250": {
       "displayName": "Big Hollow's Eve Pumpkin I",
       "debugName": "Prop_Decoration_T1_Pumpkin_Halloween_Big_01b",
@@ -3665,6 +3795,11 @@
     "1234354752": {
       "displayName": "Jezmina's War Banner II",
       "debugName": "Prop_Decoration_T4_Banner_03",
+      "category": "BuildTools"
+    },
+    "1237085664": {
+      "displayName": "\"Still Life\"",
+      "debugName": "Prop_Decoration_Comfort_T4_Wall_Painting_1",
       "category": "BuildTools"
     },
     "1240806864": {
@@ -3842,6 +3977,11 @@
       "debugName": "Vanity_Tx_DLC_Supporter_Warrior_Chest",
       "category": "Equipment"
     },
+    "1302084846": {
+      "displayName": "Wooden Chest",
+      "debugName": "Prop_Storage_32_T2_Chest_Wood",
+      "category": "BuildTools"
+    },
     "1304815894": {
       "displayName": "Azure Russula",
       "debugName": "Food_T2_raw_bad_mushroom_AzureRussula",
@@ -3950,6 +4090,11 @@
     "1340326394": {
       "displayName": "Awning I",
       "debugName": "_Prop_Decoration_T4_Awning_01",
+      "category": "BuildTools"
+    },
+    "1343085975": {
+      "displayName": "\"Flower Vase\"",
+      "debugName": "Prop_Decoration_Comfort_T4_Wall_Painting_6",
       "category": "BuildTools"
     },
     "1343767117": {
@@ -4227,6 +4372,11 @@
       "debugName": "_Prop_Decoration_Boss_Trophy_critterQueen_03_iron",
       "category": "BuildTools"
     },
+    "1416182802": {
+      "displayName": "Pink Wall Flower",
+      "debugName": "Flower_Pot_Long_Wall_Pink",
+      "category": "BuildTools"
+    },
     "1418102633": {
       "displayName": "Sapphire",
       "debugName": "Animal_Pet_Cat_03_Bright",
@@ -4397,6 +4547,11 @@
       "debugName": "Prop_Component_T2_Sawblades",
       "category": "Materials"
     },
+    "1462961786": {
+      "displayName": "Incendiary Ball",
+      "debugName": "Consumable_Grenade_Fire_T5",
+      "category": "Weapons"
+    },
     "1463343087": {
       "displayName": "Signpost Pole",
       "debugName": "Prop_Signpost_writable",
@@ -4456,6 +4611,11 @@
       "displayName": "Scholar Of The Empyrean Gloves",
       "debugName": "Vanity_TX_PactMoon_Gloves",
       "category": "Equipment"
+    },
+    "1479156124": {
+      "displayName": "Grass",
+      "debugName": "Flower_Pot_Medium_Gras",
+      "category": "BuildTools"
     },
     "1482647793": {
       "displayName": "Warrior Trousers",
@@ -4607,6 +4767,11 @@
       "debugName": "Prop_Decoration_T6_Bamboo_Ladder_8m",
       "category": "BuildTools"
     },
+    "1526921804": {
+      "displayName": "Yellow Flower",
+      "debugName": "Flower_Pot_Square_Yellow",
+      "category": "BuildTools"
+    },
     "1528331711": {
       "displayName": "Archaic Lockpick",
       "debugName": "Lockpick_Ancient_T7",
@@ -4727,6 +4892,11 @@
       "debugName": "Armor_T2_Warrior_Tank_Chest",
       "category": "Equipment"
     },
+    "1556757497": {
+      "displayName": "Queen Pikemead Statue Piece",
+      "debugName": "Collection_StatuePikeMead_Piece_02",
+      "category": "Collectibles"
+    },
     "1558115984": {
       "displayName": "Springlands Dirt",
       "debugName": "Build_TerrainMaterial_T1_Dirt_Grassland",
@@ -4830,6 +5000,11 @@
     "1594637042": {
       "displayName": "Hand Spindle",
       "debugName": "Prop_Production_T2_NPC_Hand_Spindle",
+      "category": "BuildTools"
+    },
+    "1594649719": {
+      "displayName": "Yellow Flower",
+      "debugName": "Flower_Pot_Small_Ground_Yellow",
       "category": "BuildTools"
     },
     "1595396826": {
@@ -5062,14 +5237,29 @@
       "debugName": "ColorPalette_T7_ColorPalette_Reward_03",
       "category": "ColorPalette"
     },
+    "1653941305": {
+      "displayName": "Tombstone \"Always Loved\"",
+      "debugName": "Prop_Decoration_T3_Tombstone4",
+      "category": "BuildTools"
+    },
     "1657017057": {
       "displayName": "Mothling Gloves",
       "debugName": "Vanity_T3_moth_Gloves",
       "category": "Equipment"
     },
+    "1665119413": {
+      "displayName": "Fern",
+      "debugName": "Flower_Pot_Square_Fern",
+      "category": "BuildTools"
+    },
     "1665817031": {
       "displayName": "Book I",
       "debugName": "Prop_Decoration_Book_06",
+      "category": "BuildTools"
+    },
+    "1666087652": {
+      "displayName": "Monstera Plant",
+      "debugName": "Flower_Pot_Medium_Monstera",
       "category": "BuildTools"
     },
     "1666124680": {
@@ -5117,6 +5307,11 @@
       "debugName": "Armor_T3_Warrior_Tank_Helmet_Loot",
       "category": "Equipment"
     },
+    "1682046505": {
+      "displayName": "Pink Flower",
+      "debugName": "Flower_Pot_Small_Ground_Pink",
+      "category": "BuildTools"
+    },
     "1682430863": {
       "displayName": "Grandleaf Cabbage",
       "debugName": "Food_T7_raw_vegetable_Cabbage",
@@ -5136,6 +5331,11 @@
       "displayName": "Arc Lightning",
       "debugName": "Ammo_T4_Spell_Lightning_Channel_lvl22",
       "category": "Ammunition"
+    },
+    "1688806746": {
+      "displayName": "\"Wolf's Choir\"",
+      "debugName": "Prop_Decoration_Comfort_T4_Wall_Painting_8",
+      "category": "BuildTools"
     },
     "1692397990": {
       "displayName": "Cinderscale",
@@ -5165,6 +5365,11 @@
     "1699388154": {
       "displayName": "Stone Shingle Roof Block",
       "debugName": "Block_Roof_T1_StoneShingles_CRAFTING",
+      "category": "BuildTools"
+    },
+    "1699546726": {
+      "displayName": "Red Wall Flower",
+      "debugName": "Flower_Pot_Long_Wall_Red",
       "category": "BuildTools"
     },
     "1701190539": {
@@ -5407,6 +5612,11 @@
       "debugName": "Vanity_TX_Blacksmith_Chest",
       "category": "Equipment"
     },
+    "1763603908": {
+      "displayName": "White Wall Flower",
+      "debugName": "Flower_Pot_Small_Wall_White",
+      "category": "BuildTools"
+    },
     "1764672566": {
       "displayName": "Embervale Miniature Showcase",
       "debugName": "Prop_Collection_13_ancientLand_Showcase_embervaleMiniature",
@@ -5502,6 +5712,11 @@
       "debugName": "Prop_Decoration_T2_Bowl_Clay",
       "category": "BuildTools"
     },
+    "1788793277": {
+      "displayName": "Silver Chest",
+      "debugName": "Prop_Storage_40_T5_Chest_Silver",
+      "category": "BuildTools"
+    },
     "1789305300": {
       "displayName": "Improved Grappling Hook",
       "debugName": "Tool_Grappling_Hook_improved",
@@ -5515,6 +5730,11 @@
     "1790649468": {
       "displayName": "Iron Fell Crimson Critter Queen Trophy",
       "debugName": "_Prop_Decoration_Boss_Trophy_Red_critterQueen_03_iron",
+      "category": "BuildTools"
+    },
+    "1790893349": {
+      "displayName": "\"Temple Landscape\"",
+      "debugName": "Prop_Decoration_Comfort_T4_Wall_Painting_2",
       "category": "BuildTools"
     },
     "1791031659": {
@@ -5627,6 +5847,11 @@
       "debugName": "Prop_Decoration_DLC_Supporter_Ranger_Banner_Wall",
       "category": "BuildTools"
     },
+    "1824422740": {
+      "displayName": "Grapple Plant Flower",
+      "debugName": "Flower_Pot_Medium_DevilsClaw",
+      "category": "BuildTools"
+    },
     "1826581168": {
       "displayName": "Seared Fish Filet",
       "debugName": "Food_T6_processed_fish_grilled_epic_FishFilet_Medieval_Grill",
@@ -5681,6 +5906,11 @@
       "displayName": "Warden Gloves",
       "debugName": "Armor_T4_Warrior_Tank_Arms",
       "category": "Equipment"
+    },
+    "1843136640": {
+      "displayName": "Greater Shroud Survival Flask",
+      "debugName": "Consumable_Potion_Flask_Fog_Survival_Flask_T5",
+      "category": "Consumables"
     },
     "1843940779": {
       "displayName": "Entangle I",
@@ -5905,6 +6135,11 @@
     "1917066440": {
       "displayName": "Secret Wooden Door",
       "debugName": "Base_Door_Secret_Wood01",
+      "category": "BuildTools"
+    },
+    "1920323571": {
+      "displayName": "Two-colored Lily Flower",
+      "debugName": "Empty_Flower_Pot_CNY_Lily_03",
       "category": "BuildTools"
     },
     "1920341845": {
@@ -6182,6 +6417,11 @@
       "debugName": "Food_T6_processed_mushroom_Shiitake",
       "category": "Consumables"
     },
+    "2019603203": {
+      "displayName": "Fern",
+      "debugName": "Flower_Pot_Small_Ground_Fern",
+      "category": "BuildTools"
+    },
     "2020294526": {
       "displayName": "Medium Flask",
       "debugName": "Prop_Decoration_T4_Clutter_Flask_Medium",
@@ -6237,6 +6477,11 @@
       "debugName": "Prop_Decoration_T1_Window_Carved_Wooden_Frame_High",
       "category": "BuildTools"
     },
+    "2029375274": {
+      "displayName": "Red Wall Flower",
+      "debugName": "Flower_Pot_Small_Wall_Red",
+      "category": "BuildTools"
+    },
     "2029595221": {
       "displayName": "Eternal Ice Bolt III",
       "debugName": "Ammo_T6_Spell_Ice_Bolt_lvl36_Eternal",
@@ -6245,6 +6490,11 @@
     "2030375070": {
       "displayName": "Bronze Floor Candleholder",
       "debugName": "Prop_Decoration_Comfort_T3_Illumination_Floor",
+      "category": "BuildTools"
+    },
+    "2030809898": {
+      "displayName": "Mannequin \"Here I Come\"",
+      "debugName": "Prop_Collection_Mannequin_Armor_pose04",
       "category": "BuildTools"
     },
     "2031829546": {
@@ -6587,6 +6837,11 @@
       "debugName": "Vanity_T2_Explorer_Chest",
       "category": "Equipment"
     },
+    "2140221206": {
+      "displayName": "White Flower",
+      "debugName": "Flower_Pot_Medium_White",
+      "category": "BuildTools"
+    },
     "2141541288": {
       "displayName": "Archaic Shards",
       "debugName": "Material_T7_Archaic_Shards",
@@ -6777,6 +7032,11 @@
       "debugName": "Food_T7_dish_sweets_PomegranateTarte_Cake",
       "category": "Consumables"
     },
+    "2204868420": {
+      "displayName": "White Flower",
+      "debugName": "Flower_Pot_Square_White",
+      "category": "BuildTools"
+    },
     "2206143874": {
       "displayName": "Big Furry Straw Mat",
       "debugName": "Prop_Decoration_Comfort_T3_Floor_FurStraw_big",
@@ -6936,6 +7196,11 @@
       "displayName": "Tidecaller Pants",
       "debugName": "Armor_T6_Mage_Wizard_DPS_Legs",
       "category": "Equipment"
+    },
+    "2252200136": {
+      "displayName": "Wall Tapestry Piece",
+      "debugName": "Collection_WallTapestry_Piece_02",
+      "category": "Collectibles"
     },
     "2252405199": {
       "displayName": "Radiant Paladin Trousers",
@@ -7252,6 +7517,11 @@
       "debugName": "Prop_Decoration_T5_Flagpole_05",
       "category": "BuildTools"
     },
+    "2346845127": {
+      "displayName": "Big Bronze Statue \"Snake\"",
+      "debugName": "Prop_Decoration_T4_Statue_Snake",
+      "category": "BuildTools"
+    },
     "2348338388": {
       "displayName": "Wood Banister VI",
       "debugName": "Prop_Decoration_T1_Mines_Banister_4m_04",
@@ -7271,6 +7541,11 @@
       "displayName": "Fish Teeth",
       "debugName": "Material_T6_Fish_Teeth",
       "category": "Materials"
+    },
+    "2360020747": {
+      "displayName": "Heather Flower",
+      "debugName": "Flower_Pot_Low_Large_Heatherbush",
+      "category": "BuildTools"
     },
     "2361121883": {
       "displayName": "Revelwood Bone Key",
@@ -7342,6 +7617,11 @@
       "debugName": "Material_T3_Alchemical_Base",
       "category": "Materials"
     },
+    "2373764287": {
+      "displayName": "Red Flower",
+      "debugName": "Flower_Pot_Long_Ground_Red",
+      "category": "BuildTools"
+    },
     "2374813707": {
       "displayName": "Raw Rice",
       "debugName": "Material_T6_raw_Rice",
@@ -7371,6 +7651,11 @@
       "displayName": "Big Stone Statue \"Sword\"",
       "debugName": "Prop_Decoration_T3_Statue_Underworld",
       "category": "BuildTools"
+    },
+    "2381061644": {
+      "displayName": "The Dragons' Map",
+      "debugName": "8kLoreText_TreasureMap_completed_communityQuest_2025",
+      "category": "Collectibles"
     },
     "2382354867": {
       "displayName": "Emberguard Helmet",
@@ -7495,6 +7780,11 @@
     "2412815222": {
       "displayName": "Bronze Cyclops Trophy",
       "debugName": "Prop_Decoration_Boss_Trophy_Cyclops_02_bronze",
+      "category": "BuildTools"
+    },
+    "2413776919": {
+      "displayName": "Red Flower",
+      "debugName": "Flower_Pot_Medium_Red",
       "category": "BuildTools"
     },
     "2414905485": {
@@ -7686,6 +7976,11 @@
       "displayName": "Ultimate Health Potion +",
       "debugName": "_Consumable_Potion_Health_T6_HoT",
       "category": "Consumables"
+    },
+    "2463706463": {
+      "displayName": "Medium Magic Chest",
+      "debugName": "Prop_Storage_32_T2_Box_Magic",
+      "category": "BuildTools"
     },
     "2465126757": {
       "displayName": "Blast Furnace",
@@ -7987,6 +8282,11 @@
       "debugName": "Vanity_T5_Villager_Boots",
       "category": "Equipment"
     },
+    "2553292740": {
+      "displayName": "White Wall Flower",
+      "debugName": "Flower_Pot_Long_Wall_White",
+      "category": "BuildTools"
+    },
     "2553328095": {
       "displayName": "Bird Food",
       "debugName": "Material_T3_Turkey_Feeding",
@@ -8005,6 +8305,11 @@
     "2555652081": {
       "displayName": "Ornate Steel Door",
       "debugName": "_Prop_Decoration_T5_Door_Steel_ornate",
+      "category": "BuildTools"
+    },
+    "2557793336": {
+      "displayName": "White Flower",
+      "debugName": "Flower_Pot_Long_Ground_White",
       "category": "BuildTools"
     },
     "2559861108": {
@@ -8237,6 +8542,11 @@
       "debugName": "T7_Gem_GemOfDestiny",
       "category": "WeaponGem"
     },
+    "2624605842": {
+      "displayName": "Queen Pikemead Statue Piece",
+      "debugName": "Collection_StatuePikeMead_Piece_03",
+      "category": "Collectibles"
+    },
     "2626897582": {
       "displayName": "Banana",
       "debugName": "Food_T6_raw_fruit_YellowBanana",
@@ -8415,6 +8725,16 @@
     "2677755918": {
       "displayName": "Scrap Pot I",
       "debugName": "Prop_Decoration_T1_Pot_Scrap_01",
+      "category": "BuildTools"
+    },
+    "2678117077": {
+      "displayName": "Tombstone \"In Loving Memory\"",
+      "debugName": "Prop_Decoration_T3_Tombstone10",
+      "category": "BuildTools"
+    },
+    "2681848943": {
+      "displayName": "Mannequin \"Back Off\"",
+      "debugName": "Prop_Collection_Mannequin_Armor_pose03",
       "category": "BuildTools"
     },
     "2682698206": {
@@ -8637,6 +8957,11 @@
       "debugName": "Craftingstation_Carpenter_Workbench",
       "category": "BuildTools"
     },
+    "2741207192": {
+      "displayName": "Pink Flower",
+      "debugName": "Flower_Pot_Square_Pink",
+      "category": "BuildTools"
+    },
     "2741323263": {
       "displayName": "Red Fountain",
       "debugName": "Consumable_Toy_Fireworks_01_Red_Mortar_T4",
@@ -8751,6 +9076,11 @@
       "displayName": "Ranger Vest",
       "debugName": "Armor_T2_Ranger_Archer_DPS_Chest_Loot",
       "category": "Equipment"
+    },
+    "2779909442": {
+      "displayName": "Cactus Plant",
+      "debugName": "Flower_Pot_Medium_Cactus",
+      "category": "BuildTools"
     },
     "2780052662": {
       "displayName": "Cinder's Cradle Rubble",
@@ -8957,6 +9287,11 @@
       "debugName": "Collection_fossils_06_seaCreatures_crab_01",
       "category": "Collectibles"
     },
+    "2834235854": {
+      "displayName": "Huge Chest",
+      "debugName": "Prop_Storage_56_T4_Box",
+      "category": "BuildTools"
+    },
     "2835143812": {
       "displayName": "Legendary Runes",
       "debugName": "Material_T2_Token_WeaponUpgrade_Rune02",
@@ -9071,6 +9406,11 @@
       "displayName": "Sharpshooter Hood",
       "debugName": "Armor_T3_Ranger_Sniper_Helmet_Loot",
       "category": "Equipment"
+    },
+    "2862328564": {
+      "displayName": "Yellow Wall Flower",
+      "debugName": "Flower_Pot_Small_Wall_Yellow",
+      "category": "BuildTools"
     },
     "2862710104": {
       "displayName": "Stone Side Table",
@@ -9217,6 +9557,11 @@
       "debugName": "Food_T5_dish_vegetables_Pumpkinsoup",
       "category": "Consumables"
     },
+    "2907325488": {
+      "displayName": "Tombstone \"Forever In Our Hearts\"",
+      "debugName": "Prop_Decoration_T3_Tombstone6",
+      "category": "BuildTools"
+    },
     "2908094252": {
       "displayName": "Round Wooden Door Frame",
       "debugName": "Prop_Decoration_T0_Door_Round_Frame",
@@ -9285,6 +9630,11 @@
     "2927359933": {
       "displayName": "Round Iron Window Frame",
       "debugName": "Prop_Decoration_T4_Window_Round_Iron",
+      "category": "BuildTools"
+    },
+    "2927706943": {
+      "displayName": "Pink Flower",
+      "debugName": "Flower_Pot_Medium_Pink",
       "category": "BuildTools"
     },
     "2929854543": {
@@ -9802,6 +10152,11 @@
       "debugName": "Prop_Decoration_T7_Ancient_Deco_Mobile_01",
       "category": "BuildTools"
     },
+    "3072123387": {
+      "displayName": "Mannequin \"Strike A Pose\"",
+      "debugName": "Prop_Collection_Mannequin_Armor_pose05",
+      "category": "BuildTools"
+    },
     "3072220773": {
       "displayName": "Soldier Trousers",
       "debugName": "Armor_T4_Warrior_DPS_Legs",
@@ -9841,6 +10196,11 @@
       "displayName": "Soldier Helmet",
       "debugName": "Armor_T4_Warrior_DPS_Helmet",
       "category": "Equipment"
+    },
+    "3094342003": {
+      "displayName": "Red Flower",
+      "debugName": "Flower_Pot_Tiny_Red",
+      "category": "BuildTools"
     },
     "3094691927": {
       "displayName": "Fell Thunderbrute Trophy",
@@ -9937,6 +10297,16 @@
       "debugName": "Consumable_Necromancer_Grenade_T2",
       "category": "Weapons"
     },
+    "3125832694": {
+      "displayName": "Yellow Cymbidum Flower",
+      "debugName": "Empty_Flower_Pot_CNY_Cymbidum_01",
+      "category": "BuildTools"
+    },
+    "3126384595": {
+      "displayName": "Carved Secret Bookshelf Door",
+      "debugName": "Base_Shelf_Secret_02",
+      "category": "BuildTools"
+    },
     "3127174137": {
       "displayName": "Vase Of The Ancients II",
       "debugName": "Prop_Decoration_T7_Ancients_Vase_Small_02_B",
@@ -10015,6 +10385,11 @@
     "3147026944": {
       "displayName": "Granite Shingle Roof Block",
       "debugName": "Block_Roof_T5_Granite_Shingles",
+      "category": "BuildTools"
+    },
+    "3148035436": {
+      "displayName": "Pink Lily Flower",
+      "debugName": "Empty_Flower_Pot_CNY_Lily_01",
       "category": "BuildTools"
     },
     "3148270344": {
@@ -10202,6 +10577,16 @@
       "debugName": "Prop_Decoration_T4_Banner_Hollow_Large",
       "category": "BuildTools"
     },
+    "3201054228": {
+      "displayName": "\"Boar At Home\"",
+      "debugName": "Prop_Decoration_Comfort_T4_Wall_Painting_7",
+      "category": "BuildTools"
+    },
+    "3203382450": {
+      "displayName": "Royal Gloves",
+      "debugName": "Vanity_T2_Royal_Gloves",
+      "category": "Equipment"
+    },
     "3203425312": {
       "displayName": "Gem of Cold Composure",
       "debugName": "T5_Gem_GemOfColdComposure",
@@ -10351,6 +10736,11 @@
       "displayName": "Measuring Device I",
       "debugName": "Prop_Decoration_T7_AncientAstronomy_MeasuringDevice_01",
       "category": "BuildTools"
+    },
+    "3254225118": {
+      "displayName": "Diver’s Endurance Flask",
+      "debugName": "Consumable_Potion_Flask_SwimSprintStaminaReductionMod_T6",
+      "category": "Consumables"
     },
     "3255447356": {
       "displayName": "Mercenary Helmet",
@@ -10721,6 +11111,11 @@
       "displayName": "Meat and Hazelnut Skewer",
       "debugName": "_Food_T2_dish_grain_HazelnutSkewer",
       "category": "Consumables"
+    },
+    "3367211688": {
+      "displayName": "White Flower",
+      "debugName": "Flower_Pot_Tiny_White",
+      "category": "BuildTools"
     },
     "3369426388": {
       "displayName": "Waveborne Ritualist Pants",
@@ -11116,6 +11511,11 @@
       "displayName": "Archmage Chest",
       "debugName": "Armor_T4_Mage_Wizard_DPS_Chest_Loot",
       "category": "Equipment"
+    },
+    "3460936505": {
+      "displayName": "Room Divider \"Snake\"",
+      "debugName": "Prop_Decoration_T5_CNY_Divider_03",
+      "category": "BuildTools"
     },
     "3462191401": {
       "displayName": "Explosive Barrel",
@@ -11662,6 +12062,11 @@
       "debugName": "Armor_T6_Ranger_Archer_DPS_Chest_Loot",
       "category": "Equipment"
     },
+    "3603348812": {
+      "displayName": "Wall Tapestry Piece",
+      "debugName": "Collection_WallTapestry_Piece_01",
+      "category": "Collectibles"
+    },
     "3604850591": {
       "displayName": "Flower Soil",
       "debugName": "Build_TerrainMaterial_T1_Farmsoil_Flowerbed",
@@ -11795,6 +12200,16 @@
     "3641163278": {
       "displayName": "Measuring Device II",
       "debugName": "Prop_Decoration_T7_AncientAstronomy_MeasuringDevice_02",
+      "category": "BuildTools"
+    },
+    "3642338342": {
+      "displayName": "Medium Chest",
+      "debugName": "Prop_Storage_32_T2_Box",
+      "category": "BuildTools"
+    },
+    "3643820464": {
+      "displayName": "Yellow Wall Flower",
+      "debugName": "Flower_Pot_Long_Wall_Yellow",
       "category": "BuildTools"
     },
     "3646011305": {
@@ -11932,6 +12347,11 @@
       "debugName": "Ammo_T7_Spell_Ice_Totem_lvl45_Eternal",
       "category": "Ammunition"
     },
+    "3681207826": {
+      "displayName": "Large Magic Chest",
+      "debugName": "Prop_Storage_40_T3_Magic",
+      "category": "BuildTools"
+    },
     "3682420039": {
       "displayName": "Crystal Ball",
       "debugName": "Prop_Decoration_T1_Clutter_Palanthir",
@@ -11971,6 +12391,11 @@
       "displayName": "Cooked Rice",
       "debugName": "Food_T6_processed_grain_Rice",
       "category": "Consumables"
+    },
+    "3688073501": {
+      "displayName": "White Cymbidum Flower",
+      "debugName": "Empty_Flower_Pot_CNY_Cymbidum_02",
+      "category": "BuildTools"
     },
     "3688853714": {
       "displayName": "Polished Wooden Double Door",
@@ -12182,6 +12607,11 @@
       "debugName": "Armor_T5_Mage_BattleWand_Legs",
       "category": "Equipment"
     },
+    "3753859139": {
+      "displayName": "\"Flower Snake\"",
+      "debugName": "Prop_Decoration_Comfort_T4_Wall_Painting_3",
+      "category": "BuildTools"
+    },
     "3755696550": {
       "displayName": "Medium Castle Table",
       "debugName": "Prop_Decoration_Comfort8_T6_Castle_Table_Medium",
@@ -12332,6 +12762,11 @@
       "debugName": "Flower_Pot_Round_Large_Ginger",
       "category": "BuildTools"
     },
+    "3804066383": {
+      "displayName": "Red Flower",
+      "debugName": "Flower_Pot_Square_Red",
+      "category": "BuildTools"
+    },
     "3805156322": {
       "displayName": "Polished Wooden Shelf",
       "debugName": "Prop_Decoration_T2_Shelf_Ornamented_Wooden",
@@ -12462,6 +12897,11 @@
       "debugName": "ColorPalette_T6_ColorPalette_night_03",
       "category": "ColorPalette"
     },
+    "3847020528": {
+      "displayName": "\"Tower In The Night\"",
+      "debugName": "Prop_Decoration_Comfort_T4_Wall_Painting_5",
+      "category": "BuildTools"
+    },
     "3847929949": {
       "displayName": "Milkmaid Garb",
       "debugName": "Vanity_TX_Maid_Farmer_Chest",
@@ -12521,6 +12961,11 @@
       "displayName": "Sky Specter Chest",
       "debugName": "Armor_T7_Ranger_Assassin_Chest_Loot",
       "category": "Equipment"
+    },
+    "3859722488": {
+      "displayName": "Yellow Lily Flower",
+      "debugName": "Empty_Flower_Pot_CNY_Lily_02",
+      "category": "BuildTools"
     },
     "3860180960": {
       "displayName": "Deadeye Vest",
@@ -12631,6 +13076,11 @@
       "displayName": "High Ornamented Stone Window Frame",
       "debugName": "Prop_Decoration_T3_Window_Ornamented_Stone_Frame_High",
       "category": "BuildTools"
+    },
+    "3883219916": {
+      "displayName": "Queen Pikemead Statue Piece",
+      "debugName": "Collection_StatuePikeMead_Piece_01",
+      "category": "Collectibles"
     },
     "3886008573": {
       "displayName": "Pinewood Fence Gate II",
@@ -12846,6 +13296,11 @@
       "displayName": "Shroud Meteor",
       "debugName": "Ammo_T4_Spell_Fog_Meteor_lvl27",
       "category": "Ammunition"
+    },
+    "3941822412": {
+      "displayName": "Tombstone \"Until We Meet Again\"",
+      "debugName": "Prop_Decoration_T3_Tombstone5",
+      "category": "BuildTools"
     },
     "3943343867": {
       "displayName": "Bronze Vorgoth's Eye Trophy",
@@ -13186,6 +13641,11 @@
       "displayName": "Thaumaturge Chest",
       "debugName": "Armor_T5_Mage_Wizard_DPS_Chest_Loot",
       "category": "Equipment"
+    },
+    "4044650321": {
+      "displayName": "Small Magic Chest",
+      "debugName": "Prop_Storage_24_T1_Box_Magic",
+      "category": "BuildTools"
     },
     "4044713321": {
       "displayName": "Thornridge",
@@ -13592,6 +14052,11 @@
       "debugName": "Prop_Decoration_Comfort5_T4_Chair",
       "category": "BuildTools"
     },
+    "4157937420": {
+      "displayName": "Huge Magic Chest",
+      "debugName": "Prop_Storage_56_T4_Magic",
+      "category": "BuildTools"
+    },
     "4160116201": {
       "displayName": "Exploding Arrow IV",
       "debugName": "Ammo_T7_Arrow_Explosive_lvl50",
@@ -13727,6 +14192,11 @@
       "debugName": "Prop_Decoration_Boss_Trophy_Vukah_01_wood",
       "category": "BuildTools"
     },
+    "4204849649": {
+      "displayName": "Large Chest",
+      "debugName": "Prop_Storage_40_T3_Box",
+      "category": "BuildTools"
+    },
     "4205594126": {
       "displayName": "Mae's Map Piece",
       "debugName": "8kLoreText_mapPiece_communityQuest_2025_01_mae",
@@ -13821,6 +14291,11 @@
       "displayName": "Brazen Bull Trousers",
       "debugName": "Armor_T5_Warrior_Tank_Legs",
       "category": "Equipment"
+    },
+    "4231642797": {
+      "displayName": "Grass",
+      "debugName": "Flower_Pot_Small_Ground_Gras",
+      "category": "BuildTools"
     },
     "4231900495": {
       "displayName": "Date",
@@ -13961,6 +14436,11 @@
       "displayName": "Hunter Garb",
       "debugName": "Vanity_TX_Hunter_Chest",
       "category": "Equipment"
+    },
+    "4272163256": {
+      "displayName": "Pink Flower",
+      "debugName": "Flower_Pot_Tiny_Pink",
+      "category": "BuildTools"
     },
     "4273711346": {
       "displayName": "Steel Bucket",
@@ -14402,21 +14882,11 @@
       160834168,
       2729052185,
       220236323,
-      {
-        "unresolved": "Tombstone Always Loved"
-      },
-      {
-        "unresolved": "Tombstone Forever In Our Hearts"
-      },
-      {
-        "unresolved": "Tombstone In Loving Memory"
-      },
-      {
-        "unresolved": "Tombstone Together Again"
-      },
-      {
-        "unresolved": "Tombstone Until We Meet Again"
-      }
+      1653941305,
+      2907325488,
+      2678117077,
+      75272151,
+      3941822412
     ],
     "Chairs": [
       14195262,
@@ -14954,9 +15424,7 @@
       2569698570,
       3646011305,
       3340302763,
-      {
-        "unresolved": "Embervale Miniature World Map"
-      },
+      467801292,
       4135259126,
       {
         "unresolved": "Empty Cymbidium Pot",
@@ -15234,14 +15702,7 @@
       3034421283,
       3718138326,
       3892261645,
-      {
-        "unresolved": "Pikemead Statue Showcase",
-        "candidates": [
-          171960142,
-          791796170,
-          2102661805
-        ]
-      },
+      171960142,
       2776180521,
       819432081
     ],
@@ -15271,18 +15732,10 @@
       2995278025,
       1060167728,
       3576088941,
-      {
-        "unresolved": "Room Divider Dragon"
-      },
-      {
-        "unresolved": "Room Divider Fish"
-      },
-      {
-        "unresolved": "Room Divider Flower"
-      },
-      {
-        "unresolved": "Room Divider Snake"
-      },
+      1008591425,
+      1108531204,
+      1209952398,
+      3460936505,
       884882314,
       817722495,
       3992184683
@@ -15770,134 +16223,56 @@
       1915219235
     ],
     "Flower Pots 1": [
-      {
-        "unresolved": "Tiny Pink Flower Pot"
-      },
-      {
-        "unresolved": "Small Pink Flower Pot"
-      },
-      {
-        "unresolved": "Small Pink Wall Pot"
-      },
-      {
-        "unresolved": "Medium Pink Flower Pot"
-      },
-      {
-        "unresolved": "Long Pink Flower Pot"
-      },
-      {
-        "unresolved": "Long Pink Wall Flower Pot"
-      },
-      {
-        "unresolved": "Square Pink Flower Pot"
-      },
-      {
-        "unresolved": "Tiny Red Flower Pot"
-      },
-      {
-        "unresolved": "Small Red Flower Pot"
-      },
-      {
-        "unresolved": "Small Red Wall Flower Pot"
-      },
-      {
-        "unresolved": "Medium Red Flower Pot"
-      },
-      {
-        "unresolved": "Long Red Flower Pot"
-      },
-      {
-        "unresolved": "Long Red Wall Flower Pot"
-      },
-      {
-        "unresolved": "Square Red Flower Pot"
-      },
-      {
-        "unresolved": "Tiny White Flower Pot"
-      },
-      {
-        "unresolved": "Small White Flower Pot"
-      },
-      {
-        "unresolved": "Small White Wall Flower Pot"
-      },
-      {
-        "unresolved": "Medium White Flower Pot"
-      },
-      {
-        "unresolved": "Long White Flower Pot"
-      },
-      {
-        "unresolved": "Long White Wall Flower Pot"
-      },
-      {
-        "unresolved": "Square White Flower Pot"
-      },
-      {
-        "unresolved": "Tiny Yellow Flower Pot"
-      },
-      {
-        "unresolved": "Small Yellow Flower Pot"
-      },
-      {
-        "unresolved": "Small Yellow Wall Flower Pot"
-      },
-      {
-        "unresolved": "Medium Yellow Flower Pot"
-      },
-      {
-        "unresolved": "Long Yellow Flower Pot"
-      },
-      {
-        "unresolved": "Long Yellow Wall Flower Pot"
-      },
-      {
-        "unresolved": "Square Yellow Flower Pot"
-      },
+      4272163256,
+      1682046505,
+      533905592,
+      2927706943,
+      308344880,
+      1416182802,
+      2741207192,
+      3094342003,
+      157147909,
+      2029375274,
+      2413776919,
+      2373764287,
+      1699546726,
+      3804066383,
+      3367211688,
+      120176694,
+      1763603908,
+      2140221206,
+      2557793336,
+      2553292740,
+      2204868420,
+      811648475,
+      1594649719,
+      2862328564,
+      1212068557,
+      163823517,
+      3643820464,
+      1526921804,
       {
         "unresolved": "Fern Pot"
       },
-      {
-        "unresolved": "Small Fern Pot"
-      },
-      {
-        "unresolved": "Medium Fern Pot"
-      },
-      {
-        "unresolved": "Square Fern Pot"
-      },
-      {
-        "unresolved": "Small Grass Pot"
-      },
-      {
-        "unresolved": "Medium Grass Pot"
-      },
-      {
-        "unresolved": "Square Grass Pot"
-      }
+      2019603203,
+      1228884892,
+      1665119413,
+      4231642797,
+      1479156124,
+      814558577
     ],
     "Flower Pots 2": [
-      {
-        "unresolved": "Small Monstera Flower Pot"
-      },
-      {
-        "unresolved": "Medium Monstera Pot"
-      },
+      523366717,
+      1666087652,
       305269419,
       3774571620,
       1584633702,
       2215362525,
       307918428,
       965243086,
-      {
-        "unresolved": "Grapple Plant Flower Pot"
-      },
-      {
-        "unresolved": "Medium Cactus Plant Pot"
-      },
-      {
-        "unresolved": "Large Cactus Plant Pot"
-      },
+      1824422740,
+      2779909442,
+      274681682,
       2512869631,
       3949039004,
       2364963880,
@@ -15908,9 +16283,7 @@
       529262830,
       3331736531,
       3803006190,
-      {
-        "unresolved": "Heather Flower Pot"
-      },
+      2360020747,
       3965963935,
       4232861370,
       2996817370,
@@ -15920,21 +16293,11 @@
       1642368164,
       1515343684,
       99730651,
-      {
-        "unresolved": "Pink Lily Flower Pot"
-      },
-      {
-        "unresolved": "Two-colored Lily Flower Pot"
-      },
-      {
-        "unresolved": "Yellow Lily Flower Pot"
-      },
-      {
-        "unresolved": "White Cymbidum Flower Pot"
-      },
-      {
-        "unresolved": "Yellow Cymbidum Flower Pot"
-      }
+      3148035436,
+      1920323571,
+      3859722488,
+      3688073501,
+      3125832694
     ],
     "Fossils": [
       3891940532,
@@ -16361,21 +16724,11 @@
       1899881150
     ],
     "Magic Chests": [
-      {
-        "unresolved": "Magic Storage Chest (24 slots)"
-      },
-      {
-        "unresolved": "Magic Storage Chest (32 slots)"
-      },
-      {
-        "unresolved": "Magic Storage Chest (40 slots)"
-      },
-      {
-        "unresolved": "Magic Storage Chest (56 slots)"
-      },
-      {
-        "unresolved": "Magic Storage Chest (72 slots)"
-      }
+      4044650321,
+      2463706463,
+      3681207826,
+      4157937420,
+      30818586
     ],
     "Mana Potions": [
       83248261,
@@ -16390,24 +16743,12 @@
       2317965327
     ],
     "Mannequin": [
-      {
-        "unresolved": "Mannequin Back Off"
-      },
-      {
-        "unresolved": "Mannequin Here I Come"
-      },
-      {
-        "unresolved": "Mannequin Let Me Serve You"
-      },
-      {
-        "unresolved": "Mannequin Look At Me"
-      },
-      {
-        "unresolved": "Mannequin Strike A Pose"
-      },
-      {
-        "unresolved": "Mannequin Victory"
-      }
+      2681848943,
+      2030809898,
+      501208175,
+      320245652,
+      3072123387,
+      1193821325
     ],
     "Meats": [
       2090825266,
@@ -16771,9 +17112,7 @@
       2635793540,
       2206945282,
       386738695,
-      {
-        "unresolved": "Diver's Endurance Flask"
-      },
+      3254225118,
       2342880136,
       1096715929
     ],
@@ -16833,19 +17172,13 @@
       1410921691,
       1518794687,
       1782997504,
-      {
-        "unresolved": "Greater Shroud Flask (T3)"
-      },
-      {
-        "unresolved": "Greater Shroud Flask (T5)"
-      },
+      209497692,
+      1843136640,
       2239380894,
       2635793540,
       2206945282,
       386738695,
-      {
-        "unresolved": "Diver's Endurance Flask"
-      },
+      3254225118,
       2342880136,
       1096715929
     ],
@@ -16901,15 +17234,9 @@
       1998277725
     ],
     "Queen Pikemead Statue": [
-      {
-        "unresolved": "Queen Pikemead Piece I"
-      },
-      {
-        "unresolved": "Queen Pikemead Piece II"
-      },
-      {
-        "unresolved": "Queen Pikemead Piece III"
-      }
+      3883219916,
+      1556757497,
+      2624605842
     ],
     "Rakes": [
       2176546463,
@@ -17121,13 +17448,7 @@
       127804572
     ],
     "Secret Doors 1": [
-      {
-        "unresolved": "Carved Secret Bookshelf Door",
-        "candidates": [
-          2073402181,
-          3126384595
-        ]
-      },
+      3126384595,
       2310562016,
       22389632,
       2191154793,
@@ -17147,13 +17468,7 @@
     "Secret Doors 2": [
       2073402181,
       2172312678,
-      {
-        "unresolved": "Fake Ancient Door",
-        "candidates": [
-          543479720,
-          2172312678
-        ]
-      },
+      2172312678,
       664097033,
       3133014614,
       1305097602,
@@ -17260,12 +17575,8 @@
     ],
     "Shroud Flasks": [
       1782997504,
-      {
-        "unresolved": "Greater Shroud Flask (T3)"
-      },
-      {
-        "unresolved": "Greater Shroud Flask (T5)"
-      }
+      209497692,
+      1843136640
     ],
     "Shroud Spells": [
       3940653429,
@@ -17361,12 +17672,8 @@
       334395711
     ],
     "Special Chests": [
-      {
-        "unresolved": "Wooden Storage Chest (32 slots)"
-      },
-      {
-        "unresolved": "Silver Storage Chest (40 slots)"
-      }
+      1302084846,
+      1788793277
     ],
     "Specialty Blocks": [
       1176719610,
@@ -17617,17 +17924,9 @@
       1389031384,
       3155995947,
       861959626,
-      {
-        "unresolved": "Big Bronze Statue Snake"
-      },
+      2346845127,
       2380550747,
-      {
-        "unresolved": "Drak Stone Totem I",
-        "candidates": [
-          674281730,
-          3340302763
-        ]
-      },
+      674281730,
       1734846827,
       174600513,
       3045071835,
@@ -17677,18 +17976,10 @@
       310129061
     ],
     "Storage Chests": [
-      {
-        "unresolved": "Storage Box (24 slots)"
-      },
-      {
-        "unresolved": "Storage Box (32 slots)"
-      },
-      {
-        "unresolved": "Storage Box (40 slots)"
-      },
-      {
-        "unresolved": "Storage Box (56 slots)"
-      }
+      213939880,
+      3642338342,
+      4204849649,
+      2834235854
     ],
     "Summoning Spells": [
       1250423976,
@@ -17812,13 +18103,7 @@
       2283229289,
       4233298973,
       3145568607,
-      {
-        "unresolved": "Incendiary Ball",
-        "candidates": [
-          1036114942,
-          1462961786
-        ]
-      },
+      1462961786,
       3124613974,
       1105258830,
       305542871,
@@ -17855,13 +18140,7 @@
       3002231083,
       1797898257,
       3995142206,
-      {
-        "unresolved": "Cauldron",
-        "candidates": [
-          311508484,
-          3119388545
-        ]
-      },
+      311508484,
       1461371688,
       4111981896,
       3938747715,
@@ -17882,13 +18161,7 @@
       1615246126
     ],
     "Treasure Maps": [
-      {
-        "unresolved": "The Dragons' Map",
-        "candidates": [
-          2381061644,
-          3491672504
-        ]
-      },
+      2381061644,
       3491672504
     ],
     "Uncooked Foods": [
@@ -17960,15 +18233,7 @@
       392289623,
       3353610165,
       4254847360,
-      {
-        "unresolved": "Royal Gloves",
-        "candidates": [
-          1190918199,
-          2166163667,
-          3203382450,
-          3714498619
-        ]
-      },
+      3203382450,
       1966514023,
       284131825,
       3232881227,
@@ -18128,30 +18393,14 @@
       755945588
     ],
     "Wall Decorations 1": [
-      {
-        "unresolved": "Boar At Home"
-      },
-      {
-        "unresolved": "Flower Snake"
-      },
-      {
-        "unresolved": "Flower Vase"
-      },
-      {
-        "unresolved": "Round-Billed Sailer On One Leg"
-      },
-      {
-        "unresolved": "Still Life"
-      },
-      {
-        "unresolved": "Temple Landscape"
-      },
-      {
-        "unresolved": "Tower In The Night"
-      },
-      {
-        "unresolved": "Wolf's Choir"
-      },
+      3201054228,
+      3753859139,
+      1343085975,
+      19079311,
+      1237085664,
+      1790893349,
+      3847020528,
+      1688806746,
       500134615,
       3696120404,
       1201052636,
@@ -18215,12 +18464,8 @@
       2980093307
     ],
     "Wall Tapestry": [
-      {
-        "unresolved": "Wall Tapestry Piece I"
-      },
-      {
-        "unresolved": "Wall Tapestry Piece II"
-      }
+      3603348812,
+      2252200136
     ],
     "Water & Power": [
       1155756187,

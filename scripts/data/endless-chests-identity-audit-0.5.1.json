@@ -1,0 +1,1273 @@
+{
+  "schemaVersion": 1,
+  "previousUnresolved": 127,
+  "releaseCandidate": "0.5.1",
+  "pinnedKilnSdkCommit": "eba9a5e1e0e0044a9146fdd53021a751e2957030",
+  "resolutions": [
+    {
+      "group": "Cemetery",
+      "position": 13,
+      "formerLabel": "Tombstone Always Loved",
+      "id": 1653941305,
+      "debugName": "Prop_Decoration_T3_Tombstone4",
+      "displayName": "Tombstone \"Always Loved\"",
+      "category": "BuildTools",
+      "evidence": "quoted-display"
+    },
+    {
+      "group": "Cemetery",
+      "position": 14,
+      "formerLabel": "Tombstone Forever In Our Hearts",
+      "id": 2907325488,
+      "debugName": "Prop_Decoration_T3_Tombstone6",
+      "displayName": "Tombstone \"Forever In Our Hearts\"",
+      "category": "BuildTools",
+      "evidence": "quoted-display"
+    },
+    {
+      "group": "Cemetery",
+      "position": 15,
+      "formerLabel": "Tombstone In Loving Memory",
+      "id": 2678117077,
+      "debugName": "Prop_Decoration_T3_Tombstone10",
+      "displayName": "Tombstone \"In Loving Memory\"",
+      "category": "BuildTools",
+      "evidence": "quoted-display"
+    },
+    {
+      "group": "Cemetery",
+      "position": 16,
+      "formerLabel": "Tombstone Together Again",
+      "id": 75272151,
+      "debugName": "Prop_Decoration_T3_Tombstone9",
+      "displayName": "Tombstone \"Together Again\"",
+      "category": "BuildTools",
+      "evidence": "quoted-display"
+    },
+    {
+      "group": "Cemetery",
+      "position": 17,
+      "formerLabel": "Tombstone Until We Meet Again",
+      "id": 3941822412,
+      "debugName": "Prop_Decoration_T3_Tombstone5",
+      "displayName": "Tombstone \"Until We Meet Again\"",
+      "category": "BuildTools",
+      "evidence": "quoted-display"
+    },
+    {
+      "group": "Decorations 3",
+      "position": 11,
+      "formerLabel": "Embervale Miniature World Map",
+      "id": 467801292,
+      "debugName": "Prop_Decoration_T7_Embervale_Miniature_WorldMap",
+      "displayName": "Embervale Miniature Model",
+      "category": "BuildTools",
+      "evidence": "curated"
+    },
+    {
+      "group": "Decorative Collections",
+      "position": 18,
+      "formerLabel": "Pikemead Statue Showcase",
+      "id": 171960142,
+      "debugName": "Prop_Collection_06_Statues_Showcase_PikeMead",
+      "displayName": "Pikemead Statue Showcase",
+      "category": "BuildTools",
+      "evidence": "curated"
+    },
+    {
+      "group": "Dividers",
+      "position": 6,
+      "formerLabel": "Room Divider Dragon",
+      "id": 1008591425,
+      "debugName": "Prop_Decoration_T5_CNY_Divider_04",
+      "displayName": "Room Divider \"Dragon\"",
+      "category": "BuildTools",
+      "evidence": "quoted-display"
+    },
+    {
+      "group": "Dividers",
+      "position": 7,
+      "formerLabel": "Room Divider Fish",
+      "id": 1108531204,
+      "debugName": "Prop_Decoration_T5_CNY_Divider_02",
+      "displayName": "Room Divider \"Fish\"",
+      "category": "BuildTools",
+      "evidence": "quoted-display"
+    },
+    {
+      "group": "Dividers",
+      "position": 8,
+      "formerLabel": "Room Divider Flower",
+      "id": 1209952398,
+      "debugName": "Prop_Decoration_T5_CNY_Divider_01",
+      "displayName": "Room Divider \"Flower\"",
+      "category": "BuildTools",
+      "evidence": "quoted-display"
+    },
+    {
+      "group": "Dividers",
+      "position": 9,
+      "formerLabel": "Room Divider Snake",
+      "id": 3460936505,
+      "debugName": "Prop_Decoration_T5_CNY_Divider_03",
+      "displayName": "Room Divider \"Snake\"",
+      "category": "BuildTools",
+      "evidence": "quoted-display"
+    },
+    {
+      "group": "Flower Pots 1",
+      "position": 0,
+      "formerLabel": "Tiny Pink Flower Pot",
+      "id": 4272163256,
+      "debugName": "Flower_Pot_Tiny_Pink",
+      "displayName": "Pink Flower",
+      "category": "BuildTools",
+      "evidence": "color-size-form"
+    },
+    {
+      "group": "Flower Pots 1",
+      "position": 1,
+      "formerLabel": "Small Pink Flower Pot",
+      "id": 1682046505,
+      "debugName": "Flower_Pot_Small_Ground_Pink",
+      "displayName": "Pink Flower",
+      "category": "BuildTools",
+      "evidence": "color-size-form"
+    },
+    {
+      "group": "Flower Pots 1",
+      "position": 2,
+      "formerLabel": "Small Pink Wall Pot",
+      "id": 533905592,
+      "debugName": "Flower_Pot_Small_Wall_Pink",
+      "displayName": "Pink Wall Flower",
+      "category": "BuildTools",
+      "evidence": "color-size-form"
+    },
+    {
+      "group": "Flower Pots 1",
+      "position": 3,
+      "formerLabel": "Medium Pink Flower Pot",
+      "id": 2927706943,
+      "debugName": "Flower_Pot_Medium_Pink",
+      "displayName": "Pink Flower",
+      "category": "BuildTools",
+      "evidence": "color-size-form"
+    },
+    {
+      "group": "Flower Pots 1",
+      "position": 4,
+      "formerLabel": "Long Pink Flower Pot",
+      "id": 308344880,
+      "debugName": "Flower_Pot_Long_Ground_Pink",
+      "displayName": "Pink Flower",
+      "category": "BuildTools",
+      "evidence": "color-size-form"
+    },
+    {
+      "group": "Flower Pots 1",
+      "position": 5,
+      "formerLabel": "Long Pink Wall Flower Pot",
+      "id": 1416182802,
+      "debugName": "Flower_Pot_Long_Wall_Pink",
+      "displayName": "Pink Wall Flower",
+      "category": "BuildTools",
+      "evidence": "color-size-form"
+    },
+    {
+      "group": "Flower Pots 1",
+      "position": 6,
+      "formerLabel": "Square Pink Flower Pot",
+      "id": 2741207192,
+      "debugName": "Flower_Pot_Square_Pink",
+      "displayName": "Pink Flower",
+      "category": "BuildTools",
+      "evidence": "color-size-form"
+    },
+    {
+      "group": "Flower Pots 1",
+      "position": 7,
+      "formerLabel": "Tiny Red Flower Pot",
+      "id": 3094342003,
+      "debugName": "Flower_Pot_Tiny_Red",
+      "displayName": "Red Flower",
+      "category": "BuildTools",
+      "evidence": "color-size-form"
+    },
+    {
+      "group": "Flower Pots 1",
+      "position": 8,
+      "formerLabel": "Small Red Flower Pot",
+      "id": 157147909,
+      "debugName": "Flower_Pot_Small_Ground_Red",
+      "displayName": "Red Flower",
+      "category": "BuildTools",
+      "evidence": "color-size-form"
+    },
+    {
+      "group": "Flower Pots 1",
+      "position": 9,
+      "formerLabel": "Small Red Wall Flower Pot",
+      "id": 2029375274,
+      "debugName": "Flower_Pot_Small_Wall_Red",
+      "displayName": "Red Wall Flower",
+      "category": "BuildTools",
+      "evidence": "color-size-form"
+    },
+    {
+      "group": "Flower Pots 1",
+      "position": 10,
+      "formerLabel": "Medium Red Flower Pot",
+      "id": 2413776919,
+      "debugName": "Flower_Pot_Medium_Red",
+      "displayName": "Red Flower",
+      "category": "BuildTools",
+      "evidence": "color-size-form"
+    },
+    {
+      "group": "Flower Pots 1",
+      "position": 11,
+      "formerLabel": "Long Red Flower Pot",
+      "id": 2373764287,
+      "debugName": "Flower_Pot_Long_Ground_Red",
+      "displayName": "Red Flower",
+      "category": "BuildTools",
+      "evidence": "color-size-form"
+    },
+    {
+      "group": "Flower Pots 1",
+      "position": 12,
+      "formerLabel": "Long Red Wall Flower Pot",
+      "id": 1699546726,
+      "debugName": "Flower_Pot_Long_Wall_Red",
+      "displayName": "Red Wall Flower",
+      "category": "BuildTools",
+      "evidence": "color-size-form"
+    },
+    {
+      "group": "Flower Pots 1",
+      "position": 13,
+      "formerLabel": "Square Red Flower Pot",
+      "id": 3804066383,
+      "debugName": "Flower_Pot_Square_Red",
+      "displayName": "Red Flower",
+      "category": "BuildTools",
+      "evidence": "color-size-form"
+    },
+    {
+      "group": "Flower Pots 1",
+      "position": 14,
+      "formerLabel": "Tiny White Flower Pot",
+      "id": 3367211688,
+      "debugName": "Flower_Pot_Tiny_White",
+      "displayName": "White Flower",
+      "category": "BuildTools",
+      "evidence": "color-size-form"
+    },
+    {
+      "group": "Flower Pots 1",
+      "position": 15,
+      "formerLabel": "Small White Flower Pot",
+      "id": 120176694,
+      "debugName": "Flower_Pot_Small_Ground_White",
+      "displayName": "White Flower",
+      "category": "BuildTools",
+      "evidence": "color-size-form"
+    },
+    {
+      "group": "Flower Pots 1",
+      "position": 16,
+      "formerLabel": "Small White Wall Flower Pot",
+      "id": 1763603908,
+      "debugName": "Flower_Pot_Small_Wall_White",
+      "displayName": "White Wall Flower",
+      "category": "BuildTools",
+      "evidence": "color-size-form"
+    },
+    {
+      "group": "Flower Pots 1",
+      "position": 17,
+      "formerLabel": "Medium White Flower Pot",
+      "id": 2140221206,
+      "debugName": "Flower_Pot_Medium_White",
+      "displayName": "White Flower",
+      "category": "BuildTools",
+      "evidence": "color-size-form"
+    },
+    {
+      "group": "Flower Pots 1",
+      "position": 18,
+      "formerLabel": "Long White Flower Pot",
+      "id": 2557793336,
+      "debugName": "Flower_Pot_Long_Ground_White",
+      "displayName": "White Flower",
+      "category": "BuildTools",
+      "evidence": "color-size-form"
+    },
+    {
+      "group": "Flower Pots 1",
+      "position": 19,
+      "formerLabel": "Long White Wall Flower Pot",
+      "id": 2553292740,
+      "debugName": "Flower_Pot_Long_Wall_White",
+      "displayName": "White Wall Flower",
+      "category": "BuildTools",
+      "evidence": "color-size-form"
+    },
+    {
+      "group": "Flower Pots 1",
+      "position": 20,
+      "formerLabel": "Square White Flower Pot",
+      "id": 2204868420,
+      "debugName": "Flower_Pot_Square_White",
+      "displayName": "White Flower",
+      "category": "BuildTools",
+      "evidence": "color-size-form"
+    },
+    {
+      "group": "Flower Pots 1",
+      "position": 21,
+      "formerLabel": "Tiny Yellow Flower Pot",
+      "id": 811648475,
+      "debugName": "Flower_Pot_Tiny_Yellow",
+      "displayName": "Yellow Flower",
+      "category": "BuildTools",
+      "evidence": "color-size-form"
+    },
+    {
+      "group": "Flower Pots 1",
+      "position": 22,
+      "formerLabel": "Small Yellow Flower Pot",
+      "id": 1594649719,
+      "debugName": "Flower_Pot_Small_Ground_Yellow",
+      "displayName": "Yellow Flower",
+      "category": "BuildTools",
+      "evidence": "color-size-form"
+    },
+    {
+      "group": "Flower Pots 1",
+      "position": 23,
+      "formerLabel": "Small Yellow Wall Flower Pot",
+      "id": 2862328564,
+      "debugName": "Flower_Pot_Small_Wall_Yellow",
+      "displayName": "Yellow Wall Flower",
+      "category": "BuildTools",
+      "evidence": "color-size-form"
+    },
+    {
+      "group": "Flower Pots 1",
+      "position": 24,
+      "formerLabel": "Medium Yellow Flower Pot",
+      "id": 1212068557,
+      "debugName": "Flower_Pot_Medium_Yellow",
+      "displayName": "Yellow Flower",
+      "category": "BuildTools",
+      "evidence": "color-size-form"
+    },
+    {
+      "group": "Flower Pots 1",
+      "position": 25,
+      "formerLabel": "Long Yellow Flower Pot",
+      "id": 163823517,
+      "debugName": "Flower_Pot_Long_Ground_Yellow",
+      "displayName": "Yellow Flower",
+      "category": "BuildTools",
+      "evidence": "color-size-form"
+    },
+    {
+      "group": "Flower Pots 1",
+      "position": 26,
+      "formerLabel": "Long Yellow Wall Flower Pot",
+      "id": 3643820464,
+      "debugName": "Flower_Pot_Long_Wall_Yellow",
+      "displayName": "Yellow Wall Flower",
+      "category": "BuildTools",
+      "evidence": "color-size-form"
+    },
+    {
+      "group": "Flower Pots 1",
+      "position": 27,
+      "formerLabel": "Square Yellow Flower Pot",
+      "id": 1526921804,
+      "debugName": "Flower_Pot_Square_Yellow",
+      "displayName": "Yellow Flower",
+      "category": "BuildTools",
+      "evidence": "color-size-form"
+    },
+    {
+      "group": "Flower Pots 1",
+      "position": 29,
+      "formerLabel": "Small Fern Pot",
+      "id": 2019603203,
+      "debugName": "Flower_Pot_Small_Ground_Fern",
+      "displayName": "Fern",
+      "category": "BuildTools",
+      "evidence": "fern-size-form"
+    },
+    {
+      "group": "Flower Pots 1",
+      "position": 30,
+      "formerLabel": "Medium Fern Pot",
+      "id": 1228884892,
+      "debugName": "Flower_Pot_Medium_Fern",
+      "displayName": "Fern",
+      "category": "BuildTools",
+      "evidence": "fern-size-form"
+    },
+    {
+      "group": "Flower Pots 1",
+      "position": 31,
+      "formerLabel": "Square Fern Pot",
+      "id": 1665119413,
+      "debugName": "Flower_Pot_Square_Fern",
+      "displayName": "Fern",
+      "category": "BuildTools",
+      "evidence": "fern-size-form"
+    },
+    {
+      "group": "Flower Pots 1",
+      "position": 32,
+      "formerLabel": "Small Grass Pot",
+      "id": 4231642797,
+      "debugName": "Flower_Pot_Small_Ground_Gras",
+      "displayName": "Grass",
+      "category": "BuildTools",
+      "evidence": "grass-size-form"
+    },
+    {
+      "group": "Flower Pots 1",
+      "position": 33,
+      "formerLabel": "Medium Grass Pot",
+      "id": 1479156124,
+      "debugName": "Flower_Pot_Medium_Gras",
+      "displayName": "Grass",
+      "category": "BuildTools",
+      "evidence": "grass-size-form"
+    },
+    {
+      "group": "Flower Pots 1",
+      "position": 34,
+      "formerLabel": "Square Grass Pot",
+      "id": 814558577,
+      "debugName": "Flower_Pot_Square_Gras",
+      "displayName": "Grass",
+      "category": "BuildTools",
+      "evidence": "grass-size-form"
+    },
+    {
+      "group": "Flower Pots 2",
+      "position": 0,
+      "formerLabel": "Small Monstera Flower Pot",
+      "id": 523366717,
+      "debugName": "Flower_Pot_Small_Monstera",
+      "displayName": "Monstera Plant",
+      "category": "BuildTools",
+      "evidence": "named-pot"
+    },
+    {
+      "group": "Flower Pots 2",
+      "position": 1,
+      "formerLabel": "Medium Monstera Pot",
+      "id": 1666087652,
+      "debugName": "Flower_Pot_Medium_Monstera",
+      "displayName": "Monstera Plant",
+      "category": "BuildTools",
+      "evidence": "named-pot"
+    },
+    {
+      "group": "Flower Pots 2",
+      "position": 8,
+      "formerLabel": "Grapple Plant Flower Pot",
+      "id": 1824422740,
+      "debugName": "Flower_Pot_Medium_DevilsClaw",
+      "displayName": "Grapple Plant Flower",
+      "category": "BuildTools",
+      "evidence": "named-pot"
+    },
+    {
+      "group": "Flower Pots 2",
+      "position": 9,
+      "formerLabel": "Medium Cactus Plant Pot",
+      "id": 2779909442,
+      "debugName": "Flower_Pot_Medium_Cactus",
+      "displayName": "Cactus Plant",
+      "category": "BuildTools",
+      "evidence": "named-pot"
+    },
+    {
+      "group": "Flower Pots 2",
+      "position": 10,
+      "formerLabel": "Large Cactus Plant Pot",
+      "id": 274681682,
+      "debugName": "Flower_Pot_Round_Large_Cactus",
+      "displayName": "Cactus Plant",
+      "category": "BuildTools",
+      "evidence": "named-pot"
+    },
+    {
+      "group": "Flower Pots 2",
+      "position": 21,
+      "formerLabel": "Heather Flower Pot",
+      "id": 2360020747,
+      "debugName": "Flower_Pot_Low_Large_Heatherbush",
+      "displayName": "Heather Flower",
+      "category": "BuildTools",
+      "evidence": "named-pot"
+    },
+    {
+      "group": "Flower Pots 2",
+      "position": 31,
+      "formerLabel": "Pink Lily Flower Pot",
+      "id": 3148035436,
+      "debugName": "Empty_Flower_Pot_CNY_Lily_01",
+      "displayName": "Pink Lily Flower",
+      "category": "BuildTools",
+      "evidence": "named-pot"
+    },
+    {
+      "group": "Flower Pots 2",
+      "position": 32,
+      "formerLabel": "Two-colored Lily Flower Pot",
+      "id": 1920323571,
+      "debugName": "Empty_Flower_Pot_CNY_Lily_03",
+      "displayName": "Two-colored Lily Flower",
+      "category": "BuildTools",
+      "evidence": "named-pot"
+    },
+    {
+      "group": "Flower Pots 2",
+      "position": 33,
+      "formerLabel": "Yellow Lily Flower Pot",
+      "id": 3859722488,
+      "debugName": "Empty_Flower_Pot_CNY_Lily_02",
+      "displayName": "Yellow Lily Flower",
+      "category": "BuildTools",
+      "evidence": "named-pot"
+    },
+    {
+      "group": "Flower Pots 2",
+      "position": 34,
+      "formerLabel": "White Cymbidum Flower Pot",
+      "id": 3688073501,
+      "debugName": "Empty_Flower_Pot_CNY_Cymbidum_02",
+      "displayName": "White Cymbidum Flower",
+      "category": "BuildTools",
+      "evidence": "named-pot"
+    },
+    {
+      "group": "Flower Pots 2",
+      "position": 35,
+      "formerLabel": "Yellow Cymbidum Flower Pot",
+      "id": 3125832694,
+      "debugName": "Empty_Flower_Pot_CNY_Cymbidum_01",
+      "displayName": "Yellow Cymbidum Flower",
+      "category": "BuildTools",
+      "evidence": "named-pot"
+    },
+    {
+      "group": "Magic Chests",
+      "position": 0,
+      "formerLabel": "Magic Storage Chest (24 slots)",
+      "id": 4044650321,
+      "debugName": "Prop_Storage_24_T1_Box_Magic",
+      "displayName": "Small Magic Chest",
+      "category": "BuildTools",
+      "evidence": "magic-chest-slots"
+    },
+    {
+      "group": "Magic Chests",
+      "position": 1,
+      "formerLabel": "Magic Storage Chest (32 slots)",
+      "id": 2463706463,
+      "debugName": "Prop_Storage_32_T2_Box_Magic",
+      "displayName": "Medium Magic Chest",
+      "category": "BuildTools",
+      "evidence": "magic-chest-slots"
+    },
+    {
+      "group": "Magic Chests",
+      "position": 2,
+      "formerLabel": "Magic Storage Chest (40 slots)",
+      "id": 3681207826,
+      "debugName": "Prop_Storage_40_T3_Magic",
+      "displayName": "Large Magic Chest",
+      "category": "BuildTools",
+      "evidence": "magic-chest-slots"
+    },
+    {
+      "group": "Magic Chests",
+      "position": 3,
+      "formerLabel": "Magic Storage Chest (56 slots)",
+      "id": 4157937420,
+      "debugName": "Prop_Storage_56_T4_Magic",
+      "displayName": "Huge Magic Chest",
+      "category": "BuildTools",
+      "evidence": "magic-chest-slots"
+    },
+    {
+      "group": "Magic Chests",
+      "position": 4,
+      "formerLabel": "Magic Storage Chest (72 slots)",
+      "id": 30818586,
+      "debugName": "Prop_Storage_72_T6_Magic",
+      "displayName": "Enormous Magic Chest",
+      "category": "BuildTools",
+      "evidence": "magic-chest-slots"
+    },
+    {
+      "group": "Mannequin",
+      "position": 0,
+      "formerLabel": "Mannequin Back Off",
+      "id": 2681848943,
+      "debugName": "Prop_Collection_Mannequin_Armor_pose03",
+      "displayName": "Mannequin \"Back Off\"",
+      "category": "BuildTools",
+      "evidence": "quoted-display"
+    },
+    {
+      "group": "Mannequin",
+      "position": 1,
+      "formerLabel": "Mannequin Here I Come",
+      "id": 2030809898,
+      "debugName": "Prop_Collection_Mannequin_Armor_pose04",
+      "displayName": "Mannequin \"Here I Come\"",
+      "category": "BuildTools",
+      "evidence": "quoted-display"
+    },
+    {
+      "group": "Mannequin",
+      "position": 2,
+      "formerLabel": "Mannequin Let Me Serve You",
+      "id": 501208175,
+      "debugName": "Prop_Collection_Mannequin_Armor_pose06",
+      "displayName": "Mannequin \"Let Me Serve You\"",
+      "category": "BuildTools",
+      "evidence": "quoted-display"
+    },
+    {
+      "group": "Mannequin",
+      "position": 3,
+      "formerLabel": "Mannequin Look At Me",
+      "id": 320245652,
+      "debugName": "Prop_Collection_Mannequin_Armor_pose02",
+      "displayName": "Mannequin \"Look At Me\"",
+      "category": "BuildTools",
+      "evidence": "quoted-display"
+    },
+    {
+      "group": "Mannequin",
+      "position": 4,
+      "formerLabel": "Mannequin Strike A Pose",
+      "id": 3072123387,
+      "debugName": "Prop_Collection_Mannequin_Armor_pose05",
+      "displayName": "Mannequin \"Strike A Pose\"",
+      "category": "BuildTools",
+      "evidence": "quoted-display"
+    },
+    {
+      "group": "Mannequin",
+      "position": 5,
+      "formerLabel": "Mannequin Victory",
+      "id": 1193821325,
+      "debugName": "Prop_Collection_Mannequin_Armor_pose01",
+      "displayName": "Mannequin \"Victory\"",
+      "category": "BuildTools",
+      "evidence": "quoted-display"
+    },
+    {
+      "group": "Other Potions",
+      "position": 4,
+      "formerLabel": "Diver's Endurance Flask",
+      "id": 3254225118,
+      "debugName": "Consumable_Potion_Flask_SwimSprintStaminaReductionMod_T6",
+      "displayName": "Diver’s Endurance Flask",
+      "category": "Consumables",
+      "evidence": "curated"
+    },
+    {
+      "group": "Potions",
+      "position": 28,
+      "formerLabel": "Greater Shroud Flask (T3)",
+      "id": 209497692,
+      "debugName": "Consumable_Potion_Flask_Fog_Survival_Flask_T3",
+      "displayName": "Greater Shroud Survival Flask",
+      "category": "Consumables",
+      "evidence": "curated"
+    },
+    {
+      "group": "Potions",
+      "position": 29,
+      "formerLabel": "Greater Shroud Flask (T5)",
+      "id": 1843136640,
+      "debugName": "Consumable_Potion_Flask_Fog_Survival_Flask_T5",
+      "displayName": "Greater Shroud Survival Flask",
+      "category": "Consumables",
+      "evidence": "curated"
+    },
+    {
+      "group": "Potions",
+      "position": 34,
+      "formerLabel": "Diver's Endurance Flask",
+      "id": 3254225118,
+      "debugName": "Consumable_Potion_Flask_SwimSprintStaminaReductionMod_T6",
+      "displayName": "Diver’s Endurance Flask",
+      "category": "Consumables",
+      "evidence": "curated"
+    },
+    {
+      "group": "Queen Pikemead Statue",
+      "position": 0,
+      "formerLabel": "Queen Pikemead Piece I",
+      "id": 3883219916,
+      "debugName": "Collection_StatuePikeMead_Piece_01",
+      "displayName": "Queen Pikemead Statue Piece",
+      "category": "Collectibles",
+      "evidence": "numbered-piece"
+    },
+    {
+      "group": "Queen Pikemead Statue",
+      "position": 1,
+      "formerLabel": "Queen Pikemead Piece II",
+      "id": 1556757497,
+      "debugName": "Collection_StatuePikeMead_Piece_02",
+      "displayName": "Queen Pikemead Statue Piece",
+      "category": "Collectibles",
+      "evidence": "numbered-piece"
+    },
+    {
+      "group": "Queen Pikemead Statue",
+      "position": 2,
+      "formerLabel": "Queen Pikemead Piece III",
+      "id": 2624605842,
+      "debugName": "Collection_StatuePikeMead_Piece_03",
+      "displayName": "Queen Pikemead Statue Piece",
+      "category": "Collectibles",
+      "evidence": "numbered-piece"
+    },
+    {
+      "group": "Secret Doors 1",
+      "position": 0,
+      "formerLabel": "Carved Secret Bookshelf Door",
+      "id": 3126384595,
+      "debugName": "Base_Shelf_Secret_02",
+      "displayName": "Carved Secret Bookshelf Door",
+      "category": "BuildTools",
+      "evidence": "curated"
+    },
+    {
+      "group": "Secret Doors 2",
+      "position": 2,
+      "formerLabel": "Fake Ancient Door",
+      "id": 2172312678,
+      "debugName": "Base_Door_Secret_Ancient_Fake",
+      "displayName": "Fake Ancient Door",
+      "category": "BuildTools",
+      "evidence": "curated"
+    },
+    {
+      "group": "Shroud Flasks",
+      "position": 1,
+      "formerLabel": "Greater Shroud Flask (T3)",
+      "id": 209497692,
+      "debugName": "Consumable_Potion_Flask_Fog_Survival_Flask_T3",
+      "displayName": "Greater Shroud Survival Flask",
+      "category": "Consumables",
+      "evidence": "curated"
+    },
+    {
+      "group": "Shroud Flasks",
+      "position": 2,
+      "formerLabel": "Greater Shroud Flask (T5)",
+      "id": 1843136640,
+      "debugName": "Consumable_Potion_Flask_Fog_Survival_Flask_T5",
+      "displayName": "Greater Shroud Survival Flask",
+      "category": "Consumables",
+      "evidence": "curated"
+    },
+    {
+      "group": "Special Chests",
+      "position": 0,
+      "formerLabel": "Wooden Storage Chest (32 slots)",
+      "id": 1302084846,
+      "debugName": "Prop_Storage_32_T2_Chest_Wood",
+      "displayName": "Wooden Chest",
+      "category": "BuildTools",
+      "evidence": "curated"
+    },
+    {
+      "group": "Special Chests",
+      "position": 1,
+      "formerLabel": "Silver Storage Chest (40 slots)",
+      "id": 1788793277,
+      "debugName": "Prop_Storage_40_T5_Chest_Silver",
+      "displayName": "Silver Chest",
+      "category": "BuildTools",
+      "evidence": "curated"
+    },
+    {
+      "group": "Statues",
+      "position": 7,
+      "formerLabel": "Big Bronze Statue Snake",
+      "id": 2346845127,
+      "debugName": "Prop_Decoration_T4_Statue_Snake",
+      "displayName": "Big Bronze Statue \"Snake\"",
+      "category": "BuildTools",
+      "evidence": "quoted-display"
+    },
+    {
+      "group": "Statues",
+      "position": 9,
+      "formerLabel": "Drak Stone Totem I",
+      "id": 674281730,
+      "debugName": "Prop_Decoration_T6_StoneTotem_01_A",
+      "displayName": "Drak Stone Totem I",
+      "category": "BuildTools",
+      "evidence": "curated"
+    },
+    {
+      "group": "Storage Chests",
+      "position": 0,
+      "formerLabel": "Storage Box (24 slots)",
+      "id": 213939880,
+      "debugName": "Prop_Storage_24_T1_Box",
+      "displayName": "Small Chest",
+      "category": "BuildTools",
+      "evidence": "chest-slots"
+    },
+    {
+      "group": "Storage Chests",
+      "position": 1,
+      "formerLabel": "Storage Box (32 slots)",
+      "id": 3642338342,
+      "debugName": "Prop_Storage_32_T2_Box",
+      "displayName": "Medium Chest",
+      "category": "BuildTools",
+      "evidence": "chest-slots"
+    },
+    {
+      "group": "Storage Chests",
+      "position": 2,
+      "formerLabel": "Storage Box (40 slots)",
+      "id": 4204849649,
+      "debugName": "Prop_Storage_40_T3_Box",
+      "displayName": "Large Chest",
+      "category": "BuildTools",
+      "evidence": "chest-slots"
+    },
+    {
+      "group": "Storage Chests",
+      "position": 3,
+      "formerLabel": "Storage Box (56 slots)",
+      "id": 2834235854,
+      "debugName": "Prop_Storage_56_T4_Box",
+      "displayName": "Huge Chest",
+      "category": "BuildTools",
+      "evidence": "chest-slots"
+    },
+    {
+      "group": "Throwables",
+      "position": 5,
+      "formerLabel": "Incendiary Ball",
+      "id": 1462961786,
+      "debugName": "Consumable_Grenade_Fire_T5",
+      "displayName": "Incendiary Ball",
+      "category": "Weapons",
+      "evidence": "curated"
+    },
+    {
+      "group": "Tools & Components",
+      "position": 4,
+      "formerLabel": "Cauldron",
+      "id": 311508484,
+      "debugName": "Prop_Component_T5_Black_Cauldron",
+      "displayName": "Cauldron",
+      "category": "BuildTools",
+      "evidence": "curated"
+    },
+    {
+      "group": "Treasure Maps",
+      "position": 0,
+      "formerLabel": "The Dragons' Map",
+      "id": 2381061644,
+      "debugName": "8kLoreText_TreasureMap_completed_communityQuest_2025",
+      "displayName": "The Dragons' Map",
+      "category": "Collectibles",
+      "evidence": "curated"
+    },
+    {
+      "group": "Vanity Outfits 1",
+      "position": 20,
+      "formerLabel": "Royal Gloves",
+      "id": 3203382450,
+      "debugName": "Vanity_T2_Royal_Gloves",
+      "displayName": "Royal Gloves",
+      "category": "Equipment",
+      "evidence": "curated"
+    },
+    {
+      "group": "Wall Decorations 1",
+      "position": 0,
+      "formerLabel": "Boar At Home",
+      "id": 3201054228,
+      "debugName": "Prop_Decoration_Comfort_T4_Wall_Painting_7",
+      "displayName": "\"Boar At Home\"",
+      "category": "BuildTools",
+      "evidence": "quoted-display"
+    },
+    {
+      "group": "Wall Decorations 1",
+      "position": 1,
+      "formerLabel": "Flower Snake",
+      "id": 3753859139,
+      "debugName": "Prop_Decoration_Comfort_T4_Wall_Painting_3",
+      "displayName": "\"Flower Snake\"",
+      "category": "BuildTools",
+      "evidence": "quoted-display"
+    },
+    {
+      "group": "Wall Decorations 1",
+      "position": 2,
+      "formerLabel": "Flower Vase",
+      "id": 1343085975,
+      "debugName": "Prop_Decoration_Comfort_T4_Wall_Painting_6",
+      "displayName": "\"Flower Vase\"",
+      "category": "BuildTools",
+      "evidence": "quoted-display"
+    },
+    {
+      "group": "Wall Decorations 1",
+      "position": 3,
+      "formerLabel": "Round-Billed Sailer On One Leg",
+      "id": 19079311,
+      "debugName": "Prop_Decoration_Comfort_T4_Wall_Painting_4",
+      "displayName": "\"Round-Billed Sailer On One Leg\"",
+      "category": "BuildTools",
+      "evidence": "quoted-display"
+    },
+    {
+      "group": "Wall Decorations 1",
+      "position": 4,
+      "formerLabel": "Still Life",
+      "id": 1237085664,
+      "debugName": "Prop_Decoration_Comfort_T4_Wall_Painting_1",
+      "displayName": "\"Still Life\"",
+      "category": "BuildTools",
+      "evidence": "quoted-display"
+    },
+    {
+      "group": "Wall Decorations 1",
+      "position": 5,
+      "formerLabel": "Temple Landscape",
+      "id": 1790893349,
+      "debugName": "Prop_Decoration_Comfort_T4_Wall_Painting_2",
+      "displayName": "\"Temple Landscape\"",
+      "category": "BuildTools",
+      "evidence": "quoted-display"
+    },
+    {
+      "group": "Wall Decorations 1",
+      "position": 6,
+      "formerLabel": "Tower In The Night",
+      "id": 3847020528,
+      "debugName": "Prop_Decoration_Comfort_T4_Wall_Painting_5",
+      "displayName": "\"Tower In The Night\"",
+      "category": "BuildTools",
+      "evidence": "quoted-display"
+    },
+    {
+      "group": "Wall Decorations 1",
+      "position": 7,
+      "formerLabel": "Wolf's Choir",
+      "id": 1688806746,
+      "debugName": "Prop_Decoration_Comfort_T4_Wall_Painting_8",
+      "displayName": "\"Wolf's Choir\"",
+      "category": "BuildTools",
+      "evidence": "quoted-display"
+    },
+    {
+      "group": "Wall Tapestry",
+      "position": 0,
+      "formerLabel": "Wall Tapestry Piece I",
+      "id": 3603348812,
+      "debugName": "Collection_WallTapestry_Piece_01",
+      "displayName": "Wall Tapestry Piece",
+      "category": "Collectibles",
+      "evidence": "numbered-piece"
+    },
+    {
+      "group": "Wall Tapestry",
+      "position": 1,
+      "formerLabel": "Wall Tapestry Piece II",
+      "id": 2252200136,
+      "debugName": "Collection_WallTapestry_Piece_02",
+      "displayName": "Wall Tapestry Piece",
+      "category": "Collectibles",
+      "evidence": "numbered-piece"
+    }
+  ],
+  "remaining": [
+    {
+      "group": "Backpacks",
+      "position": 1,
+      "unresolved": "Small Backpack",
+      "candidates": [
+        3728213390,
+        4231879756
+      ]
+    },
+    {
+      "group": "Backpacks",
+      "position": 2,
+      "unresolved": "Medium Backpack",
+      "candidates": [
+        3773368910,
+        4053516652
+      ]
+    },
+    {
+      "group": "Backpacks",
+      "position": 3,
+      "unresolved": "Large Backpack",
+      "candidates": [
+        996296787,
+        3131144042
+      ]
+    },
+    {
+      "group": "Books",
+      "position": 0,
+      "unresolved": "Book I",
+      "candidates": [
+        413542990,
+        589587638,
+        676824530,
+        743954578,
+        1042567701,
+        1665817031,
+        1878602124,
+        1920341845,
+        2283198170,
+        2548133338,
+        2975370828,
+        3330526371,
+        3853710961,
+        4242562036
+      ]
+    },
+    {
+      "group": "Books",
+      "position": 5,
+      "unresolved": "Collection Of Books I",
+      "candidates": [
+        1276880412,
+        3259443869
+      ]
+    },
+    {
+      "group": "Books",
+      "position": 6,
+      "unresolved": "Collection Of Books II",
+      "candidates": [
+        147747455,
+        1732682352
+      ]
+    },
+    {
+      "group": "Books",
+      "position": 7,
+      "unresolved": "Collection Of Books III",
+      "candidates": [
+        186386614,
+        523691097
+      ]
+    },
+    {
+      "group": "Decorations 2",
+      "position": 1,
+      "unresolved": "Bamboo Stairs",
+      "candidates": [
+        1517467835,
+        2175416596
+      ]
+    },
+    {
+      "group": "Decorations 2",
+      "position": 50,
+      "unresolved": "Conifer Crate",
+      "candidates": [
+        553841242,
+        2537359689,
+        3904030989
+      ]
+    },
+    {
+      "group": "Decorations 3",
+      "position": 13,
+      "unresolved": "Empty Cymbidium Pot",
+      "candidates": [
+        2125538426,
+        4135259126
+      ]
+    },
+    {
+      "group": "Decorations 3",
+      "position": 16,
+      "unresolved": "Empty Farmbed",
+      "candidates": [
+        604994553,
+        1392367211,
+        2425261321,
+        3310867211,
+        3916554796
+      ]
+    },
+    {
+      "group": "Decorations 3",
+      "position": 19,
+      "unresolved": "Empty Lily Pot",
+      "candidates": [
+        2328440963,
+        3534930699,
+        3593229714
+      ]
+    },
+    {
+      "group": "Decorations 4",
+      "position": 46,
+      "unresolved": "Large Bamboo Basket",
+      "candidates": [
+        1506922480,
+        2694217922,
+        2867139849,
+        3541979658
+      ]
+    },
+    {
+      "group": "Decorations 5",
+      "position": 41,
+      "unresolved": "Simple Wood Support",
+      "candidates": [
+        2242544273,
+        2587423299,
+        3556756437,
+        3758512906
+      ]
+    },
+    {
+      "group": "Decorations 6",
+      "position": 38,
+      "unresolved": "Veilwater Basin Boardwalk I",
+      "candidates": [
+        33507171,
+        123726817,
+        669605144,
+        1030788931
+      ]
+    },
+    {
+      "group": "Decorations 6",
+      "position": 40,
+      "unresolved": "Veilwater Basin Boardwalk II",
+      "candidates": [
+        1195149031,
+        4043051492
+      ]
+    },
+    {
+      "group": "Dividers",
+      "position": 0,
+      "unresolved": "Bamboo Room Divider I",
+      "candidates": [
+        260723984,
+        371722890,
+        1950301003,
+        3413337702,
+        3607939791
+      ]
+    },
+    {
+      "group": "Fences 1",
+      "position": 0,
+      "unresolved": "Bamboo Fence Pole",
+      "candidates": [
+        3121223720,
+        3349466374
+      ]
+    },
+    {
+      "group": "Fences 1",
+      "position": 7,
+      "unresolved": "Carved Tropical Wood Fence Pole",
+      "candidates": [
+        161588181,
+        1698793327,
+        2429035331
+      ]
+    },
+    {
+      "group": "Fences 2",
+      "position": 13,
+      "unresolved": "Prison Fence",
+      "candidates": [
+        2452070869,
+        3434035481
+      ]
+    },
+    {
+      "group": "Flower Pots 1",
+      "position": 28,
+      "unresolved": "Fern Pot"
+    },
+    {
+      "group": "Illumination 2",
+      "position": 1,
+      "unresolved": "Wall Lantern",
+      "candidates": [
+        2560383707,
+        3019273830
+      ]
+    },
+    {
+      "group": "Miscellaneous 1",
+      "position": 7,
+      "unresolved": "Bamboo Crate I",
+      "candidates": [
+        1412268864,
+        4136278992
+      ]
+    },
+    {
+      "group": "Miscellaneous 1",
+      "position": 9,
+      "unresolved": "Large Bamboo Crate",
+      "candidates": [
+        2326445767,
+        3554673768
+      ]
+    },
+    {
+      "group": "Miscellaneous 2",
+      "position": 0,
+      "unresolved": "Iron Grate",
+      "candidates": [
+        2583752204,
+        3638722075
+      ]
+    },
+    {
+      "group": "Miscellaneous 2",
+      "position": 4,
+      "unresolved": "Palm Leaf Basket",
+      "candidates": [
+        1108421963,
+        4179466778,
+        4206640908
+      ]
+    },
+    {
+      "group": "Miscellaneous 2",
+      "position": 7,
+      "unresolved": "Resource Bundle I"
+    }
+  ]
+}
