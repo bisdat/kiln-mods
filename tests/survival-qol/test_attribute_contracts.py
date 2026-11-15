@@ -13,6 +13,7 @@ CONFIG = (ROOT / "SurvivalQoL" / "SurvivalQoLConfig.cs").read_text(encoding="utf
 PROJECT = (ROOT / "SurvivalQoL" / "SurvivalQoL.csproj").read_text(encoding="utf-8")
 BUILD = (ROOT / "scripts" / "build.sh").read_text(encoding="utf-8")
 MATH = (ROOT / "SurvivalQoL" / "DepletionMath.cs").read_text(encoding="utf-8")
+STAMINA = (ROOT / "SurvivalQoL" / "StaminaRegenScale.cs").read_text(encoding="utf-8")
 
 
 class SurvivalAttributeContracts(unittest.TestCase):
@@ -20,7 +21,7 @@ class SurvivalAttributeContracts(unittest.TestCase):
         for name in ("UnderwaterBreathMultiplier", "FrostResistanceMultiplier"):
             self.assertIn(f"public int {name} {{ get; set; }} = 10;", CONFIG)
             self.assertIn("options." + name, MOD)
-        self.assertEqual(CONFIG.count("[Range(1, 10)]"), 2)
+        self.assertEqual(CONFIG.count("[Range(1, 10)]"), 3)
         for obsolete in (
             "DoubleUnderwaterBreath",
             "DoubleFrostResistance",
@@ -78,8 +79,26 @@ class SurvivalAttributeContracts(unittest.TestCase):
         self.assertIn("_durability.Restore(Log.Warn)", MOD)
         self.assertEqual(MOD.count("private readonly WorldSettingOverride"), 1)
 
-    def test_slider_candidate_has_distinct_library_version(self):
-        self.assertIn("<Version>0.2.1</Version>", PROJECT)
+    def test_stamina_regeneration_slider_is_separate_from_infinite_stamina(self):
+        self.assertIn("public bool InfiniteStamina { get; set; } = true;", CONFIG)
+        self.assertIn("public int StaminaRegenMultiplier { get; set; } = 1;", CONFIG)
+        self.assertIn("options.StaminaRegenMultiplier > 1", MOD)
+        self.assertIn("!options.InfiniteStamina &&", MOD)
+        self.assertIn("if (!options.InfiniteStamina)", MOD)
+        self.assertIn("state.Stamina.Reset();", MOD)
+        self.assertIn("ScaleStaminaRegen(player.Entity, options.StaminaRegenMultiplier, state.Stamina)", MOD)
+        self.assertIn("Kiln.Attributes.Get(entity, GameAttribute.Stamina)", MOD)
+        self.assertIn("Kiln.Attributes.TrySet(entity, GameAttribute.Stamina, current + extra", MOD)
+        self.assertIn("state.Extra(current, max, multiplier)", MOD)
+        self.assertIn("state.Sample(current, max, multiplier)", MOD)
+        self.assertIn("if (multiplier <= 1)", MOD)
+        self.assertIn("current <= previous", STAMINA)
+        self.assertIn("_previousMax != maximum || _previousMultiplier != multiplier", STAMINA)
+        self.assertIn("(long)(current - previous) * (multiplier - 1)", STAMINA)
+        self.assertIn("Math.Min(maximum - current, extra)", STAMINA)
+
+    def test_stamina_slider_build_has_distinct_library_version(self):
+        self.assertIn("<Version>0.2.2</Version>", PROJECT)
 
     def test_pinned_sdk_includes_attribute_api(self):
         self.assertIn("Kiln.Sdk/0.2.0-dev.local.20261110.62101", PROJECT)
