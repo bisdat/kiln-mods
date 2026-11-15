@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Check all six new weapon classes against the exact pinned Kiln item IDs.
+"""Check all six weapon classes plus equipable shields against Kiln item IDs.
 
 Use weapon debug identities, not ambiguous display names. Retain every
 existing v0.5.2 group and item verbatim, and partition complete weapon
@@ -31,6 +31,7 @@ ORDER = (
     "Bows",
     "Wands",
     "Staffs",
+    "Shields",
 )
 PARTS = {
     "One-Handed Melee": 3,
@@ -67,9 +68,9 @@ def slot_text(value):
     assert set(value) == {"variants"} and len(value["variants"]) >= 2
     return ",".join(map(str, value["variants"]))
 
-assert len(groups) == 204 and len(items) == 3423
-assert sum(len(x) for x in groups.values()) == 3953
-assert tuple(list(groups)[195:]) == ORDER, "Append the nine new groups after all original groups"
+assert len(groups) == 205 and len(items) == 3481
+assert sum(len(x) for x in groups.values()) == 4011
+assert tuple(list(groups)[195:]) == ORDER, "Append ten class groups after the original groups"
 
 original_groups = list(groups.items())[:195]
 assert sum(map(lambda g: len(g[1]), original_groups)) == 3464
@@ -138,26 +139,56 @@ for cls, part_count in PARTS.items():
 assert len(all_weapon_ids) == 489
 assert not (set(excluded) & all_weapon_ids)
 
+# Shields live under SDK category "Equipment", not "Weapons". Only
+# equippable Shield_Tx and Craft_Shield_Tx identities qualify; decorative
+# wall mounts and defensive spells must not be treated as equipable shields.
+SHIELD = re.compile(r"(?:Craft_)?Shield_(T(?:[0-9]+|X)(?:-TX)?)_(.+)")
+shield_rows = []
+decorative_or_spell = []
+for item_id, (debug, display, category) in registered.items():
+    if "shield" not in debug.lower() and "shield" not in display.lower():
+        continue
+    match = SHIELD.fullmatch(debug)
+    if category == "Equipment" and match:
+        shield_rows.append((match.group(1), debug, item_id))
+    else:
+        decorative_or_spell.append(item_id)
+assert len(shield_rows) == 58, len(shield_rows)
+assert len(decorative_or_spell) == 7, decorative_or_spell
+shield_rows.sort(key=lambda x: (tier_order(x[0]), x[1], x[2]))
+expected_shields = [item_id for _, _, item_id in shield_rows]
+assert groups["Shields"] == expected_shields
+assert len(expected_shields) == len(set(expected_shields)) == 58
+assert set(expected_shields).isdisjoint(all_weapon_ids)
+assert not set(expected_shields).intersection(decorative_or_spell)
+for item_id in expected_shields:
+    ident = items[str(item_id)]
+    assert (ident["debugName"], ident["displayName"], ident["category"]) == registered[item_id]
+    assert ident["category"] == "Equipment"
+expected_groups["Shields"] = len(expected_shields)
+
 for weapon_id in all_weapon_ids:
     assert str(weapon_id) in items
     ident = items[str(weapon_id)]
     assert (ident["debugName"], ident["displayName"], ident["category"]) == registered[weapon_id]
     assert ident["category"] == "Weapons"
 
-original_items = [(id_, identity) for id_, identity in items.items() if int(id_) not in all_weapon_ids]
+new_ids = all_weapon_ids | set(expected_shields)
+original_items = [(id_, identity) for id_, identity in items.items() if int(id_) not in new_ids]
 assert len(original_items) == 2934
 assert fnv_codepoints(
     f'{id_}\t{identity["debugName"]}\t{identity["displayName"]}\t{identity["category"]}\n'
     for id_, identity in original_items
 ) == "bcf1cc9827d4bd72", "A verified pre-weapon item identity changed"
 
-# Every new entry must be a classified weapon; only legacy entries may refer
-# to other categories. All six classes are disjoint and complete.
+# Every new entry must be a classified weapon or equippable shield; legacy
+# entries may refer to other categories. All seven classes are disjoint and complete.
 assert set(items) == {str(id_) for id_ in registered if str(id_) in items}
 assert not any(isinstance(entry, dict) and "unresolved" in entry
                for entries in groups.values() for entry in entries)
 
-print(f"PASS: six complete weapon classes / nine groups, {len(all_weapon_ids)} "
-      f"verified non-overlapping IDs, {len(excluded)} unrelated Weapons excluded")
+print(f"PASS: six weapon classes / nine groups plus Shields; {len(all_weapon_ids)} "
+      f"weapons + {len(expected_shields)} equipable shields, all verified; "
+      f"{len(excluded)} unrelated Weapons and {len(decorative_or_spell)} decorative/spell shields excluded")
 print("New chest groups: " + ", ".join(f"{name}={count}" for name, count in expected_groups.items()))
 print("PASS: all original 195 groups / 3464 positions and 2934 identities unchanged")
