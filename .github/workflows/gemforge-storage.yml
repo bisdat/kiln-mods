@@ -1,0 +1,66 @@
+name: Package Gem Forge Magic Storage
+
+on:
+  push:
+    branches: [main]
+    tags: ['gemforge-magic-storage-v*']
+    paths:
+      - 'GemForgeStorage/**'
+      - 'tests/gemforge-storage/**'
+      - 'scripts/build-compat.py'
+      - '.github/workflows/gemforge-storage.yml'
+  pull_request:
+    paths:
+      - 'GemForgeStorage/**'
+      - 'tests/gemforge-storage/**'
+      - 'scripts/build-compat.py'
+      - '.github/workflows/gemforge-storage.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: gemforge-storage-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  package:
+    name: Build Gem Forge Magic Storage against official Kiln SDK
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Contract and conservation-policy checks
+        run: python3 -m unittest discover -s tests/gemforge-storage -p 'test_*.py' -v
+      - name: Build and package
+        run: bash scripts/build-compat.sh GemForgeStorage
+      - name: Upload the test package
+        uses: actions/upload-artifact@v4
+        with:
+          name: gemforge-magic-storage-0.1.0
+          path: |
+            bin/Release/gemforge-magic-storage-0.1.0.zip
+            bin/Release/kiln-sdk-provenance.json
+          if-no-files-found: error
+          retention-days: 90
+
+  release:
+    name: Publish version-tagged release after in-game acceptance
+    if: startsWith(github.ref, 'refs/tags/gemforge-magic-storage-v')
+    needs: package
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: gemforge-magic-storage-0.1.0
+          path: dist
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: dist/gemforge-magic-storage-0.1.0.zip
+          generate_release_notes: true
+          fail_on_unmatched_files: true

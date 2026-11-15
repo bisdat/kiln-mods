@@ -31,6 +31,12 @@ independently.
 The Kiln-native C# implementation is separately authored and covered by
 our repository MIT licence.
 
+## ShroudLink Gemforge reference
+
+- Reference: https://github.com/bjck/shroudlink
+- Original author: bjck; project licence MIT.
+- The independent Gem Forge Magic Storage mod uses the same documented proximity-loan concept and Archaic Essence naming convention. No ShroudLink source code, binaries, framework, or addon are copied into this repository.
+
 ## Kiln and Enshrouded
 
 Kiln and Enshrouded, their APIs, game data and assets remain subject to
