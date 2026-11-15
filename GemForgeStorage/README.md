@@ -1,10 +1,10 @@
-# Gem Forge Magic Storage (Kiln) — v0.1.2 test candidate
+# Gem Forge Magic Storage (Kiln) — v0.1.3 test candidate
 
 Bring **Archaic Essence and weapon gems** from *loaded Magic Chests* to a Gem Forge automatically. The original item entities move through the game's inventory transaction; gems retain their level and other state. The mod never spawns or deletes inventory. This is a **Kiln SDK mod**, not a ShroudLink plugin, and does **not** need ShroudLink's core or addon.
 
 ## Diagnosing a missing command response
 
-In an **online hosted game** the Kiln chat hook should respond to `/gforge scan`. A silent command is **not** proof that the Gem Forge detector failed: first check whether the mod actually loaded and its command was registered. While in the world, open Kiln's Mods page, or inspect `kiln/state/mods.json` for `gemforge-magic-storage` and `kiln/logs/kiln.log` for `Gem Forge Storage v0.1.2 loaded` or a fault.
+In an **online hosted game** the Kiln chat hook should respond to `/gforge scan`. A silent command is **not** proof that the Gem Forge detector failed: first check whether the mod actually loaded and its command was registered. While in the world, open Kiln's Mods page, or inspect `kiln/state/mods.json` for `gemforge-magic-storage` and `kiln/logs/kiln.log` for `Gem Forge Storage v0.1.3 loaded` or a fault.
 
 The command can also be run via Kiln's control folder to distinguish registration failure from chat delivery failure (including an online world whose chat hook is unavailable):
 
@@ -19,24 +19,34 @@ cat "$CONSOLE/gforge-test.result.json"
 
 `found=false`: command not registered; check mod install and startup log. `found=true`, `ok=false`: read `error`; check service availability or forge proximity. `ok=true`: `output` reports loaded Magic Chests, gem counts and instance IDs. A silent in-game reply with `ok=true` means chat transport/hook is the issue. If you are **joining somebody else's world** rather than hosting, this server-side mod must be installed on **that world's host/server**.
 
-Install the **inner** `gemforge-magic-storage-0.1.2.zip` from the GitHub Actions artifact, not the outer Actions download ZIP.
+Install the **inner** `gemforge-magic-storage-0.1.3.zip` from the GitHub Actions artifact, not the outer Actions download ZIP.
 
-## Forge detection in v0.1.2
+## Forge detection in v0.1.3
 
 The v0.1.1 runtime test proved the mod was loaded, inventory moves were available and all the Kiln services were available, but `gforge scan` failed with `No Gem Forge within 4 m.` This revision checks **three independent native Kiln sources**: the `ShroudForge` ECS component, the live GemForge template name, and the `UsedItem` ID `3250908839` (`_Prop_T7_Player_GemForge`) on a placed world prop. The proximity limit is 8 metres to allow for the forge's model origin being behind the interaction point.
 
 Use `gforge probe` through the console folder **while standing at the forge**. It is read-only, works even if the mod can't find a forge, and reports how many entities match each source and the nearest candidates with distances. Run `gforge scan` afterward to check loaded Magic Chests and gems. If all three counts are zero, report the output rather than making further changes to inventory logic.
 
+## Return reliability in v0.1.3
+
+**v0.1.2 return bug (reported in-game):** the old loop advanced its index *before* the asynchronous `Items.Move` result; `NoRoom`, partial, temporarily unloaded, or refused moves could not be retried. It then discarded the ledger even when some of the same gem instances were still in the player's backpack. This is fixed by retaining an outstanding per-item return queue, retrying failures at five-second intervals, and allowing other items to return while one chest is blocked. Only the original gem instance may be returned, never a same-type replacement.
+
+The source may be a full Magic Chest, especially if **Endless Chests** refills it while the user is forging. The default behaviour remains **strict original chest**: failed returns stay in the backpack with an active, retryable ledger. Use `gforge status` to see pending and failed loans. Clear some space in the original chest (and allow the next retry) to complete. If you explicitly accept placement in a *different* loaded Magic Chest, use `gforge return-any` in the Kiln console; the destination chest entity ID is logged. This never spawns, deletes, or substitutes gem instances. It does not silently put gems into arbitrary storage.
+
+**Recovery for the previous build:** v0.1.2 already discarded its return ledger after a failed cycle. Updating/restarting cannot reconstruct each old gem's original chest. Keep those old gems in your inventory and manually return them to storage; `return-any` only affects loans still tracked by v0.1.3. Avoid hot-reloading while this version has active loans.
+
+For acceptance testing, use a few identifiable gem instances, verify the exact identity and level on return, and test both (1) a chest with space, (2) a full/refilled source chest, the pending status, then freeing a slot or explicitly allowing another chest. Do not release until tested.
+
 ## What to test
 
-1. **Back up your world and character save**. Install the GitHub Actions package `gemforge-magic-storage-0.1.2.zip` into Kiln, with Kiln 0.2.0-dev.28+.
+1. **Back up your world and character save**. Install the GitHub Actions package `gemforge-magic-storage-0.1.3.zip` into Kiln, with Kiln 0.2.0-dev.28+.
 2. Enable the mod server-side (single-player hosting works). Keep **Building Tools for Kiln** enabled if you use its global Magic Chest option; it is independent and does not supply an API to this mod.
 3. Put a gem and Archaic Essence in ordinary *Magic Chests*, not the player's backpack. Stand within 8 m of a Gem Forge. Use `/gforge scan` to confirm that Kiln can see the chests (read-only).
 4. The bridge loans up to **24 weapon gems** (keeping 4 generic backpack slots free) and up to **2,000 units of each Archaic Essence tier**, limited by actual inventory capacity. It never transfers weapons, ordinary resources or unrecognised gem-like items.
 5. Check the Gem Forge interface, insert/upgrade a gem and verify the required essence decreases **once**. Walk more than 16 m away or use `/gforge return`. Verify remaining items go back to their original Magic Chests and their item levels have not changed except through the forge.
 6. Save, reload and check gem instances and quantities. Repeat with **Endless Chests** running, since an auto-refilled source chest can become full before a return.
 
-Commands: `/gforge status`, `/gforge scan`, `/gforge return`, `/gforge help`. The return command suppresses automatic re-borrowing until you leave the forge's 8 m reach.
+Commands: `/gforge status`, `/gforge scan`, `/gforge probe`, `/gforge return`, `/gforge return-any`, `/gforge help`. The return commands suppress automatic re-borrowing until you leave the forge's 8 m reach.
 
 ## Scope and deliberate limitations
 

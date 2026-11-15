@@ -42,6 +42,19 @@ class ConservationPolicy(unittest.TestCase):
         self.assertIn("s.ItemEntity == loan.Plan.Instance", SRC)
         self.assertIn("session.Original.GetValueOrDefault", SRC)
 
+    def test_failed_returns_retain_ledger_and_do_not_take_other_gems(self):
+        self.assertIn("Queue<Loan> ReturnQueue", SRC)
+        self.assertIn("session.ReturnQueue.Enqueue(loan);", SRC)
+        self.assertIn("loan.RetryAfter = DateTimeOffset.UtcNow.AddSeconds(5);", SRC)
+        self.assertIn("s.ItemEntity == loan.Plan.Instance", SRC)
+        self.assertIn('session.AllowOtherChests', SRC)
+        self.assertIn('verb == "return-any"', SRC)
+        self.assertIn('Loan kept for retry', SRC)
+        # Never allow the old pre-decrement and forget-on-failure path.
+        self.assertNotIn("session.ReturnIndex--", SRC)
+        self.assertNotIn("session.ReturnIndex >= 0", SRC)
+
+
     def test_only_server_uses_items_move_api(self):
         self.assertRegex(PROJECT, r"<KilnSide>server</KilnSide>")
         self.assertIn("<KilnServices>Items;World;Spawn;Players;Chat;Saves</KilnServices>", PROJECT)

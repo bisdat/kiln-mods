@@ -2,7 +2,7 @@
   <PropertyGroup>
     <KilnModId>gemforge-magic-storage</KilnModId>
     <KilnModName>Gem Forge Magic Storage</KilnModName>
-    <Version>0.1.2</Version>
+    <Version>0.1.3</Version>
     <Authors>bisdat</Authors>
     <Description>Use loaded Magic Chest Archaic Essence and weapon gems at a Gem Forge without cloning items.</Description>
     <PackageProjectUrl>https://github.com/bisdat/kiln-mods</PackageProjectUrl>

@@ -30,6 +30,11 @@ public sealed class GemForgeStorageMod : Mod
         public TransferPlan Plan { get; } = plan;
         public int Lent { get; } = lent;
         public int Returned { get; set; }
+        public int Failures { get; set; }
+        public DateTimeOffset RetryAfter { get; set; }
+        public bool OriginalRejected { get; set; }
+        public HashSet<EntityId> RejectedFallbacks { get; } = [];
+        public string? LastError { get; set; }
     }
 
     private sealed class Session(Player player, EntityId forge, string world, Queue<TransferPlan> plans,
@@ -44,11 +49,14 @@ public sealed class GemForgeStorageMod : Mod
         public Dictionary<ItemId, int> Original { get; } = own;
         public List<Loan> Loans { get; } = [];
         public bool Returning { get; set; }
-        public int ReturnIndex { get; set; } = -1;
         public bool ReturnInitialized { get; set; }
+        // A rejected move must stay in the queue instead of losing its ledger.
+        public Queue<Loan> ReturnQueue { get; } = new();
+        public bool AllowOtherChests { get; set; }
         public Task<MoveResult>? Pending { get; set; }
         public TransferPlan? PendingLoan { get; set; }
         public Loan? PendingReturn { get; set; }
+        public EntityId PendingDestination { get; set; }
         public int RequestedReturn { get; set; }
     }
 
@@ -63,9 +71,9 @@ public sealed class GemForgeStorageMod : Mod
     public override void OnLoad()
     {
         _command = Commands.Register("gforge", Command, CommandPermission.Everyone,
-            usage: "[status|scan|probe|return]", description: "Magic Chest inventory access at Gem Forges.");
+            usage: "[status|scan|probe|return|return-any]", description: "Magic Chest inventory access at Gem Forges.");
         Context.Tick.Pre += Tick;
-        Log.Info("Gem Forge Storage v0.1.2 loaded: loaded Magic Chests only; Archaic Essence + weapon gems, Kiln.Items.Move.");
+        Log.Info("Gem Forge Storage v0.1.3 loaded: loaded Magic Chests only; Archaic Essence + weapon gems, Kiln.Items.Move.");
     }
 
     public override void OnUnload()
@@ -339,19 +347,33 @@ public sealed class GemForgeStorageMod : Mod
                 else if (session.PendingReturn is { } loan)
                 {
                     loan.Returned += result.Done;
-                    if (result.Done != session.RequestedReturn)
-                        Log.Warn($"Gem Forge Storage: could return {result.Done}/{session.RequestedReturn} x {loan.Plan.Item} " +
-                            $"to original chest {loan.Plan.Chest}; remaining items stay with the player ({result.Status}).");
+                    if (result.Done != session.RequestedReturn || !result.Succeeded)
+                    {
+                        ReturnFailure(loan, session.PendingDestination,
+                            $"{result.Status}: {result.Message} ({result.Done}/{session.RequestedReturn} moved)");
+                    }
+                    else
+                    {
+                        loan.LastError = null;
+                        loan.Failures = 0;
+                    }
+                    if (result.Done > 0 && session.PendingDestination != loan.Plan.Chest)
+                        Log.Warn($"Gem Forge Storage: returned {result.Done} x {loan.Plan.Item} " +
+                            $"to ALTERNATIVE Magic Chest {session.PendingDestination} (original {loan.Plan.Chest} unavailable or full).");
                 }
             }
             catch (Exception ex)
             {
-                Log.Warn($"Gem Forge Storage: inventory transfer failed; no replacement items created: {ex.Message}");
+                if (session.PendingReturn is { } failedLoan)
+                    ReturnFailure(failedLoan, session.PendingDestination, ex.Message);
+                else
+                    Log.Warn($"Gem Forge Storage: inventory transfer failed; no replacement items created: {ex.Message}");
             }
             finally
             {
                 session.PendingLoan = null;
                 session.PendingReturn = null;
+                session.PendingDestination = default;
                 session.RequestedReturn = 0;
             }
         }
@@ -386,61 +408,156 @@ public sealed class GemForgeStorageMod : Mod
     internal static int Returnable(int carried, int initiallyOwned, int remainingLoan) =>
         Math.Min(Math.Max(0, remainingLoan), Math.Max(0, carried - initiallyOwned));
 
+    private static void ReturnFailure(Loan loan, EntityId destination, string reason)
+    {
+        loan.Failures++;
+        loan.LastError = reason;
+        loan.RetryAfter = DateTimeOffset.UtcNow.AddSeconds(5);
+        if (destination == loan.Plan.Chest)
+            loan.OriginalRejected = true;
+        else if (!destination.IsNone)
+            loan.RejectedFallbacks.Add(destination);
+
+        // The ledger remains live: retry after the chest becomes usable, never
+        // silently classify a failed move as a spent or consumed gem.
+        if (loan.Failures == 1 || loan.Failures % 12 == 0)
+            Log.Warn($"Gem Forge Storage: return attempt {loan.Failures} for item {loan.Plan.Item} " +
+                $"(instance {loan.Plan.Instance}, original chest {loan.Plan.Chest}) failed: {reason}. " +
+                "Loan kept for retry. Make room in the original chest or use gforge return-any.");
+    }
+
+    private static EntityId ReturnDestination(Session session, Loan loan)
+    {
+        var original = loan.Plan.Chest;
+        bool originalReady = World.Exists(original) && MagicChest(original) &&
+            Items.Read(original) is { Initialized: true, IsPlayer: false, IsNpc: false };
+
+        if (originalReady && !loan.OriginalRejected) return original;
+
+        // Only with explicit consent may a gem go to a DIFFERENT Magic Chest.
+        // Prefer a free generic slot so we don't constantly retry full targets.
+        if (session.AllowOtherChests)
+        {
+            foreach (var candidate in Items.FindInventories(InventoryKinds.Containers))
+            {
+                if (candidate == original || loan.RejectedFallbacks.Contains(candidate) ||
+                    !MagicChest(candidate))
+                    continue;
+                if (Items.Read(candidate) is not { Initialized: true, IsPlayer: false, IsNpc: false } inv ||
+                    inv.FreeSlots(InventoryCategory.Generic) <= 0)
+                    continue;
+                return candidate;
+            }
+        }
+
+        // Recheck the original on the next cycle; it may have been unloaded,
+        // temporarily busy, or since freed by the player.
+        loan.OriginalRejected = false;
+        loan.RejectedFallbacks.Clear();
+        return originalReady ? original : default;
+    }
+
     private void ReturnNext(Session session)
     {
         if (!session.ReturnInitialized)
         {
-            session.ReturnIndex = session.Loans.Count - 1;
+            foreach (var loan in session.Loans.AsEnumerable().Reverse())
+                session.ReturnQueue.Enqueue(loan);
             session.ReturnInitialized = true;
+            Log.Info($"Gem Forge Storage: starting return for player {session.Player}, " +
+                $"{session.ReturnQueue.Count} source loans.");
         }
-        while (session.ReturnIndex >= 0)
+
+        // Round-robin: one chest being full must not prevent other gems
+        // returning to their respective, still-available origin chests.
+        var checks = session.ReturnQueue.Count;
+        while (checks-- > 0 && session.ReturnQueue.TryDequeue(out var loan))
         {
-            var loan = session.Loans[session.ReturnIndex--];
+            if (loan.Returned >= loan.Lent) continue;
+            if (loan.RetryAfter > DateTimeOffset.UtcNow)
+            {
+                session.ReturnQueue.Enqueue(loan);
+                continue;
+            }
+
             var inv = Items.Read(session.Player);
-            if (inv is null) continue;
+            if (inv is not { Initialized: true })
+            {
+                loan.RetryAfter = DateTimeOffset.UtcNow.AddSeconds(5);
+                session.ReturnQueue.Enqueue(loan);
+                continue;
+            }
 
             InventorySlot? slot;
             int count;
             if (loan.Plan.Gem)
             {
-                slot = inv.Slots.FirstOrDefault(s => !s.IsEmpty && s.Item == loan.Plan.Item &&
-                    s.ItemEntity == loan.Plan.Instance);
+                // Keep the instance ID: never take a different gem of the same
+                // type just to satisfy the return ledger.
+                slot = inv.Slots.FirstOrDefault(s => !s.IsEmpty &&
+                    s.Item == loan.Plan.Item && s.ItemEntity == loan.Plan.Instance);
                 count = slot is null ? 0 : 1;
             }
             else
             {
+                var own = session.Original.GetValueOrDefault(loan.Plan.Item);
+                var available = Returnable(inv.Count(loan.Plan.Item), own, loan.Lent - loan.Returned);
                 slot = inv.Slots.FirstOrDefault(s => !s.IsEmpty && s.Item == loan.Plan.Item &&
                     !s.IsEquipped && s.Count > 0);
-                var own = session.Original.GetValueOrDefault(loan.Plan.Item);
-                count = Math.Min(slot?.Count ?? 0, Returnable(inv.Count(loan.Plan.Item), own, loan.Lent - loan.Returned));
+                count = Math.Min(slot?.Count ?? 0, available);
             }
-            if (slot is null || count <= 0) continue;
-            if (!World.Exists(loan.Plan.Chest) || !MagicChest(loan.Plan.Chest)) continue;
+
+            if (slot is null || count <= 0)
+            {
+                // The player actually spent, socketed, or moved this item.
+                // There is no matching returnable item left in the backpack.
+                if (loan.Plan.Gem && loan.Failures > 0)
+                    Log.Info($"Gem Forge Storage: gem instance {loan.Plan.Instance} is no longer in " +
+                        "the player backpack; it will not be taken from another inventory.");
+                continue;
+            }
+
+            var destination = ReturnDestination(session, loan);
+            if (destination.IsNone)
+            {
+                ReturnFailure(loan, loan.Plan.Chest, "original Magic Chest not loaded");
+                session.ReturnQueue.Enqueue(loan);
+                continue;
+            }
+
+            // Requeue *before* submitting the asynchronous transaction. It will
+            // only be taken off the queue once the exact item has returned or
+            // ceased to be held by this player. A failed/partial move stays live.
+            session.ReturnQueue.Enqueue(loan);
             session.PendingReturn = loan;
+            session.PendingDestination = destination;
             session.RequestedReturn = count;
-            session.Pending = Items.Move(session.Player, slot.Slot, loan.Plan.Chest, count);
+            session.Pending = Items.Move(session.Player, slot.Slot, destination, count);
             return;
         }
+
+        if (session.ReturnQueue.Count > 0) return;
+
         var total = session.Loans.Sum(x => x.Lent);
         var returned = session.Loans.Sum(x => x.Returned);
         if (total > returned)
-            Log.Warn($"Gem Forge Storage: player {session.Player} finished forge visit; {returned}/{total} items returned. " +
-                "Unreturned items were spent, inserted into equipment, or remain in the backpack (e.g. chest full).");
+            Log.Info($"Gem Forge Storage: player {session.Player} completed return: " +
+                $"{returned}/{total} items returned; the remainder were used, socketed, or moved away.");
         else if (total > 0)
-            Log.Info($"Gem Forge Storage: player {session.Player} returned {returned} loaned item(s).");
+            Log.Info($"Gem Forge Storage: player {session.Player} returned all {returned} loaned item(s).");
         _sessions.Remove(session.Player);
     }
 
     private void Command(CommandContext command)
     {
         var verb = command.ArgOrDefault(0, "status")!.ToLowerInvariant();
-        if (verb is not ("scan" or "status" or "probe" or "return" or "help"))
-            throw command.Usage("status | scan | probe | return | help");
+        if (verb is not ("scan" or "status" or "probe" or "return" or "return-any" or "help"))
+            throw command.Usage("status | scan | probe | return | return-any | help");
         if (verb == "help")
         {
             command.Reply("gforge status (current loan), scan (read-only sources), probe (forge detection), " +
-                "return (return now and suspend until leaving). Transfers start automatically " +
-                "within 8 m of a Gem Forge and return beyond 16 m.");
+                "return (retry original chests), return-any (explicitly permit other Magic Chests). " +
+                "Transfers start within 8 m and return beyond 16 m.");
             return;
         }
         var player = command.Source.Player;
@@ -457,21 +574,30 @@ public sealed class GemForgeStorageMod : Mod
             command.Reply(_sessions.TryGetValue(player, out var session)
                 ? $"Gem Forge Storage: {(session.Returning ? "returning" : "active")}; " +
                   $"plans={session.Plans.Count}, loans={session.Loans.Count}, " +
-                  $"borrowed={session.Loans.Sum(x => x.Lent)}, returned={session.Loans.Sum(x => x.Returned)}."
+                  $"borrowed={session.Loans.Sum(x => x.Lent)}, returned={session.Loans.Sum(x => x.Returned)}, " +
+                  $"pendingReturn={session.ReturnQueue.Count}, failedLoans={session.Loans.Count(x => x.Failures > 0)}, " +
+                  $"allowOtherChests={session.AllowOtherChests}."
                 : $"Gem Forge Storage: no active loan; moves={Items.MovesAvailable}, magic chests loaded in current world only.");
             return;
         }
-        if (verb == "return")
+        if (verb is "return" or "return-any")
         {
             if (!_sessions.TryGetValue(player, out var s))
             {
-                command.Reply("No active Gem Forge loan.");
+                command.Reply("No active Gem Forge loan. This version cannot reconstruct loans from a prior game session.");
                 return;
             }
             _manualReturn.Add(player);
             s.Returning = true;
             s.Plans.Clear();
-            command.Reply("Gem Forge Storage: returning loaned items now; borrowing resumes after you leave and approach the forge again.");
+            if (verb == "return-any") s.AllowOtherChests = true;
+            foreach (var loan in s.Loans)
+                loan.RetryAfter = default; // user may have freed space; retry immediately
+            command.Reply(verb == "return-any"
+                ? "Returning unused loaned items now. If original chests are full/unavailable, " +
+                  "you ALLOW alternative loaded Magic Chests with free slots; destinations are logged."
+                : "Returning unused loaned items to ORIGINAL chests. Failed transfers remain pending " +
+                  "and retry every five seconds; use return-any only to authorize alternative chests.");
             return;
         }
         if (!Items.MovesAvailable || !Spawn.Available || !World.Available)
