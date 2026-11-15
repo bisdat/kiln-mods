@@ -41,6 +41,7 @@ public sealed class GemForgeStorageMod : Mod
         public List<Loan> Loans { get; } = [];
         public bool Returning { get; set; }
         public int ReturnIndex { get; set; } = -1;
+        public bool ReturnInitialized { get; set; }
         public Task<MoveResult>? Pending { get; set; }
         public TransferPlan? PendingLoan { get; set; }
         public Loan? PendingReturn { get; set; }
@@ -200,7 +201,7 @@ public sealed class GemForgeStorageMod : Mod
 
     private void Discover(string world)
     {
-        foreach (var session in _sessions.Values)
+        foreach (var session in _sessions.Values.ToArray())
         {
             var player = Players.Find(session.Player);
             if (player is not { InGame: true } ||
@@ -309,7 +310,11 @@ public sealed class GemForgeStorageMod : Mod
 
     private void ReturnNext(Session session)
     {
-        if (session.ReturnIndex < 0) session.ReturnIndex = session.Loans.Count - 1;
+        if (!session.ReturnInitialized)
+        {
+            session.ReturnIndex = session.Loans.Count - 1;
+            session.ReturnInitialized = true;
+        }
         while (session.ReturnIndex >= 0)
         {
             var loan = session.Loans[session.ReturnIndex--];
