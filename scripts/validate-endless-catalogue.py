@@ -112,8 +112,8 @@ assert contains("Wall Tapestry", 3603348812) # tapestry piece I
 assert contains("Wall Tapestry", 2252200136) # tapestry piece II
 assert contains("Throwables", 1462961786) # fire grenade, not test ball
 assert not contains("Throwables", 1036114942)
-assert contains("Treasure Maps", 2381061644) # lore map, not decorative map
-assert not contains("Treasure Maps", 3491672504)
+assert groups["Treasure Maps"][0] == 2381061644 # lore map at original unresolved position
+assert groups["Treasure Maps"][1] == 3491672504 # separate valid decorative treasure map
 assert contains("Vanity Outfits 1", 3203382450) # real Royal Gloves, not NO_ placeholder
 
 # All 133 old '<name> Loot' references now point to their unique _Loot
