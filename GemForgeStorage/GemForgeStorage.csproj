@@ -1,15 +1,15 @@
 <Project Sdk="Kiln.Sdk/0.2.0-dev.28">
   <PropertyGroup>
     <KilnModId>gemforge-magic-storage</KilnModId>
-    <KilnModName>Gem Forge Magic Storage</KilnModName>
-    <Version>0.1.3</Version>
+    <KilnModName>Gem Forge Integration Research</KilnModName>
+    <Version>0.2.0</Version>
     <Authors>bisdat</Authors>
-    <Description>Use loaded Magic Chest Archaic Essence and weapon gems at a Gem Forge without cloning items.</Description>
+    <Description>Read-only investigation of native Gem Forge actions and Magic Chest inventory access. Never moves items.</Description>
     <PackageProjectUrl>https://github.com/bisdat/kiln-mods</PackageProjectUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <KilnSide>server</KilnSide>
     <KilnClients>none</KilnClients>
-    <KilnServices>Items;World;Spawn;Players;Chat;Saves</KilnServices>
+    <KilnServices>Items;World;Spawn;Players;Chat</KilnServices>
     <KilnGameIds>None</KilnGameIds>
   </PropertyGroup>
 </Project>
