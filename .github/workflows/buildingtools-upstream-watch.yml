@@ -21,18 +21,21 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
-      - name: Find the newest official stable upstream release
+      - name: Find the newest stable upstream release and check uploaded assets
         id: latest
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
-          TAG=$(gh api repos/AleksanderWojtal-CC/Enshrouded-BuildingTools/releases/latest --jq .tag_name)
-          [[ "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || exit 1
-          VERSION=$(echo "$TAG" | cut -c2-)
-          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-          echo "Official upstream: $TAG"
+          gh api repos/AleksanderWojtal-CC/Enshrouded-BuildingTools/releases/latest \
+            > /tmp/building-tools-upstream-release.json
+          # A GitHub Release can exist BEFORE its ZIP/sha256 assets are uploaded.
+          # In that case report a warning, do not create a PR or fail CI,
+          # and try again at the next scheduled run.
+          python3 BuildingToolsKiln/release_assets.py \
+            /tmp/building-tools-upstream-release.json >> "$GITHUB_OUTPUT"
       - name: Download original release and validate the published checksum
+        if: steps.latest.outputs.ready == 'true'
         id: checksum
         env:
           VERSION: ${{ steps.latest.outputs.version }}
@@ -53,6 +56,7 @@ jobs:
           print("sha256="+actual)
           PY
       - name: Prepare draft profile update, never transfer gameplay acceptance
+        if: steps.latest.outputs.ready == 'true'
         id: propose
         env:
           VERSION: ${{ steps.latest.outputs.version }}
