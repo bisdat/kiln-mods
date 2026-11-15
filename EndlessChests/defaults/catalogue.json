@@ -152,6 +152,11 @@
       "debugName": "T3_Seedling_SugarCane",
       "category": "BuildTools"
     },
+    "40007242": {
+      "displayName": "Hero's Shield",
+      "debugName": "Shield_T2_DPS",
+      "category": "Equipment"
+    },
     "43040013": {
       "displayName": "Gold Scavenger Scattershot Trophy",
       "debugName": "_Prop_Decoration_Boss_Trophy_Scavenger_Deepforest_Heavy_04_gold",
@@ -201,6 +206,11 @@
       "displayName": "Bronze Block",
       "debugName": "Block_T3_Metal_Bronze_CRAFTING",
       "category": "BuildTools"
+    },
+    "53830276": {
+      "displayName": "Emberguard Shield",
+      "debugName": "Shield_T7_DPS_Loot",
+      "category": "Equipment"
     },
     "54733896": {
       "displayName": "Ancient Dungeon Block",
@@ -957,6 +967,11 @@
       "debugName": "Weapon_T5_2H_StaffEpic_02",
       "category": "Weapons"
     },
+    "255353296": {
+      "displayName": "Pikemead's Bulwark",
+      "debugName": "Craft_Shield_T7_Lore_ShieldEpic_carpenter_hint06",
+      "category": "Equipment"
+    },
     "256634933": {
       "displayName": "Scrappy Pickaxe",
       "debugName": "Tool_T1_Pickaxe_Scrap_Grassland",
@@ -1006,6 +1021,11 @@
       "displayName": "Exotic Fruit Salad",
       "debugName": "Food_T7_dish_fruit_FruitSalad",
       "category": "Consumables"
+    },
+    "273247586": {
+      "displayName": "Astrodome Shield",
+      "debugName": "Shield_T7_Rogue_Loot",
+      "category": "Equipment"
     },
     "274681682": {
       "displayName": "Cactus Plant",
@@ -1091,6 +1111,11 @@
       "displayName": "Eternal Bonestorm II",
       "debugName": "Ammo_T7_Spell_Bone_Channel_lvl45_Eternal",
       "category": "Ammunition"
+    },
+    "300032798": {
+      "displayName": "Rising Fighter Shield",
+      "debugName": "Shield_T1_DPS_Loot",
+      "category": "Equipment"
     },
     "301510235": {
       "displayName": "Shivs",
@@ -1246,6 +1271,11 @@
       "displayName": "Inscribed Golden Urn",
       "debugName": "Collection_skeletons_02_urns_urn_03",
       "category": "Collectibles"
+    },
+    "349263893": {
+      "displayName": "Riptide",
+      "debugName": "Craft_Shield_T7_Lore_ShieldEpic_Ministory_17",
+      "category": "Equipment"
     },
     "350050975": {
       "displayName": "Large Crypt Mausoleum",
@@ -1447,6 +1477,11 @@
       "debugName": "Armor_T4_Warrior_Brawler_Chest_Loot",
       "category": "Equipment"
     },
+    "408308370": {
+      "displayName": "Wolf's Fang Shield",
+      "debugName": "Shield_T5_Rogue_Loot",
+      "category": "Equipment"
+    },
     "409520008": {
       "displayName": "Enhanced Spiked Club",
       "debugName": "Weapon_T2_1H_Mace_01",
@@ -1496,6 +1531,11 @@
       "displayName": "Scavenger Tyrant Trophy",
       "debugName": "_Prop_Decoration_Boss_Trophy_Scavenger_Tyrant_Heavy_01_wood",
       "category": "BuildTools"
+    },
+    "419035885": {
+      "displayName": "Valiant Shield",
+      "debugName": "Shield_T2_Tank_Loot",
+      "category": "Equipment"
     },
     "419344916": {
       "displayName": "String",
@@ -1645,6 +1685,11 @@
     "454495308": {
       "displayName": "Mystic Pants",
       "debugName": "Armor_T3_Mage_BattleWand_Legs_Loot",
+      "category": "Equipment"
+    },
+    "454512717": {
+      "displayName": "Pikemead's Bulwark",
+      "debugName": "Craft_Shield_T1_Lore_ShieldEpic_carpenter_hint06",
       "category": "Equipment"
     },
     "455684957": {
@@ -1836,6 +1881,11 @@
       "displayName": "Gold Bars",
       "debugName": "Material_T6_Gold_Bar",
       "category": "Materials"
+    },
+    "514520429": {
+      "displayName": "Pikemead's Bulwark",
+      "debugName": "Craft_Shield_T5_Lore_ShieldEpic_carpenter_hint06",
+      "category": "Equipment"
     },
     "515309917": {
       "displayName": "Staff of the Ram",
@@ -2287,6 +2337,11 @@
       "debugName": "Weapon_T5_2H_Bow_01",
       "category": "Weapons"
     },
+    "634089750": {
+      "displayName": "Soldier Shield",
+      "debugName": "Shield_T4_DPS",
+      "category": "Equipment"
+    },
     "634473105": {
       "displayName": "Shroud Nexus",
       "debugName": "Material_T3_Fog_Core02_ShroudNexus",
@@ -2542,6 +2597,11 @@
       "debugName": "Craft_Weapon_T5_2H_Lore_BowEpic_ministory_39",
       "category": "Weapons"
     },
+    "691231505": {
+      "displayName": "Wooden Shield",
+      "debugName": "Shield_T0_Wooden",
+      "category": "Equipment"
+    },
     "692270451": {
       "displayName": "Wolf's Snarl Longbow",
       "debugName": "Weapon_T1_2H_BowEpic_02",
@@ -2601,6 +2661,11 @@
       "displayName": "Wound Ointment",
       "debugName": "Material_T5_WoundOintment",
       "category": "Materials"
+    },
+    "704475806": {
+      "displayName": "Sunpiercer Shield",
+      "debugName": "Shield_T6_DPS_Loot",
+      "category": "Equipment"
     },
     "707511507": {
       "displayName": "Fell Wispwyvern Head",
@@ -3147,6 +3212,11 @@
       "debugName": "Material_T6_Capybara_Feeding",
       "category": "AnimalFood"
     },
+    "870935206": {
+      "displayName": "Riptide",
+      "debugName": "Craft_Shield_T3_Lore_ShieldEpic_Ministory_17",
+      "category": "Equipment"
+    },
     "873336281": {
       "displayName": "Electric Initialiser",
       "debugName": "Weapon_T7_1H_Lore_Wand_ministory_25_lightning",
@@ -3326,6 +3396,11 @@
       "displayName": "Silver Haze",
       "debugName": "Weapon_T3_1H_Wand_02_Ice",
       "category": "Weapons"
+    },
+    "913087809": {
+      "displayName": "Guardian Shield",
+      "debugName": "Shield_T3_Tank_Loot",
+      "category": "Equipment"
     },
     "913533703": {
       "displayName": "Circus Knives",
@@ -4572,6 +4647,11 @@
       "debugName": "Prop_Decoration_Comfort_T4_Wall_Painting_1",
       "category": "BuildTools"
     },
+    "1237193461": {
+      "displayName": "Pikemead's Bulwark",
+      "debugName": "Craft_Shield_T3_Lore_ShieldEpic_carpenter_hint06",
+      "category": "Equipment"
+    },
     "1237806794": {
       "displayName": "Guard Of The North Sword",
       "debugName": "Weapon_T6_2H_Lore_GreatSwordEpic_Ministory_20",
@@ -4772,6 +4852,11 @@
       "debugName": "Base_Door_Secret_Marble01",
       "category": "BuildTools"
     },
+    "1294112531": {
+      "displayName": "Mountain's Shadow Shield",
+      "debugName": "Shield_T5_DPS",
+      "category": "Equipment"
+    },
     "1294451888": {
       "displayName": "Straw Mat",
       "debugName": "Prop_Decoration_Comfort_T1_Floor_Plantfibre_small",
@@ -4892,6 +4977,11 @@
       "debugName": "Ammo_T6_Spell_Fire_Ball_lvl36_Eternal",
       "category": "Ammunition"
     },
+    "1334950192": {
+      "displayName": "Guardian Shield",
+      "debugName": "Shield_T3_Tank",
+      "category": "Equipment"
+    },
     "1334996496": {
       "displayName": "Scrap Pot II",
       "debugName": "Prop_Decoration_T1_Pot_Scrap_02",
@@ -4936,6 +5026,11 @@
       "displayName": "Large Round Wooden Window Frame",
       "debugName": "Prop_Decoration_T0_Window_Round_Large_Wooden_Frame",
       "category": "BuildTools"
+    },
+    "1349555194": {
+      "displayName": "Mercenary Shield",
+      "debugName": "Shield_T3_DPS_Loot",
+      "category": "Equipment"
     },
     "1350606537": {
       "displayName": "Enshrouded Oil",
@@ -5501,6 +5596,11 @@
       "displayName": "Feathered Mace",
       "debugName": "Weapon_T1-TX_1H_Mace_Enemy_Fogger_Soldier",
       "category": "Weapons"
+    },
+    "1474807415": {
+      "displayName": "Riptide",
+      "debugName": "Craft_Shield_T6_Lore_ShieldEpic_Ministory_17",
+      "category": "Equipment"
     },
     "1475408789": {
       "displayName": "Conifer Logs",
@@ -6152,6 +6252,11 @@
       "debugName": "Material_T3_Rooibos",
       "category": "Materials"
     },
+    "1630326106": {
+      "displayName": "Rogue Shield",
+      "debugName": "Shield_T4_Rogue_Loot",
+      "category": "Equipment"
+    },
     "1631158255": {
       "displayName": "Lantern",
       "debugName": "Prop_Decoration_Comfort_T4_IlluminationFloor",
@@ -6712,6 +6817,11 @@
       "debugName": "Prop_Decoration_T7_Ancient_Sideboard_Large",
       "category": "BuildTools"
     },
+    "1777113935": {
+      "displayName": "Golden Bulwark Shield",
+      "debugName": "Shield_T6_Tank",
+      "category": "Equipment"
+    },
     "1779078295": {
       "displayName": "Pure Amethyst",
       "debugName": "ColorPalette_T5_ColorPalette_Reward_01",
@@ -6945,6 +7055,11 @@
     "1827887436": {
       "displayName": "Siren Seeker Chest",
       "debugName": "Vanity_T6_BeachAttire_Chest",
+      "category": "Equipment"
+    },
+    "1828068654": {
+      "displayName": "Pikemead's Bulwark",
+      "debugName": "Shield_T1_Lore_ShieldEpic_carpenter_hint06",
       "category": "Equipment"
     },
     "1828629573": {
@@ -7232,6 +7347,11 @@
       "debugName": "Prop_Decoration_Boss_Trophy_Fell_Dragon_04_gold",
       "category": "BuildTools"
     },
+    "1900300234": {
+      "displayName": "Golden Bulwark Shield",
+      "debugName": "Shield_T6_Tank_Loot",
+      "category": "Equipment"
+    },
     "1902069142": {
       "displayName": "Alchemist Showcase",
       "debugName": "Prop_Collection_04_Alchemist_Showcase_Wallhang",
@@ -7246,6 +7366,11 @@
       "displayName": "Ectoplasm Cluster",
       "debugName": "Material_T5_Green_Essence",
       "category": "Materials"
+    },
+    "1907066224": {
+      "displayName": "Astrodome Shield",
+      "debugName": "Shield_T7_Rogue",
+      "category": "Equipment"
     },
     "1910038255": {
       "displayName": "Clay Fireplace",
@@ -7362,6 +7487,11 @@
       "debugName": "Material_T7_Vorgoth_Blood",
       "category": "Materials"
     },
+    "1942545282": {
+      "displayName": "Brazen Bull Shield",
+      "debugName": "Shield_T5_Tank_Loot",
+      "category": "Equipment"
+    },
     "1943367547": {
       "displayName": "Eternal Chain Lightning III",
       "debugName": "Ammo_T7_Spell_Lightning_Chain_lvl45_Eternal",
@@ -7456,6 +7586,11 @@
       "displayName": "Valor Heart Daggers",
       "debugName": "Craft_Weapon_T5_2H_Lore_DaggersEpic_Parry_bard_Hint02",
       "category": "Weapons"
+    },
+    "1974697806": {
+      "displayName": "Stormshield",
+      "debugName": "Shield_T3_Rogue_Loot",
+      "category": "Equipment"
     },
     "1976103965": {
       "displayName": "Crude Wooden Closet",
@@ -7807,6 +7942,11 @@
       "debugName": "Prop_Decoration_Comfort6_T4_Bed_Kingsize",
       "category": "BuildTools"
     },
+    "2053916217": {
+      "displayName": "Scrap Shield",
+      "debugName": "Shield_T1-TX_Enemy_Scavenger_Weakling",
+      "category": "Equipment"
+    },
     "2054426662": {
       "displayName": "Violet Decorative Box",
       "debugName": "_Prop_Decoration_T5_Present03_violet_Anniversary",
@@ -8017,6 +8157,11 @@
       "debugName": "Collection_Meteorites_Large_02",
       "category": "Collectibles"
     },
+    "2108531401": {
+      "displayName": "Stormshield",
+      "debugName": "Shield_T3_Rogue",
+      "category": "Equipment"
+    },
     "2109907931": {
       "displayName": "Club of Defiance",
       "debugName": "Weapon_T2_2H_HammerEpic_01",
@@ -8222,6 +8367,11 @@
       "debugName": "Weapon_T6_2H_DaggersEpic_DPS_Parry",
       "category": "Weapons"
     },
+    "2159741777": {
+      "displayName": "Valiant Shield",
+      "debugName": "Shield_T2_Tank",
+      "category": "Equipment"
+    },
     "2160078991": {
       "displayName": "Flat Bread",
       "debugName": "Food_T3_dish_grain_baked_FlatBread",
@@ -8241,6 +8391,16 @@
       "displayName": "Drak Temple Vase II",
       "debugName": "Prop_Decoration_T6_TempleVase_02",
       "category": "BuildTools"
+    },
+    "2164917554": {
+      "displayName": "Pikemead's Bulwark",
+      "debugName": "Craft_Shield_T4_Lore_ShieldEpic_carpenter_hint06",
+      "category": "Equipment"
+    },
+    "2165424296": {
+      "displayName": "Cursed Mocking Shield",
+      "debugName": "Shield_TX_Skull_HollowHall",
+      "category": "Equipment"
     },
     "2172312678": {
       "displayName": "Fake Ancient Door",
@@ -8977,6 +9137,11 @@
       "debugName": "Key_Skeleton_Bone_Dungeon02",
       "category": "Tools"
     },
+    "2363054959": {
+      "displayName": "Mercenary Shield",
+      "debugName": "Shield_T3_DPS",
+      "category": "Equipment"
+    },
     "2364777884": {
       "displayName": "Mushroom Omelette",
       "debugName": "Food_T3_dish_grilled_mushroom_Omelett",
@@ -9422,6 +9587,11 @@
       "debugName": "Ammo_T6_Arrow_Magic_Lightning_Eternal_lvl36",
       "category": "Ammunition"
     },
+    "2455654433": {
+      "displayName": "Emberguard Shield",
+      "debugName": "Shield_T7_DPS",
+      "category": "Equipment"
+    },
     "2456844314": {
       "displayName": "Sugar Cane",
       "debugName": "Food_T3_raw_sweets_SugarCane",
@@ -9862,6 +10032,11 @@
       "debugName": "ColorPalette_T7_ColorPalette_05",
       "category": "ColorPalette"
     },
+    "2566805157": {
+      "displayName": "Rising Fighter Shield",
+      "debugName": "Shield_T1_DPS",
+      "category": "Equipment"
+    },
     "2566943046": {
       "displayName": "Wand Of Bloodflow",
       "debugName": "Weapon_T6_1H_WandEpic_01_Fire",
@@ -9941,6 +10116,11 @@
       "displayName": "Fire Bolt VII",
       "debugName": "Ammo_T6_Spell_Fire_Bolt_lvl38",
       "category": "Ammunition"
+    },
+    "2584194594": {
+      "displayName": "Shield of Light",
+      "debugName": "Shield_T4_Tank",
+      "category": "Equipment"
     },
     "2585181438": {
       "displayName": "Warrior Helmet",
@@ -10157,6 +10337,11 @@
       "debugName": "Weapon_T7_1H_Lore_Wand_ministory_06_fog",
       "category": "Weapons"
     },
+    "2644725310": {
+      "displayName": "Riptide",
+      "debugName": "Craft_Shield_T4_Lore_ShieldEpic_Ministory_17",
+      "category": "Equipment"
+    },
     "2646644982": {
       "displayName": "Crypt Chandelier",
       "debugName": "Prop_Decoration_Comfort_T2_Illumination_Ceiling_HollowHalls",
@@ -10226,6 +10411,11 @@
       "displayName": "Cyclops Pelvis",
       "debugName": "Collection_skeletons_04_cyclops_pelvis",
       "category": "Collectibles"
+    },
+    "2659868410": {
+      "displayName": "Shield of Arisztar",
+      "debugName": "Shield_T6_Rogue",
+      "category": "Equipment"
     },
     "2659920887": {
       "displayName": "Large Salon Mirror",
@@ -10942,6 +11132,11 @@
       "debugName": "Weapon_T6_1H_Mace_02",
       "category": "Weapons"
     },
+    "2828262065": {
+      "displayName": "Rogue Shield",
+      "debugName": "Shield_T4_Rogue",
+      "category": "Equipment"
+    },
     "2828613695": {
       "displayName": "Apex Machete",
       "debugName": "Weapon_T6_1H_SwordEpic_01",
@@ -11132,6 +11327,11 @@
       "debugName": "Prop_Decoration_TX_AncientAstronomy_Desk_02_TwitchDrop",
       "category": "BuildTools"
     },
+    "2863750697": {
+      "displayName": "Sunpiercer Shield",
+      "debugName": "Shield_T6_DPS",
+      "category": "Equipment"
+    },
     "2864379507": {
       "displayName": "Pottery Flasks",
       "debugName": "Prop_Furniture_Distillery_Pot_08",
@@ -11292,6 +11492,11 @@
       "debugName": "Prop_Production_T3_Tanning_Station",
       "category": "BuildTools"
     },
+    "2903659724": {
+      "displayName": "Riptide",
+      "debugName": "Craft_Shield_T5_Lore_ShieldEpic_Ministory_17",
+      "category": "Equipment"
+    },
     "2903890683": {
       "displayName": "Gold Vorgoth's Eye Trophy",
       "debugName": "_Prop_Decoration_Boss_Trophy_Vorgoth_Eye_04_gold",
@@ -11346,6 +11551,11 @@
       "displayName": "Fell Black Knight Greatsword",
       "debugName": "Weapon_T1-TX_2H_GreatSword_Enemy_Fogger_Knight",
       "category": "Weapons"
+    },
+    "2917228480": {
+      "displayName": "Wolf's Fang Shield",
+      "debugName": "Shield_T5_Rogue",
+      "category": "Equipment"
     },
     "2917848991": {
       "displayName": "Crude Wooden Door",
@@ -11572,6 +11782,11 @@
       "debugName": "Prop_Decoration_T1_Camp_Support_01",
       "category": "BuildTools"
     },
+    "2966845440": {
+      "displayName": "Crestflame Shield",
+      "debugName": "Shield_T7_Tank_Loot",
+      "category": "Equipment"
+    },
     "2966872976": {
       "displayName": "Bejeweled Golden Urn",
       "debugName": "Collection_skeletons_02_urns_urn_02",
@@ -11601,6 +11816,11 @@
       "displayName": "Flute",
       "debugName": "Instrument_Flute",
       "category": "Instrument"
+    },
+    "2972800174": {
+      "displayName": "Riptide",
+      "debugName": "Craft_Shield_T2_Lore_ShieldEpic_Ministory_17",
+      "category": "Equipment"
     },
     "2974680800": {
       "displayName": "Mill",
@@ -11947,6 +12167,11 @@
       "debugName": "Weapon_T1_2H_DaggersEpic_Parry",
       "category": "Weapons"
     },
+    "3056575447": {
+      "displayName": "Shield of Light",
+      "debugName": "Shield_T4_Tank_Loot",
+      "category": "Equipment"
+    },
     "3057351533": {
       "displayName": "Orange Pendant Light I",
       "debugName": "Prop_Decoration_Comfort_T6_IlluminationCeiling_orange",
@@ -11966,6 +12191,11 @@
       "displayName": "Morning Sun",
       "debugName": "8kLoreText_scroll_bard_song_flute_unlocked",
       "category": "Collectibles"
+    },
+    "3062146687": {
+      "displayName": "Brazen Bull Shield",
+      "debugName": "Shield_T5_Tank",
+      "category": "Equipment"
     },
     "3063700121": {
       "displayName": "Cylindrical Pillow",
@@ -12456,6 +12686,11 @@
       "displayName": "Lunar Tides Bow",
       "debugName": "Weapon_T7_2H_Bow_01",
       "category": "Weapons"
+    },
+    "3190651700": {
+      "displayName": "Spearfisher's Shield",
+      "debugName": "Shield_T6-TX_Enemy_Lizard_Weakling",
+      "category": "Equipment"
     },
     "3192770947": {
       "displayName": "Shroud Weaver",
@@ -13252,6 +13487,11 @@
       "debugName": "Prop_Decoration_Comfort_T5_IlluminationFloor_Brazier_Dragon",
       "category": "BuildTools"
     },
+    "3395268278": {
+      "displayName": "Mountain's Shadow Shield",
+      "debugName": "Shield_T5_DPS_Loot",
+      "category": "Equipment"
+    },
     "3397095517": {
       "displayName": "Magician Chest",
       "debugName": "Armor_T3_Mage_Wizard_DPS_Chest_Loot",
@@ -13751,6 +13991,11 @@
       "displayName": "Medium Hollow's Eve Pumpkin II",
       "debugName": "Prop_Decoration_T1_Pumpkin_Halloween_Medium_01c",
       "category": "BuildTools"
+    },
+    "3506644433": {
+      "displayName": "Shield of Arisztar",
+      "debugName": "Shield_T6_Rogue_Loot",
+      "category": "Equipment"
     },
     "3507051762": {
       "displayName": "Gleam Root Dust",
@@ -14362,6 +14607,11 @@
       "debugName": "Craft_Weapon_T6_2H_Lore_HammerEpic_ministory_14",
       "category": "Weapons"
     },
+    "3632234844": {
+      "displayName": "Soldier Shield",
+      "debugName": "Shield_T4_DPS_Loot",
+      "category": "Equipment"
+    },
     "3633377406": {
       "displayName": "Spellweaver Boots",
       "debugName": "Vanity_Tx_DLC_Supporter_Mage_Boots",
@@ -14817,10 +15067,20 @@
       "debugName": "Prop_Logic_Trigger",
       "category": "BuildTools"
     },
+    "3738285842": {
+      "displayName": "Pikemead's Bulwark",
+      "debugName": "Craft_Shield_T2_Lore_ShieldEpic_carpenter_hint06",
+      "category": "Equipment"
+    },
     "3739626235": {
       "displayName": "Cryptic Wand",
       "debugName": "Weapon_T2_1H_Lore_WandEpic_Ministory_09_Lightning",
       "category": "Weapons"
+    },
+    "3744513726": {
+      "displayName": "Hero's Shield",
+      "debugName": "Shield_T2_DPS_Loot",
+      "category": "Equipment"
     },
     "3744591176": {
       "displayName": "Meat Wrap",
@@ -15051,6 +15311,11 @@
       "displayName": "Polished Wooden Shelf",
       "debugName": "Prop_Decoration_T2_Shelf_Ornamented_Wooden",
       "category": "BuildTools"
+    },
+    "3805706024": {
+      "displayName": "Fell Black Knight Shield",
+      "debugName": "Shield_TX_Enemy_Fogger_Knight",
+      "category": "Equipment"
     },
     "3805998945": {
       "displayName": "Prison Room Divider II",
@@ -15602,6 +15867,11 @@
       "debugName": "Material_T3_Fognest_Ressource",
       "category": "Materials"
     },
+    "3928873510": {
+      "displayName": "Crestflame Shield",
+      "debugName": "Shield_T7_Tank",
+      "category": "Equipment"
+    },
     "3929204963": {
       "displayName": "Flag Pole IV",
       "debugName": "Prop_Decoration_T5_Flagpole_04",
@@ -15732,6 +16002,11 @@
       "debugName": "T6_Seedling_Banana",
       "category": "BuildTools"
     },
+    "3957855784": {
+      "displayName": "Pikemead's Bulwark",
+      "debugName": "Craft_Shield_T6_Lore_ShieldEpic_carpenter_hint06",
+      "category": "Equipment"
+    },
     "3959792094": {
       "displayName": "Iron Fence",
       "debugName": "Prop_Decoration_T4_Fence_CastIron",
@@ -15820,6 +16095,11 @@
     "3981186252": {
       "displayName": "Knight Trousers",
       "debugName": "Armor_T3_Warrior_Rogue_Legs_Loot",
+      "category": "Equipment"
+    },
+    "3981836644": {
+      "displayName": "Fell Crusader Shield",
+      "debugName": "Shield_TX_Enemy_Fogger",
       "category": "Equipment"
     },
     "3982243037": {
@@ -15911,6 +16191,11 @@
       "displayName": "Graveyard Fence Broken II",
       "debugName": "Prop_Decoration_T3_Fence_Graveyard2",
       "category": "BuildTools"
+    },
+    "4004201468": {
+      "displayName": "Riptide",
+      "debugName": "Shield_T2_Lore_ShieldEpic_Ministory_17",
+      "category": "Equipment"
     },
     "4005698976": {
       "displayName": "Ectoplasm Aggregate",
@@ -16751,6 +17036,11 @@
       "displayName": "Statue of Queen Pikemead",
       "debugName": "Prop_Decoration_T2_Statue_pikemeadStatue",
       "category": "BuildTools"
+    },
+    "4213879490": {
+      "displayName": "Fell Defender Shield",
+      "debugName": "Shield_T0-TX_Enemy_Fogger_Depleted",
+      "category": "Equipment"
     },
     "4214162606": {
       "displayName": "Shroud Arrow II",
@@ -21551,6 +21841,66 @@
       444948198,
       1404050036,
       3650841772
+    ],
+    "Shields": [
+      691231505,
+      4213879490,
+      454512717,
+      2566805157,
+      300032798,
+      1828068654,
+      2053916217,
+      2972800174,
+      3738285842,
+      40007242,
+      3744513726,
+      4004201468,
+      2159741777,
+      419035885,
+      870935206,
+      1237193461,
+      2363054959,
+      1349555194,
+      2108531401,
+      1974697806,
+      1334950192,
+      913087809,
+      2644725310,
+      2164917554,
+      634089750,
+      3632234844,
+      2828262065,
+      1630326106,
+      2584194594,
+      3056575447,
+      2903659724,
+      514520429,
+      1294112531,
+      3395268278,
+      2917228480,
+      408308370,
+      3062146687,
+      1942545282,
+      1474807415,
+      3957855784,
+      2863750697,
+      704475806,
+      2659868410,
+      3506644433,
+      1777113935,
+      1900300234,
+      3190651700,
+      349263893,
+      255353296,
+      2455654433,
+      53830276,
+      1907066224,
+      273247586,
+      3928873510,
+      2966845440,
+      3981836644,
+      3805706024,
+      2165424296
     ]
   }
 }
