@@ -40,9 +40,9 @@ jobs:
       - name: Upload the test package
         uses: actions/upload-artifact@v4
         with:
-          name: gemforge-magic-storage-0.1.0
+          name: gemforge-magic-storage-0.1.1
           path: |
-            bin/Release/gemforge-magic-storage-0.1.0.zip
+            bin/Release/gemforge-magic-storage-0.1.1.zip
             bin/Release/kiln-sdk-provenance.json
           if-no-files-found: error
           retention-days: 90
@@ -57,10 +57,10 @@ jobs:
     steps:
       - uses: actions/download-artifact@v4
         with:
-          name: gemforge-magic-storage-0.1.0
+          name: gemforge-magic-storage-0.1.1
           path: dist
       - uses: softprops/action-gh-release@v2
         with:
-          files: dist/gemforge-magic-storage-0.1.0.zip
+          files: dist/gemforge-magic-storage-0.1.1.zip
           generate_release_notes: true
           fail_on_unmatched_files: true

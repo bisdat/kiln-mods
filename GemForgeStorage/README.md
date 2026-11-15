@@ -1,10 +1,29 @@
-# Gem Forge Magic Storage (Kiln) — v0.1.0 test candidate
+# Gem Forge Magic Storage (Kiln) — v0.1.1 test candidate
 
 Bring **Archaic Essence and weapon gems** from *loaded Magic Chests* to a Gem Forge automatically. The original item entities move through the game's inventory transaction; gems retain their level and other state. The mod never spawns or deletes inventory. This is a **Kiln SDK mod**, not a ShroudLink plugin, and does **not** need ShroudLink's core or addon.
 
+## Diagnosing a missing command response
+
+In an **online hosted game** the Kiln chat hook should respond to `/gforge scan`. A silent command is **not** proof that the Gem Forge detector failed: first check whether the mod actually loaded and its command was registered. While in the world, open Kiln's Mods page, or inspect `kiln/state/mods.json` for `gemforge-magic-storage` and `kiln/logs/kiln.log` for `Gem Forge Storage v0.1.1 loaded` or a fault.
+
+The command can also be run via Kiln's control folder to distinguish registration failure from chat delivery failure (including an online world whose chat hook is unavailable):
+
+```bash
+GAME="$HOME/.local/share/Steam/steamapps/common/Enshrouded"
+CONSOLE="$GAME/kiln/control/console"
+printf 'gforge scan\n' > "$CONSOLE/gforge-test.tmp"
+mv "$CONSOLE/gforge-test.tmp" "$CONSOLE/gforge-test.cmd"
+sleep 2
+cat "$CONSOLE/gforge-test.result.json"
+```
+
+`found=false`: command not registered; check mod install and startup log. `found=true`, `ok=false`: read `error`; check service availability or forge proximity. `ok=true`: `output` reports loaded Magic Chests, gem counts and instance IDs. A silent in-game reply with `ok=true` means chat transport/hook is the issue. If you are **joining somebody else's world** rather than hosting, this server-side mod must be installed on **that world's host/server**.
+
+Install the **inner** `gemforge-magic-storage-0.1.1.zip` from the GitHub Actions artifact, not the outer Actions download ZIP.
+
 ## What to test
 
-1. **Back up your world and character save**. Install the GitHub Actions package `gemforge-magic-storage-0.1.0.zip` into Kiln, with Kiln 0.2.0-dev.28+.
+1. **Back up your world and character save**. Install the GitHub Actions package `gemforge-magic-storage-0.1.1.zip` into Kiln, with Kiln 0.2.0-dev.28+.
 2. Enable the mod server-side (single-player hosting works). Keep **Building Tools for Kiln** enabled if you use its global Magic Chest option; it is independent and does not supply an API to this mod.
 3. Put a gem and Archaic Essence in ordinary *Magic Chests*, not the player's backpack. Stand within 4 m of a Gem Forge. Use `/gforge scan` to confirm that Kiln can see the chests (read-only).
 4. The bridge loans up to **24 weapon gems** (keeping 4 generic backpack slots free) and up to **2,000 units of each Archaic Essence tier**, limited by actual inventory capacity. It never transfers weapons, ordinary resources or unrecognised gem-like items.

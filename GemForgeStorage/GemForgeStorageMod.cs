@@ -61,7 +61,7 @@ public sealed class GemForgeStorageMod : Mod
         _command = Commands.Register("gforge", Command, CommandPermission.Everyone,
             usage: "[status|scan|return]", description: "Magic Chest inventory access at Gem Forges.");
         Context.Tick.Pre += Tick;
-        Log.Info("Gem Forge Storage v0.1.0 loaded: loaded Magic Chests only; Archaic Essence + weapon gems, Kiln.Items.Move.");
+        Log.Info("Gem Forge Storage v0.1.1 loaded: loaded Magic Chests only; Archaic Essence + weapon gems, Kiln.Items.Move.");
     }
 
     public override void OnUnload()
@@ -145,8 +145,23 @@ public sealed class GemForgeStorageMod : Mod
         return new Session(player, forge, world, plans, own);
     }
 
-    private static EntityId NearestForge(EntityId player) =>
-        Nearby.Entities(player, ReachMeters, "ShroudForge").FirstOrDefault();
+    private static EntityId NearestForge(EntityId player)
+    {
+        // Gem Forge may expose its station template without ShroudForge on its
+        // root ECS entity. Check both forms before reporting 'not found'.
+        var byComponent = Nearby.Entities(player, ReachMeters, "ShroudForge").FirstOrDefault();
+        if (!byComponent.IsNone) return byComponent;
+        if (World.Position(player) is not { } at) return default;
+        foreach (var entity in Spawn.FindByName("GemForge", at, ReachMeters, max: 32))
+        {
+            var name = Spawn.Inspect(entity)?.TemplateName;
+            if (name is not null &&
+                (name.EndsWith("_Player_GemForge", StringComparison.OrdinalIgnoreCase) ||
+                 name.EndsWith("_GemForge", StringComparison.OrdinalIgnoreCase)))
+                return entity;
+        }
+        return default;
+    }
 
     private void Tick(in TickInfo tick)
     {
@@ -237,7 +252,9 @@ public sealed class GemForgeStorageMod : Mod
             var session = BuildSession(player, forge, world);
             _sessions[player.Entity] = session;
             if (session.Plans.Count > 0)
-                Log.Info($"Gem Forge Storage: player {player.Entity} near forge {forge}; {session.Plans.Count} source stacks available.");
+                Log.Info($"Gem Forge Storage: player {player.Entity} near forge {forge}; {session.Plans.Count} eligible source stacks; starting loans.");
+            else
+                Log.Info($"Gem Forge Storage: player {player.Entity} near forge {forge}; no eligible items in loaded Magic Chests. Use gforge scan.");
         }
     }
 
@@ -395,16 +412,22 @@ public sealed class GemForgeStorageMod : Mod
         var at = World.Position(forgeId) ?? throw new CommandException("Gem Forge has no position.");
         var chests = LoadedMagicChests(at);
         var gems = 0;
+        var untrackedGems = 0;
         var essence = 0;
         foreach (var (_, inv) in chests)
             foreach (var slot in inv.Slots.Where(x => !x.IsEmpty))
             {
                 var info = Items.Get(slot.Item);
                 if (Essence(info)) essence += slot.Count;
-                if (info?.Category == ItemCategory.WeaponGem) gems++;
+                if (info?.Category == ItemCategory.WeaponGem)
+                {
+                    gems++;
+                    if (slot.ItemEntity.IsNone) untrackedGems++;
+                }
             }
         command.Reply($"Gem Forge Storage scan: forge={forgeId}, loaded Magic Chests={chests.Count}, " +
-            $"Archaic Essence={essence}, weapon gems={gems}. Nothing moved. " +
+            $"Archaic Essence={essence}, weapon gems={gems} (untracked instances={untrackedGems}), " +
+            $"move-service={Items.MovesAvailable}. Nothing moved. " +
             "Distant unloaded chests are not accessible via Kiln.Items.");
     }
 }

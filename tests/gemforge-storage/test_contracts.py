@@ -32,6 +32,8 @@ class ConservationPolicy(unittest.TestCase):
         self.assertIn('"_Fognest_Ressource"', SRC)
         self.assertIn('EndsWith("_Magic"', SRC)
         self.assertIn('Nearby.Entities(player, ReachMeters, "ShroudForge")', SRC)
+        self.assertIn('Spawn.FindByName("GemForge"', SRC)
+        self.assertIn('EndsWith("_Player_GemForge"', SRC)
         self.assertIn("s.ItemEntity == loan.Plan.Instance", SRC)
         self.assertIn("session.Original.GetValueOrDefault", SRC)
 
