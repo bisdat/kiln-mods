@@ -14,11 +14,11 @@ Build with `bash scripts/build.sh` (requires git, .NET 10 and internet access), 
 
 See the mod README for limitations, installation, SDK pin and testing instructions.
 
-## Endless Chests (Kiln) — canonical catalogue v0.5.1
+## Endless Chests (Kiln) — canonical catalogue v0.5.2
 
 [User guide](EndlessChests/README.md) | [Canonical JSON item catalogue](EndlessChests/defaults/catalogue.json) | [Settings-only INI](EndlessChests/defaults/endless-chests.defaults.ini) | [Releases](https://github.com/bisdat/kiln-mods/releases) | [CI](.github/workflows/endless-chests.yml)
 
-An independent, Kiln-native Magic Chest refill mod. **v0.5.1** retains the canonical JSON catalogue introduced in 0.5.0 and verifies **100 additional formerly unresolved identities**: 195 original groups, 3,464 membership positions, **3,437 verified references** (2,908 distinct item IDs), and **27** intentionally unresolved placeholders. [Full catalogue reconciliation](docs/research/ENDLESS-CHESTS-CATALOGUE-RECONCILIATION.md). In particular, `Crafting G-O` now uses **Mycelium material ID 3509012331**, rather than the separate overgrowth object ID 1353762644. Prior fixes for Indigo, Mirage, Rough Wood Block and the Alchemist wall hangings remain identity-pinned. The complete audit and remaining unresolved identities are tracked in [issue #38](https://github.com/bisdat/kiln-mods/issues/38).
+An independent Kiln-native Magic Chest refill mod. **v0.5.2** completes the remaining 27 catalogue identity mappings: **195 groups, 3,464 original membership positions, 0 unresolved entries and 2,934 verified distinct item IDs**. The new schema-v2 `variants` lists preserve all real physical models when a display name is shared. The full evidence ledger is in [Final 27 reconciliation](docs/research/ENDLESS-CHESTS-FINAL-27.md); the previous 100 mapping fixes remain accepted. In particular, `Crafting G-O` now uses **Mycelium material ID 3509012331**, rather than the separate overgrowth object ID 1353762644. Prior fixes for Indigo, Mirage, Rough Wood Block and the Alchemist wall hangings remain identity-pinned. The complete audit and remaining unresolved identities are tracked in [issue #38](https://github.com/bisdat/kiln-mods/issues/38).
 
 **Upgrade:** `endless-chests.ini` is now for runtime settings, group exclusions by name, and individual exclusions by **decimal game item ID**; old `[Groups]` sections are ignored. No legacy item-name aliasing or suffix compatibility is retained. Existing `chests.json` bindings and canonical group names continue working. Automatic rename-to-recognised-group clears previous inventory; renaming to an unknown name leaves contents untouched; `Empty` still clears destructively. Back up the world before testing.
 
