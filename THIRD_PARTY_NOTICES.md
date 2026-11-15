@@ -35,7 +35,7 @@ our repository MIT licence.
 
 - Reference: https://github.com/bjck/shroudlink
 - Original author: bjck; project licence MIT.
-- The independent Gem Forge Magic Storage mod uses the same documented proximity-loan concept and Archaic Essence naming convention. No ShroudLink source code, binaries, framework, or addon are copied into this repository.
+- ShroudLink's Gemforge proximity-loan design was reviewed as prior art for the rejected v0.1.x prototype. The v0.2.0 research build removes that mechanism and uses Kiln-native read-only APIs. No ShroudLink source code, binaries, framework or addon are copied into this repository.
 
 ## Kiln and Enshrouded
 
