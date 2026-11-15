@@ -9,6 +9,10 @@ public sealed class SurvivalQoLConfig
     [Comment("Keep player stamina at 100% via Kiln.Rules.")]
     public bool InfiniteStamina { get; set; } = true;
 
+    [Comment("Stamina regeneration speed: 1x = normal game, 10x = up to ten times normal recovery. Only active when Infinite Stamina is off.")]
+    [Range(1, 10)]
+    public int StaminaRegenMultiplier { get; set; } = 1;
+
     [Comment("Keep player mana at 100% via Kiln.Rules.")]
     public bool InfiniteMana { get; set; } = true;
 

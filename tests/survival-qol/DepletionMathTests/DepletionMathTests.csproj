@@ -7,5 +7,6 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="../../../SurvivalQoL/DepletionMath.cs" Link="DepletionMath.cs" />
+    <Compile Include="../../../SurvivalQoL/StaminaRegenScale.cs" Link="StaminaRegenScale.cs" />
   </ItemGroup>
 </Project>

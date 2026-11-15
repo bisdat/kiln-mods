@@ -43,4 +43,39 @@ int oxygenRemainder = 0, heatRemainder = 0;
 (_, heatRemainder) = DepletionMath.Refund(7, 3, heatRemainder);
 Check(oxygenRemainder == 9 && heatRemainder == 2, "independent fractional accrual");
 
-Console.WriteLine("All DepletionMath tests passed.");
+
+// Stamina regen: the tracker multiplies only the observed positive recovery.
+// No baseline, 1x, spending and unchanged stamina must never add points.
+var stamina = new StaminaRegenScale();
+Check(stamina.Extra(40, 100, 10) == 0, "no stamina boost on first sample");
+stamina.Sample(40, 100, 10);
+Check(stamina.Extra(40, 100, 10) == 0, "stationary stamina has no synthetic regeneration");
+Check(stamina.Extra(35, 100, 10) == 0, "spending stamina cannot trigger regeneration");
+
+for (int factor = 2; factor <= 10; factor++)
+{
+    stamina.Reset();
+    stamina.Sample(20, 200, factor);
+    Check(stamina.Extra(23, 200, factor) == 3 * (factor - 1),
+        $"native stamina gain is scaled exactly {factor}x");
+}
+
+stamina.Reset();
+stamina.Sample(90, 100, 10);
+Check(stamina.Extra(93, 100, 10) == 7,
+    "extra stamina is capped at the current maximum");
+
+stamina.Reset();
+stamina.Sample(40, 100, 10);
+Check(stamina.Extra(50, 120, 10) == 0, "changed stamina maximum resets boost");
+Check(stamina.Extra(50, 100, 5) == 0, "changing multiplier does not retroactively credit old gain");
+stamina.Reset();
+Check(stamina.Extra(50, 100, 10) == 0, "reconnect/reset cannot reuse stale stamina data");
+Check(stamina.Extra(50, 100, 1) == 0, "1x is vanilla even with old sampling");
+stamina.Reset();
+stamina.Sample(0, int.MaxValue, 10);
+Check(stamina.Extra(int.MaxValue - 100, int.MaxValue, 10) == 100,
+    "large natural gains use safe arithmetic and clamp at maximum");
+
+Console.WriteLine("All stamina regeneration and depletion tests passed.");
+

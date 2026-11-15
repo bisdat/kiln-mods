@@ -21,6 +21,7 @@ public sealed class SurvivalQoLMod : Mod
         public ulong JoinedStep;
         public double HealthRemainder;
         public double ManaRemainder;
+        public readonly StaminaRegenScale Stamina = new();
         public readonly ResourceScale Oxygen = new();
         public readonly ResourceScale BodyHeat = new();
     }
@@ -55,7 +56,7 @@ public sealed class SurvivalQoLMod : Mod
         else
             Log.Warn("Kiln.Rules unavailable: infinite stamina and mana cannot be applied.");
 
-        Log.Info("Survival QoL loaded. Oxygen and frost 1x-10x duration modifiers use Kiln.Attributes (dev.20+).");
+        Log.Info("Survival QoL loaded. Stamina recovery, oxygen and frost multipliers use Kiln.Attributes (dev.20+).");
     }
 
     private void OnConfigChanged(ConfigChangedEvent _)
@@ -102,13 +103,14 @@ public sealed class SurvivalQoLMod : Mod
 
         var options = _config.Value;
         bool needsAttributes = options.UnderwaterBreathMultiplier > 1
-            || options.FrostResistanceMultiplier > 1;
+            || options.FrostResistanceMultiplier > 1
+            || (!options.InfiniteStamina && options.StaminaRegenMultiplier > 1);
         bool canScale = needsAttributes && Kiln.Attributes.Available;
         if (canScale)
             _attributesUnavailableWarned = false;
         else if (needsAttributes && !_attributesUnavailableWarned)
         {
-            Log.Warn("Kiln.Attributes unavailable: oxygen and frost multipliers require Kiln dev.20 or newer.");
+            Log.Warn("Kiln.Attributes unavailable: stamina regeneration, oxygen and frost multipliers require Kiln dev.20 or newer.");
             _attributesUnavailableWarned = true;
         }
 
@@ -133,11 +135,18 @@ public sealed class SurvivalQoLMod : Mod
             {
                 ScaleAttribute(player.Entity, GameAttribute.Oxygen, options.UnderwaterBreathMultiplier, state.Oxygen);
                 ScaleAttribute(player.Entity, GameAttribute.BodyHeat, options.FrostResistanceMultiplier, state.BodyHeat);
+                // Infinite Stamina always takes precedence. The multiplier is
+                // independent and only speeds the game's observed regeneration.
+                if (!options.InfiniteStamina)
+                    ScaleStaminaRegen(player.Entity, options.StaminaRegenMultiplier, state.Stamina);
+                else
+                    state.Stamina.Reset();
             }
             else
             {
                 state.Oxygen.Reset();
                 state.BodyHeat.Reset();
+                state.Stamina.Reset();
             }
 
             if (seconds <= 0.0) continue;
@@ -183,6 +192,45 @@ public sealed class SurvivalQoLMod : Mod
         // Player entity ids are reused. Do not retain recovery budgets for departed players.
         foreach (uint entity in _recovery.Keys.ToArray())
             if (!online.Contains(entity)) _recovery.Remove(entity);
+    }
+
+    // Observe stamina after the game's own step. Only positive recovery since
+    // the last corrected sample is multiplied: no game recovery means no bonus,
+    // and normal sprinting/spending never creates synthetic stamina.
+    //
+    // The official API does not label the reason for a stamina increase.
+    // An instant item/buff restoration can therefore also be magnified; changes
+    // of maximum, player identity, setting and the infinite-stamina mode reset
+    // the baseline to avoid retroactive credits.
+    private static void ScaleStaminaRegen(EntityId entity, int multiplier, StaminaRegenScale state)
+    {
+        if (multiplier <= 1)
+        {
+            state.Reset(); // 1x leaves vanilla stamina regeneration untouched.
+            return;
+        }
+
+        if (Kiln.Attributes.Get(entity, GameAttribute.Stamina) is not { Max: int max } reading
+            || max <= 0 || reading.Current < 0 || reading.Current > max)
+        {
+            state.Reset();
+            return;
+        }
+
+        int current = reading.Current;
+        int extra = state.Extra(current, max, multiplier);
+        if (extra > 0)
+        {
+            // The budget is capped at the game's current maximum.
+            if (!Kiln.Attributes.TrySet(entity, GameAttribute.Stamina, current + extra, out var updated)
+                || updated.Current < current || updated.Current > max)
+            {
+                state.Reset();
+                return;
+            }
+            current = updated.Current;
+        }
+        state.Sample(current, max, multiplier);
     }
 
     // Called only on the authoritative Tick.Pre. Measure the loss since the last
