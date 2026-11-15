@@ -1,0 +1,612 @@
+{
+  "schemaVersion": 1,
+  "sourceCatalogueSchemaVersion": 1,
+  "resultCatalogueSchemaVersion": 2,
+  "sourceKilnRelease": "v0.2.0-dev.28",
+  "sdkCommit": "2301cc5fd3138aa91119e8bc0f082569218315cd",
+  "oldUnresolved": 27,
+  "remainingUnresolved": 0,
+  "mappings": [
+    {
+      "group": "Backpacks",
+      "position": 1,
+      "previousLabel": "Small Backpack",
+      "selected": [
+        {
+          "id": 3728213390,
+          "debugName": "Backpack_T1_NEW",
+          "displayName": "Small Backpack",
+          "category": "Equipment"
+        }
+      ],
+      "alreadyAvailable": [],
+      "reason": "current-craftable-backpack"
+    },
+    {
+      "group": "Backpacks",
+      "position": 2,
+      "previousLabel": "Medium Backpack",
+      "selected": [
+        {
+          "id": 3773368910,
+          "debugName": "Backpack_T2_NEW",
+          "displayName": "Medium Backpack",
+          "category": "Equipment"
+        }
+      ],
+      "alreadyAvailable": [],
+      "reason": "current-craftable-backpack"
+    },
+    {
+      "group": "Backpacks",
+      "position": 3,
+      "previousLabel": "Large Backpack",
+      "selected": [
+        {
+          "id": 996296787,
+          "debugName": "Backpack_T3_NEW",
+          "displayName": "Large Backpack",
+          "category": "Equipment"
+        }
+      ],
+      "alreadyAvailable": [],
+      "reason": "current-craftable-backpack"
+    },
+    {
+      "group": "Books",
+      "position": 0,
+      "previousLabel": "Book I",
+      "selected": [
+        {
+          "id": 2975370828,
+          "debugName": "Prop_Decoration_Book_01",
+          "displayName": "Book I",
+          "category": "BuildTools"
+        },
+        {
+          "id": 3853710961,
+          "debugName": "Prop_Decoration_Book_02",
+          "displayName": "Book I",
+          "category": "BuildTools"
+        },
+        {
+          "id": 1042567701,
+          "debugName": "Prop_Decoration_Book_03",
+          "displayName": "Book I",
+          "category": "BuildTools"
+        },
+        {
+          "id": 676824530,
+          "debugName": "Prop_Decoration_Book_04",
+          "displayName": "Book I",
+          "category": "BuildTools"
+        },
+        {
+          "id": 1665817031,
+          "debugName": "Prop_Decoration_Book_06",
+          "displayName": "Book I",
+          "category": "BuildTools"
+        },
+        {
+          "id": 743954578,
+          "debugName": "Prop_Decoration_Book_07",
+          "displayName": "Book I",
+          "category": "BuildTools"
+        },
+        {
+          "id": 2283198170,
+          "debugName": "Prop_Decoration_Book_08",
+          "displayName": "Book I",
+          "category": "BuildTools"
+        },
+        {
+          "id": 1920341845,
+          "debugName": "Prop_Decoration_Book_10",
+          "displayName": "Book I",
+          "category": "BuildTools"
+        },
+        {
+          "id": 3330526371,
+          "debugName": "Prop_Decoration_Book_12",
+          "displayName": "Book I",
+          "category": "BuildTools"
+        },
+        {
+          "id": 2548133338,
+          "debugName": "Prop_Decoration_Book_13",
+          "displayName": "Book I",
+          "category": "BuildTools"
+        },
+        {
+          "id": 413542990,
+          "debugName": "Prop_Decoration_Book_14",
+          "displayName": "Book I",
+          "category": "BuildTools"
+        },
+        {
+          "id": 589587638,
+          "debugName": "Prop_Decoration_Book_16",
+          "displayName": "Book I",
+          "category": "BuildTools"
+        },
+        {
+          "id": 4242562036,
+          "debugName": "Prop_Decoration_Book_17",
+          "displayName": "Book I",
+          "category": "BuildTools"
+        },
+        {
+          "id": 1878602124,
+          "debugName": "Prop_Decoration_Book_18",
+          "displayName": "Book I",
+          "category": "BuildTools"
+        }
+      ],
+      "alreadyAvailable": [],
+      "reason": "all-distinct-registered-forms"
+    },
+    {
+      "group": "Books",
+      "position": 5,
+      "previousLabel": "Collection Of Books I",
+      "selected": [
+        {
+          "id": 3259443869,
+          "debugName": "Prop_Decoration_Book_Pile_01_A",
+          "displayName": "Collection Of Books I",
+          "category": "BuildTools"
+        },
+        {
+          "id": 1276880412,
+          "debugName": "Prop_Decoration_Book_Pile_02_B",
+          "displayName": "Collection Of Books I",
+          "category": "BuildTools"
+        }
+      ],
+      "alreadyAvailable": [],
+      "reason": "all-distinct-registered-forms"
+    },
+    {
+      "group": "Books",
+      "position": 6,
+      "previousLabel": "Collection Of Books II",
+      "selected": [
+        {
+          "id": 147747455,
+          "debugName": "Prop_Decoration_Book_Pile_03_C",
+          "displayName": "Collection Of Books II",
+          "category": "BuildTools"
+        },
+        {
+          "id": 1732682352,
+          "debugName": "Prop_Decoration_Book_Pile_04_D",
+          "displayName": "Collection Of Books II",
+          "category": "BuildTools"
+        }
+      ],
+      "alreadyAvailable": [],
+      "reason": "all-distinct-registered-forms"
+    },
+    {
+      "group": "Books",
+      "position": 7,
+      "previousLabel": "Collection Of Books III",
+      "selected": [
+        {
+          "id": 186386614,
+          "debugName": "Prop_Decoration_Book_Pile_05_E",
+          "displayName": "Collection Of Books III",
+          "category": "BuildTools"
+        },
+        {
+          "id": 523691097,
+          "debugName": "Prop_Decoration_Book_Pile_06_F",
+          "displayName": "Collection Of Books III",
+          "category": "BuildTools"
+        }
+      ],
+      "alreadyAvailable": [],
+      "reason": "all-distinct-registered-forms"
+    },
+    {
+      "group": "Decorations 2",
+      "position": 1,
+      "previousLabel": "Bamboo Stairs",
+      "selected": [
+        {
+          "id": 1517467835,
+          "debugName": "Prop_Decoration_T6_Lizard_Stairs_2m_01_A",
+          "displayName": "Bamboo Stairs",
+          "category": "BuildTools"
+        }
+      ],
+      "alreadyAvailable": [
+        2175416596
+      ],
+      "reason": "all-distinct-registered-forms"
+    },
+    {
+      "group": "Decorations 2",
+      "position": 50,
+      "previousLabel": "Conifer Crate",
+      "selected": [
+        {
+          "id": 553841242,
+          "debugName": "Prop_Decoration_T5_Crate_Conifer02",
+          "displayName": "Conifer Crate",
+          "category": "BuildTools"
+        }
+      ],
+      "alreadyAvailable": [
+        2537359689,
+        3904030989
+      ],
+      "reason": "all-distinct-registered-forms"
+    },
+    {
+      "group": "Decorations 3",
+      "position": 13,
+      "previousLabel": "Empty Cymbidium Pot",
+      "selected": [
+        {
+          "id": 2125538426,
+          "debugName": "Empty_Flower_Pot_CNY_Empty_02b",
+          "displayName": "Empty Cymbidium Pot",
+          "category": "BuildTools"
+        }
+      ],
+      "alreadyAvailable": [
+        4135259126
+      ],
+      "reason": "all-distinct-registered-forms"
+    },
+    {
+      "group": "Decorations 3",
+      "position": 16,
+      "previousLabel": "Empty Farmbed",
+      "selected": [
+        {
+          "id": 604994553,
+          "debugName": "Prop_Decoration_Farmbed_01c",
+          "displayName": "Empty Farmbed",
+          "category": "BuildTools"
+        }
+      ],
+      "alreadyAvailable": [
+        1392367211,
+        2425261321,
+        3916554796
+      ],
+      "reason": "decoration-not-production"
+    },
+    {
+      "group": "Decorations 3",
+      "position": 19,
+      "previousLabel": "Empty Lily Pot",
+      "selected": [
+        {
+          "id": 2328440963,
+          "debugName": "Empty_Flower_Pot_CNY_Empty_01a",
+          "displayName": "Empty Lily Pot",
+          "category": "BuildTools"
+        }
+      ],
+      "alreadyAvailable": [
+        3534930699,
+        3593229714
+      ],
+      "reason": "all-distinct-registered-forms"
+    },
+    {
+      "group": "Decorations 4",
+      "position": 46,
+      "previousLabel": "Large Bamboo Basket",
+      "selected": [
+        {
+          "id": 1506922480,
+          "debugName": "Prop_Decoration_T6_Basket_Large_02",
+          "displayName": "Large Bamboo Basket",
+          "category": "BuildTools"
+        }
+      ],
+      "alreadyAvailable": [
+        2694217922,
+        2867139849,
+        3541979658
+      ],
+      "reason": "all-distinct-registered-forms"
+    },
+    {
+      "group": "Decorations 5",
+      "position": 41,
+      "previousLabel": "Simple Wood Support",
+      "selected": [
+        {
+          "id": 2242544273,
+          "debugName": "Prop_Decoration_T6_Simple_Support_4m_02_A",
+          "displayName": "Simple Wood Support",
+          "category": "BuildTools"
+        }
+      ],
+      "alreadyAvailable": [
+        2587423299,
+        3556756437,
+        3758512906
+      ],
+      "reason": "all-distinct-registered-forms"
+    },
+    {
+      "group": "Decorations 6",
+      "position": 38,
+      "previousLabel": "Veilwater Basin Boardwalk I",
+      "selected": [
+        {
+          "id": 33507171,
+          "debugName": "Prop_Decoration_T6_Boardwalk_8m_01_A",
+          "displayName": "Veilwater Basin Boardwalk I",
+          "category": "BuildTools"
+        }
+      ],
+      "alreadyAvailable": [
+        123726817,
+        669605144,
+        1030788931
+      ],
+      "reason": "all-distinct-registered-forms"
+    },
+    {
+      "group": "Decorations 6",
+      "position": 40,
+      "previousLabel": "Veilwater Basin Boardwalk II",
+      "selected": [
+        {
+          "id": 1195149031,
+          "debugName": "Prop_Decoration_T6_Simple_Boardwalk_4m_01_A",
+          "displayName": "Veilwater Basin Boardwalk II",
+          "category": "BuildTools"
+        }
+      ],
+      "alreadyAvailable": [
+        4043051492
+      ],
+      "reason": "all-distinct-registered-forms"
+    },
+    {
+      "group": "Dividers",
+      "position": 0,
+      "previousLabel": "Bamboo Room Divider I",
+      "selected": [
+        {
+          "id": 371722890,
+          "debugName": "Prop_Decoration_T6_Lizard_Gate_01",
+          "displayName": "Bamboo Room Divider I",
+          "category": "BuildTools"
+        },
+        {
+          "id": 260723984,
+          "debugName": "Prop_Decoration_T6_Lizard_Gate_02",
+          "displayName": "Bamboo Room Divider I",
+          "category": "BuildTools"
+        },
+        {
+          "id": 3413337702,
+          "debugName": "Prop_Decoration_T6_Lizard_Support_4m_01_A",
+          "displayName": "Bamboo Room Divider I",
+          "category": "BuildTools"
+        },
+        {
+          "id": 1950301003,
+          "debugName": "Prop_Decoration_T6_Lizard_Support_4m_02_A",
+          "displayName": "Bamboo Room Divider I",
+          "category": "BuildTools"
+        },
+        {
+          "id": 3607939791,
+          "debugName": "Prop_Decoration_T6_Lizard_Wall_2m_01_A",
+          "displayName": "Bamboo Room Divider I",
+          "category": "BuildTools"
+        }
+      ],
+      "alreadyAvailable": [],
+      "reason": "all-distinct-registered-forms"
+    },
+    {
+      "group": "Fences 1",
+      "position": 0,
+      "previousLabel": "Bamboo Fence Pole",
+      "selected": [
+        {
+          "id": 3121223720,
+          "debugName": "Prop_Decoration_T6_Fence_Bamboo_Pole_01",
+          "displayName": "Bamboo Fence Pole",
+          "category": "BuildTools"
+        },
+        {
+          "id": 3349466374,
+          "debugName": "Prop_Decoration_T6_Fence_Bamboo_Pole_02",
+          "displayName": "Bamboo Fence Pole",
+          "category": "BuildTools"
+        }
+      ],
+      "alreadyAvailable": [],
+      "reason": "all-distinct-registered-forms"
+    },
+    {
+      "group": "Fences 1",
+      "position": 7,
+      "previousLabel": "Carved Tropical Wood Fence Pole",
+      "selected": [
+        {
+          "id": 161588181,
+          "debugName": "Prop_Decoration_T6_Fence_Wood_Pole_01",
+          "displayName": "Carved Tropical Wood Fence Pole",
+          "category": "BuildTools"
+        },
+        {
+          "id": 1698793327,
+          "debugName": "Prop_Decoration_T6_Fence_Wood_Pole_02",
+          "displayName": "Carved Tropical Wood Fence Pole",
+          "category": "BuildTools"
+        },
+        {
+          "id": 2429035331,
+          "debugName": "Prop_Decoration_T6_Fence_Wood_Pole_03",
+          "displayName": "Carved Tropical Wood Fence Pole",
+          "category": "BuildTools"
+        }
+      ],
+      "alreadyAvailable": [],
+      "reason": "all-distinct-registered-forms"
+    },
+    {
+      "group": "Fences 2",
+      "position": 13,
+      "previousLabel": "Prison Fence",
+      "selected": [
+        {
+          "id": 3434035481,
+          "debugName": "Prop_Decoration_T4_Fence_Prison",
+          "displayName": "Prison Fence",
+          "category": "BuildTools"
+        }
+      ],
+      "alreadyAvailable": [],
+      "reason": "placeable-fence-not-fixed-variant"
+    },
+    {
+      "group": "Flower Pots 1",
+      "position": 28,
+      "previousLabel": "Fern Pot",
+      "selected": [
+        {
+          "id": 673405648,
+          "debugName": "Empty_Flower_Pot_CNY_Fern_01",
+          "displayName": "Fern",
+          "category": "BuildTools"
+        }
+      ],
+      "alreadyAvailable": [],
+      "reason": "exact-debug-name-or-fingerprint"
+    },
+    {
+      "group": "Illumination 2",
+      "position": 1,
+      "previousLabel": "Wall Lantern",
+      "selected": [
+        {
+          "id": 2560383707,
+          "debugName": "Prop_Decoration_Comfort_T4_IlluminationWall",
+          "displayName": "Wall Lantern",
+          "category": "BuildTools"
+        }
+      ],
+      "alreadyAvailable": [],
+      "reason": "normal-non-prefixed-decoration"
+    },
+    {
+      "group": "Miscellaneous 1",
+      "position": 7,
+      "previousLabel": "Bamboo Crate I",
+      "selected": [
+        {
+          "id": 4136278992,
+          "debugName": "Prop_Decoration_T6_Crate_Bamboo_01",
+          "displayName": "Bamboo Crate I",
+          "category": "BuildTools"
+        },
+        {
+          "id": 1412268864,
+          "debugName": "Prop_Decoration_T6_Crate_Bamboo_02",
+          "displayName": "Bamboo Crate I",
+          "category": "BuildTools"
+        }
+      ],
+      "alreadyAvailable": [],
+      "reason": "all-distinct-registered-forms"
+    },
+    {
+      "group": "Miscellaneous 1",
+      "position": 9,
+      "previousLabel": "Large Bamboo Crate",
+      "selected": [
+        {
+          "id": 3554673768,
+          "debugName": "Prop_Decoration_T6_Crate_Bamboo_Large_01",
+          "displayName": "Large Bamboo Crate",
+          "category": "BuildTools"
+        },
+        {
+          "id": 2326445767,
+          "debugName": "Prop_Decoration_T6_Crate_Bamboo_Large_02",
+          "displayName": "Large Bamboo Crate",
+          "category": "BuildTools"
+        }
+      ],
+      "alreadyAvailable": [],
+      "reason": "all-distinct-registered-forms"
+    },
+    {
+      "group": "Miscellaneous 2",
+      "position": 0,
+      "previousLabel": "Iron Grate",
+      "selected": [
+        {
+          "id": 2583752204,
+          "debugName": "Prop_Decoration_T4_Grate_Iron_Big",
+          "displayName": "Iron Grate",
+          "category": "BuildTools"
+        },
+        {
+          "id": 3638722075,
+          "debugName": "Prop_Decoration_T4_Grate_Steel_small",
+          "displayName": "Iron Grate",
+          "category": "BuildTools"
+        }
+      ],
+      "alreadyAvailable": [],
+      "reason": "all-distinct-registered-forms"
+    },
+    {
+      "group": "Miscellaneous 2",
+      "position": 4,
+      "previousLabel": "Palm Leaf Basket",
+      "selected": [
+        {
+          "id": 4206640908,
+          "debugName": "Prop_Decoration_T6_Basket_01",
+          "displayName": "Palm Leaf Basket",
+          "category": "BuildTools"
+        },
+        {
+          "id": 1108421963,
+          "debugName": "Prop_Decoration_T6_Basket_02",
+          "displayName": "Palm Leaf Basket",
+          "category": "BuildTools"
+        },
+        {
+          "id": 4179466778,
+          "debugName": "Prop_Decoration_T6_Basket_03",
+          "displayName": "Palm Leaf Basket",
+          "category": "BuildTools"
+        }
+      ],
+      "alreadyAvailable": [],
+      "reason": "all-distinct-registered-forms"
+    },
+    {
+      "group": "Miscellaneous 2",
+      "position": 7,
+      "previousLabel": "Resource Bundle I",
+      "selected": [
+        {
+          "id": 1313835688,
+          "debugName": "Prop_Decoration_T1_RessourceBundle_01",
+          "displayName": "Resource  Bundle I",
+          "category": "BuildTools"
+        }
+      ],
+      "alreadyAvailable": [],
+      "reason": "exact-debug-name-or-fingerprint"
+    }
+  ]
+}
