@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Regress all 27 final identity repairs against the official Kiln item table.
 
-Keeps 195 named groups and 3464 logical positions. Some positions now denote
+Preserves the original 195 named groups and their 3464 logical positions. Some positions now denote
 several distinct game objects using schema-v2 explicit {"variants": [ids]}.
 None of these identities is inferred from a display name at runtime.
 """

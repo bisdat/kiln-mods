@@ -76,6 +76,13 @@ names = [
     ("Embervale Miniature Model", "eMbErVaLe MiNiAtUrE mOdEl"),
     ("Diver’s Endurance Flask", "diVer’s enDurance flaSk"),
     ("Crafting A-C", "CRAFTING a-c"),
+    ("One-Handed Melee", "oNe-hAnDeD mElEe"),
+    ("Two-Handed Melee 2", "tWo-hAnDeD mElEe 2"),
+    ("Daggers", "dAgGeRs"),
+    ("Bows", "bOwS"),
+    ("Wands", "wAnDs"),
+    ("Staffs", "sTaFfS"),
+    ("Shields", "sHiElDs"),
 ]
 for canonical, variant in names:
     assert fnv(canonical) & 31 == fnv(variant) & 31
@@ -87,9 +94,9 @@ assert not is_ascii_case_of("Starter Blocks", fnv("Starter Block"))
 
 path = Path(__file__).resolve().parents[1] / "EndlessChests/defaults/catalogue.json"
 groups = json.loads(path.read_text(encoding="utf-8"))["groups"]
-assert len(groups) == 195
+assert len(groups) == 205
 for name in groups:
-    # Explicitly verify that every original group can be matched with
+    # Explicitly verify that every canonical group can be matched with
     # ANY ASCII case permutation (not just lower/upper/title case).
     assert sum(ascii_letter(c) for c in name.encode("utf-8")) <= 30, name
     mixed = "".join(c.upper() if i % 2 else c.lower() for i, c in enumerate(name))
