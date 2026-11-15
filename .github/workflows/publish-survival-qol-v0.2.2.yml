@@ -64,7 +64,11 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          actual="$(gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$RELEASE_TAG" --jq '.object.sha' 2>/dev/null || true)"
+          # gh api writes a 404 JSON body to stdout; do not mistake it for a SHA.
+          actual=""
+          if fetched="$(gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$RELEASE_TAG" --jq '.object.sha' 2>/dev/null)"; then
+            actual="$fetched"
+          fi
           if [[ -n "$actual" && "$actual" != "$MERGE_SHA" ]]; then
             echo "::error::Tag $RELEASE_TAG points to a different commit: $actual"
             exit 1
