@@ -408,7 +408,7 @@ public sealed class GemForgeStorageMod : Mod
     internal static int Returnable(int carried, int initiallyOwned, int remainingLoan) =>
         Math.Min(Math.Max(0, remainingLoan), Math.Max(0, carried - initiallyOwned));
 
-    private static void ReturnFailure(Loan loan, EntityId destination, string reason)
+    private void ReturnFailure(Loan loan, EntityId destination, string reason)
     {
         loan.Failures++;
         loan.LastError = reason;
