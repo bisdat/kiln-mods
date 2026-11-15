@@ -7,7 +7,7 @@ namespace EndlessChests;
 public sealed class EndlessChestsMod : Mod
 {
     private ChestSettings _settings = new();
-    private IniCatalog _catalog = new();
+    private ItemCatalogue _catalog = new();
     private string _settingsFile = "";
     private string _catalogFile = "";
     private CommandRegistration? _command;
@@ -48,7 +48,7 @@ public sealed class EndlessChestsMod : Mod
         LoadSettings();
         _command = Commands.Register("echest", HandleCommand, CommandPermission.Admin,
             usage: "<bind|name|empty|unbind|status|list|groups|nameprobe|refill|reload> [selection]",
-            description: "Bind a nearby chest to a name from the original Endless Chests catalogue.");
+            description: "Bind a nearby chest to a canonical group, item name or numeric item ID.");
         Context.Tick.Pre += Tick;
         Log.Warn("Endless Chests: CLEAR ON RENAME and automatic Empty are enabled by default. Chest contents are permanently deleted on game-UI renames.");
     }
@@ -67,7 +67,7 @@ public sealed class EndlessChestsMod : Mod
     {
         try
         {
-            var catalogue = IniCatalog.LoadOrCreate(_catalogFile);
+            var catalogue = ItemCatalogue.LoadOrCreate(_catalogFile);
             if (!File.Exists(_settingsFile))
                 File.WriteAllText(_settingsFile, JsonSerializer.Serialize(new ChestSettings(), Json));
             var state = JsonSerializer.Deserialize<ChestSettings>(File.ReadAllText(_settingsFile), Json)
@@ -85,10 +85,13 @@ public sealed class EndlessChestsMod : Mod
             _warned.Clear();
             _nameSeen.Clear();
             _generation++;
-            Log.Info($"Endless Chests: {catalogue.Groups.Count} default/custom groups, {catalogue.Aliases.Count} aliases, " +
+            Log.Info($"Endless Chests: {catalogue.Groups.Count} canonical groups, {catalogue.Aliases.Count} aliases, " +
                 $"{catalogue.DisabledItems.Count} disabled items, {state.Chests.Count} persisted chests; " +
                 $"hashNames={catalogue.RecognizedNames}, autoNames={state.AutoNames}, " +
                 $"clearOnRename={state.ClearOnRename}, autoEmpty={state.AutoEmpty}, magic={catalogue.AllowMagicChests}");
+            if (catalogue.IgnoredLegacyGroups > 0)
+                Log.Warn($"Endless Chests: ignored {catalogue.IgnoredLegacyGroups} old [Groups] entries in settings INI; " +
+                    "the embedded JSON catalogue is authoritative. Remove the retired section after backing up your INI.");
             if (catalogue.EnableGemLevels || catalogue.FullyUpgradeGear)
                 Log.Info("Endless Chests: original EnableGemLevels/FullyUpgradeGear options are retained in INI but unsupported by Kiln.Items");
         }
@@ -198,7 +201,7 @@ public sealed class EndlessChestsMod : Mod
                 break;
             case "reload":
                 LoadSettings();
-                c.Reply(_settings.Enabled ? $"INI loaded: {_catalog.Groups.Count} groups." :
+                c.Reply(_settings.Enabled ? $"Settings INI and canonical JSON loaded: {_catalog.Groups.Count} groups." :
                     "Refills disabled; inspect chests.json, endless-chests.ini and kiln.log.");
                 break;
             case "status":
@@ -230,7 +233,7 @@ public sealed class EndlessChestsMod : Mod
             case "bind":
             case "name":
             {
-                if (c.Count < 2) throw c.Usage("enter an exact item/group name from endless-chests.ini");
+                if (c.Count < 2) throw c.Usage("enter a canonical group, unique item name or numeric item ID");
                 if (!_settings.Enabled) c.Fail("Endless Chests is disabled in chests.json.");
                 if (Items.Status() is not { Transactions: true, Catalog: true })
                     c.Fail("Kiln.Items is not ready.");
@@ -249,7 +252,7 @@ public sealed class EndlessChestsMod : Mod
                     c.Fail("Only EMPTY chests can be bound. Remove any valuables first.");
                 var plan = _catalog.Resolve(selection, Math.Min(inv!.GenericSlots, 72));
                 if (plan.Items.Count == 0)
-                    c.Fail($"No allowed, catalogued items in '{selection}'. Check endless-chests.ini and the game item catalog.");
+                    c.Fail($"No allowed items in '{selection}'. Check the canonical JSON catalogue and INI numeric exclusions.");
                 _settings.Chests.Add(new ChestBinding { WorldId = world, X = at.X, Y = at.Y, Z = at.Z,
                     Selection = selection });
                 SaveSettings();
@@ -614,7 +617,7 @@ public sealed class EndlessChestsMod : Mod
             var plan = _catalog.Resolve(selection, Math.Min(first.GenericSlots, 72));
             if ((plan.Unknown.Count != 0 || plan.Blocked.Count != 0 || plan.Ambiguous.Count != 0) &&
                 _warned.Add(selection))
-                Log.Warn($"Endless Chests: '{selection}': {plan.Unknown.Count} unavailable names" +
+                Log.Warn($"Endless Chests: '{selection}': {plan.Unknown.Count} unresolved or changed identities" +
                     (plan.Unknown.Count != 0 ? $" ({string.Join(", ", plan.Unknown.Take(3))})" : "") +
                     $", {plan.Blocked.Count} blocked, {plan.Items.Count} valid types, " +
                     $"{plan.Ambiguous.Count} unpinned duplicate display names. " +
@@ -641,9 +644,16 @@ public sealed class EndlessChestsMod : Mod
                 var result = await Items.Give(chest, item.Id, missing, options: GiveOptions.AllOrNothing);
                 if (!result.Succeeded)
                 {
-                    if (result.Status is not (ItemsStatus.NoRoom or ItemsStatus.NoInventory))
-                        Log.Warn($"Endless Chests: '{selection}' item {item.Label}: {result}");
-                    break;
+                    // A rejected or unavailable item must not starve the rest
+                    // of a group (e.g. later fishing baits). Avoid repeated
+                    // per-tick spam, but log the first failure including
+                    // NoRoom for diagnosis.
+                    var key = $"give:{selection}:{item.Id.Value}:{result.Status}";
+                    if (_warned.Add(key))
+                        Log.Warn($"Endless Chests: '{selection}' item {item.Label} " +
+                            $"(ID {item.Id.Value}): {result}");
+                    if (result.Status == ItemsStatus.NoInventory) break;
+                    continue;
                 }
             }
         }
