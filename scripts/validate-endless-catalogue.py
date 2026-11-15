@@ -27,8 +27,8 @@ for line in SDK.read_text(encoding="utf-8").splitlines():
         registry[int(id_)] = (debug, display, category)
 
 items, groups = data["items"], data["groups"]
-assert len(groups) == 195
-assert len(items) == 2934
+assert len(groups) == 204
+assert len(items) == 3423
 assert len(groups) == len(set(name.casefold() for name in groups)), "case-colliding groups"
 
 for raw_id, item in items.items():
@@ -70,8 +70,8 @@ for group, members in groups.items():
                     assert isinstance(entry["candidates"], list)
                     assert all(isinstance(x, int) and x in registry for x in entry["candidates"])
                 unresolved += 1
-assert total == 3464, total
-assert resolved == 3464, resolved
+assert total == 3953, total
+assert resolved == 3953, resolved
 assert unresolved == 0, unresolved
 assert variants == 11 and variant_refs == 39, (variants, variant_refs)
 assert all(
@@ -174,5 +174,5 @@ print(
     f"{resolved} resolved catalogue positions ({len(items)} distinct IDs, "
     f"{variants} multi-variant groups / {variant_refs} variant IDs), "
     f"{unresolved} explicit unresolved; Mycelium, Indigo, Basalt, "
-    "Grasshopper, Scarab, Torch, Oven, Loot and previous fixes pinned"
+    "Grasshopper, Scarab, Torch, Oven, Loot, 489 weapons and previous fixes pinned"
 )
