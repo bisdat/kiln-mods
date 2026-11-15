@@ -31,6 +31,7 @@ class CompatibilityWorkflowContracts(unittest.TestCase):
         self.assertIn("python3 scripts/validate-endless-settings.py", s)
         self.assertIn("python3 scripts/validate-endless-catalogue.py", s)
         self.assertIn("python3 scripts/test-endless-catalogue-repairs.py", s)
+        self.assertIn("python3 scripts/test-endless-final-27.py", s)
         self.assertIn("python3 scripts/test-chest-name-hashes.py", s)
         self.assertIn("python3 scripts/test-chest-case.py", s)
         self.assertNotIn("validate-endless-ini.py", s)
