@@ -1,0 +1,92 @@
+name: Publish accepted Survival QoL v0.2.2
+
+# One-shot release of accepted PR #33. The GitHub integration cannot write tag
+# refs directly. GITHUB_TOKEN-created tags do not trigger tag push workflows,
+# so this job also publishes the tested installable package.
+on:
+  push:
+    branches: [main]
+    paths: [.github/workflows/publish-survival-qol-v0.2.2.yml]
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: write
+
+jobs:
+  publish:
+    name: Create v0.2.2 tag and attach validated Survival QoL package
+    runs-on: ubuntu-24.04
+    env:
+      GH_TOKEN: ${{ github.token }}
+      RELEASE_TAG: v0.2.2
+      MERGE_SHA: 8419c4734e3161c9e95e87750ec9b005fe3bdb45
+    steps:
+      - name: Checkout full repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Confirm exact accepted merge and version
+        shell: bash
+        run: |
+          set -euo pipefail
+          git cat-file -e "${MERGE_SHA}^{commit}"
+          git merge-base --is-ancestor "$MERGE_SHA" HEAD
+          version="$(git show "$MERGE_SHA:SurvivalQoL/SurvivalQoL.csproj" | awk -F'[<>]' '/<Version>/ { print $3; exit }')"
+          test "$version" = "0.2.2"
+
+      - name: Fetch verified PR package
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh run download 43680581951 --repo "$GITHUB_REPOSITORY" \
+            --name survival-qol-package --dir dist
+          test -s dist/survival-qol-0.2.2.zip
+
+      - name: Check package manifest
+        shell: bash
+        run: |
+          set -euo pipefail
+          entry="$(unzip -Z1 dist/survival-qol-0.2.2.zip | grep -E '(^|/)kiln\.mod\.json$' | head -n 1)"
+          test -n "$entry"
+          unzip -p dist/survival-qol-0.2.2.zip "$entry" > /tmp/survival-qol-manifest.json
+          python3 - <<'PY'
+          import json
+          with open('/tmp/survival-qol-manifest.json', encoding='utf-8') as f:
+              manifest = json.load(f)
+          assert manifest['id'] == 'survival-qol', manifest
+          assert manifest['version'] == '0.2.2', manifest
+          print('Validated installable v0.2.2 manifest')
+          PY
+
+      - name: Create release tag at PR 33 merge commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          actual="$(gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$RELEASE_TAG" --jq '.object.sha' 2>/dev/null || true)"
+          if [[ -n "$actual" && "$actual" != "$MERGE_SHA" ]]; then
+            echo "::error::Tag $RELEASE_TAG points to a different commit: $actual"
+            exit 1
+          fi
+          if [[ -z "$actual" ]]; then
+            gh api "repos/$GITHUB_REPOSITORY/git/refs" --method POST \
+              -f ref="refs/tags/$RELEASE_TAG" -f sha="$MERGE_SHA"
+          fi
+
+      - name: Create release with the ready-to-install ZIP
+        shell: bash
+        run: |
+          set -euo pipefail
+          if gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release upload "$RELEASE_TAG" dist/survival-qol-0.2.2.zip \
+              --repo "$GITHUB_REPOSITORY" --clobber
+          else
+            gh release create "$RELEASE_TAG" dist/survival-qol-0.2.2.zip \
+              --repo "$GITHUB_REPOSITORY" --verify-tag \
+              --title 'Survival QoL v0.2.2 — Stamina Regen Multiplier' \
+              --notes 'Adds a 1x–10x stamina regeneration slider (default 1x), independently of Infinite Stamina. The player confirmed correct in-game behaviour; PR #33 merged. Existing oxygen/frost sliders and other QoL features are unchanged. Pinned SDK and Kiln dev.28 CI builds passed.'
+          fi
+          gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" \
+            --json tagName,assets,url \
+            --jq '{tag:.tagName,url:.url,assets:[.assets[].name]}'
