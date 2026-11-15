@@ -26,7 +26,14 @@ TAG = re.compile(r"v\d+\.\d+\.\d+-dev\.\d+")
 
 def run(*args: str, cwd: Path = ROOT) -> str:
     print("+", " ".join(args), flush=True)
-    return subprocess.check_output(args, cwd=cwd, text=True).strip()
+    try:
+        return subprocess.check_output(args, cwd=cwd, text=True, stderr=subprocess.STDOUT).strip()
+    except subprocess.CalledProcessError as exc:
+        # CI must show the compiler's actual diagnostics; suppressing stdout on
+        # failure turns a concrete error into an opaque exit status.
+        if exc.stdout:
+            print(exc.stdout, file=sys.stderr, flush=True)
+        raise
 
 
 def download(url: str, destination: Path) -> bytes:
