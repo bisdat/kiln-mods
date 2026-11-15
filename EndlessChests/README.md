@@ -1,28 +1,23 @@
-# Endless Chests (Kiln) — v0.4.5 (experimental)
+# Endless Chests (Kiln) — v0.5.0 (experimental)
 
 An independent C# implementation through the Kiln SDK, using the original Endless Chests group defaults (attributed to HipShot808). It does **not** load or redistribute the Windows ShroudForge DLL or use undocumented native memory offsets.
 
-**v0.4.5 changes:** Fixes [issue #36](https://github.com/bisdat/kiln-mods/issues/36) by disambiguating **Indigo Plant**. The crafting material is game ID `4276529065` (`Material_T2_Indigo_Plant`), while the decorative potted plant is game ID `3965963935` (`Flower_Pot_Round_Large_Indigo`). Both share the same in-game display name. The shipped `Crafting G-O` and `Flower Pots 2` groups now explicitly select their respective IDs, and the resolver validates the exact game debug names. Existing active INIs containing the old `Indigo Plant` and `Indigo Plant Pot` labels work without replacement; direct chest names remain recognized. **Basalt and the Building Tools cross-base adapter are unchanged.** The default group/entry counts remain 195/3,464.
+**v0.5.0 catalogue refactor — [issue #38](https://github.com/bisdat/kiln-mods/issues/38):** The bundled [canonical JSON catalogue](defaults/catalogue.json) is the sole source of group membership and game-item identities. All **195 original group names and 3,464 positions** remain in their original order. **3,337 entries** now reference verified game IDs (**2,812 distinct items**); **127 genuinely uncertain entries** are explicit unresolved markers that cannot spawn a wrong item. This also repairs **Mycelium crafting material** (`3509012331`) versus the **Mycelium overgrowth object** (`1353762644`), **133 loot armour aliases**, **17 unambiguous potted plants**, the real `Torch` and current `Oven`. Previous fixes for Indigo, Basalt, Rough Wood Block, Mirage and Alchemist wall hangings are covered by exact-ID tests. Fishing Bait includes the pinned Grasshopper and Scarab identities. A failed refill transaction now logs the specific item and continues attempting later items, unless the inventory is no longer available.
 
-**v0.4.4 changes:** Fixes [issue #30](https://github.com/bisdat/kiln-mods/issues/30): the original catalogue includes `Mirage Variant 1165213726` in `Songs`. The suffix is the song sheet's actual decimal game item ID, not part of the display name. The mod now recognises `<display name> Variant <decimal ID>` by looking up that exact ID and checking the game's display name matches the prefix; if it is absent or mismatched the item is skipped instead of being confused with another item (for example, the separate **Mirage** weapon). The audit also identified **22 incomplete `Variant` labels without IDs**: 21 in `Vanity Outfits 3` and `Hunter Boots Variant` in `Vanity Outfits 1`. Each was matched to a specific **regular vanity item**, distinct from a Twitch-drop or combat-armour identity, using the pinned Kiln SDK catalogue. The shipped INI now contains numeric IDs for all 22, bringing the total to **88** vanity/song/decoration numbered variants. A further two formerly unresolvable collectible entries are repaired under `Alchemist Wall Hanging`, giving **90** verified numbered variants altogether. The 195 groups, their 3,464 entries, and their order remain intact. Existing user-owned INIs are **not overwritten**: the resolver has an explicit compatibility mapping for the 22 old bare `Variant` labels, including `Flame Pact Gloves Variant` → ID `3829626055` (not the Twitch-drop ID `1425634981`).
+**Breaking catalogue configuration change:** No historical item aliases or suffixes are supported in v0.5.0. `endless-chests.ini` is **settings only** (options, aliases, disabled groups and numeric-ID disabled items); an old `[Groups]` section may remain on disk but is **ignored**. The source of truth is embedded `catalogue.json`, which is shipped separately for inspection. Normal group names, automatic chest-name matching, `chests.json` bindings and destructive rename/Empty semantics are retained. This migration is intentional because there is currently only one user.
 
-**v0.4.4 additional correction:** `Alchemist Wall Hanging = Alchemist Hanging I | Alchemist Hanging II` used names no longer present in the game catalogue. Its two distinct collectible halves share the current name `Ripped Alchemist's Wall Hanging`; the shipped group now uses their verified IDs `2365197861` (`Collection_Alchemist_WallHang_Piece_01`) and `1372134498` (`Collection_Alchemist_WallHang_Piece_02`). The resolver also accepts both historical `Alchemist Hanging I/II` labels in existing user INIs, requiring the expected game debug name. There is no need to replace your active INI. The in-game `Alchemist Showcase` is a separate crafted item, not part of this two-piece group.
+### Canonical identities and duplicate display names
 
-**v0.4.3 changes:** [Issue #16](https://github.com/bisdat/kiln-mods/issues/16) pins **Rough Wood Block** to verified game item ID `2012474258` (`Block_T1_Wood_Rough_CRAFTING`) rather than one of four quest reward icons with the same English display name. The fix applies to `Starter Blocks`, `Springlands Blocks`, `Wood Blocks` and direct item selections, including older user-owned INIs. Other duplicate display labels produce a once-per-selection warning with the chosen ID, without changing their current refill behaviour.
+Each JSON `groups` array refers directly to a decimal ID defined under `items`; IDs are validated against the game item's internal debug name, display name and category **on every refill**. No `Items.Lookup(displayName)` fallback remains. For example:
 
-**v0.4.2 changes:** The original catalogue is now **alphabetically sorted by key within each INI section** for easier browsing. Group membership and the order of items *inside each group* are unchanged. GitHub Releases also supply a **separate downloadable `endless-chests.defaults.ini`** alongside the installable mod ZIP. The name matching, refill and automatic Empty behaviour from v0.4.1 are unchanged.
+```json
+"Crafting G-O": [/* ... */, 3509012331, /* ... */],
+"Overgrowth Materials": [/* ... */, 1353762644, /* ... */]
+```
 
-The owner confirmed v0.4.1 works in-game. v0.4.2 changed only catalogue presentation and release assets; v0.4.3 changes item resolution as described above.
+This snippet illustrates the IDs, not a complete JSON file. Names such as `Mycelium`, `Indigo Plant` or `Mirage` can refer to more than one game identity. A chest named with a **unique** item display name still resolves automatically; ambiguous direct item names must use a group or numeric ID. You can also run `echest bind 3509012331` for a direct ID binding.
 
-### Variant IDs and duplicate display names
-
-Some original INI entries contain `Variant <decimal ID>` after the display name, because multiple game items share that name. Endless Chests v0.4.4 understands those entries directly using Kiln `Items.Get(ItemId)` and verifies the corresponding `DisplayName` (case-insensitive). For example `Mirage Variant 1165213726` is the collectible song sheet with internal ID `8kLoreText_scroll_bard_song_12`, **not** the separate Mirage staff (`1992044990`). Incorrect or unavailable variant IDs are skipped; they never fall back to a different same-named item. **Twenty-two entries previously had no numeric suffix** (for example, `Flame Pact Gloves Variant`). The bundled defaults now include verified decimal IDs for the normal vanity items, while the runtime also recognizes exactly those 22 historical labels in pre-existing user INIs. All other bare `Variant` names fail closed. **Do not simply remove `Variant`** from your active INI: some unsuffixed labels appear in `[DisabledItems]` to exclude the account-restricted versions. There is no need to replace the active INI after installing v0.4.4.
-
-### Duplicate display names
-
-Some game item IDs share an English display name. Kiln's default `Items.Lookup(displayName)` can choose an unrelated icon. For **Rough Wood Block**, the mod resolves by numeric ID and verifies the item's internal debug name; if the identity changes in a later game version, it skips the item instead of refilling an icon. The 195 original groups and their entry count are preserved, but the bundled INI now includes the 22 corrected numeric variant suffixes. Existing `endless-chests.ini` user customisations are never overwritten.
-
-For **other** duplicates, the log reports the number of matching IDs and the currently selected fallback ID. No automatic substitution is attempted. To fix another ambiguous entry yourself, replace only that *item name* in a `[Groups]` list with its decimal item ID, then run `echest reload`. This is distinct from renaming a chest: recognised in-game renames and `Empty` still intentionally delete inventory as described below.
+Items without a proven match are encoded as `{"unresolved":"Original Label"}` (sometimes with candidate IDs for review) rather than silently substituting another item. They produce one diagnostic warning per group per reload. Further curation is tracked in issue #38.
 
 ## Name-change behaviour
 
@@ -42,20 +37,23 @@ Automatic processing runs on the next scan (every 4 seconds by default). Renames
 
 ## Capitalisation support
 
-Enshrouded exposes only an **FNV-1a64 fingerprint** of each custom chest name through its 8-byte `CustomPlayerString` component. A fingerprint by itself cannot simply be lowercased. The mod therefore compares the hash against variations of every original group, alias and item label:
+Enshrouded exposes only an **FNV-1a64 fingerprint** of each custom chest name through its 8-byte `CustomPlayerString` component. A fingerprint by itself cannot simply be lowercased. The mod therefore compares the hash against variations of every canonical group, alias and unique item label:
 
-- All **195 original group names** and all **3 aliases** accept **any ASCII uppercase/lowercase mixture** (for example `sTaRtEr bLoCkS` or `animalS`), including multiword names. Any recognised rename triggers the normal clear-and-refill.
-- For original individual item labels with **30 or fewer ASCII letters**, the same arbitrary mixed-case matching is supported. For longer labels, original spelling, all-lowercase, ALL-UPPERCASE and title-case variants are covered, but arbitrary mixed-case letters are not yet guaranteed.
+- All **195 original group names** and all **2 aliases** accept **any ASCII uppercase/lowercase mixture** (for example `sTaRtEr bLoCkS` or `animalS`), including multiword names. Any recognised rename triggers the normal clear-and-refill.
+- For unique individual item labels with **30 or fewer ASCII letters**, the same arbitrary mixed-case matching is supported. For longer labels, original spelling, all-lowercase, ALL-UPPERCASE and title-case variants are covered, but arbitrary mixed-case letters are not yet guaranteed.
 - Unicode characters, including non-ASCII letter case variations, may need an exact or common-case spelling. Spaces, punctuation and apostrophes are unchanged by case-insensitive matching. FNV name collisions are rejected when detected.
 - All **32 ASCII capitalisations of `Empty`** are recognised independently and remain destructive.
 
 No private string-store reads or Windows-client DLLs are required. The original name hashes were established from two successful live probes of the same game chest: `Starter Blocks = 0x35F105E7ECC53E32` and `Tools = 0xC26501E3ADE7DA3C`.
 
-## Original catalogue and settings
+## Canonical catalogue and user settings
 
-The bundled [`endless-chests.defaults.ini`](defaults/endless-chests.defaults.ini) contains **195 original groups**, **3,464 item entries**, **3 aliases** and **45 disabled-item entries**. Entries are now **sorted alphabetically by their left-hand-side names within each section** (`[Options]`, `[DisabledItems]`, `[Groups]`, `[Aliases]`; `[DisabledGroups]` has no active entries). Items on each group's right-hand side retain their original order. Corrections add 22 formerly missing variant IDs, two verified Alchemist hanging identities, and two explicit Indigo identities without adding or removing any group entries. The INI is copied to the active mod's `endless-chests.ini` on first run only, **never overwritten on upgrade**. Edit `[Groups]`, `[Aliases]`, `[DisabledGroups]`, `[DisabledItems]` or `[Options]` in that active copy, then run `echest reload`. Disabled items and members of disabled groups are excluded globally. Missing game items are skipped and logged.
+- [`defaults/catalogue.json`](defaults/catalogue.json) is **embedded into the mod and authoritative**. It defines 195 named groups, 3,464 entry positions, 2,812 verified item IDs with metadata, and 127 explicit unresolved entries. Group selection no longer reads display-name lists from an INI.
+- [`defaults/endless-chests.defaults.ini`](defaults/endless-chests.defaults.ini) contains only `[Options]`, `[Aliases]`, `[DisabledGroups]`, and `[DisabledItems]`. The runtime copies it to its writable `endless-chests.ini` on first installation; an existing file remains in place, but any old `[Groups]` entries are ignored with a logged warning. To clean up an old file, back it up and replace its settings with the new small defaults, then `echest reload`.
+- `[DisabledItems]` uses **numeric game IDs**, for example `3509012331=1`. Disabled groups exclude their item IDs globally even if another group includes them. Ambiguous plain display names are no longer valid exclusion keys. Two original aliases remain; the obsolete Diver's Endurance Flask alias was removed because its target is absent from the pinned catalogue.
+- To curate uncertain identities, edit the tracked JSON catalogue in the repository and rebuild; do not edit the packaged binary or attempt display-name substitutions. The CI contract validates every explicit ID against the pinned Kiln registry.
 
-The **tagged GitHub Release** publishes both `endless-chests-kiln-0.4.5.zip` (installable Kiln mod) and **`endless-chests.defaults.ini` (standalone sorted catalogue)** under Assets. You can [view the sorted catalogue in the repository](defaults/endless-chests.defaults.ini) without downloading. The standalone file is for reference or manual editing; **do not import the INI as a Kiln mod**. If you want to replace an existing active INI, back up your custom edits and copy its contents deliberately; installation does not overwrite it.
+The **tagged GitHub Release** publishes `endless-chests-kiln-0.5.0.zip`, standalone `endless-chests.catalogue.json` (reference), and `endless-chests.defaults.ini` (settings template). **Neither JSON nor INI is a Kiln-installable mod.**
 
 The active `chests.json` file (typically in `kiln/data/endless-chests-kiln/`) stores existing manual chest bindings and settings:
 
@@ -83,8 +81,8 @@ Gear level/rarity/perk upgrades and gem-level special items from ShroudForge are
 
 1. **Back up the world**, especially chests with valuables.
 2. Use a compatible Kiln runtime (this repo pins published Kiln `v0.2.0-dev.15`).
-3. From a successful [Endless Chests packaging run](https://github.com/bisdat/kiln-mods/actions/workflows/endless-chests.yml), download the `endless-chests-kiln-package` artifact, or use the [tagged GitHub Releases](https://github.com/bisdat/kiln-mods/releases) page for the individual ZIP and sorted INI assets.
-4. Extract the Actions artifact (if downloaded) and import the enclosed **`endless-chests-kiln-0.4.5.zip`** into Kiln's Library. Enable v0.4.5 in the active profile and restart Enshrouded. The accompanying `endless-chests.defaults.ini` is a separate reference/download, **not** an installable Kiln package.
+3. From a successful [Endless Chests packaging run](https://github.com/bisdat/kiln-mods/actions/workflows/endless-chests.yml), download the `endless-chests-kiln-package` artifact, or use the [tagged GitHub Releases](https://github.com/bisdat/kiln-mods/releases) page for the individual ZIP and JSON catalogue and INI settings assets.
+4. Extract the Actions artifact (if downloaded) and import the enclosed **`endless-chests-kiln-0.5.0.zip`** into Kiln's Library. Enable v0.5.0 in the active profile and restart Enshrouded. The accompanying JSON and settings INI are separate reference downloads, **not** an installable Kiln package.
 5. Try **`TOOLS → starter blocks → My Storage → Empty`** on a throwaway chest. The unrecognised name must **not** delete the blocks; Empty **must** clear them without confirmation.
 
 ## Kiln console commands (optional)
@@ -93,15 +91,15 @@ In a locally hosted solo world, Kiln processes `kiln/control/console/*.cmd` afte
 
 | Command | Effect |
 |---|---|
-| `echest nameprobe` | Read-only: report nearest chest's ECS name fingerprint, recognised original name and manual binding |
+| `echest nameprobe` | Read-only: report nearest chest's ECS name fingerprint, recognised canonical name and manual binding |
 | `echest status` | Show settings, service readiness and group/name-map counts |
-| `echest groups [search]` | Search original group labels |
+| `echest groups [search]` | Search canonical group labels |
 | `echest bind Tools` | Manually bind an **empty** nearby chest to Tools, until unbound or renamed in-game |
 | `echest unbind` | Remove manual binding without deleting contents |
 | `echest empty` / `echest bind Empty` | **Legacy manual operation:** preview a clear without performing it |
 | `echest empty confirm` | Confirm the manual preview within 60 seconds |
 | `echest refill` | Request the next scan |
-| `echest reload` | Reload owner JSON and INI |
+| `echest reload` | Reload chest bindings, canonical embedded JSON and settings INI |
 
 **Automatic game-UI `Empty` does not require commands.** The separate manual `echest empty` command retains preview/confirmation.
 
@@ -117,7 +115,7 @@ cat kiln/control/console/probe.result.json
 
 ## CI and development
 
-The GitHub Actions workflow validates all 195 original groups, the 3,464 item entries, all 92 numbered variants against the pinned Kiln SDK registry, the Indigo material/pot ID guards and old-label compatibility, all 22 legacy unnumbered vanity mappings and the 2 renamed Alchemist hanging mappings, alphabetical key order within every INI section, all 32 case variants of Empty, the observed chest-name FNV hashes, mixed-case matching for all original group labels and the collision-safe catalogue lookup. It builds against the released/pinned Kiln SDK source and stages the sorted standalone INI with the mod ZIP for download and tagged releases.
+The GitHub Actions workflow validates all 195 groups and 3,464 entry positions, verifies every one of the 2,812 canonical game IDs against the pinned Kiln SDK, asserts the 127 unresolved markers are explicit, and tests Mycelium, Indigo, Basalt, Grasshopper, Scarab, Torch, Oven, loot armour and historical fixes. It also tests INI settings, 32 Empty case variants and game-name FNV fingerprints. Release assets include the compiled mod, catalogue JSON and settings INI.
 
 Local Linux build:
 
@@ -127,4 +125,4 @@ KILN_SDK_VERSION=0.2.0-dev.local.20261107.61500 \
 bash scripts/build.sh EndlessChests
 ```
 
-Output: `bin/Release/endless-chests-kiln-0.4.5.zip`. After merging this change into `main`, publishing tag **`endless-chests-v0.4.5`** triggers both release assets automatically. The original v0.4.1 release remains unchanged; the remaining parity checks are tracked in [issue #4](https://github.com/bisdat/kiln-mods/issues/4).
+Output: `bin/Release/endless-chests-kiln-0.5.0.zip`. After merging this change into `main`, publishing tag **`endless-chests-v0.5.0`** triggers all three release assets automatically. Unresolved catalogue identities are tracked in [issue #38](https://github.com/bisdat/kiln-mods/issues/38); other gameplay parity checks remain in [issue #4](https://github.com/bisdat/kiln-mods/issues/4).
