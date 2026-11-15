@@ -4,8 +4,10 @@
 Three user measurements on one chest (2026-11-07) show that Enshrouded's
 CustomPlayerString is FNV-1a64 of the exact UTF-8 chest name.
 """
+from collections import Counter
 from configparser import ConfigParser
 from pathlib import Path
+import json
 
 OFFSET_BASIS = 0xCBF29CE484222325
 PRIME = 0x100000001B3
@@ -24,16 +26,19 @@ assert fnv1a64("Tools") == 0xC26501E3ADE7DA3C
 assert fnv1a64("Empty") != 0x35F105E7ECC53E32
 assert fnv1a64("Empty") != 0xC26501E3ADE7DA3C
 
-ini = Path(__file__).resolve().parents[1] / "EndlessChests/defaults/endless-chests.defaults.ini"
+root = Path(__file__).resolve().parents[1]
+catalogue = json.loads((root / "EndlessChests/defaults/catalogue.json").read_text(encoding="utf-8"))
 parser = ConfigParser(interpolation=None)
 parser.optionxform = str
-with ini.open(encoding="utf-8-sig") as stream:
-    parser.read_file(stream)
-all_names = set(parser.options("Groups")) | set(parser.options("Aliases")) | {"Empty"}
-for _, group_value in parser.items("Groups"):
-    all_names.update(x.strip() for x in group_value.split("|") if x.strip())
-for entry in parser.options("DisabledItems"):
-    all_names.add(entry)
+parser.read(root / "EndlessChests/defaults/endless-chests.defaults.ini", encoding="utf-8-sig")
+identities = catalogue["items"]
+name_counts = Counter(item["displayName"].casefold() for item in identities.values())
+unique_labels = {
+    item["displayName"] for item in identities.values()
+    if name_counts[item["displayName"].casefold()] == 1
+}
+all_names = (set(catalogue["groups"]) | set(parser.options("Aliases")) |
+             set(identities) | unique_labels | {"Empty"})
 
 by_hash = {}
 for name in all_names:
