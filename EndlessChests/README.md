@@ -2,7 +2,7 @@
 
 An independent C# implementation through the Kiln SDK, retaining the original Endless Chests group defaults (attributed to HipShot808) and adding dedicated weapon groups. It does **not** load or redistribute the Windows ShroudForge DLL or use undocumented native memory offsets.
 
-**v0.6.0 — dedicated weapon groups ([issue #45](https://github.com/bisdat/kiln-mods/issues/45)):** Adds **489 verified weapon IDs** across **9 new chest-sized groups**, covering one-handed melee, two-handed melee, daggers, bows, wands and staffs. All 195 existing groups, 3,464 original positions and 2,934 pre-existing item identities are retained. Total: **204 groups, 3,953 entries and 3,423 distinct item IDs**, with zero unresolved entries. Weapon identities come from the Kiln SDK's internal class/debug names, not ambiguous display names. Older tier variants and craft/loot entries remain individually identifiable. The mod's runtime and settings INI are unchanged; only the embedded canonical JSON, version and tests change.
+**v0.6.0 — dedicated weapon groups ([issue #45](https://github.com/bisdat/kiln-mods/issues/45)):** Adds **489 verified weapon IDs and 58 equipable shields** across **10 new chest-sized groups**, covering one-handed melee, two-handed melee, daggers, bows, wands, staffs and shields. All 195 existing groups, 3,464 original positions and 2,934 pre-existing item identities are retained. Total: **205 groups, 4,011 entries and 3,481 distinct item IDs**, with zero unresolved entries. Weapon identities come from the Kiln SDK's internal class/debug names, not ambiguous display names. Older tier variants and craft/loot entries remain individually identifiable. The mod's runtime and settings INI are unchanged; only the embedded canonical JSON, version and tests change.
 
 ### Dedicated weapon groups
 
@@ -17,11 +17,12 @@ An independent C# implementation through the Kiln SDK, retaining the original En
 | `Bows` | 62 | Standard and crafted bows |
 | `Wands` | 58 | One-handed magical wands |
 | `Staffs` | 49 | Two-handed magical staffs |
-| **Total** | **489** | Nine distinct named selections |
+| `Shields` | 58 | Equipable shields, including crafted and loot variants |
+| **Total** | **547** | Ten distinct named selections |
 
-Use a **72-slot Magic Chest** for a complete 49–62-item group. A smaller chest has limited slots and receives only the first available entries from its ordered group; it cannot contain every weapon in these larger groups. Each numbered group is independent: `One-Handed Melee` does **not** include the later numbered tranches. Use separate chests for all parts. Rename matching and `echest bind <group>` work as with existing groups. When a game display name is shared by several weapon tiers, the explicit item IDs keep their identities separate.
+Use a **72-slot Magic Chest** for a complete 49–62-item group, including `Shields` (58). A smaller chest has limited slots and receives only the first available entries from its ordered group; it cannot contain every weapon in these larger groups. Each numbered group is independent: `One-Handed Melee` does **not** include the later numbered tranches. Use separate chests for all parts. Rename matching and `echest bind <group>` work as with existing groups. When a game display name is shared by several weapon tiers, the explicit item IDs keep their identities separate.
 
-The remaining 21 records in the broad SDK `Weapons` category are non-class weapons (such as throwables, torches, unarmed/test objects); they are deliberately not added to these six classes. Existing Throwables and Handheld Torches groups are untouched. [Classification and acceptance details](../docs/research/ENDLESS-CHESTS-WEAPON-GROUPS.md).
+The remaining 21 records in the broad SDK `Weapons` category are non-class weapons (such as throwables, torches, unarmed/test objects); they are deliberately not added to these six classes. Shields instead use 58 `Equipment` items with `Shield_T*` or `Craft_Shield_T*` identities; five shield decorations and two protective-barrier spells are excluded. Existing Throwables and Handheld Torches groups are untouched. [Classification and acceptance details](../docs/research/ENDLESS-CHESTS-WEAPON-GROUPS.md).
 
 **v0.5.2 final identity reconciliation — [issue #38](https://github.com/bisdat/kiln-mods/issues/38):** All **27 remaining unresolved catalogue positions** have been mapped to current item identities. Catalogue schema **v2** supports explicit multi-variant sets (`{"variants":[123,456]}`) when different real items share a display name: the runtime expands and verifies every ID, never selecting an arbitrary same-name item. This preserves all **195 groups and 3,464 original positions**, now **0 unresolved**, covering **2,934 distinct verified game item IDs** (including 11 multi-variant positions and 39 variant references). The 27 include current craftable backpacks, distinct models of books and decorations, an additional Fern plant pot, and Resource Bundle I (whose game name contains **two spaces**). [Complete decisions and mapping ledger](../docs/research/ENDLESS-CHESTS-FINAL-27.md). Previous item IDs, renaming behaviour and user INI semantics are unchanged; **in-game testing is still required**.
 
@@ -64,7 +65,7 @@ Automatic processing runs on the next scan (every 4 seconds by default). Renames
 
 Enshrouded exposes only an **FNV-1a64 fingerprint** of each custom chest name through its 8-byte `CustomPlayerString` component. A fingerprint by itself cannot simply be lowercased. The mod therefore compares the hash against variations of every canonical group, alias and unique item label:
 
-- All **204 canonical group names** (including the original 195) and all **2 aliases** accept **any ASCII uppercase/lowercase mixture** (for example `sTaRtEr bLoCkS` or `animalS`), including multiword names. Any recognised rename triggers the normal clear-and-refill.
+- All **205 canonical group names** (including the original 195) and all **2 aliases** accept **any ASCII uppercase/lowercase mixture** (for example `sTaRtEr bLoCkS` or `animalS`), including multiword names. Any recognised rename triggers the normal clear-and-refill.
 - For unique individual item labels with **30 or fewer ASCII letters**, the same arbitrary mixed-case matching is supported. For longer labels, original spelling, all-lowercase, ALL-UPPERCASE and title-case variants are covered, but arbitrary mixed-case letters are not yet guaranteed.
 - Unicode characters, including non-ASCII letter case variations, may need an exact or common-case spelling. Spaces, punctuation and apostrophes are unchanged by case-insensitive matching. FNV name collisions are rejected when detected.
 - All **32 ASCII capitalisations of `Empty`** are recognised independently and remain destructive.
@@ -73,7 +74,7 @@ No private string-store reads or Windows-client DLLs are required. The original 
 
 ## Canonical catalogue and user settings
 
-- [`defaults/catalogue.json`](defaults/catalogue.json) is **embedded into the mod and authoritative**. It defines 204 named groups, 3,953 logical entry positions and 3,423 verified item IDs with no unresolved entries; the original 195 groups and their 3,464 positions are unchanged. Eleven original positions expand to multiple explicitly listed physical variants. Group selection no longer reads display-name lists from an INI.
+- [`defaults/catalogue.json`](defaults/catalogue.json) is **embedded into the mod and authoritative**. It defines 205 named groups, 4,011 logical entry positions and 3,481 verified item IDs with no unresolved entries; the original 195 groups and their 3,464 positions are unchanged. Eleven original positions expand to multiple explicitly listed physical variants. Group selection no longer reads display-name lists from an INI.
 - [`defaults/endless-chests.defaults.ini`](defaults/endless-chests.defaults.ini) contains only `[Options]`, `[Aliases]`, `[DisabledGroups]`, and `[DisabledItems]`. The runtime copies it to its writable `endless-chests.ini` on first installation; an existing file remains in place, but any old `[Groups]` entries are ignored with a logged warning. To clean up an old file, back it up and replace its settings with the new small defaults, then `echest reload`.
 - `[DisabledItems]` uses **numeric game IDs**, for example `3509012331=1`. Disabled groups exclude their item IDs globally even if another group includes them. Ambiguous plain display names are no longer valid exclusion keys. Two original aliases remain; the obsolete Diver's Endurance Flask alias was removed because its target is absent from the pinned catalogue.
 - To curate uncertain identities, edit the tracked JSON catalogue in the repository and rebuild; do not edit the packaged binary or attempt display-name substitutions. The CI contract validates every explicit ID against the pinned Kiln registry.
@@ -140,7 +141,7 @@ cat kiln/control/console/probe.result.json
 
 ## CI and development
 
-The GitHub Actions workflow validates all 204 groups and 3,953 entry positions, verifies all 3,423 item IDs against the pinned Kiln SDK and independently classifies all 489 weapon IDs into the nine dedicated groups. It also verifies that all 195 original groups and 2,934 previous identities remain exactly unchanged, checks the 100 v0.5.1 repairs, final 27 reconciliations and 11 explicit variant sets, and tests Mycelium, Indigo, Basalt, Grasshopper, Scarab, Torch, Oven, loot armour and historical fixes. It also tests INI settings, 32 Empty case variants and game-name FNV fingerprints. Release assets include the compiled mod, catalogue JSON and settings INI.
+The GitHub Actions workflow validates all 205 groups and 4,011 entry positions, verifies all 3,481 item IDs against the pinned Kiln SDK and independently classifies all 489 weapons and 58 equipable shields into the ten dedicated groups. It also verifies that all 195 original groups and 2,934 previous identities remain exactly unchanged, checks the 100 v0.5.1 repairs, final 27 reconciliations and 11 explicit variant sets, and tests Mycelium, Indigo, Basalt, Grasshopper, Scarab, Torch, Oven, loot armour and historical fixes. It also tests INI settings, 32 Empty case variants and game-name FNV fingerprints. Release assets include the compiled mod, catalogue JSON and settings INI.
 
 Local Linux build:
 
