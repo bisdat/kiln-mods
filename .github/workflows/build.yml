@@ -56,7 +56,7 @@ jobs:
       - name: Verify installable package version before upload
         shell: bash
         run: |
-          version="$(sed -n 's:.*<Version>\\([^<]*\\)</Version>.*:\\1:p' SurvivalQoL/SurvivalQoL.csproj)"
+          version="$(awk -F'[<>]' '/<Version>/ { print $3; exit }' SurvivalQoL/SurvivalQoL.csproj)"
           test -n "$version"
           test -s "bin/Release/survival-qol-$version.zip"
 
