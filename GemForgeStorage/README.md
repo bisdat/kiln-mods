@@ -40,6 +40,21 @@ grep -F 'Gem Forge Research: weaponGemAction' "$GAME/kiln/logs/kiln.log" | tail 
 
 `gforge watch on` dynamically attaches a passive `PlayerClientActionEvent` listener for that player. While subscribed, Kiln's documented action delivery **holds an observed client command by one simulation step** (~17ms) so that callbacks can inspect it. This version **never cancels or changes** any action or item. Use `gforge watch off` to detach the listener and eliminate the one-step delay. Only `weaponGemAction` within 12m of a detected placed Gem Forge is recorded.
 
+## In-game result — 15 November 2026
+
+User's Bazzite/Proton **hosted** game with v0.2.0:
+
+- `gforge status`: read-only; playerstate=True; `weaponGemAction=28 bytes, canCancel=True`; all World/Spawn/Items services available.
+- `gforge forge`: placeable forge entity **5930**, distance **3.0m**, template **`Shroud_Gem_Forge_07_AncientLands_Premium_PLAYER_CRAFTED`**, no `ShroudForge` ECS component.
+- `gforge scan`: **133 loaded Magic Chests**, **85 weapon gem slots**, **13,750 units of Archaic Essence**; no items transferred.
+- After opening the forge and browsing the selection UI with `gforge watch on`, `gforge recent` reported **no `weaponGemAction`**. This only establishes that *those UI operations* caused no captured server gem action, not that the real forge action cannot be observed.
+
+The current Kiln source has a critical reverse-engineering lead: `docs/re/items.md` section 16 identifies the server-side `equipment_actions` program and its `0x144bb0` weapon-gem helper (server binary 26430253), which emits `GemCraftingEvent`. **The RVA is build-specific, not tested as a hook on the user's live executable.**
+
+The game client exposes `HudScreen.ShroudForge=45` through `Ui.Screens.Current`. Upstream also documents `Ui.Values.Slots/SubscribeSlots`, a read-only snapshot of what the game rendered, but explicitly places those hooks in **Kiln dev.29**; the newest verified published SDK at this time is **dev.28**. Even those slot snapshots only inspect items that the game already drew: they cannot add entries to the forge selection UI.
+
+See [the native integration research record](../docs/research/GEMFORGE-DIRECT-INTEGRATION.md).
+
 ## Research tasks before a functional mod
 
 1. **Map the 28-byte action** with controlled, read-only comparison of UI interactions, including which operations generate it. Its field layout and processing function are not yet established.

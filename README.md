@@ -69,7 +69,7 @@ Standalone Kiln mod v0.1.1 (backtick default following the accepted v0.1.0 toggl
 [Gem Forge research guide](GemForgeStorage/README.md) |
 [Build workflow](.github/workflows/gemforge-storage.yml)
 
-The previous v0.1.x approach (temporarily lending gems from Magic Chests into the backpack) was rejected after a return failure. It is **removed** from the current source. The experimental Kiln-native v0.2.0 research package reads nearby Gem Forge entities and Magic Chest inventories and can observe `weaponGemAction` while enabled. **It does not transfer, consume, create or change any items.** The long-term aim is to integrate Magic Chests directly with the actual Gem Forge UI and authoritative transaction; that integration is **not implemented yet**. Draft PR #48 remains unmerged.
+The previous v0.1.x approach (temporarily lending gems from Magic Chests into the backpack) was rejected after a return failure. It is **removed** from the current source. The experimental Kiln-native v0.2.0 research package reads nearby Gem Forge entities and Magic Chest inventories and can observe `weaponGemAction` while enabled. **It does not transfer, consume, create or change any items.** The long-term aim is to integrate Magic Chests directly with the actual Gem Forge UI and authoritative transaction; that integration is **not implemented yet**. Draft PR #48 remains unmerged. [Native integration research findings](docs/research/GEMFORGE-DIRECT-INTEGRATION.md).
 
 ## Licence
 
