@@ -12,6 +12,11 @@
       "debugName": "Prop_Decoration_T3_Window_Round_Ornamented_Stone_Frame",
       "category": "BuildTools"
     },
+    "7015425": {
+      "displayName": "Hammer Of The Piercing Gaze",
+      "debugName": "Weapon_T6_2H_HammerEpic_01",
+      "category": "Weapons"
+    },
     "8841766": {
       "displayName": "Standing Torch",
       "debugName": "Prop_Decoration_Comfort_T0_IlluminationFloor",
@@ -22,6 +27,11 @@
       "debugName": "Armor_T7_Ranger_Archer_DPS_Legs_Loot",
       "category": "Equipment"
     },
+    "9995480": {
+      "displayName": "Reaper's Wand",
+      "debugName": "Craft_Weapon_T6_1H_Lore_Wand_Ministory_02_Lightning",
+      "category": "Weapons"
+    },
     "13759280": {
       "displayName": "Plaguebringer Chest",
       "debugName": "Armor_T3_Ranger_FogProtection_Chest",
@@ -31,6 +41,11 @@
       "displayName": "Crude Wooden Stool",
       "debugName": "Prop_Decoration_Comfort1_T0_Chair_Stool",
       "category": "BuildTools"
+    },
+    "14483003": {
+      "displayName": "Reaper's Wand",
+      "debugName": "Craft_Weapon_T5_1H_Lore_Wand_Ministory_02_Lightning",
+      "category": "Weapons"
     },
     "14979379": {
       "displayName": "Blue Wall Light I",
@@ -47,6 +62,11 @@
       "debugName": "Food_T2_processed_meat_GrilledGame",
       "category": "Consumables"
     },
+    "19063957": {
+      "displayName": "Chimerical Greatsword",
+      "debugName": "Weapon_T3_2H_GreatSwordEpic_01",
+      "category": "Weapons"
+    },
     "19079311": {
       "displayName": "\"Round-Billed Sailer On One Leg\"",
       "debugName": "Prop_Decoration_Comfort_T4_Wall_Painting_4",
@@ -61,6 +81,11 @@
       "displayName": "Kiln",
       "debugName": "Prop_Production_T2_Kiln",
       "category": "BuildTools"
+    },
+    "21600863": {
+      "displayName": "Axe Of Deimos",
+      "debugName": "Weapon_T7_2H_GreatAxe_01",
+      "category": "Weapons"
     },
     "22389632": {
       "displayName": "Secret Castle Door",
@@ -162,6 +187,16 @@
       "debugName": "ColorPalette_T1_ColorPalette_02",
       "category": "ColorPalette"
     },
+    "51216457": {
+      "displayName": "Goat Hammer",
+      "debugName": "Weapon_T5_2H_Hammer_02",
+      "category": "Weapons"
+    },
+    "53318001": {
+      "displayName": "Acid Cleaver",
+      "debugName": "Weapon_T2-TX_1H_Sword_Enemy_Scavenger_Elite_AcidCleaver",
+      "category": "Weapons"
+    },
     "53541119": {
       "displayName": "Bronze Block",
       "debugName": "Block_T3_Metal_Bronze_CRAFTING",
@@ -182,6 +217,11 @@
       "debugName": "_Block_T7_Dark_Circles_Ancient_REWARD",
       "category": "BuildTools"
     },
+    "57961640": {
+      "displayName": "Staff Of The Serpent",
+      "debugName": "Craft_Weapon_T3_2H_StaffEpic_chineseNewYear_01",
+      "category": "Weapons"
+    },
     "61577244": {
       "displayName": "Diamond",
       "debugName": "Material_T7_Diamond",
@@ -191,6 +231,11 @@
       "displayName": "Eternal Heal Cascade II",
       "debugName": "Ammo_T7_Spell_Heal_Channel_lvl45_Eternal",
       "category": "Ammunition"
+    },
+    "62683222": {
+      "displayName": "Proto Matter-Bender",
+      "debugName": "Craft_Weapon_T7_1H_Lore_Wand_protoVessels_blunt",
+      "category": "Weapons"
     },
     "63026718": {
       "displayName": "Gem of Focused Light",
@@ -207,10 +252,25 @@
       "debugName": "Food_T3_dish_sweets_Cake_Blueberry_Anniversary",
       "category": "Consumables"
     },
+    "65433484": {
+      "displayName": "Fenrig's Axe",
+      "debugName": "Craft_Weapon_T5_1H_Lore_Axe_Ministory_10",
+      "category": "Weapons"
+    },
+    "66688434": {
+      "displayName": "Eclipsed Blade",
+      "debugName": "Weapon_TX_1H_Sword_FogNest",
+      "category": "Weapons"
+    },
     "68181452": {
       "displayName": "Bembel Pitcher",
       "debugName": "Prop_Decoration_T2_Bembel_Clay",
       "category": "BuildTools"
+    },
+    "69105879": {
+      "displayName": "Goldlaced Greatsword",
+      "debugName": "Weapon_T4_2H_GreatSwordEpic_02",
+      "category": "Weapons"
     },
     "69172143": {
       "displayName": "Ornate Hand Drum",
@@ -231,6 +291,11 @@
       "displayName": "Fish Tacos",
       "debugName": "Food_T7_dish_fish_FishTacos",
       "category": "Consumables"
+    },
+    "72164802": {
+      "displayName": "Falk Fall Daggers",
+      "debugName": "Weapon_T3_2H_DaggersEpic_Parry_Poison",
+      "category": "Weapons"
     },
     "72192472": {
       "displayName": "Eternal Light Burst I",
@@ -256,6 +321,11 @@
       "displayName": "Fell Wispwyvern Trophy",
       "debugName": "Prop_Decoration_Boss_Trophy_Fell_Lizard_01_wood",
       "category": "BuildTools"
+    },
+    "78948388": {
+      "displayName": "Dreadbane",
+      "debugName": "Craft_Weapon_T7_2H_Lore_HammerEpic_ministory_14",
+      "category": "Weapons"
     },
     "81784738": {
       "displayName": "Sparkling Dark Crystal",
@@ -312,6 +382,16 @@
       "debugName": "Collection_Worldmap_Desert",
       "category": "Collectibles"
     },
+    "101106603": {
+      "displayName": "Breaching Bow",
+      "debugName": "Weapon_T7_2H_Lore_Bow_drakHeavy",
+      "category": "Weapons"
+    },
+    "101298280": {
+      "displayName": "Cyclone Axe",
+      "debugName": "Weapon_T2_2H_GreatAxeEpic_01",
+      "category": "Weapons"
+    },
     "101619585": {
       "displayName": "Maritime Sink",
       "debugName": "Prop_Decoration_Comfort8_T6_BathroomSink",
@@ -322,6 +402,11 @@
       "debugName": "Empty_Flower_Pot_Low_Large_Ground_Empty",
       "category": "BuildTools"
     },
+    "102274580": {
+      "displayName": "Iron Claw Club",
+      "debugName": "Weapon_T4_1H_Mace_01",
+      "category": "Weapons"
+    },
     "103008069": {
       "displayName": "Poisoned Steel Arrow",
       "debugName": "Ammo_T5_Arrow_SteelPoison_lvl35",
@@ -331,6 +416,16 @@
       "displayName": "Polished Stone",
       "debugName": "ColorPalette_T1_ColorPalette_03",
       "category": "ColorPalette"
+    },
+    "103223166": {
+      "displayName": "Grey Blades",
+      "debugName": "Weapon_T5_2H_Daggers_Poison",
+      "category": "Weapons"
+    },
+    "105288636": {
+      "displayName": "Wailing Blade",
+      "debugName": "Craft_Weapon_T6_1H_Lore_SwordEpic_Ministory_09",
+      "category": "Weapons"
     },
     "106014299": {
       "displayName": "Scavenger Bonfire",
@@ -376,6 +471,11 @@
       "displayName": "Iron Bucket",
       "debugName": "Prop_Decoration_T4_Bucket_Iron",
       "category": "BuildTools"
+    },
+    "119442934": {
+      "displayName": "Minor Arcana",
+      "debugName": "Weapon_T4_1H_Sword_03",
+      "category": "Weapons"
     },
     "120176694": {
       "displayName": "White Flower",
@@ -607,6 +707,11 @@
       "debugName": "Prop_Decoration_T7_Door_Huge_Ancient_01",
       "category": "BuildTools"
     },
+    "191356948": {
+      "displayName": "Ascendant Daggers",
+      "debugName": "Weapon_T7_2H_DaggersEpic_Poison_Parry",
+      "category": "Weapons"
+    },
     "191874528": {
       "displayName": "Oak Tree Seedling",
       "debugName": "T1_Seedling_Greenhillzone_Tree_01",
@@ -626,6 +731,11 @@
       "displayName": "Roof Tiles Block",
       "debugName": "Block_Roof_T2_Loam_FiredShingle_CRAFTING",
       "category": "BuildTools"
+    },
+    "197300979": {
+      "displayName": "Wailing Blade",
+      "debugName": "Craft_Weapon_T2_1H_Lore_SwordEpic_Ministory_09",
+      "category": "Weapons"
     },
     "197885818": {
       "displayName": "Small Prickle Pearl Plant Pot",
@@ -662,6 +772,11 @@
       "debugName": "Consumable_Potion_Flask_Fog_Survival_Flask_T3",
       "category": "Consumables"
     },
+    "210093577": {
+      "displayName": "Misfortune Mace",
+      "debugName": "Weapon_T1_2H_HammerEpic_01",
+      "category": "Weapons"
+    },
     "210614111": {
       "displayName": "Large Round Stone Window Frame",
       "debugName": "Prop_Decoration_T3_Window_Round_Ornamented_Large_Stone_Frame",
@@ -677,6 +792,16 @@
       "debugName": "Prop_Decoration_T5_Mirror_Small",
       "category": "BuildTools"
     },
+    "213476537": {
+      "displayName": "Dimweald Axe",
+      "debugName": "Weapon_T5_1H_Lore_Axe_ministory_33",
+      "category": "Weapons"
+    },
+    "213584320": {
+      "displayName": "Noble Sword",
+      "debugName": "Weapon_T2_1H_SwordEpic_02",
+      "category": "Weapons"
+    },
     "213939880": {
       "displayName": "Small Chest",
       "debugName": "Prop_Storage_24_T1_Box",
@@ -691,6 +816,11 @@
       "displayName": "Large Carved Wooden Cabinet",
       "debugName": "Prop_Decoration_T1_Cabinet_Carved_Wooden_Large",
       "category": "BuildTools"
+    },
+    "217755813": {
+      "displayName": "Staff Of The Moor",
+      "debugName": "Weapon_T6_2H_StaffEpic_02",
+      "category": "Weapons"
     },
     "218007834": {
       "displayName": "Wildheart Pants",
@@ -732,6 +862,11 @@
       "debugName": "_060_Prop_Decoration_T5_Door_large_Fallgate_Steel_HASBUGS",
       "category": "BuildTools"
     },
+    "225230490": {
+      "displayName": "Major Arcana",
+      "debugName": "Weapon_T4_1H_SwordEpic_03",
+      "category": "Weapons"
+    },
     "225262139": {
       "displayName": "Eternal Ember Arrow II",
       "debugName": "Ammo_T5_Arrow_Magic_Fire_Eternal_lvl28",
@@ -746,6 +881,11 @@
       "displayName": "Drak Temple Roof Block",
       "debugName": "Block_Roof_T6_ShellLime_LizardTemple_Shingles_REWARD",
       "category": "BuildTools"
+    },
+    "231186353": {
+      "displayName": "Sickle Greatsword",
+      "debugName": "Weapon_T4_2H_GreatSword_01",
+      "category": "Weapons"
     },
     "232113931": {
       "displayName": "Grandleaf Cabbage Rolls",
@@ -792,6 +932,11 @@
       "debugName": "Prop_Decoration_Comfort_T0_IlluminationFloor_Firefly",
       "category": "BuildTools"
     },
+    "246702506": {
+      "displayName": "Wailing Blade",
+      "debugName": "Craft_Weapon_T4_1H_Lore_SwordEpic_Ministory_09",
+      "category": "Weapons"
+    },
     "246967425": {
       "displayName": "Gilded Axe",
       "debugName": "Tool_T6_Axe_Steel_Gold_Wetlands",
@@ -806,6 +951,11 @@
       "displayName": "Medium Ancient Temple Shelf",
       "debugName": "Prop_Decoration_T7_AncientTemple_Shelf_Medium01",
       "category": "BuildTools"
+    },
+    "254978705": {
+      "displayName": "Crystalwater Staff",
+      "debugName": "Weapon_T5_2H_StaffEpic_02",
+      "category": "Weapons"
     },
     "256634933": {
       "displayName": "Scrappy Pickaxe",
@@ -826,6 +976,11 @@
       "displayName": "Bamboo Room Divider I",
       "debugName": "Prop_Decoration_T6_Lizard_Gate_02",
       "category": "BuildTools"
+    },
+    "261396527": {
+      "displayName": "Frostwing Axe",
+      "debugName": "Weapon_T5_1H_AxeEpic_02",
+      "category": "Weapons"
     },
     "264983169": {
       "displayName": "Strawberry Cake",
@@ -897,6 +1052,11 @@
       "debugName": "Armor_T6_MultiClass_SkeletonArmor_Arms",
       "category": "Equipment"
     },
+    "288905176": {
+      "displayName": "Summit Greatsword",
+      "debugName": "Weapon_T5_2H_Greatsword_02",
+      "category": "Weapons"
+    },
     "289913176": {
       "displayName": "Mana Drain V",
       "debugName": "Ammo_T4_Spell_ManaLeechBeam_Channel_lvl22",
@@ -932,6 +1092,11 @@
       "debugName": "Ammo_T7_Spell_Bone_Channel_lvl45_Eternal",
       "category": "Ammunition"
     },
+    "301510235": {
+      "displayName": "Shivs",
+      "debugName": "Weapon_T1_2H_Daggers_02_Parry",
+      "category": "Weapons"
+    },
     "303090384": {
       "displayName": "Shell Limestone Road Block",
       "debugName": "Build_TerrainMaterial_T6_Road_Stone_4",
@@ -950,6 +1115,11 @@
     "305542871": {
       "displayName": "Skull Summoning Vessel III",
       "debugName": "Consumable_Necromancer_Grenade_T4",
+      "category": "Weapons"
+    },
+    "306541910": {
+      "displayName": "Ezramin's Courage",
+      "debugName": "Weapon_T7_1H_SwordEpic_01",
       "category": "Weapons"
     },
     "307918428": {
@@ -1021,6 +1191,11 @@
       "displayName": "Gravedigger Pants",
       "debugName": "Vanity_TX_CryptKeeper_Legs",
       "category": "Equipment"
+    },
+    "327157552": {
+      "displayName": "Forest Longbow",
+      "debugName": "Weapon_T1_2H_Bow_02",
+      "category": "Weapons"
     },
     "329575215": {
       "displayName": "Flaming Heartbeat",
@@ -1137,10 +1312,20 @@
       "debugName": "Material_T1_Charcoal",
       "category": "Materials"
     },
+    "375831467": {
+      "displayName": "Brisk Bow",
+      "debugName": "Weapon_T3_2H_Bow_02",
+      "category": "Weapons"
+    },
     "377316946": {
       "displayName": "Eternal Light Burst II",
       "debugName": "Ammo_T7_Spell_Fire_Lightburst_lvl45_Eternal",
       "category": "Ammunition"
+    },
+    "381008328": {
+      "displayName": "Reaper's Wand",
+      "debugName": "Craft_Weapon_T3_1H_Lore_Wand_Ministory_02_Lightning",
+      "category": "Weapons"
     },
     "381093769": {
       "displayName": "Fire Bolt VIII",
@@ -1192,10 +1377,20 @@
       "debugName": "ColorPalette_T6_ColorPalette_night_01",
       "category": "ColorPalette"
     },
+    "392185938": {
+      "displayName": "Greatsword Of Rivalry",
+      "debugName": "Weapon_T5_2H_GreatSwordEpic_02",
+      "category": "Weapons"
+    },
     "392289623": {
       "displayName": "Gravedigger Boots",
       "debugName": "Vanity_TX_CryptKeeper_Boots",
       "category": "Equipment"
+    },
+    "392894300": {
+      "displayName": "Sleek Daggers",
+      "debugName": "Weapon_T1_2H_DaggersEpic_DPS",
+      "category": "Weapons"
     },
     "393838913": {
       "displayName": "Blood Rose Pants",
@@ -1216,6 +1411,11 @@
       "displayName": "Coffee Beans",
       "debugName": "Material_T6_raw_CoffeeBeans",
       "category": "Materials"
+    },
+    "397149581": {
+      "displayName": "Reaper's Wand",
+      "debugName": "Craft_Weapon_T7_1H_Lore_Wand_Ministory_02_Lightning",
+      "category": "Weapons"
     },
     "397491058": {
       "displayName": "Drak Relief V",
@@ -1246,6 +1446,11 @@
       "displayName": "Gloom Monarch Chestplate",
       "debugName": "Armor_T4_Warrior_Brawler_Chest_Loot",
       "category": "Equipment"
+    },
+    "409520008": {
+      "displayName": "Enhanced Spiked Club",
+      "debugName": "Weapon_T2_1H_Mace_01",
+      "category": "Weapons"
     },
     "409810488": {
       "displayName": "Acidic Mycelium",
@@ -1307,6 +1512,11 @@
       "debugName": "_Prop_Decoration_Boss_Trophy_critterQueen_01_wood",
       "category": "BuildTools"
     },
+    "423612638": {
+      "displayName": "Constantio's Constructeer, V2.0",
+      "debugName": "Weapon_T7_2H_HammerEpic_01",
+      "category": "Weapons"
+    },
     "425570534": {
       "displayName": "Simple Fishing Rod",
       "debugName": "Tool_T1_FishingRod_basic",
@@ -1321,6 +1531,16 @@
       "displayName": "Springlands Miniature Piece",
       "debugName": "Collection_Worldmap_Grassland",
       "category": "Collectibles"
+    },
+    "430276931": {
+      "displayName": "Ancestral Star",
+      "debugName": "Craft_Weapon_T7_2H_Lore_Hammer_townsfolk_male_01_hint_01",
+      "category": "Weapons"
+    },
+    "431218523": {
+      "displayName": "Fenrig's Axe",
+      "debugName": "Craft_Weapon_T7_1H_Lore_Axe_Ministory_10",
+      "category": "Weapons"
     },
     "431579754": {
       "displayName": "Flame Pact Vest",
@@ -1377,6 +1597,11 @@
       "debugName": "Food_T5_raw_hydration_MountaingoatMilk",
       "category": "Consumables"
     },
+    "444948198": {
+      "displayName": "Ony's Staff",
+      "debugName": "Weapon_T7_2H_Staff_02",
+      "category": "Weapons"
+    },
     "446164008": {
       "displayName": "Celestium Pickaxe",
       "debugName": "Tool_T7_Pickaxe_Celesthium_Ancientlands",
@@ -1427,10 +1652,25 @@
       "debugName": "Material_T4_Ore_Iron",
       "category": "Materials"
     },
+    "456631486": {
+      "displayName": "Wailing Blade",
+      "debugName": "Craft_Weapon_T5_1H_Lore_SwordEpic_Ministory_09",
+      "category": "Weapons"
+    },
+    "457119037": {
+      "displayName": "Forsaken",
+      "debugName": "Weapon_T4_2H_BowEpic_01",
+      "category": "Weapons"
+    },
     "458026804": {
       "displayName": "Ancient Shelf",
       "debugName": "Prop_Decoration_T7_Ancient_Shelf",
       "category": "BuildTools"
+    },
+    "458314937": {
+      "displayName": "Gleaming Staff",
+      "debugName": "Weapon_T4_2H_Staff_02",
+      "category": "Weapons"
     },
     "458991736": {
       "displayName": "Bronze Hollow Cyclops Trophy",
@@ -1451,6 +1691,16 @@
       "displayName": "Large Set of Vials",
       "debugName": "Prop_Furniture_Chemistry_Set_01",
       "category": "BuildTools"
+    },
+    "462958958": {
+      "displayName": "Fenrig's Axe",
+      "debugName": "Craft_Weapon_T1_1H_Lore_Axe_Ministory_10",
+      "category": "Weapons"
+    },
+    "463074629": {
+      "displayName": "Draconian Bow",
+      "debugName": "Craft_Weapon_T4_2H_Lore_BowEpic_ministory_19",
+      "category": "Weapons"
     },
     "463785887": {
       "displayName": "Wooden Banquet Table",
@@ -1492,10 +1742,20 @@
       "debugName": "Prop_Decoration_T2_Barrel_Wooden02",
       "category": "BuildTools"
     },
+    "476811263": {
+      "displayName": "Ornate Wood Bow",
+      "debugName": "Weapon_T1_2H_BowEpic_01",
+      "category": "Weapons"
+    },
     "480197774": {
       "displayName": "Drakian Boots",
       "debugName": "Armor_T6_Unique_Drak_Boots",
       "category": "Equipment"
+    },
+    "484392245": {
+      "displayName": "Massive Hammer",
+      "debugName": "Weapon_T6_2H_Hammer_01",
+      "category": "Weapons"
     },
     "484740866": {
       "displayName": "Large Iron Window Frame",
@@ -1506,6 +1766,16 @@
       "displayName": "Metal Block",
       "debugName": "Block_T1_Metal_Sheets_CRAFTING",
       "category": "BuildTools"
+    },
+    "486021928": {
+      "displayName": "Bow Of The Serpent",
+      "debugName": "Craft_Weapon_T4_2H_BowEpic_chineseNewYear_01",
+      "category": "Weapons"
+    },
+    "488946154": {
+      "displayName": "Sandstorm Swiftblades",
+      "debugName": "Weapon_T4_2H_DaggersEpic_Poison",
+      "category": "Weapons"
     },
     "491393994": {
       "displayName": "Ultimate Health Potion",
@@ -1537,6 +1807,11 @@
       "debugName": "Prop_Decoration_T5_WallTapestry_01",
       "category": "BuildTools"
     },
+    "500747971": {
+      "displayName": "Golden Recruit Axe",
+      "debugName": "Craft_Weapon_T7_2H_Lore_GreatAxeEpic_outpost",
+      "category": "Weapons"
+    },
     "501181105": {
       "displayName": "Gold Fell Critter Queen Trophy",
       "debugName": "_Prop_Decoration_Boss_Trophy_critterQueen_04_gold",
@@ -1562,6 +1837,11 @@
       "debugName": "Material_T6_Gold_Bar",
       "category": "Materials"
     },
+    "515309917": {
+      "displayName": "Staff of the Ram",
+      "debugName": "Weapon_T5_2H_Staff_01",
+      "category": "Weapons"
+    },
     "517050102": {
       "displayName": "Medium Hollow's Eve Pumpkin I",
       "debugName": "Prop_Decoration_T1_Pumpkin_Halloween_Medium_01b",
@@ -1576,6 +1856,11 @@
       "displayName": "Fine Hardwood Door",
       "debugName": "Prop_Decoration_T2_Door_Fine_HardWood",
       "category": "BuildTools"
+    },
+    "518418528": {
+      "displayName": "Enflamed Sword",
+      "debugName": "Weapon_T4_1H_SwordEpic_01",
+      "category": "Weapons"
     },
     "519041053": {
       "displayName": "Nightshade",
@@ -1611,6 +1896,11 @@
       "displayName": "Aloe Seedling",
       "debugName": "T4_Seedling_Material_Aloe",
       "category": "BuildTools"
+    },
+    "526254228": {
+      "displayName": "Dragon's Wing",
+      "debugName": "Craft_Weapon_T6_2H_Lore_BowEpic_ministory_39",
+      "category": "Weapons"
     },
     "529262830": {
       "displayName": "Coconut Plant",
@@ -1657,6 +1947,11 @@
       "debugName": "Flower_Pot_Small_Wall_Pink",
       "category": "BuildTools"
     },
+    "534488958": {
+      "displayName": "Totemhead Mace",
+      "debugName": "Weapon_T6_1H_MaceEpic_02",
+      "category": "Weapons"
+    },
     "536528154": {
       "displayName": "Pompom Jr.",
       "debugName": "Animal_Pet_Dog_02_Dotted",
@@ -1676,6 +1971,11 @@
       "displayName": "Skull Stalker Gloves",
       "debugName": "Armor_T6_Ranger_Sniper_Arms",
       "category": "Equipment"
+    },
+    "544559006": {
+      "displayName": "Wolf's Hydra",
+      "debugName": "Weapon_T3_1H_Lore_Mace_ministory_04",
+      "category": "Weapons"
     },
     "545888475": {
       "displayName": "Piscine Ivory Dust",
@@ -1701,6 +2001,11 @@
       "displayName": "Poisoned Bronze Arrow",
       "debugName": "Ammo_T3_Arrow_Bronze_Poison_lvl20",
       "category": "Ammunition"
+    },
+    "552284259": {
+      "displayName": "Lupa's Scalper",
+      "debugName": "Craft_Weapon_T5_2H_Lore_DaggersEpic_DPS_hunter_hint04",
+      "category": "Weapons"
     },
     "553841242": {
       "displayName": "Conifer Crate",
@@ -1732,6 +2037,11 @@
       "debugName": "ColorPalette_T2_ColorPalette_02",
       "category": "ColorPalette"
     },
+    "558617602": {
+      "displayName": "Hailscourge",
+      "debugName": "Weapon_T2_1H_Lore_SwordEpic_Ministory_04",
+      "category": "Weapons"
+    },
     "559604701": {
       "displayName": "Gold Direwolf Trophy",
       "debugName": "_Prop_Decoration_Boss_Trophy_Wildbeast_Wolf_Heavy_04_gold",
@@ -1741,6 +2051,11 @@
       "displayName": "Large Ancient Temple Bench",
       "debugName": "Prop_Decoration_Comfort9_T7_Templeprop_Bench_02",
       "category": "BuildTools"
+    },
+    "564499940": {
+      "displayName": "Lucent Axe",
+      "debugName": "Weapon_T7_1H_AxeEpic_01",
+      "category": "Weapons"
     },
     "568670850": {
       "displayName": "Ancient Stool",
@@ -1756,6 +2071,11 @@
       "displayName": "Camp Bed",
       "debugName": "Prop_Decoration_Comfort1_T0_Bed_Cot",
       "category": "BuildTools"
+    },
+    "571871007": {
+      "displayName": "Snakespine Wand",
+      "debugName": "Weapon_TX_1H_Wand_HollowHall_Blunt",
+      "category": "Weapons"
     },
     "572945787": {
       "displayName": "Violet Party Hat",
@@ -1846,6 +2166,11 @@
       "displayName": "Small Palm Wood Cupboard",
       "debugName": "Prop_Decoration_T4_Cupboard_Small_Ornate_Palmwood",
       "category": "BuildTools"
+    },
+    "602591868": {
+      "displayName": "Hailscourge",
+      "debugName": "Craft_Weapon_T3_1H_Lore_SwordEpic_Ministory_04",
+      "category": "Weapons"
     },
     "604994553": {
       "displayName": "Empty Farmbed",
@@ -1957,6 +2282,11 @@
       "debugName": "Ammo_T3_Spell_Ice_Totem_lvl17",
       "category": "Ammunition"
     },
+    "633590787": {
+      "displayName": "Snowflake Splicer",
+      "debugName": "Weapon_T5_2H_Bow_01",
+      "category": "Weapons"
+    },
     "634473105": {
       "displayName": "Shroud Nexus",
       "debugName": "Material_T3_Fog_Core02_ShroudNexus",
@@ -2022,6 +2352,11 @@
       "debugName": "Material_T3_Antiseptic",
       "category": "Materials"
     },
+    "649877474": {
+      "displayName": "Jezmina's Apotheosis",
+      "debugName": "Craft_Weapon_T6_1H_Lore_AxeEpic_Ministory_02",
+      "category": "Weapons"
+    },
     "652028600": {
       "displayName": "Hunter Gloves",
       "debugName": "Armor_T3_Ranger_Archer_DPS_Arms_Loot",
@@ -2062,10 +2397,20 @@
       "debugName": "Prop_Decoration_T3_CoffinLid_03",
       "category": "BuildTools"
     },
+    "662464113": {
+      "displayName": "Fell Broad Sword",
+      "debugName": "Weapon_T2-TX_1H_Sword_Enemy_FoggerBroadsword",
+      "category": "Weapons"
+    },
     "662663034": {
       "displayName": "Decorative Skull I",
       "debugName": "Prop_Decoration_T2_Decorative_Skull_01",
       "category": "BuildTools"
+    },
+    "662804440": {
+      "displayName": "Magmatic Axe",
+      "debugName": "Weapon_T7_2H_GreatAxe_02",
+      "category": "Weapons"
     },
     "662985240": {
       "displayName": "Drak Temple Vase V",
@@ -2192,6 +2537,16 @@
       "debugName": "Block_T5_Stone_StarMaterial_REWARD",
       "category": "BuildTools"
     },
+    "689240895": {
+      "displayName": "Dragon's Wing",
+      "debugName": "Craft_Weapon_T5_2H_Lore_BowEpic_ministory_39",
+      "category": "Weapons"
+    },
+    "692270451": {
+      "displayName": "Wolf's Snarl Longbow",
+      "debugName": "Weapon_T1_2H_BowEpic_02",
+      "category": "Weapons"
+    },
     "693578082": {
       "displayName": "Stone Double Door",
       "debugName": "Prop_Decoration_T3_Door_Ornamented_Stone_Double",
@@ -2201,6 +2556,11 @@
       "displayName": "Pottery Jar",
       "debugName": "Prop_Furniture_Distillery_Pot_06",
       "category": "BuildTools"
+    },
+    "694341702": {
+      "displayName": "Starry Seedrattle",
+      "debugName": "Weapon_T7_1H_Mace_01",
+      "category": "Weapons"
     },
     "694698355": {
       "displayName": "Small Bamboo Window I",
@@ -2231,6 +2591,11 @@
       "displayName": "Scarab",
       "debugName": "Material_T4_DesertBug_FishingBait",
       "category": "Ammunition"
+    },
+    "700880476": {
+      "displayName": "Axe Of Phobos",
+      "debugName": "Weapon_T7_2H_GreatAxeEpic_01",
+      "category": "Weapons"
     },
     "702516473": {
       "displayName": "Wound Ointment",
@@ -2297,6 +2662,16 @@
       "debugName": "Vanity_Tx_DLC_Supporter_Ranger_Boots",
       "category": "Equipment"
     },
+    "729180175": {
+      "displayName": "Rusty Sword",
+      "debugName": "Weapon_T1_1H_Sword_01",
+      "category": "Weapons"
+    },
+    "729789776": {
+      "displayName": "Dragonsbane",
+      "debugName": "Weapon_T5_1H_Lore_AxeEpic_ministory_30",
+      "category": "Weapons"
+    },
     "730996074": {
       "displayName": "High Ancient Window Frame",
       "debugName": "Prop_Decoration_T7_Window_Ancient_03",
@@ -2311,6 +2686,11 @@
       "displayName": "Summer Games Boots",
       "debugName": "Vanity_T6_SummerGames_Boots",
       "category": "Equipment"
+    },
+    "735111003": {
+      "displayName": "Fell Sentinel Bow",
+      "debugName": "Weapon_T2-TX_2H_Bow_Enemy_Fogger_Ranger_Elite",
+      "category": "Weapons"
     },
     "736400222": {
       "displayName": "Hydrak'Dal Trophy",
@@ -2347,6 +2727,11 @@
       "debugName": "Food_T4_processed_sweets_grilled_YuccaFruit",
       "category": "Consumables"
     },
+    "751194917": {
+      "displayName": "Greater Golden Twinflame Sword",
+      "debugName": "Craft_Weapon_T7_1H_Lore_SwordEpic_ministory_28",
+      "category": "Weapons"
+    },
     "751481953": {
       "displayName": "Penny Bun Seedling",
       "debugName": "T1_Seedling_Mushroom_brown",
@@ -2377,6 +2762,11 @@
       "debugName": "Animal_Farm_Feeder_Goat",
       "category": "BuildTools"
     },
+    "764137977": {
+      "displayName": "Sacrificial Vukah Dagger",
+      "debugName": "Craft_Weapon_T7_2H_Lore_Daggers_townsfolk_female_02_hint_01",
+      "category": "Weapons"
+    },
     "764289975": {
       "displayName": "Aloe",
       "debugName": "Material_T4_Aloe",
@@ -2386,6 +2776,11 @@
       "displayName": "Book II",
       "debugName": "Prop_Decoration_Book_05",
       "category": "BuildTools"
+    },
+    "767990996": {
+      "displayName": "Phoenix Bow",
+      "debugName": "Weapon_T7_2H_BowEpic_02",
+      "category": "Weapons"
     },
     "768813484": {
       "displayName": "Large Bloomheart Fruit Plant Pot II",
@@ -2402,10 +2797,25 @@
       "debugName": "Prop_Production_T1_Forge",
       "category": "BuildTools"
     },
+    "771316050": {
+      "displayName": "Gorestriker",
+      "debugName": "Weapon_T4_1H_MaceEpic_02",
+      "category": "Weapons"
+    },
+    "773245753": {
+      "displayName": "Firefeather Bow",
+      "debugName": "Weapon_T7_2H_Bow_02",
+      "category": "Weapons"
+    },
     "778201792": {
       "displayName": "Drak Stone Totem V",
       "debugName": "Prop_Decoration_T6_StoneTotem_05_A",
       "category": "BuildTools"
+    },
+    "778960030": {
+      "displayName": "Dark Cleaver",
+      "debugName": "Weapon_T4_1H_Axe_01",
+      "category": "Weapons"
     },
     "779558916": {
       "displayName": "Climbing Rose",
@@ -2447,6 +2857,11 @@
       "debugName": "Prop_Decoration_T5_Cup_Silver",
       "category": "BuildTools"
     },
+    "787599473": {
+      "displayName": "Shroud Vessel's Greatsword",
+      "debugName": "Weapon_T7-TX_2H_GreatSwordEpic_Vorgoth",
+      "category": "Weapons"
+    },
     "787893053": {
       "displayName": "Archmage Gloves",
       "debugName": "Armor_T4_Mage_Wizard_DPS_Arms_Loot",
@@ -2486,6 +2901,11 @@
       "displayName": "Eternal Shroud Beam",
       "debugName": "Ammo_T7_Spell_Fog_Beam_Channel_lvl45_Eternal",
       "category": "Ammunition"
+    },
+    "803635338": {
+      "displayName": "Blunt Knives",
+      "debugName": "Weapon_T1_2H_Daggers_01_DPS",
+      "category": "Weapons"
     },
     "806123624": {
       "displayName": "Algae",
@@ -2572,6 +2992,11 @@
       "debugName": "_Prop_Decoration_Boss_Trophy_Ancient_Construct_Heavy_01_wood",
       "category": "BuildTools"
     },
+    "826643327": {
+      "displayName": "Solar Mace",
+      "debugName": "Weapon_T7_1H_Mace_02",
+      "category": "Weapons"
+    },
     "827914312": {
       "displayName": "Trader Hat",
       "debugName": "Vanity_TX_Helmet_02_trader_02",
@@ -2596,6 +3021,11 @@
       "displayName": "Shades Of Red",
       "debugName": "ColorPalette_T6_ColorPalette_night_02",
       "category": "ColorPalette"
+    },
+    "836618234": {
+      "displayName": "Stormbound Staff",
+      "debugName": "Weapon_T6_2H_Staff_01",
+      "category": "Weapons"
     },
     "842838716": {
       "displayName": "Cattail Seedling",
@@ -2636,6 +3066,11 @@
       "displayName": "Lumberer Coat",
       "debugName": "Vanity_TX_Lumberer_Chest",
       "category": "Equipment"
+    },
+    "852156015": {
+      "displayName": "Talion's Bow",
+      "debugName": "Craft_Weapon_T6_2H_Lore_BowEpic_Ministory_15",
+      "category": "Weapons"
     },
     "852718536": {
       "displayName": "Crypt Gate",
@@ -2682,6 +3117,11 @@
       "debugName": "Prop_Decoration_T5_Window_Round_Steel",
       "category": "BuildTools"
     },
+    "863684883": {
+      "displayName": "Lupa's Scalper",
+      "debugName": "Craft_Weapon_T7_2H_Lore_DaggersEpic_DPS_hunter_hint04",
+      "category": "Weapons"
+    },
     "866649871": {
       "displayName": "Drak Scales",
       "debugName": "Material_T6_LizardScales",
@@ -2707,6 +3147,11 @@
       "debugName": "Material_T6_Capybara_Feeding",
       "category": "AnimalFood"
     },
+    "873336281": {
+      "displayName": "Electric Initialiser",
+      "debugName": "Weapon_T7_1H_Lore_Wand_ministory_25_lightning",
+      "category": "Weapons"
+    },
     "873559594": {
       "displayName": "Ancient Microscope III",
       "debugName": "Prop_Decoration_T7_Ancient_Cultivation_Microscope_02_a",
@@ -2731,6 +3176,11 @@
       "displayName": "Fire Bolt II",
       "debugName": "Ammo_T1_Spell_Fire_Bolt_lvl5",
       "category": "Ammunition"
+    },
+    "876348272": {
+      "displayName": "Sacrificial Vukah Dagger",
+      "debugName": "Craft_Weapon_T1_2H_Lore_Daggers_townsfolk_female_02_hint_01",
+      "category": "Weapons"
     },
     "876665028": {
       "displayName": "Vorgoth's Soulbound Crown",
@@ -2767,6 +3217,11 @@
       "debugName": "Build_TerrainMaterial_T7_AncientLand_Stone",
       "category": "Materials"
     },
+    "885331494": {
+      "displayName": "Firebird's Claw",
+      "debugName": "Weapon_T7_2H_GreatAxeEpic_02",
+      "category": "Weapons"
+    },
     "885937007": {
       "displayName": "Dog Pillow",
       "debugName": "Animal_Pet_Housing_Sleeping_Bed_Dog",
@@ -2776,6 +3231,11 @@
       "displayName": "Magician Gloves",
       "debugName": "Armor_T3_Mage_Wizard_DPS_Arms",
       "category": "Equipment"
+    },
+    "886466633": {
+      "displayName": "Winged Shadow",
+      "debugName": "Weapon_TX_2H_Bow_FogNest",
+      "category": "Weapons"
     },
     "887325393": {
       "displayName": "Iron Fell Dragon Youngling Trophy",
@@ -2807,6 +3267,11 @@
       "debugName": "Build_TerrainMaterial_T1_Dirt_Underwater_mud",
       "category": "Materials"
     },
+    "890590294": {
+      "displayName": "Circus Knives",
+      "debugName": "Craft_Weapon_T5_2H_Lore_Daggers_DPS_ministory_02",
+      "category": "Weapons"
+    },
     "894806732": {
       "displayName": "Bamboo Boardwalk I",
       "debugName": "Prop_Decoration_T6_Lizard_Boardwalk_4m_01_A",
@@ -2837,10 +3302,40 @@
       "debugName": "Ammo_T2_Spell_Fire_Pillar_lvl12",
       "category": "Ammunition"
     },
+    "902475103": {
+      "displayName": "Draconian Bow",
+      "debugName": "Craft_Weapon_T5_2H_Lore_BowEpic_ministory_19",
+      "category": "Weapons"
+    },
+    "905080090": {
+      "displayName": "Wailing Blade",
+      "debugName": "Craft_Weapon_T7_1H_Lore_SwordEpic_Ministory_09",
+      "category": "Weapons"
+    },
     "906753878": {
       "displayName": "Steel Hanging Lamp",
       "debugName": "Prop_Decoration_Comfort_T5_IlluminationCeiling",
       "category": "BuildTools"
+    },
+    "907435246": {
+      "displayName": "Hailscourge",
+      "debugName": "Craft_Weapon_T2_1H_Lore_SwordEpic_Ministory_04",
+      "category": "Weapons"
+    },
+    "909355745": {
+      "displayName": "Silver Haze",
+      "debugName": "Weapon_T3_1H_Wand_02_Ice",
+      "category": "Weapons"
+    },
+    "913533703": {
+      "displayName": "Circus Knives",
+      "debugName": "Weapon_T5_2H_Lore_Daggers_DPS_ministory_02",
+      "category": "Weapons"
+    },
+    "913658620": {
+      "displayName": "Sharktooth Greatsword",
+      "debugName": "Weapon_T6_2H_GreatSword_01",
+      "category": "Weapons"
     },
     "914979767": {
       "displayName": "Standing Banner of the Ancients II",
@@ -2856,6 +3351,11 @@
       "displayName": "Seafood Grill",
       "debugName": "Prop_Production_T6_MedievalGrill",
       "category": "BuildTools"
+    },
+    "919267046": {
+      "displayName": "Fallen Wing Axe",
+      "debugName": "Weapon_T6_2H_GreatAxe_01",
+      "category": "Weapons"
     },
     "922637727": {
       "displayName": "Drak Teeth",
@@ -2917,6 +3417,21 @@
       "debugName": "Prop_Decoration_Comfort_T6_IlluminationCeiling1_blue",
       "category": "BuildTools"
     },
+    "940748477": {
+      "displayName": "Thunderbolt Axe",
+      "debugName": "Weapon_T4_1H_AxeEpic_03",
+      "category": "Weapons"
+    },
+    "943332960": {
+      "displayName": "Recent Drak Wand",
+      "debugName": "Weapon_T6_1H_Wand_02_Lightning",
+      "category": "Weapons"
+    },
+    "944519165": {
+      "displayName": "Arsonist's Bow",
+      "debugName": "Weapon_T2_2H_BowEpic_02",
+      "category": "Weapons"
+    },
     "944764654": {
       "displayName": "Basket VI",
       "debugName": "Prop_Decoration_T3_Basket_06",
@@ -2952,6 +3467,11 @@
       "debugName": "Material_T2_Bug_Dust",
       "category": "Materials"
     },
+    "957618427": {
+      "displayName": "Tomb Raider's Bow",
+      "debugName": "Weapon_T6_2H_Bow_02",
+      "category": "Weapons"
+    },
     "957857094": {
       "displayName": "Ashwind Strider Gloves",
       "debugName": "Armor_T7_Ranger_Archer_DPS_Arms",
@@ -2982,6 +3502,11 @@
       "debugName": "_Prop_Decoration_Boss_Trophy_Ancient_Construct_Heavy_04_gold",
       "category": "BuildTools"
     },
+    "963955933": {
+      "displayName": "Dreadbane",
+      "debugName": "Craft_Weapon_T5_2H_Lore_HammerEpic_ministory_14",
+      "category": "Weapons"
+    },
     "964619626": {
       "displayName": "Secret Limestone Door",
       "debugName": "Base_Door_Secret_Limestone",
@@ -3007,6 +3532,11 @@
       "debugName": "Prop_Decoration_T6_Skull_Trophy_01_A",
       "category": "BuildTools"
     },
+    "972169946": {
+      "displayName": "Rune Master's Sword",
+      "debugName": "Weapon_T5_1H_SwordEpic_01",
+      "category": "Weapons"
+    },
     "973320971": {
       "displayName": "Gold Hydrak'Dal Trophy",
       "debugName": "_Prop_Decoration_Boss_Trophy_Drak_Heavy_04_gold",
@@ -3016,6 +3546,11 @@
       "displayName": "Crystal Jug",
       "debugName": "Prop_Decoration_T4_Jug_Crystal",
       "category": "BuildTools"
+    },
+    "979851343": {
+      "displayName": "Club",
+      "debugName": "Weapon_T0_1H_Mace_Club_Craft",
+      "category": "Weapons"
     },
     "981937932": {
       "displayName": "Golden Leaf",
@@ -3036,6 +3571,11 @@
       "displayName": "Midnight Lily Plant",
       "debugName": "_Flower_Pot_Medium_T1_NightFlower",
       "category": "BuildTools"
+    },
+    "987312206": {
+      "displayName": "Astral Daggers",
+      "debugName": "Weapon_T7_2H_Daggers_Poison_Parry",
+      "category": "Weapons"
     },
     "987744055": {
       "displayName": "Gold Hollow Cyclops Trophy",
@@ -3097,6 +3637,11 @@
       "debugName": "Prop_Decoration_T2_Farm_Wheelbarrow",
       "category": "BuildTools"
     },
+    "1008092854": {
+      "displayName": "Blink Daggers",
+      "debugName": "Weapon_T2_2H_DaggersEpic_Poison",
+      "category": "Weapons"
+    },
     "1008591425": {
       "displayName": "Room Divider \"Dragon\"",
       "debugName": "Prop_Decoration_T5_CNY_Divider_04",
@@ -3142,6 +3687,11 @@
       "debugName": "Prop_Decoration_T7_Ancient_Arc_4m",
       "category": "BuildTools"
     },
+    "1019461234": {
+      "displayName": "Lupa's Scalper",
+      "debugName": "Craft_Weapon_T4_2H_Lore_DaggersEpic_DPS_hunter_hint04",
+      "category": "Weapons"
+    },
     "1020559529": {
       "displayName": "Large Bloomheart Fruit Plant Pot I",
       "debugName": "_Flower_Pot_Ancient_Large_Artichoke",
@@ -3172,6 +3722,11 @@
       "debugName": "Tool_Glider_T1",
       "category": "Tools"
     },
+    "1029972982": {
+      "displayName": "Spinechill Axe",
+      "debugName": "Weapon_TX_2H_Greataxe_HollowHall",
+      "category": "Weapons"
+    },
     "1030664241": {
       "displayName": "Wooden Window Frame",
       "debugName": "Prop_Decoration_T0_Window_Wooden_Frame",
@@ -3181,6 +3736,11 @@
       "displayName": "Veilwater Basin Boardwalk I",
       "debugName": "Prop_Decoration_T6_Boardwalk_4m_01_A",
       "category": "BuildTools"
+    },
+    "1030886695": {
+      "displayName": "Proto Matter-Bender",
+      "debugName": "Weapon_T7_1H_Lore_Wand_protoVessels_blunt",
+      "category": "Weapons"
     },
     "1034343716": {
       "displayName": "Big Leather Crate",
@@ -3237,6 +3797,11 @@
       "debugName": "Prop_Decoration_TX_Ancient_Robot_Arm_01_B_TwitchDrop",
       "category": "BuildTools"
     },
+    "1051721148": {
+      "displayName": "Molten Axe",
+      "debugName": "Weapon_T7_1H_AxeEpic_02",
+      "category": "Weapons"
+    },
     "1053092022": {
       "displayName": "Small Crypt Cabinet",
       "debugName": "Prop_Decoration_T2_Cabinet_Small_Dungeon",
@@ -3251,6 +3816,11 @@
       "displayName": "Low Paling Fence I",
       "debugName": "Prop_Decoration_T2_Fence_Plank_Low_01",
       "category": "BuildTools"
+    },
+    "1054611658": {
+      "displayName": "Draconian Bow",
+      "debugName": "Weapon_T4_2H_Lore_BowEpic_ministory_19",
+      "category": "Weapons"
     },
     "1054730604": {
       "displayName": "Iron Hollow Cyclops Trophy",
@@ -3282,6 +3852,11 @@
       "debugName": "Prop_Decoration_Comfort_T1_IlluminationCeiling_CNY_1",
       "category": "BuildTools"
     },
+    "1058966136": {
+      "displayName": "Sword Of The Serpent",
+      "debugName": "Craft_Weapon_T2_1H_SwordEpic_chineseNewYear_01",
+      "category": "Weapons"
+    },
     "1059698570": {
       "displayName": "Hunter Pants",
       "debugName": "Vanity_TX_Hunter_Legs",
@@ -3297,10 +3872,35 @@
       "debugName": "Material_T6_Gold_Dust",
       "category": "Materials"
     },
+    "1062282832": {
+      "displayName": "Dragoncore Staff",
+      "debugName": "Weapon_T7_2H_StaffEpic_02",
+      "category": "Weapons"
+    },
+    "1063813998": {
+      "displayName": "Deceiving Staff",
+      "debugName": "Weapon_T4_2H_Staff_01",
+      "category": "Weapons"
+    },
     "1064138195": {
       "displayName": "Summer Games Bangles",
       "debugName": "Vanity_T6_SummerGames_Gloves",
       "category": "Equipment"
+    },
+    "1064940291": {
+      "displayName": "Head Pounder",
+      "debugName": "Weapon_T5_2H_Hammer_01",
+      "category": "Weapons"
+    },
+    "1065671728": {
+      "displayName": "Rusty Greatsword",
+      "debugName": "Weapon_T1_2H_GreatSword_02",
+      "category": "Weapons"
+    },
+    "1065913662": {
+      "displayName": "Tarred Bow",
+      "debugName": "Weapon_T2_2H_Bow_02",
+      "category": "Weapons"
     },
     "1066469057": {
       "displayName": "Gem of Bloodlust",
@@ -3317,6 +3917,11 @@
       "debugName": "Build_TerrainMaterial_T6_GlowDirt_Green_Underwater",
       "category": "Materials"
     },
+    "1069361064": {
+      "displayName": "Shroud Weaver",
+      "debugName": "Craft_Weapon_T7_2H_Lore_StaffEpic_ministory_17",
+      "category": "Weapons"
+    },
     "1069919690": {
       "displayName": "Ancient Centrifuge",
       "debugName": "Prop_Decoration_T7_Ancient_Cultivation_centrifuge_01_a",
@@ -3327,6 +3932,11 @@
       "debugName": "Food_T4_dish_fish_fishChowderSoup",
       "category": "Consumables"
     },
+    "1072446832": {
+      "displayName": "Sacrificial Vukah Dagger",
+      "debugName": "Craft_Weapon_T3_2H_Lore_Daggers_townsfolk_female_02_hint_01",
+      "category": "Weapons"
+    },
     "1072522988": {
       "displayName": "Tin Bars",
       "debugName": "Material_T3_Tin_Bars",
@@ -3336,6 +3946,11 @@
       "displayName": "Gem of Corruption",
       "debugName": "T4_Gem_GemOfCorruption",
       "category": "WeaponGem"
+    },
+    "1074128047": {
+      "displayName": "Constantio's Constructeer, V1.0",
+      "debugName": "Weapon_T7_2H_Hammer_01",
+      "category": "Weapons"
     },
     "1075741759": {
       "displayName": "Dog Bowl",
@@ -3351,6 +3966,11 @@
       "displayName": "Gold Fell Striker Trophy",
       "debugName": "_Prop_Decoration_Boss_Trophy_Fell_Well_Heavy_Berserker_04_gold",
       "category": "BuildTools"
+    },
+    "1080812742": {
+      "displayName": "Fleshgrinder",
+      "debugName": "Weapon_T3_1H_MaceEpic_01",
+      "category": "Weapons"
     },
     "1081861051": {
       "displayName": "Fur Trousers",
@@ -3372,6 +3992,11 @@
       "debugName": "Armor_T4_Warrior_Rogue_Arms_Loot",
       "category": "Equipment"
     },
+    "1092596290": {
+      "displayName": "Hailscourge",
+      "debugName": "Craft_Weapon_T5_1H_Lore_SwordEpic_Ministory_04",
+      "category": "Weapons"
+    },
     "1092886567": {
       "displayName": "Capybara",
       "debugName": "Animal_Farming_Capybara",
@@ -3381,6 +4006,11 @@
       "displayName": "Staff Wall Mount",
       "debugName": "Prop_Collection_WeaponStandWall_Staff",
       "category": "BuildTools"
+    },
+    "1094447119": {
+      "displayName": "Hatchet",
+      "debugName": "Weapon_T1_1H_Axe_01",
+      "category": "Weapons"
     },
     "1094517700": {
       "displayName": "Ornate Lute",
@@ -3457,6 +4087,11 @@
       "debugName": "Armor_T2_Warrior_DPS_Arms",
       "category": "Equipment"
     },
+    "1108364648": {
+      "displayName": "Hopeful Glimmer",
+      "debugName": "Weapon_T4_2H_StaffEpic_02",
+      "category": "Weapons"
+    },
     "1108421963": {
       "displayName": "Palm Leaf Basket",
       "debugName": "Prop_Decoration_T6_Basket_02",
@@ -3477,6 +4112,11 @@
       "debugName": "Prop_Decoration_T3_Fence_Graveyard_Pole",
       "category": "BuildTools"
     },
+    "1111770772": {
+      "displayName": "Apprentice Wand",
+      "debugName": "Weapon_T1_1H_Wand_02_Ice",
+      "category": "Weapons"
+    },
     "1111884223": {
       "displayName": "Boreal Wood Garden Fence Door",
       "debugName": "Prop_Decoration_T5_Fence_GardenFence_PineWood_Door",
@@ -3486,6 +4126,11 @@
       "displayName": "Tank Gloves",
       "debugName": "Armor_T2_Warrior_Tank_Arms",
       "category": "Equipment"
+    },
+    "1113531582": {
+      "displayName": "Bow Of The Serpent",
+      "debugName": "Weapon_T3_2H_BowEpic_chineseNewYear_01",
+      "category": "Weapons"
     },
     "1118012982": {
       "displayName": "Closed Copper Jar",
@@ -3517,6 +4162,11 @@
       "debugName": "Vanity_TX_CNY_snakeArmor_Helmet",
       "category": "Equipment"
     },
+    "1125155603": {
+      "displayName": "Bronze Sword",
+      "debugName": "Weapon_T1_1H_SwordEpic_01",
+      "category": "Weapons"
+    },
     "1126086984": {
       "displayName": "Spice",
       "debugName": "Material_T4_magic_Spice",
@@ -3547,6 +4197,11 @@
       "debugName": "Food_T3_dish_egg_boiled_BirdEggs",
       "category": "Consumables"
     },
+    "1136608237": {
+      "displayName": "Bow Of The Twin Moons",
+      "debugName": "Weapon_T7_2H_BowEpic_01",
+      "category": "Weapons"
+    },
     "1137602569": {
       "displayName": "Scholar of the Young Flame Pants",
       "debugName": "Vanity_TX_PactSun_Legs",
@@ -3556,6 +4211,11 @@
       "displayName": "Eternal Ice Totem I",
       "debugName": "Ammo_T4_Spell_Ice_Totem_lvl20_Eternal",
       "category": "Ammunition"
+    },
+    "1138406068": {
+      "displayName": "Pyreheart Blade",
+      "debugName": "Weapon_T7_1H_SwordEpic_02",
+      "category": "Weapons"
     },
     "1138733565": {
       "displayName": "Fell Monstrosity Head",
@@ -3567,6 +4227,11 @@
       "debugName": "Armor_T5_Mage_Wizard_DPS_Legs_Loot",
       "category": "Equipment"
     },
+    "1142953776": {
+      "displayName": "Darya's Wand",
+      "debugName": "Craft_Weapon_T7_1H_Lore_Wand_ministory_29_Fog",
+      "category": "Weapons"
+    },
     "1144190206": {
       "displayName": "Eternal Ice Bolt IV",
       "debugName": "Ammo_T7_Spell_Ice_Bolt_lvl45_Eternal",
@@ -3577,15 +4242,30 @@
       "debugName": "Armor_T3_Warrior_FogProtection_Legs",
       "category": "Equipment"
     },
+    "1155686002": {
+      "displayName": "Sacrificial Vukah Dagger",
+      "debugName": "Craft_Weapon_T4_2H_Lore_Daggers_townsfolk_female_02_hint_01",
+      "category": "Weapons"
+    },
     "1155756187": {
       "displayName": "Improved Water Well",
       "debugName": "Prop_NPC_T3_Water_Well",
       "category": "BuildTools"
     },
+    "1156795516": {
+      "displayName": "Oath Breaker",
+      "debugName": "Weapon_T4_2H_DaggersEpic_DPS",
+      "category": "Weapons"
+    },
     "1157270839": {
       "displayName": "Crude Wooden Jug",
       "debugName": "Prop_Decoration_T0_Jug_Wooden",
       "category": "BuildTools"
+    },
+    "1157288032": {
+      "displayName": "Shepherd's Staff",
+      "debugName": "Weapon_T1_2H_Staff_01",
+      "category": "Weapons"
     },
     "1158688307": {
       "displayName": "Barber's Favorite Wig Head",
@@ -3617,10 +4297,20 @@
       "debugName": "Prop_Decoration_T7_Ancient_Divider_02",
       "category": "BuildTools"
     },
+    "1164879675": {
+      "displayName": "Bow Of The Serpent",
+      "debugName": "Craft_Weapon_T3_2H_BowEpic_chineseNewYear_01",
+      "category": "Weapons"
+    },
     "1165213726": {
       "displayName": "Mirage",
       "debugName": "8kLoreText_scroll_bard_song_12",
       "category": "Collectibles"
+    },
+    "1166996760": {
+      "displayName": "Soothsayer",
+      "debugName": "Craft_Weapon_T7_2H_Lore_HammerEpic_ministory_19",
+      "category": "Weapons"
     },
     "1167552454": {
       "displayName": "Crypt Candle",
@@ -3636,6 +4326,11 @@
       "displayName": "Shroud Sand",
       "debugName": "Material_T4_FogTerrain_ShroudSand",
       "category": "Materials"
+    },
+    "1174019207": {
+      "displayName": "Hair Splitter",
+      "debugName": "Weapon_T3_1H_AxeEpic_01",
+      "category": "Weapons"
     },
     "1174705547": {
       "displayName": "Berry Bush Seedling",
@@ -3662,6 +4357,11 @@
       "debugName": "Block_T1_Bones_REWARD",
       "category": "BuildTools"
     },
+    "1177521213": {
+      "displayName": "Proud Daggers",
+      "debugName": "Weapon_T5_2H_Daggers_Parry",
+      "category": "Weapons"
+    },
     "1177540804": {
       "displayName": "Marksman Boots",
       "debugName": "Armor_T2_Ranger_Sniper_Boots_Loot",
@@ -3676,6 +4376,16 @@
       "displayName": "Revelwood Stone",
       "debugName": "Build_TerrainMaterial_T2_Stone_DeepForest",
       "category": "Materials"
+    },
+    "1181407134": {
+      "displayName": "Voidcaller",
+      "debugName": "Weapon_TX_1H_Wand_FogNest_Fog",
+      "category": "Weapons"
+    },
+    "1181594089": {
+      "displayName": "Rusty Short Sword",
+      "debugName": "Weapon_T0-TX_1H_Sword_Enemy_DepletedFogger",
+      "category": "Weapons"
     },
     "1182285312": {
       "displayName": "Summoning Staff",
@@ -3757,6 +4467,11 @@
       "debugName": "Armor_T2_Ranger_Sniper_Chest_Loot",
       "category": "Equipment"
     },
+    "1207792305": {
+      "displayName": "Temple Keeper's Bow",
+      "debugName": "Weapon_T6_2H_BowEpic_02",
+      "category": "Weapons"
+    },
     "1209734633": {
       "displayName": "Eternal Shock Wisp II",
       "debugName": "Ammo_T7_Spell_Lightning_Wisp_lvl45_Eternal",
@@ -3766,6 +4481,11 @@
       "displayName": "Room Divider \"Flower\"",
       "debugName": "Prop_Decoration_T5_CNY_Divider_01",
       "category": "BuildTools"
+    },
+    "1210271138": {
+      "displayName": "Staff",
+      "debugName": "Weapon_T0_2H_Staff_Craft",
+      "category": "Weapons"
     },
     "1210445973": {
       "displayName": "Wall Banner",
@@ -3852,6 +4572,11 @@
       "debugName": "Prop_Decoration_Comfort_T4_Wall_Painting_1",
       "category": "BuildTools"
     },
+    "1237806794": {
+      "displayName": "Guard Of The North Sword",
+      "debugName": "Weapon_T6_2H_Lore_GreatSwordEpic_Ministory_20",
+      "category": "Weapons"
+    },
     "1240806864": {
       "displayName": "Obsidian Dust",
       "debugName": "Material_T5_Obsidian_Dust",
@@ -3907,6 +4632,11 @@
       "debugName": "Prop_Decoration_Comfort6_T5_BathroomTub",
       "category": "BuildTools"
     },
+    "1255239784": {
+      "displayName": "Undergrowth Staff",
+      "debugName": "Weapon_T2_2H_StaffEpic_01",
+      "category": "Weapons"
+    },
     "1256716105": {
       "displayName": "Crestflame Chest",
       "debugName": "Armor_T7_Warrior_Tank_Chest",
@@ -3921,6 +4651,11 @@
       "displayName": "Fired Bricks",
       "debugName": "Material_T2_Fired_Brick",
       "category": "Materials"
+    },
+    "1262344957": {
+      "displayName": "Parade Daggers",
+      "debugName": "Weapon_T5_2H_DaggersEpic_Parry",
+      "category": "Weapons"
     },
     "1263589034": {
       "displayName": "Spiced Tea",
@@ -3942,6 +4677,11 @@
       "debugName": "Tool_T6_Pickaxe_Steel_Gold_Wetlands",
       "category": "BuildTools"
     },
+    "1271805655": {
+      "displayName": "Darya's Staff",
+      "debugName": "Craft_Weapon_T7_2H_Lore_Staff_ministory_29",
+      "category": "Weapons"
+    },
     "1273467827": {
       "displayName": "Serpent Warrior Chest",
       "debugName": "Vanity_TX_CNY_snakeArmor_Chest",
@@ -3957,15 +4697,30 @@
       "debugName": "_Food_grilled_T3_fish_common_03",
       "category": "Consumables"
     },
+    "1275936258": {
+      "displayName": "Scrappy Sword",
+      "debugName": "Weapon_T1_1H_Sword_Craft",
+      "category": "Weapons"
+    },
     "1276236959": {
       "displayName": "Fake Stone Door",
       "debugName": "Base_Door_Secret_Stone01_Fake",
       "category": "BuildTools"
     },
+    "1276754499": {
+      "displayName": "Reaper's Wand",
+      "debugName": "Weapon_T1_1H_Lore_Wand_Ministory_02_Lightning",
+      "category": "Weapons"
+    },
     "1276880412": {
       "displayName": "Collection Of Books I",
       "debugName": "Prop_Decoration_Book_Pile_02_B",
       "category": "BuildTools"
+    },
+    "1278504043": {
+      "displayName": "Spearfisher Bow",
+      "debugName": "Weapon_T7_2H_Lore_Bow_ministory_03",
+      "category": "Weapons"
     },
     "1280491138": {
       "displayName": "Scholar Of The Empyrean Boots",
@@ -3996,6 +4751,11 @@
       "displayName": "Direwolf Head",
       "debugName": "_Material_TX_Trophy_Wolf_Heavy_head",
       "category": "Materials"
+    },
+    "1286173021": {
+      "displayName": "Dragon's Wing",
+      "debugName": "Weapon_T5_2H_Lore_BowEpic_ministory_39",
+      "category": "Weapons"
     },
     "1291967765": {
       "displayName": "Daylily Seedling",
@@ -4102,6 +4862,11 @@
       "debugName": "Material_T2_Fognest_Ressource",
       "category": "Materials"
     },
+    "1323450933": {
+      "displayName": "Jezmina's Apotheosis",
+      "debugName": "Craft_Weapon_T7_1H_Lore_AxeEpic_Ministory_02",
+      "category": "Weapons"
+    },
     "1323837855": {
       "displayName": "Dark Crystal Cluster",
       "debugName": "Collection_skeletons_01_crystals_crystal_02",
@@ -4152,6 +4917,11 @@
       "debugName": "Prop_Decoration_Comfort_T4_Wall_Painting_6",
       "category": "BuildTools"
     },
+    "1343375854": {
+      "displayName": "Shroud Weaver",
+      "debugName": "Craft_Weapon_T4_2H_Lore_StaffEpic_ministory_17",
+      "category": "Weapons"
+    },
     "1343767117": {
       "displayName": "Bamboo Container II",
       "debugName": "Prop_Decoration_T6_Container_02",
@@ -4176,6 +4946,11 @@
       "displayName": "Bronze Jug",
       "debugName": "Prop_Decoration_T3_Jug_Bronze",
       "category": "BuildTools"
+    },
+    "1352377788": {
+      "displayName": "Dimweald Hammer",
+      "debugName": "Weapon_T5_1H_Lore_Hammer_ministory_33",
+      "category": "Weapons"
     },
     "1352479860": {
       "displayName": "Ancient Bench",
@@ -4212,6 +4987,11 @@
       "debugName": "Material_T5_Wolfsbane",
       "category": "Materials"
     },
+    "1356112072": {
+      "displayName": "Veilrift Axe",
+      "debugName": "Weapon_TX_1H_Axe_HollowHall",
+      "category": "Weapons"
+    },
     "1356764848": {
       "displayName": "Gold Scavenger Tyrant Trophy",
       "debugName": "_Prop_Decoration_Boss_Trophy_Scavenger_Tyrant_Heavy_04_gold",
@@ -4221,6 +5001,11 @@
       "displayName": "Fireball III",
       "debugName": "Ammo_T5_Spell_Fire_Ball_lvl30",
       "category": "Ammunition"
+    },
+    "1357893867": {
+      "displayName": "Rune Apprentice's Sword",
+      "debugName": "Weapon_T5_1H_Sword_01",
+      "category": "Weapons"
     },
     "1357946175": {
       "displayName": "Capybara Bait",
@@ -4236,6 +5021,11 @@
       "displayName": "Refined Wood Block",
       "debugName": "Block_T2_Wood_Fancy_CRAFTING",
       "category": "BuildTools"
+    },
+    "1359605570": {
+      "displayName": "Chieftain's Hammer",
+      "debugName": "Weapon_T6_2H_HammerEpic_02",
+      "category": "Weapons"
     },
     "1361344405": {
       "displayName": "Pastel Yearwake",
@@ -4257,6 +5047,11 @@
       "debugName": "ColorPalette_T6_ColorPalette_05",
       "category": "ColorPalette"
     },
+    "1367103932": {
+      "displayName": "Guard Of The North Sword",
+      "debugName": "Craft_Weapon_T7_2H_Lore_GreatSwordEpic_Ministory_20",
+      "category": "Weapons"
+    },
     "1368893472": {
       "displayName": "Hollow Cyclops Head",
       "debugName": "Material_TX_Trophy_Skeleton_Heavy_head",
@@ -4266,6 +5061,11 @@
       "displayName": "Banana Plant",
       "debugName": "Flower_Pot_Round_Large_Banana",
       "category": "BuildTools"
+    },
+    "1370754571": {
+      "displayName": "Starborn Sword",
+      "debugName": "Weapon_T7_1H_Sword_01",
+      "category": "Weapons"
     },
     "1370758834": {
       "displayName": "Flame Arcanist Hat",
@@ -4301,6 +5101,11 @@
       "displayName": "Steel Fence Pole",
       "debugName": "Prop_Decoration_T5_Fence_Iron_Corner_01",
       "category": "BuildTools"
+    },
+    "1382770309": {
+      "displayName": "Princely Greatsword",
+      "debugName": "Weapon_T4_2H_GreatSword_02",
+      "category": "Weapons"
     },
     "1383912137": {
       "displayName": "Hanging Lantern",
@@ -4376,6 +5181,16 @@
       "displayName": "Sandstone",
       "debugName": "Build_TerrainMaterial_T4_Sandstone",
       "category": "Materials"
+    },
+    "1403367198": {
+      "displayName": "Sacrilegious Steelsword",
+      "debugName": "Weapon_TX_1H_Sword_HollowHall",
+      "category": "Weapons"
+    },
+    "1404050036": {
+      "displayName": "Oracle's Everblue",
+      "debugName": "Weapon_TX_2H_Staff_FogNest",
+      "category": "Weapons"
     },
     "1404381373": {
       "displayName": "Iron Fireplace",
@@ -4522,6 +5337,11 @@
       "debugName": "Prop_Decoration_T4_Bowl_Crystal",
       "category": "BuildTools"
     },
+    "1444578589": {
+      "displayName": "Icicle Sword",
+      "debugName": "Weapon_T5_1H_Sword_02",
+      "category": "Weapons"
+    },
     "1447953213": {
       "displayName": "Clay Vase III",
       "debugName": "Prop_Decoration_T2_Vase_Clay_03",
@@ -4567,15 +5387,30 @@
       "debugName": "Prop_Decoration_T2_Door_TallTree",
       "category": "BuildTools"
     },
+    "1454083076": {
+      "displayName": "Talion's Bow",
+      "debugName": "Craft_Weapon_T5_2H_Lore_BowEpic_Ministory_15",
+      "category": "Weapons"
+    },
     "1454438654": {
       "displayName": "Iron Arrow",
       "debugName": "Ammo_T4_Arrow_Iron_lvl22",
       "category": "Ammunition"
     },
+    "1454542780": {
+      "displayName": "Staff Of The Serpent",
+      "debugName": "Craft_Weapon_T4_2H_StaffEpic_chineseNewYear_01",
+      "category": "Weapons"
+    },
     "1455205368": {
       "displayName": "Purple Floor Light II",
       "debugName": "Prop_Decoration_Comfort_T6_IlluminationFloor1_purple",
       "category": "BuildTools"
+    },
+    "1457307757": {
+      "displayName": "Ignited Bow",
+      "debugName": "Weapon_T4_2H_BowEpic_02",
+      "category": "Weapons"
     },
     "1457866946": {
       "displayName": "Hunter Trousers",
@@ -4622,10 +5457,25 @@
       "debugName": "Prop_Decoration_Comfort_T1_IlluminationCeiling_Chandelier",
       "category": "BuildTools"
     },
+    "1464370967": {
+      "displayName": "Spiked Greatsword",
+      "debugName": "Weapon_T6_2H_GreatSword_02",
+      "category": "Weapons"
+    },
     "1464549788": {
       "displayName": "Efflorescent Hope Flower Crown",
       "debugName": "Vanity_T2_springButterfly_Helmet",
       "category": "Equipment"
+    },
+    "1464929321": {
+      "displayName": "Golden Recruit Axe",
+      "debugName": "Weapon_T6_2H_Lore_GreatAxeEpic_outpost",
+      "category": "Weapons"
+    },
+    "1465692886": {
+      "displayName": "Morningdew Greatsword",
+      "debugName": "Weapon_T4_2H_GreatSwordEpic_01",
+      "category": "Weapons"
     },
     "1467780184": {
       "displayName": "Gravedigger Hat",
@@ -4646,6 +5496,11 @@
       "displayName": "Baby Dune Armadillo",
       "debugName": "Animal_Baby_Sanddigger",
       "category": "BuildTools"
+    },
+    "1474722178": {
+      "displayName": "Feathered Mace",
+      "debugName": "Weapon_T1-TX_1H_Mace_Enemy_Fogger_Soldier",
+      "category": "Weapons"
     },
     "1475408789": {
       "displayName": "Conifer Logs",
@@ -4676,6 +5531,11 @@
       "displayName": "Grass",
       "debugName": "Flower_Pot_Medium_Gras",
       "category": "BuildTools"
+    },
+    "1482081791": {
+      "displayName": "Fell Scout Bow",
+      "debugName": "Weapon_T1-TX_2H_Bow_Enemy_Fogger_Ranger",
+      "category": "Weapons"
     },
     "1482647793": {
       "displayName": "Warrior Trousers",
@@ -4777,6 +5637,11 @@
       "debugName": "Food_T1_processed_mushroom_Grilled_Mushroom_brown",
       "category": "Consumables"
     },
+    "1514618246": {
+      "displayName": "Fine Copperblade Greatsword",
+      "debugName": "Weapon_T3_2H_GreatSword_01",
+      "category": "Weapons"
+    },
     "1515343684": {
       "displayName": "Long Plant Pot",
       "debugName": "Empty_Flower_Pot_Long_Ground_Empty",
@@ -4857,6 +5722,11 @@
       "debugName": "Consumable_Water_Bomb",
       "category": "Weapons"
     },
+    "1532433428": {
+      "displayName": "Staff of Guidance",
+      "debugName": "Weapon_T5_2H_StaffEpic_03",
+      "category": "Weapons"
+    },
     "1533027547": {
       "displayName": "Indigo Seedling",
       "debugName": "T2_Seedling_Material_Indigo",
@@ -4907,6 +5777,11 @@
       "debugName": "Prop_Decoration_T1_Mines_Banister_4m_03",
       "category": "BuildTools"
     },
+    "1541977934": {
+      "displayName": "Jagged Obsidian Axe",
+      "debugName": "Weapon_T6_1H_Axe_01",
+      "category": "Weapons"
+    },
     "1542081969": {
       "displayName": "Flightless Redtail",
       "debugName": "Animal_Farming_Turkey",
@@ -4947,10 +5822,20 @@
       "debugName": "Material_T1_Toxic_Goo",
       "category": "Materials"
     },
+    "1551286900": {
+      "displayName": "Wolf Daggers",
+      "debugName": "Weapon_T2_2H_Daggers_DPS",
+      "category": "Weapons"
+    },
     "1551372920": {
       "displayName": "Meteorite Showcase (3 Small Slots)",
       "debugName": "Prop_Collection_16_Ancients_Meteorite_Showcase_3Slot",
       "category": "BuildTools"
+    },
+    "1552891650": {
+      "displayName": "Bonebreaker",
+      "debugName": "Weapon_T3_1H_AxeEpic_02",
+      "category": "Weapons"
     },
     "1555483091": {
       "displayName": "Refined Sandstone Block",
@@ -4991,6 +5876,11 @@
       "displayName": "Pinewood Room Divider I",
       "debugName": "Prop_Decoration_T5_Divider_Pinewood_01",
       "category": "BuildTools"
+    },
+    "1561187159": {
+      "displayName": "Darya's Wand",
+      "debugName": "Craft_Weapon_T6_1H_Lore_Wand_ministory_29_Fog",
+      "category": "Weapons"
     },
     "1563449197": {
       "displayName": "Warlock Pants",
@@ -5052,6 +5942,11 @@
       "debugName": "Flower_Pot_Medium_Bamboo",
       "category": "BuildTools"
     },
+    "1585517315": {
+      "displayName": "Violet Storm",
+      "debugName": "Weapon_T6_2H_StaffEpic_01",
+      "category": "Weapons"
+    },
     "1586336332": {
       "displayName": "Pearlfrost Mentor Chest",
       "debugName": "Armor_T5_Mage_Healer_Chest_Loot",
@@ -5067,6 +5962,11 @@
       "debugName": "Prop_Decoration_T7_AncientAstronomy_Globe",
       "category": "BuildTools"
     },
+    "1594103631": {
+      "displayName": "Silvernight Greatsword",
+      "debugName": "Weapon_T5_2H_Greatsword_01",
+      "category": "Weapons"
+    },
     "1594637042": {
       "displayName": "Hand Spindle",
       "debugName": "Prop_Production_T2_NPC_Hand_Spindle",
@@ -5081,6 +5981,11 @@
       "displayName": "Copper Double Door",
       "debugName": "Prop_Decoration_T2_Door_Coppern_Double",
       "category": "BuildTools"
+    },
+    "1595482967": {
+      "displayName": "Ice Beam Wand",
+      "debugName": "Weapon_T2_1H_WandEpic_02_Ice",
+      "category": "Weapons"
     },
     "1596758429": {
       "displayName": "Pinewood Fence I",
@@ -5107,6 +6012,11 @@
       "debugName": "Prop_Decoration_T0_Fence_Palisade_02",
       "category": "BuildTools"
     },
+    "1602331229": {
+      "displayName": "Steel Moon Axe",
+      "debugName": "Weapon_T5_1H_Axe_01",
+      "category": "Weapons"
+    },
     "1603269825": {
       "displayName": "Pearlbloom Nectar",
       "debugName": "Food_T7_dish_hydration_FruitNectarJuice",
@@ -5122,10 +6032,20 @@
       "debugName": "Vanity_Tx_DLC_Supporter_Mage_Legs",
       "category": "Equipment"
     },
+    "1605780520": {
+      "displayName": "Sword Of The Serpent",
+      "debugName": "Craft_Weapon_T4_1H_SwordEpic_chineseNewYear_01",
+      "category": "Weapons"
+    },
     "1606492525": {
       "displayName": "Flame Mosaic Piece II",
       "debugName": "Collection_mosaics_01_flame_piece2",
       "category": "Collectibles"
+    },
+    "1608083210": {
+      "displayName": "Dragonsbane",
+      "debugName": "Craft_Weapon_T5_1H_Lore_AxeEpic_ministory_30",
+      "category": "Weapons"
     },
     "1610169156": {
       "displayName": "Eternal Giant Bone Arrow I",
@@ -5141,6 +6061,11 @@
       "displayName": "Critter Carapace",
       "debugName": "Material_T5_CritterParts_CritterCarapace",
       "category": "Materials"
+    },
+    "1613250072": {
+      "displayName": "Scrap Daggers",
+      "debugName": "Weapon_T1-TX_2H_Daggers_Scavenger_Weakling",
+      "category": "Weapons"
     },
     "1613659605": {
       "displayName": "Market On A Yearfall's Day",
@@ -5181,6 +6106,11 @@
       "displayName": "Large Boreal Wood Bed",
       "debugName": "Prop_Decoration_Comfort7_T5_Bed_Kingsize",
       "category": "BuildTools"
+    },
+    "1621727293": {
+      "displayName": "Shroud Weaver",
+      "debugName": "Craft_Weapon_T6_2H_Lore_StaffEpic_ministory_17",
+      "category": "Weapons"
     },
     "1622296983": {
       "displayName": "Garden Gnome",
@@ -5262,6 +6192,11 @@
       "debugName": "Armor_T4_Warrior_DPS_Boots_Loot",
       "category": "Equipment"
     },
+    "1640849157": {
+      "displayName": "Traitor's Bow",
+      "debugName": "Weapon_T4_2H_Bow_01",
+      "category": "Weapons"
+    },
     "1641258379": {
       "displayName": "\"Cowlick\" Wig Head",
       "debugName": "Prop_NPC_barber_hairstyle_dummy_wigHead_02_cowlick",
@@ -5317,6 +6252,11 @@
       "debugName": "Vanity_T3_moth_Gloves",
       "category": "Equipment"
     },
+    "1659424208": {
+      "displayName": "Fang Blade",
+      "debugName": "Weapon_T3_1H_Sword_02",
+      "category": "Weapons"
+    },
     "1665119413": {
       "displayName": "Fern",
       "debugName": "Flower_Pot_Square_Fern",
@@ -5362,6 +6302,11 @@
       "debugName": "_Food_raw_T5_fish_rare_03",
       "category": "Consumables"
     },
+    "1676088364": {
+      "displayName": "Twin Soul Mace",
+      "debugName": "Weapon_T2_1H_MaceEpic_01",
+      "category": "Weapons"
+    },
     "1676125574": {
       "displayName": "Ashwind Strider Boots",
       "debugName": "Armor_T7_Ranger_Archer_DPS_Boots_Loot",
@@ -5402,6 +6347,11 @@
       "debugName": "Ammo_T4_Spell_Lightning_Channel_lvl22",
       "category": "Ammunition"
     },
+    "1687939753": {
+      "displayName": "Graven Idol Axe",
+      "debugName": "Weapon_T6_1H_Axe_02",
+      "category": "Weapons"
+    },
     "1688806746": {
       "displayName": "\"Wolf's Choir\"",
       "debugName": "Prop_Decoration_Comfort_T4_Wall_Painting_8",
@@ -5416,6 +6366,11 @@
       "displayName": "Critter Glands",
       "debugName": "Material_T3_CritterParts_CritterGlands",
       "category": "Materials"
+    },
+    "1693828837": {
+      "displayName": "Crackling Wand",
+      "debugName": "Weapon_T1_1H_Wand_01_Fire",
+      "category": "Weapons"
     },
     "1695295500": {
       "displayName": "Metal Wall Drain II",
@@ -5456,6 +6411,11 @@
       "displayName": "Secret Polished Granite Door",
       "debugName": "Base_Door_Secret_Granite_02",
       "category": "BuildTools"
+    },
+    "1710543728": {
+      "displayName": "Corrosive Daggers",
+      "debugName": "Weapon_T2_2H_Daggers_Poison",
+      "category": "Weapons"
     },
     "1711247619": {
       "displayName": "Padding",
@@ -5502,6 +6462,11 @@
       "debugName": "_Prop_Decoration_Boss_Trophy_Ancient_Construct_Heavy_02_bronze",
       "category": "BuildTools"
     },
+    "1716859550": {
+      "displayName": "Soothsayer",
+      "debugName": "Craft_Weapon_T3_2H_Lore_HammerEpic_ministory_19",
+      "category": "Weapons"
+    },
     "1717387680": {
       "displayName": "Dried Banana Chips",
       "debugName": "Food_T6_processed_fruit_BananaChips",
@@ -5536,6 +6501,11 @@
       "displayName": "Shroud Sack",
       "debugName": "Material_T2_Fog_Sack",
       "category": "Materials"
+    },
+    "1729196030": {
+      "displayName": "Valor Heart Daggers",
+      "debugName": "Craft_Weapon_T2_2H_Lore_DaggersEpic_Parry_bard_Hint02",
+      "category": "Weapons"
     },
     "1729479389": {
       "displayName": "Scrap Arrow",
@@ -5576,6 +6546,11 @@
       "displayName": "Ball Lightning I",
       "debugName": "Ammo_T3_Spell_Lightning_Ball_lvl20",
       "category": "Ammunition"
+    },
+    "1735564804": {
+      "displayName": "Fenrig's Axe",
+      "debugName": "Craft_Weapon_T6_1H_Lore_Axe_Ministory_10",
+      "category": "Weapons"
     },
     "1736007350": {
       "displayName": "Carved Tropical Wood Fence with Ropes II",
@@ -5641,6 +6616,11 @@
       "displayName": "Laboratory",
       "debugName": "Prop_Production_T4_Laboratory",
       "category": "BuildTools"
+    },
+    "1750564370": {
+      "displayName": "Blessed Club",
+      "debugName": "Weapon_T5_2H_Lore_Hammer_ministory_31",
+      "category": "Weapons"
     },
     "1751743189": {
       "displayName": "Crypt Throne",
@@ -5772,10 +6752,20 @@
       "debugName": "T2_Seedling_Elderberry_bush",
       "category": "BuildTools"
     },
+    "1785296023": {
+      "displayName": "Aerostriker",
+      "debugName": "Weapon_T3_2H_Hammer_01",
+      "category": "Weapons"
+    },
     "1786201577": {
       "displayName": "Gem of Fracturing",
       "debugName": "T2_Gem_GemOfFracturing",
       "category": "WeaponGem"
+    },
+    "1786607643": {
+      "displayName": "Lesser Golden Twinflame Sword",
+      "debugName": "Craft_Weapon_T6_1H_Lore_Sword_ministory_28",
+      "category": "Weapons"
     },
     "1787218857": {
       "displayName": "Clay Bowl",
@@ -5791,6 +6781,11 @@
       "displayName": "Improved Grappling Hook",
       "debugName": "Tool_Grappling_Hook_improved",
       "category": "Tools"
+    },
+    "1790379797": {
+      "displayName": "Ice-Coated Daggers",
+      "debugName": "Weapon_T5_2H_DaggersEpic_DPS",
+      "category": "Weapons"
     },
     "1790474262": {
       "displayName": "Fire Bolt III",
@@ -5811,6 +6806,11 @@
       "displayName": "Sage Gloves",
       "debugName": "Armor_T4_Mage_Healer_Arms",
       "category": "Equipment"
+    },
+    "1792316220": {
+      "displayName": "Luminous Wand",
+      "debugName": "Weapon_T2_1H_WandEpic_01_Fire",
+      "category": "Weapons"
     },
     "1793657421": {
       "displayName": "Medium Crypt Cabinet",
@@ -5846,6 +6846,11 @@
       "displayName": "Shroud Slime",
       "debugName": "Material_T6_FogTerrain_ShroudSlime",
       "category": "Materials"
+    },
+    "1803273188": {
+      "displayName": "Eldermere's Staff",
+      "debugName": "Weapon_T7_2H_StaffEpic_01",
+      "category": "Weapons"
     },
     "1804479582": {
       "displayName": "Crypt Brazier",
@@ -5972,6 +6977,11 @@
       "debugName": "Ammo_T7_Spell_Fog_Meteor_lvl45_Eternal",
       "category": "Ammunition"
     },
+    "1838764116": {
+      "displayName": "Ancient Drak Wand",
+      "debugName": "Weapon_T6_1H_WandEpic_02_Lightning",
+      "category": "Weapons"
+    },
     "1838950390": {
       "displayName": "Warden Gloves",
       "debugName": "Armor_T4_Warrior_Tank_Arms",
@@ -6007,15 +7017,35 @@
       "debugName": "Prop_Decoration_T6_Throneroom_Banner_03",
       "category": "BuildTools"
     },
+    "1848614756": {
+      "displayName": "Celestial Axe",
+      "debugName": "Weapon_T5_1H_AxeEpic_01",
+      "category": "Weapons"
+    },
+    "1851176688": {
+      "displayName": "Shivering Skeans",
+      "debugName": "Weapon_T3_2H_DaggersEpic_DPS",
+      "category": "Weapons"
+    },
     "1851651517": {
       "displayName": "Small Steel Brazier",
       "debugName": "Prop_Decoration_Comfort_T5_IlluminationFloor2",
       "category": "BuildTools"
     },
+    "1851884051": {
+      "displayName": "Ruffian's Axe",
+      "debugName": "Weapon_T5_2H_GreatAxe_02",
+      "category": "Weapons"
+    },
     "1852126112": {
       "displayName": "Ony's Map Piece",
       "debugName": "8kLoreText_mapPiece_communityQuest_2025_04_ony",
       "category": "Collectibles"
+    },
+    "1853225094": {
+      "displayName": "Fenrig's Axe",
+      "debugName": "Craft_Weapon_T4_1H_Lore_Axe_Ministory_10",
+      "category": "Weapons"
     },
     "1853942795": {
       "displayName": "Shell Limestone",
@@ -6026,6 +7056,11 @@
       "displayName": "Tarred Wood Block",
       "debugName": "Block_T1_Wood_TarredWood_CRAFTING",
       "category": "BuildTools"
+    },
+    "1857201018": {
+      "displayName": "Staff Of The Serpent",
+      "debugName": "Craft_Weapon_T7_2H_StaffEpic_chineseNewYear_01",
+      "category": "Weapons"
     },
     "1858466470": {
       "displayName": "High Paling Fence I",
@@ -6042,6 +7077,11 @@
       "debugName": "Material_T2_Amber",
       "category": "Materials"
     },
+    "1867962129": {
+      "displayName": "Staff Of The Serpent",
+      "debugName": "Craft_Weapon_T2_2H_StaffEpic_chineseNewYear_01",
+      "category": "Weapons"
+    },
     "1872522625": {
       "displayName": "Hollow's Eve Hood",
       "debugName": "Vanity_T5_Halloween2024_Helmet",
@@ -6052,10 +7092,25 @@
       "debugName": "Prop_Decoration_T7_Ancient_Cupboard_Small",
       "category": "BuildTools"
     },
+    "1873149026": {
+      "displayName": "The Hennihilator",
+      "debugName": "Weapon_T7_2H_HammerEpic_02",
+      "category": "Weapons"
+    },
+    "1873675161": {
+      "displayName": "Valor Heart Daggers",
+      "debugName": "Craft_Weapon_T6_2H_Lore_DaggersEpic_Parry_bard_Hint02",
+      "category": "Weapons"
+    },
     "1874208947": {
       "displayName": "Drak Wood Totem III",
       "debugName": "Prop_Decoration_T6_WoodTotem_03_A",
       "category": "BuildTools"
+    },
+    "1877646424": {
+      "displayName": "Golden War Hero Axe",
+      "debugName": "Craft_Weapon_T6_2H_Lore_GreatAxeLeg_forge",
+      "category": "Weapons"
     },
     "1878602124": {
       "displayName": "Book I",
@@ -6122,6 +7177,16 @@
       "debugName": "Prop_Decoration_T5_Barrel_Steel",
       "category": "BuildTools"
     },
+    "1893347881": {
+      "displayName": "Dark Morningstar",
+      "debugName": "Weapon_T5_1H_MaceEpic_01",
+      "category": "Weapons"
+    },
+    "1893776834": {
+      "displayName": "Scholar's Wand",
+      "debugName": "Weapon_T5_1H_Wand_03_Fire",
+      "category": "Weapons"
+    },
     "1896276940": {
       "displayName": "Eggs",
       "debugName": "Food_T3_raw_egg_BirdEggs",
@@ -6187,10 +7252,20 @@
       "debugName": "Prop_Decoration_Comfort3_T2_Hearth_FirePlace",
       "category": "BuildTools"
     },
+    "1912269209": {
+      "displayName": "Ancestral Star",
+      "debugName": "Craft_Weapon_T6_2H_Lore_Hammer_townsfolk_male_01_hint_01",
+      "category": "Weapons"
+    },
     "1912744772": {
       "displayName": "Eternal Fireball I",
       "debugName": "Ammo_T3_Spell_Fire_Ball_lvl15_Eternal",
       "category": "Ammunition"
+    },
+    "1914469572": {
+      "displayName": "Stellar Wand",
+      "debugName": "Weapon_T7_1H_Wand_01_Ice",
+      "category": "Weapons"
     },
     "1915219235": {
       "displayName": "Flame Mosaic Piece VIII",
@@ -6202,10 +7277,20 @@
       "debugName": "8kLoreText_scroll_bard_song_04",
       "category": "Collectibles"
     },
+    "1916010187": {
+      "displayName": "Sacrificial Vukah Dagger",
+      "debugName": "Craft_Weapon_T6_2H_Lore_Daggers_townsfolk_female_02_hint_01",
+      "category": "Weapons"
+    },
     "1917066440": {
       "displayName": "Secret Wooden Door",
       "debugName": "Base_Door_Secret_Wood01",
       "category": "BuildTools"
+    },
+    "1919278140": {
+      "displayName": "Wailing Blade",
+      "debugName": "Weapon_T1_1H_Lore_SwordEpic_Ministory_09",
+      "category": "Weapons"
     },
     "1920323571": {
       "displayName": "Two-colored Lily Flower",
@@ -6221,6 +7306,11 @@
       "displayName": "Baby Capybara",
       "debugName": "Animal_Baby_Capybara",
       "category": "BuildTools"
+    },
+    "1924413551": {
+      "displayName": "Blessed Club",
+      "debugName": "Craft_Weapon_T6_2H_Lore_Hammer_ministory_31",
+      "category": "Weapons"
     },
     "1925006089": {
       "displayName": "Lump of Clay",
@@ -6262,6 +7352,11 @@
       "debugName": "Ammo_T4_Spell_Lightning_Wisp_lvl20_Eternal",
       "category": "Ammunition"
     },
+    "1940764111": {
+      "displayName": "Deeproot Axe",
+      "debugName": "Weapon_T3_2H_GreatAxeEpic_01",
+      "category": "Weapons"
+    },
     "1940778781": {
       "displayName": "Vorgoth's Bound Essence",
       "debugName": "Material_T7_Vorgoth_Blood",
@@ -6276,6 +7371,11 @@
       "displayName": "Sage Tunic",
       "debugName": "Armor_T4_Mage_Healer_Chest",
       "category": "Equipment"
+    },
+    "1947635377": {
+      "displayName": "Final Gambit",
+      "debugName": "Weapon_TX_1H_Axe_FogNest",
+      "category": "Weapons"
     },
     "1948096195": {
       "displayName": "Wooden Sink",
@@ -6342,10 +7442,20 @@
       "debugName": "ColorPalette_T6_ColorPalette_06",
       "category": "ColorPalette"
     },
+    "1969596569": {
+      "displayName": "Battering Ram Hammer",
+      "debugName": "Weapon_T5_2H_HammerEpic_02",
+      "category": "Weapons"
+    },
     "1972419518": {
       "displayName": "Scout Gloves",
       "debugName": "Armor_T1_Ranger_Archer_DPS_Arms",
       "category": "Equipment"
+    },
+    "1972844940": {
+      "displayName": "Valor Heart Daggers",
+      "debugName": "Craft_Weapon_T5_2H_Lore_DaggersEpic_Parry_bard_Hint02",
+      "category": "Weapons"
     },
     "1976103965": {
       "displayName": "Crude Wooden Closet",
@@ -6387,6 +7497,11 @@
       "debugName": "Prop_WaterBarrier_4m_Medium_Ground",
       "category": "BuildTools"
     },
+    "1985879197": {
+      "displayName": "Spiked Club",
+      "debugName": "Weapon_T1_1H_Mace_Craft",
+      "category": "Weapons"
+    },
     "1985910431": {
       "displayName": "Chitin Powder",
       "debugName": "Material_T5_ChitinPowder",
@@ -6401,6 +7516,16 @@
       "displayName": "Paper Lantern II",
       "debugName": "Prop_Decoration_Comfort_T1_IlluminationCeiling_CNY_2",
       "category": "BuildTools"
+    },
+    "1990416434": {
+      "displayName": "Staff Of The Serpent",
+      "debugName": "Craft_Weapon_T6_2H_StaffEpic_chineseNewYear_01",
+      "category": "Weapons"
+    },
+    "1992044990": {
+      "displayName": "Mirage",
+      "debugName": "Weapon_T4_2H_StaffEpic_01",
+      "category": "Weapons"
     },
     "1992539715": {
       "displayName": "Hollow Halls Showcase (2 Medium Slots)",
@@ -6427,6 +7552,11 @@
       "debugName": "Prop_Decoration_T1_Bowl_Scrap",
       "category": "BuildTools"
     },
+    "2000529539": {
+      "displayName": "Dreadbane",
+      "debugName": "Craft_Weapon_T4_2H_Lore_HammerEpic_ministory_14",
+      "category": "Weapons"
+    },
     "2001509956": {
       "displayName": "Cyan Party Hat",
       "debugName": "Vanity_TX_PartyHat_01",
@@ -6436,6 +7566,11 @@
       "displayName": "Small Aurora Beans Plant Pot",
       "debugName": "_Flower_Pot_Ancient_Small_Beans",
       "category": "BuildTools"
+    },
+    "2003053902": {
+      "displayName": "Beastmaster Shaman Staff",
+      "debugName": "Weapon_T1-TX_2H_Staff_Enemy_Vukah_Shaman_Beast_Elite",
+      "category": "Weapons"
     },
     "2003933910": {
       "displayName": "Sandstone Brazier",
@@ -6466,6 +7601,11 @@
       "displayName": "Masonry Tools",
       "debugName": "Prop_NPC_Mason_Tools_T3",
       "category": "BuildTools"
+    },
+    "2010276754": {
+      "displayName": "Bright Morningstar",
+      "debugName": "Weapon_T5_1H_Mace_01",
+      "category": "Weapons"
     },
     "2012474258": {
       "displayName": "Rough Wood Block",
@@ -6542,6 +7682,11 @@
       "debugName": "Food_T3_proccessed_meat_grilled_Bird",
       "category": "Consumables"
     },
+    "2028795022": {
+      "displayName": "Boreal Axe",
+      "debugName": "Weapon_T5_2H_GreatAxe_01",
+      "category": "Weapons"
+    },
     "2029199334": {
       "displayName": "High Carved Wooden Window Frame I",
       "debugName": "Prop_Decoration_T1_Window_Carved_Wooden_Frame_High",
@@ -6561,6 +7706,11 @@
       "displayName": "Bronze Floor Candleholder",
       "debugName": "Prop_Decoration_Comfort_T3_Illumination_Floor",
       "category": "BuildTools"
+    },
+    "2030714844": {
+      "displayName": "Jezmina's Apotheosis",
+      "debugName": "Craft_Weapon_T5_1H_Lore_AxeEpic_Ministory_02",
+      "category": "Weapons"
     },
     "2030809898": {
       "displayName": "Mannequin \"Here I Come\"",
@@ -6642,6 +7792,11 @@
       "debugName": "Prop_Decoration_Boss_Trophy_Fell_Cyclops_02_bronze",
       "category": "BuildTools"
     },
+    "2053280664": {
+      "displayName": "Cryptic Wand",
+      "debugName": "Craft_Weapon_T7_1H_Lore_WandEpic_Ministory_09_Lightning",
+      "category": "Weapons"
+    },
     "2053375978": {
       "displayName": "Bones",
       "debugName": "Material_T1_Bones",
@@ -6682,6 +7837,11 @@
       "debugName": "Material_T6_Water_Reptile_Leather",
       "category": "Materials"
     },
+    "2060058239": {
+      "displayName": "Blessed Club",
+      "debugName": "Craft_Weapon_T7_2H_Lore_Hammer_ministory_31",
+      "category": "Weapons"
+    },
     "2060473756": {
       "displayName": "Ancient Stone Block",
       "debugName": "_Block_T7_Ancient_Gray_Stone_CRAFTING",
@@ -6701,6 +7861,11 @@
       "displayName": "Bloodfeather Chest",
       "debugName": "Armor_T6_Ranger_Assassin_Chest_Loot",
       "category": "Equipment"
+    },
+    "2066454242": {
+      "displayName": "Lightforged Daggers",
+      "debugName": "Weapon_T4_2H_Daggers_DPS",
+      "category": "Weapons"
     },
     "2067027342": {
       "displayName": "Ancient Gold Block",
@@ -6742,6 +7907,11 @@
       "debugName": "Food_T7_dish_grain_BeanRice",
       "category": "Consumables"
     },
+    "2078337024": {
+      "displayName": "Staff of the Taurus",
+      "debugName": "Weapon_T5_2H_StaffEpic_01",
+      "category": "Weapons"
+    },
     "2079216961": {
       "displayName": "Throne Room Wall Lamp",
       "debugName": "Prop_Decoration_Comfort_T6_IlluminationWall_Throneroom",
@@ -6781,6 +7951,11 @@
       "displayName": "Bloodfeather Gloves",
       "debugName": "Armor_T6_Ranger_Assassin_Arms",
       "category": "Equipment"
+    },
+    "2093048225": {
+      "displayName": "Sword Of The Serpent",
+      "debugName": "Weapon_T2_1H_SwordEpic_chineseNewYear_01",
+      "category": "Weapons"
     },
     "2093190171": {
       "displayName": "Aquamarine Dreams",
@@ -6822,6 +7997,11 @@
       "debugName": "Prop_Decoration_T6_Fence_Wood_Simple_02",
       "category": "BuildTools"
     },
+    "2104873327": {
+      "displayName": "Darya's Wand",
+      "debugName": "Craft_Weapon_T5_1H_Lore_Wand_ministory_29_Fog",
+      "category": "Weapons"
+    },
     "2105748910": {
       "displayName": "Ultimate Bandage",
       "debugName": "Consumable_Bandage_T7",
@@ -6837,6 +8017,11 @@
       "debugName": "Collection_Meteorites_Large_02",
       "category": "Collectibles"
     },
+    "2109907931": {
+      "displayName": "Club of Defiance",
+      "debugName": "Weapon_T2_2H_HammerEpic_01",
+      "category": "Weapons"
+    },
     "2112093542": {
       "displayName": "Daylilies For Emily",
       "debugName": "ColorPalette_T6_ColorPalette_Reward_06",
@@ -6846,6 +8031,16 @@
       "displayName": "Mossy Stone",
       "debugName": "ColorPalette_T3_ColorPalette_02",
       "category": "ColorPalette"
+    },
+    "2120886966": {
+      "displayName": "Freshblood Mace",
+      "debugName": "Weapon_T6_1H_Mace_01",
+      "category": "Weapons"
+    },
+    "2125128982": {
+      "displayName": "Totem Wand",
+      "debugName": "Weapon_T6_1H_Wand_01_Fire",
+      "category": "Weapons"
     },
     "2125338745": {
       "displayName": "Wooden Palisade I",
@@ -6867,6 +8062,11 @@
       "debugName": "Vanity_T7_ancientOutfit_Legs",
       "category": "Equipment"
     },
+    "2128179343": {
+      "displayName": "Coalescent Wand",
+      "debugName": "Weapon_T5_1H_Wand_02_Lightning",
+      "category": "Weapons"
+    },
     "2128518559": {
       "displayName": "Fabric",
       "debugName": "Material_T4_Fabric",
@@ -6881,6 +8081,11 @@
       "displayName": "Ancient Beacon Block",
       "debugName": "_Block_T7_YellowGlow_AncientEnergy_REWARD",
       "category": "BuildTools"
+    },
+    "2130769495": {
+      "displayName": "Lumenshade Axe",
+      "debugName": "Weapon_T4_1H_AxeEpic_01",
+      "category": "Weapons"
     },
     "2131350736": {
       "displayName": "Wolf's Fang Trousers",
@@ -6897,6 +8102,11 @@
       "debugName": "Material_T7_Fognest_Ressource",
       "category": "Materials"
     },
+    "2135782770": {
+      "displayName": "Drakling Daggers",
+      "debugName": "Weapon_T6_2H_Daggers_DPS_Parry",
+      "category": "Weapons"
+    },
     "2135874066": {
       "displayName": "Wolf's Fang Hood",
       "debugName": "Armor_T5_Warrior_Rogue_Helmet",
@@ -6906,6 +8116,16 @@
       "displayName": "Water Well",
       "debugName": "Prop_NPC_T2_Water_Well",
       "category": "BuildTools"
+    },
+    "2138171920": {
+      "displayName": "Sword Of The Serpent",
+      "debugName": "Craft_Weapon_T7_1H_SwordEpic_chineseNewYear_01",
+      "category": "Weapons"
+    },
+    "2138338924": {
+      "displayName": "The Henchman",
+      "debugName": "Weapon_T7_2H_Hammer_02",
+      "category": "Weapons"
     },
     "2140158419": {
       "displayName": "Explorer Coat",
@@ -6957,6 +8177,11 @@
       "debugName": "Prop_Furniture_Distillery_Pot_04",
       "category": "BuildTools"
     },
+    "2151380048": {
+      "displayName": "Forked Tongue",
+      "debugName": "Weapon_TX_2H_Greatsword_FogNest",
+      "category": "Weapons"
+    },
     "2151396097": {
       "displayName": "Iron Hollow Wispwyvern Trophy",
       "debugName": "_Prop_Decoration_Boss_Trophy_Skeleton_Lizard_03_iron",
@@ -6977,6 +8202,11 @@
       "debugName": "Food_T4_SandDigger_Bait",
       "category": "AnimalFood"
     },
+    "2155262535": {
+      "displayName": "Scrappy Greatsword",
+      "debugName": "Weapon_T1_2H_GreatSword_01",
+      "category": "Weapons"
+    },
     "2156027596": {
       "displayName": "Large Albaneve Summits Brazier",
       "debugName": "Prop_Decoration_Comfort_T5_IlluminationFloor_Brazier_large",
@@ -6986,6 +8216,11 @@
       "displayName": "Gem of Retaliation",
       "debugName": "T2_Gem_GemOfRetaliation",
       "category": "WeaponGem"
+    },
+    "2158737906": {
+      "displayName": "Adorned Drakling Daggers",
+      "debugName": "Weapon_T6_2H_DaggersEpic_DPS_Parry",
+      "category": "Weapons"
     },
     "2160078991": {
       "displayName": "Flat Bread",
@@ -7042,6 +8277,11 @@
       "debugName": "Collection_Worldmap_Wetland",
       "category": "Collectibles"
     },
+    "2176171412": {
+      "displayName": "Golden Recruit Axe",
+      "debugName": "Craft_Weapon_T6_2H_Lore_GreatAxeEpic_outpost",
+      "category": "Weapons"
+    },
     "2176546463": {
       "displayName": "Advanced Rake",
       "debugName": "Tool_T1_Rake_Scrappy",
@@ -7056,6 +8296,11 @@
       "displayName": "Mystic Gloves",
       "debugName": "Armor_T3_Mage_BattleWand_Arms_Loot",
       "category": "Equipment"
+    },
+    "2178370335": {
+      "displayName": "Devilish Bow",
+      "debugName": "Weapon_T5_2H_BowEpic_02",
+      "category": "Weapons"
     },
     "2179075323": {
       "displayName": "Active Mycelium",
@@ -7077,10 +8322,20 @@
       "debugName": "Prop_Decoration_T4_WallEmblem_Shield_01",
       "category": "BuildTools"
     },
+    "2187973877": {
+      "displayName": "Spearfisher Bow",
+      "debugName": "Craft_Weapon_T7_2H_Lore_Bow_ministory_03",
+      "category": "Weapons"
+    },
     "2191154793": {
       "displayName": "Secret Crude Wooden Bookshelf Door",
       "debugName": "Base_Shelf_Secret_01",
       "category": "BuildTools"
+    },
+    "2195022120": {
+      "displayName": "Reaper's Wand",
+      "debugName": "Craft_Weapon_T1_1H_Lore_Wand_Ministory_02_Lightning",
+      "category": "Weapons"
     },
     "2197847702": {
       "displayName": "Fowler Helmet",
@@ -7091,6 +8346,11 @@
       "displayName": "Purple Pendant Light I",
       "debugName": "Prop_Decoration_Comfort_T6_IlluminationCeiling_purple",
       "category": "BuildTools"
+    },
+    "2198697693": {
+      "displayName": "Polymath's Wand",
+      "debugName": "Weapon_T5_1H_WandEpic_03_Fire",
+      "category": "Weapons"
     },
     "2198899126": {
       "displayName": "Iron Fell Monstrosity Trophy",
@@ -7177,6 +8437,11 @@
       "debugName": "Prop_Decoration_Comfort_T5_Illumination_MemorialHall_Ceiling_01",
       "category": "BuildTools"
     },
+    "2226962572": {
+      "displayName": "Ancestral Star",
+      "debugName": "Weapon_T5_2H_Lore_Hammer_townsfolk_male_01_hint_01",
+      "category": "Weapons"
+    },
     "2229014829": {
       "displayName": "Iron Prison Window Frame",
       "debugName": "Prop_Decoration_T4_Window_Iron_Prison_Frame",
@@ -7207,6 +8472,11 @@
       "debugName": "Armor_T3_Warrior_Tank_Boots_Loot",
       "category": "Equipment"
     },
+    "2237665335": {
+      "displayName": "Composite Bow",
+      "debugName": "Weapon_T3_2H_BowEpic_01",
+      "category": "Weapons"
+    },
     "2239380894": {
       "displayName": "Wisp of Light",
       "debugName": "Consumable_Potion_Flask_Wisp_Of_Light",
@@ -7222,6 +8492,11 @@
       "debugName": "Collection_Planetarium_piece3",
       "category": "Collectibles"
     },
+    "2242220014": {
+      "displayName": "Wildwood Shortbow",
+      "debugName": "Weapon_T1_2H_BowEpic_03",
+      "category": "Weapons"
+    },
     "2242544273": {
       "displayName": "Simple Wood Support",
       "debugName": "Prop_Decoration_T6_Simple_Support_4m_02_A",
@@ -7231,6 +8506,11 @@
       "displayName": "Resource Bundle II",
       "debugName": "Prop_Decoration_T1_RessourceBundle_02",
       "category": "BuildTools"
+    },
+    "2244314670": {
+      "displayName": "Sunset Mace",
+      "debugName": "Weapon_T7_1H_MaceEpic_02",
+      "category": "Weapons"
     },
     "2244383765": {
       "displayName": "Fish Bones",
@@ -7307,6 +8587,11 @@
       "debugName": "Prop_Decoration_T5_Banner_Wall_yellow_big",
       "category": "BuildTools"
     },
+    "2260780998": {
+      "displayName": "Soothsayer",
+      "debugName": "Craft_Weapon_T6_2H_Lore_HammerEpic_ministory_19",
+      "category": "Weapons"
+    },
     "2261499623": {
       "displayName": "Mining Sieve",
       "debugName": "Tool_T6_GoldSieve_Prospector_Wetlands",
@@ -7316,6 +8601,11 @@
       "displayName": "Trapdoor Wood 2m",
       "debugName": "Prop_Logic_Trap_Door_Wood_00_2m",
       "category": "BuildTools"
+    },
+    "2264411387": {
+      "displayName": "Wolf's Hydra",
+      "debugName": "Craft_Weapon_T4_1H_Lore_Mace_ministory_04",
+      "category": "Weapons"
     },
     "2264547367": {
       "displayName": "Wayfarer Pants",
@@ -7331,6 +8621,11 @@
       "displayName": "Gem of Greater Necromancy",
       "debugName": "T6_Gem_GemOfGreaterNecromancy",
       "category": "WeaponGem"
+    },
+    "2269196323": {
+      "displayName": "Golden War Hero Axe",
+      "debugName": "Weapon_T6_2H_Lore_GreatAxeLeg_forge",
+      "category": "Weapons"
     },
     "2273496401": {
       "displayName": "Decorative Skull III",
@@ -7382,6 +8677,11 @@
       "debugName": "Prop_Decoration_Comfort6_T5_BathroomToilet",
       "category": "BuildTools"
     },
+    "2284373099": {
+      "displayName": "Mace-like Club",
+      "debugName": "Weapon_T3_1H_Mace_01",
+      "category": "Weapons"
+    },
     "2285189073": {
       "displayName": "Fried Rice",
       "debugName": "Food_T6_dish_grain_FriedRice",
@@ -7411,6 +8711,11 @@
       "displayName": "Tank Helmet",
       "debugName": "Armor_T2_Warrior_Tank_Helmet",
       "category": "Equipment"
+    },
+    "2296172399": {
+      "displayName": "Banebringer",
+      "debugName": "Weapon_T2_2H_BowEpic_01",
+      "category": "Weapons"
     },
     "2297010177": {
       "displayName": "Foliage",
@@ -7452,10 +8757,20 @@
       "debugName": "Prop_Decoration_Comfort4_T2_Bed",
       "category": "BuildTools"
     },
+    "2305089639": {
+      "displayName": "Helix",
+      "debugName": "Weapon_T4_1H_WandEpic_01_Fog",
+      "category": "Weapons"
+    },
     "2306767560": {
       "displayName": "Raw Fatty Meat",
       "debugName": "Food_T5_raw_bad_meat_fat",
       "category": "Consumables"
+    },
+    "2307065448": {
+      "displayName": "Luminary Staff",
+      "debugName": "Weapon_T7_2H_Staff_01",
+      "category": "Weapons"
     },
     "2309442083": {
       "displayName": "Blue Pendant Light I",
@@ -7521,6 +8836,11 @@
       "displayName": "Bell Pepper Seedling",
       "debugName": "T3_Seedling_Vegetable_Pepper",
       "category": "BuildTools"
+    },
+    "2331017633": {
+      "displayName": "Darya's Wand",
+      "debugName": "Weapon_T5_1H_Lore_Wand_ministory_29_Fog",
+      "category": "Weapons"
     },
     "2331092704": {
       "displayName": "Polished Wooden Banquet Table",
@@ -7612,6 +8932,11 @@
       "debugName": "Prop_Decoration_T4_Statue_Snake",
       "category": "BuildTools"
     },
+    "2347176360": {
+      "displayName": "Golden War Hero Axe",
+      "debugName": "Craft_Weapon_T7_2H_Lore_GreatAxeLeg_forge",
+      "category": "Weapons"
+    },
     "2348338388": {
       "displayName": "Wood Banister VI",
       "debugName": "Prop_Decoration_T1_Mines_Banister_4m_04",
@@ -7627,6 +8952,11 @@
       "debugName": "Food_T6_raw_bad_fruit_GreenBanana",
       "category": "Consumables"
     },
+    "2352034665": {
+      "displayName": "Dragon Sword",
+      "debugName": "Craft_Weapon_T6_1H_Lore_SwordEpic_ministory_29",
+      "category": "Weapons"
+    },
     "2352305513": {
       "displayName": "Fish Teeth",
       "debugName": "Material_T6_Fish_Teeth",
@@ -7636,6 +8966,11 @@
       "displayName": "Heather Flower",
       "debugName": "Flower_Pot_Low_Large_Heatherbush",
       "category": "BuildTools"
+    },
+    "2360998376": {
+      "displayName": "Claravinta's Seedling Swinger",
+      "debugName": "Weapon_T7_1H_MaceEpic_01",
+      "category": "Weapons"
     },
     "2361121883": {
       "displayName": "Revelwood Bone Key",
@@ -7782,10 +9117,25 @@
       "debugName": "Build_TerrainMaterial_T2_Dirt_Talltrees",
       "category": "Materials"
     },
+    "2385920638": {
+      "displayName": "Soothsayer",
+      "debugName": "Craft_Weapon_T4_2H_Lore_HammerEpic_ministory_19",
+      "category": "Weapons"
+    },
     "2386272825": {
       "displayName": "Boreal Wood Side Table",
       "debugName": "Prop_Decoration_Comfort6_T5_Table_Small",
       "category": "BuildTools"
+    },
+    "2386596106": {
+      "displayName": "Scavenger Miner Axe",
+      "debugName": "Weapon_T5-TX_1H_Axe_Enemy_Scavenger_Miner",
+      "category": "Weapons"
+    },
+    "2387592374": {
+      "displayName": "Lupa's Scalper",
+      "debugName": "Craft_Weapon_T3_2H_Lore_DaggersEpic_DPS_hunter_hint04",
+      "category": "Weapons"
     },
     "2388891615": {
       "displayName": "Improved Bandage",
@@ -7801,6 +9151,11 @@
       "displayName": "Watering Can",
       "debugName": "Tool_T1_WateringCan",
       "category": "BuildTools"
+    },
+    "2396593895": {
+      "displayName": "Fenrig's Axe",
+      "debugName": "Weapon_T1_1H_Lore_Axe_Ministory_10",
+      "category": "Weapons"
     },
     "2397258068": {
       "displayName": "Warlock Helmet",
@@ -7851,6 +9206,11 @@
       "displayName": "Ectoplasm Press",
       "debugName": "Prop_NPC_T2_cryptKeeper_EctoplasmPress",
       "category": "BuildTools"
+    },
+    "2409952376": {
+      "displayName": "Hailscourge",
+      "debugName": "Craft_Weapon_T6_1H_Lore_SwordEpic_Ministory_04",
+      "category": "Weapons"
     },
     "2410457699": {
       "displayName": "Bronze Pickaxe",
@@ -7927,6 +9287,11 @@
       "debugName": "Collection_paintings_06",
       "category": "BuildTools"
     },
+    "2427081154": {
+      "displayName": "Lightforged Axe",
+      "debugName": "Weapon_T4_1H_AxeEpic_02",
+      "category": "Weapons"
+    },
     "2428335074": {
       "displayName": "Hophare Feeder",
       "debugName": "Animal_Farm_Feeder_Bunny",
@@ -7947,6 +9312,11 @@
       "debugName": "Armor_T3_Mage_Healer_Helmet_Loot",
       "category": "Equipment"
     },
+    "2432243778": {
+      "displayName": "Lupa's Scalper",
+      "debugName": "Craft_Weapon_T6_2H_Lore_DaggersEpic_DPS_hunter_hint04",
+      "category": "Weapons"
+    },
     "2432974923": {
       "displayName": "High Ancient Temple Window Frame",
       "debugName": "Prop_Decoration_T7_Window_Ancient_01",
@@ -7956,6 +9326,11 @@
       "displayName": "Midnight Lily",
       "debugName": "Food_T1_raw_nightplant_NightLily",
       "category": "Consumables"
+    },
+    "2433846189": {
+      "displayName": "Blessed Club",
+      "debugName": "Craft_Weapon_T5_2H_Lore_Hammer_ministory_31",
+      "category": "Weapons"
     },
     "2434044399": {
       "displayName": "Ginger In A Jungle",
@@ -7991,6 +9366,11 @@
       "displayName": "Sandstone Fence",
       "debugName": "Prop_Decoration_T4_Fence_SandStone_01",
       "category": "BuildTools"
+    },
+    "2440163799": {
+      "displayName": "Fenrig's Axe",
+      "debugName": "Craft_Weapon_T2_1H_Lore_Axe_Ministory_10",
+      "category": "Weapons"
     },
     "2440933032": {
       "displayName": "Fake Temple Door",
@@ -8152,6 +9532,21 @@
       "debugName": "_Prop_Decoration_T2_TeaCup_Clay",
       "category": "BuildTools"
     },
+    "2487547952": {
+      "displayName": "Lesser Golden Twinflame Sword",
+      "debugName": "Craft_Weapon_T7_1H_Lore_Sword_ministory_28",
+      "category": "Weapons"
+    },
+    "2487980733": {
+      "displayName": "Fell Striker Greatsword",
+      "debugName": "Weapon_T1-TX_2H_GreatSword_Enemy_Fogger_Heavy_Berserker",
+      "category": "Weapons"
+    },
+    "2490862466": {
+      "displayName": "Amber Bow",
+      "debugName": "Weapon_T4_2H_Bow_02",
+      "category": "Weapons"
+    },
     "2493505667": {
       "displayName": "Wall Banner of the Ancients III",
       "debugName": "Prop_Decoration_Ancients_Banner_Wall_03",
@@ -8212,6 +9607,11 @@
       "debugName": "Armor_T7_Ranger_Archer_DPS_Helmet",
       "category": "Equipment"
     },
+    "2509571957": {
+      "displayName": "Jezmina's Apotheosis",
+      "debugName": "Craft_Weapon_T4_1H_Lore_AxeEpic_Ministory_02",
+      "category": "Weapons"
+    },
     "2509853978": {
       "displayName": "Tank Trousers",
       "debugName": "Armor_T2_Warrior_Tank_Legs",
@@ -8237,6 +9637,11 @@
       "debugName": "Flower_Pot_Medium_Saffron",
       "category": "BuildTools"
     },
+    "2515033100": {
+      "displayName": "Root Staff",
+      "debugName": "Weapon_T1_2H_StaffEpic_02",
+      "category": "Weapons"
+    },
     "2516933251": {
       "displayName": "Venerable Hollow Chestplate",
       "debugName": "Armor_T6_MultiClass_SkeletonArmor_Chest",
@@ -8246,6 +9651,11 @@
       "displayName": "Fertile Springlands Dirt",
       "debugName": "Build_TerrainMaterial_T1_Grassland_fertile_Highgrass",
       "category": "Materials"
+    },
+    "2517864696": {
+      "displayName": "Talion's Bow",
+      "debugName": "Craft_Weapon_T3_2H_Lore_BowEpic_Ministory_15",
+      "category": "Weapons"
     },
     "2519152989": {
       "displayName": "Green Rocket",
@@ -8272,10 +9682,20 @@
       "debugName": "Prop_Decoration_Comfort3_T2_Bench",
       "category": "BuildTools"
     },
+    "2524297201": {
+      "displayName": "Blazing Wand",
+      "debugName": "Weapon_T4_1H_Wand_02_Fire",
+      "category": "Weapons"
+    },
     "2527029391": {
       "displayName": "Medium Ancient Prayer Beacon",
       "debugName": "Prop_Decoration_T7_AncientTemple_PrayerBeacon_Medium",
       "category": "BuildTools"
+    },
+    "2528480161": {
+      "displayName": "Soothsayer",
+      "debugName": "Weapon_T3_2H_Lore_HammerEpic_ministory_19",
+      "category": "Weapons"
     },
     "2528530653": {
       "displayName": "Wall Target",
@@ -8292,10 +9712,20 @@
       "debugName": "Material_T1_Red_Marble_Fragment",
       "category": "Materials"
     },
+    "2532794119": {
+      "displayName": "Pyreblade",
+      "debugName": "Weapon_T5-TX_1H_Sword_Enemy_Scavenger_Elite_Fire",
+      "category": "Weapons"
+    },
     "2536014482": {
       "displayName": "Bronze Vukah Brawler Trophy",
       "debugName": "Prop_Decoration_Boss_Trophy_Vukah_02_bronze",
       "category": "BuildTools"
+    },
+    "2536236784": {
+      "displayName": "Vesztah's Mace",
+      "debugName": "Weapon_T6_1H_MaceEpic_01",
+      "category": "Weapons"
     },
     "2537359689": {
       "displayName": "Conifer Crate",
@@ -8412,6 +9842,16 @@
       "debugName": "Prop_Decoration_Comfort_T4_IlluminationWall",
       "category": "BuildTools"
     },
+    "2562946422": {
+      "displayName": "Mythic Wand",
+      "debugName": "Weapon_T5_1H_WandEpic_02_Lightning",
+      "category": "Weapons"
+    },
+    "2563601506": {
+      "displayName": "Cryptic Wand",
+      "debugName": "Craft_Weapon_T6_1H_Lore_WandEpic_Ministory_09_Lightning",
+      "category": "Weapons"
+    },
     "2564145075": {
       "displayName": "Hollow Halls Showcase (3 Small and 2 Medium Slots)",
       "debugName": "Prop_Collection_02_Skeletons_Showcase_3S2MSlot",
@@ -8421,6 +9861,16 @@
       "displayName": "Just Enough",
       "debugName": "ColorPalette_T7_ColorPalette_05",
       "category": "ColorPalette"
+    },
+    "2566943046": {
+      "displayName": "Wand Of Bloodflow",
+      "debugName": "Weapon_T6_1H_WandEpic_01_Fire",
+      "category": "Weapons"
+    },
+    "2568349283": {
+      "displayName": "Twisting Wand",
+      "debugName": "Weapon_T4_1H_Wand_01_Fog",
+      "category": "Weapons"
     },
     "2569698570": {
       "displayName": "Diamond Wall Emblem",
@@ -8452,6 +9902,11 @@
       "debugName": "Material_TX_Trophy_Skeleton_Lizard_Boss_head",
       "category": "Materials"
     },
+    "2574399380": {
+      "displayName": "Barbarian Greatsword",
+      "debugName": "Weapon_T1_2H_GreatSwordEpic_01",
+      "category": "Weapons"
+    },
     "2574733718": {
       "displayName": "Rake",
       "debugName": "Tool_T0_Rake_Wooden",
@@ -8466,6 +9921,11 @@
       "displayName": "Large Chondrite",
       "debugName": "Collection_Meteorites_Large_01",
       "category": "Collectibles"
+    },
+    "2577073303": {
+      "displayName": "Sword Of The Serpent",
+      "debugName": "Craft_Weapon_T6_1H_SwordEpic_chineseNewYear_01",
+      "category": "Weapons"
     },
     "2581939916": {
       "displayName": "Shroud Wood Block",
@@ -8532,6 +9992,11 @@
       "debugName": "Vanity_T6_BeachAttire_Helmet",
       "category": "Equipment"
     },
+    "2594618935": {
+      "displayName": "Dragonsbane",
+      "debugName": "Craft_Weapon_T7_1H_Lore_AxeEpic_ministory_30",
+      "category": "Weapons"
+    },
     "2596222889": {
       "displayName": "Blood In The Snow",
       "debugName": "8kLoreText_scroll_bard_song_15",
@@ -8556,6 +10021,11 @@
       "displayName": "Ginger Seedling",
       "debugName": "T6_Seedling_Vegetable_Ginger",
       "category": "BuildTools"
+    },
+    "2604232739": {
+      "displayName": "Crown Crusher",
+      "debugName": "Weapon_TX_1H_Mace_FogNest",
+      "category": "Weapons"
     },
     "2604657464": {
       "displayName": "Wooden Table",
@@ -8647,6 +10117,16 @@
       "debugName": "Food_T6_raw_fruit_YellowBanana",
       "category": "Consumables"
     },
+    "2628423562": {
+      "displayName": "Jezmina's Apotheosis",
+      "debugName": "Craft_Weapon_T3_1H_Lore_AxeEpic_Ministory_02",
+      "category": "Weapons"
+    },
+    "2628714681": {
+      "displayName": "Abyssal Wing Axe",
+      "debugName": "Weapon_T6_2H_GreatAxeEpic_01",
+      "category": "Weapons"
+    },
     "2630618097": {
       "displayName": "Raw Meat and Hazelnut Skewer",
       "debugName": "Material_T2_raw_dish_GrainSkewer",
@@ -8672,6 +10152,11 @@
       "debugName": "Material_T4_Glass_Shards",
       "category": "Materials"
     },
+    "2642629621": {
+      "displayName": "Darya's Remorse",
+      "debugName": "Weapon_T7_1H_Lore_Wand_ministory_06_fog",
+      "category": "Weapons"
+    },
     "2646644982": {
       "displayName": "Crypt Chandelier",
       "debugName": "Prop_Decoration_Comfort_T2_Illumination_Ceiling_HollowHalls",
@@ -8681,6 +10166,11 @@
       "displayName": "Half Wooden Barrel",
       "debugName": "Prop_Decoration_T2_Barrel_Wooden03",
       "category": "BuildTools"
+    },
+    "2646707458": {
+      "displayName": "Bonescourge Mace",
+      "debugName": "Weapon_TX_1H_Mace_HollowHall",
+      "category": "Weapons"
     },
     "2647145060": {
       "displayName": "Trapdoor Metal 4m",
@@ -8752,10 +10242,20 @@
       "debugName": "Prop_Decoration_T1_Mines_Wall_4m_01",
       "category": "BuildTools"
     },
+    "2664238131": {
+      "displayName": "Talion's Bow",
+      "debugName": "Weapon_T2_2H_Lore_BowEpic_Ministory_15",
+      "category": "Weapons"
+    },
     "2666875137": {
       "displayName": "Hazelnut Bush Seedling",
       "debugName": "T2_Seedling_Material_Hazelnuts",
       "category": "BuildTools"
+    },
+    "2667317119": {
+      "displayName": "Sunbeam",
+      "debugName": "Weapon_T4_1H_Sword_02",
+      "category": "Weapons"
     },
     "2667326700": {
       "displayName": "Vase Of The Ancients I",
@@ -8787,6 +10287,16 @@
       "debugName": "T3_Gem_GemOfLesserNecromancy",
       "category": "WeaponGem"
     },
+    "2671932055": {
+      "displayName": "New Moon Greatsword",
+      "debugName": "Weapon_T2_2H_GreatSwordEpic_02",
+      "category": "Weapons"
+    },
+    "2671987501": {
+      "displayName": "Soothsayer",
+      "debugName": "Craft_Weapon_T5_2H_Lore_HammerEpic_ministory_19",
+      "category": "Weapons"
+    },
     "2672833225": {
       "displayName": "Ancient Temple Floor Brazier I",
       "debugName": "Prop_Decoration_Comfort_T7_IlluminationFloor_AncientTemple_Brazier_01_Ground_On",
@@ -8811,6 +10321,11 @@
       "displayName": "By The Riverside",
       "debugName": "8kLoreText_scroll_bard_song_05",
       "category": "Collectibles"
+    },
+    "2676513257": {
+      "displayName": "Talion's Bow",
+      "debugName": "Craft_Weapon_T7_2H_Lore_BowEpic_Ministory_15",
+      "category": "Weapons"
     },
     "2677573231": {
       "displayName": "Wildheart Chestplate",
@@ -8852,6 +10367,11 @@
       "debugName": "Consumable_Scroll_Prayer_To_The_Vukah_Buff",
       "category": "Consumables"
     },
+    "2688480639": {
+      "displayName": "Dragonsbane",
+      "debugName": "Craft_Weapon_T6_1H_Lore_AxeEpic_ministory_30",
+      "category": "Weapons"
+    },
     "2688870231": {
       "displayName": "Low Paling Fence II",
       "debugName": "Prop_Decoration_T2_Fence_Plank_Low_02",
@@ -8882,6 +10402,11 @@
       "debugName": "Prop_Decoration_Boss_Trophy_Scavenger_Mage_04_gold",
       "category": "BuildTools"
     },
+    "2698032927": {
+      "displayName": "Great Mace",
+      "debugName": "Weapon_T2_2H_Hammer_01",
+      "category": "Weapons"
+    },
     "2698582898": {
       "displayName": "Cultivation Rack",
       "debugName": "Prop_Collection_15_Ancients_Cultivation_Showcase_01",
@@ -8896,6 +10421,11 @@
       "displayName": "Stone Banquet Table",
       "debugName": "Prop_Decoration_Comfort4_T3_Table_Large",
       "category": "BuildTools"
+    },
+    "2700871988": {
+      "displayName": "Valor Heart Daggers",
+      "debugName": "Weapon_T2_2H_Lore_DaggersEpic_Parry_bard_Hint02",
+      "category": "Weapons"
     },
     "2702448213": {
       "displayName": "Ancient Cooling Unit",
@@ -8931,6 +10461,11 @@
       "displayName": "Fell Thunderbrute Head",
       "debugName": "Material_TX_Trophy_Fell_Heavy_head",
       "category": "Materials"
+    },
+    "2711958397": {
+      "displayName": "Elm's Eye Wand",
+      "debugName": "Weapon_T2_1H_Wand_02_Ice",
+      "category": "Weapons"
     },
     "2712846730": {
       "displayName": "Granite Window Frame",
@@ -9052,6 +10587,11 @@
       "debugName": "Craftingstation_Carpenter_Workbench",
       "category": "BuildTools"
     },
+    "2738560821": {
+      "displayName": "Tribal Hammer",
+      "debugName": "Weapon_T6_2H_Hammer_02",
+      "category": "Weapons"
+    },
     "2741207192": {
       "displayName": "Pink Flower",
       "debugName": "Flower_Pot_Square_Pink",
@@ -9092,10 +10632,20 @@
       "debugName": "Prop_Decoration_Comfort2_T0_Table_Small",
       "category": "BuildTools"
     },
+    "2749653597": {
+      "displayName": "Vaporous Staff",
+      "debugName": "Weapon_T1-TX_2H_Staff_Enemy_Vukah",
+      "category": "Weapons"
+    },
     "2753909436": {
       "displayName": "Eternal Heal Beam II",
       "debugName": "Ammo_T7_Spell_Heal_Beam_Channel_lvl45_Eternal",
       "category": "Ammunition"
+    },
+    "2757862595": {
+      "displayName": "Short Sword",
+      "debugName": "Weapon_T1-TX_1H_Sword_Enemy_Vukah",
+      "category": "Weapons"
     },
     "2758437730": {
       "displayName": "Deerstalker Boots",
@@ -9132,6 +10682,11 @@
       "debugName": "Vanity_TX_noble_Helmet",
       "category": "Equipment"
     },
+    "2770415595": {
+      "displayName": "Wolf's Maw",
+      "debugName": "Weapon_T2_1H_Sword_01",
+      "category": "Weapons"
+    },
     "2773180896": {
       "displayName": "Ancient Ceiling Mobile II",
       "debugName": "Prop_Decoration_T7_Ancient_Deco_Mobile_02",
@@ -9141,6 +10696,11 @@
       "displayName": "Flame Pact Boots",
       "debugName": "Vanity_TX_noble_Boots",
       "category": "Equipment"
+    },
+    "2773595146": {
+      "displayName": "Lesser Golden Twinflame Sword",
+      "debugName": "Craft_Weapon_T5_1H_Lore_Sword_ministory_28",
+      "category": "Weapons"
     },
     "2774520223": {
       "displayName": "Serpent Warrior Pants",
@@ -9192,6 +10752,11 @@
       "debugName": "Ammo_T4_Spell_Fire_Bolt_lvl22",
       "category": "Ammunition"
     },
+    "2783252634": {
+      "displayName": "Skull Splitter Axe",
+      "debugName": "Weapon_T6_1H_AxeEpic_02",
+      "category": "Weapons"
+    },
     "2783674260": {
       "displayName": "Large Crypt Cabinet",
       "debugName": "Prop_Decoration_T2_Cabinet_Large_Dungeon",
@@ -9231,6 +10796,11 @@
       "displayName": "Herbalist Tunic",
       "debugName": "Armor_T3_Mage_Healer_Chest",
       "category": "Equipment"
+    },
+    "2796408306": {
+      "displayName": "Half-Light Halos",
+      "debugName": "Weapon_TX_2H_Daggers_DPS_FogNest",
+      "category": "Weapons"
     },
     "2797806241": {
       "displayName": "Vat III",
@@ -9287,6 +10857,11 @@
       "debugName": "Tool_T1_Axe_Scrap_Grassland",
       "category": "Tools"
     },
+    "2813408350": {
+      "displayName": "Bow Of The Serpent",
+      "debugName": "Craft_Weapon_T5_2H_BowEpic_chineseNewYear_01",
+      "category": "Weapons"
+    },
     "2813422596": {
       "displayName": "Fish Trophy Board",
       "debugName": "Prop_Collection_12_Wetland_Showcase_FishBoard",
@@ -9342,6 +10917,11 @@
       "debugName": "ColorPalette_T3_ColorPalette_04",
       "category": "ColorPalette"
     },
+    "2822724630": {
+      "displayName": "Fool's Demise",
+      "debugName": "Weapon_TX_2H_Greatsword_HollowHall_02",
+      "category": "Weapons"
+    },
     "2822831184": {
       "displayName": "Ornamented Vase III",
       "debugName": "Prop_Decoration_T4_Desert_Vase_03",
@@ -9357,10 +10937,25 @@
       "debugName": "Block_T4_Wood_Palmwood_CRAFTING",
       "category": "BuildTools"
     },
+    "2825660293": {
+      "displayName": "Totempole Mace",
+      "debugName": "Weapon_T6_1H_Mace_02",
+      "category": "Weapons"
+    },
+    "2828613695": {
+      "displayName": "Apex Machete",
+      "debugName": "Weapon_T6_1H_SwordEpic_01",
+      "category": "Weapons"
+    },
     "2828800660": {
       "displayName": "Ornate Steel Double Door",
       "debugName": "_Prop_Decoration_T5_Door_Steel_ornate_Double",
       "category": "BuildTools"
+    },
+    "2829010645": {
+      "displayName": "Wolf's Hydra",
+      "debugName": "Craft_Weapon_T5_1H_Lore_Mace_ministory_04",
+      "category": "Weapons"
     },
     "2829385261": {
       "displayName": "Scavenger Gong",
@@ -9371,6 +10966,11 @@
       "displayName": "Fire Totem I",
       "debugName": "Ammo_T3_Spell_Fire_Totem_lvl17",
       "category": "Ammunition"
+    },
+    "2832157981": {
+      "displayName": "Meat Chopper",
+      "debugName": "Weapon_T3_1H_Axe_02",
+      "category": "Weapons"
     },
     "2832562682": {
       "displayName": "Aerated Banshee Gel",
@@ -9396,6 +10996,11 @@
       "displayName": "Steel Axe",
       "debugName": "Tool_T5_Axe_Steel_Coldheights",
       "category": "Tools"
+    },
+    "2837156111": {
+      "displayName": "Valor Heart Daggers",
+      "debugName": "Craft_Weapon_T3_2H_Lore_DaggersEpic_Parry_bard_Hint02",
+      "category": "Weapons"
     },
     "2837376937": {
       "displayName": "Wool",
@@ -9477,6 +11082,11 @@
       "debugName": "Build_TerrainMaterial_T7_AncientLand_Stone_Basalt",
       "category": "Materials"
     },
+    "2852876137": {
+      "displayName": "Curse Bringer Axe",
+      "debugName": "Weapon_T6_2H_GreatAxeEpic_02",
+      "category": "Weapons"
+    },
     "2854812789": {
       "displayName": "Hollow Cyclops Trophy",
       "debugName": "Prop_Decoration_Boss_Trophy_Skeleton_Heavy_01_wood",
@@ -9486,6 +11096,11 @@
       "displayName": "Grilled Specklefin",
       "debugName": "_Food_grilled_T7_fish_epic_04",
       "category": "Consumables"
+    },
+    "2860747780": {
+      "displayName": "Sacrificial Vukah Dagger",
+      "debugName": "Weapon_T1_2H_Lore_Daggers_townsfolk_female_02_hint_01",
+      "category": "Weapons"
     },
     "2861211892": {
       "displayName": "Enshrouded Cyclops Eye",
@@ -9527,6 +11142,11 @@
       "debugName": "Prop_Decoration_T6_Basket_Large_03",
       "category": "BuildTools"
     },
+    "2867801060": {
+      "displayName": "Enshrouded Axe",
+      "debugName": "Weapon_T3_1H_Axe_01",
+      "category": "Weapons"
+    },
     "2870560219": {
       "displayName": "Albaneve Summits Miniature Piece",
       "debugName": "Collection_Worldmap_coldHeights",
@@ -9557,10 +11177,25 @@
       "debugName": "Armor_T5_Warrior_Tank_Arms_Loot",
       "category": "Equipment"
     },
+    "2875621972": {
+      "displayName": "Wolf's Hydra",
+      "debugName": "Craft_Weapon_T6_1H_Lore_Mace_ministory_04",
+      "category": "Weapons"
+    },
     "2875641903": {
       "displayName": "Shock Wisp I",
       "debugName": "Ammo_T2_Spell_Lightning_Wisp_lvl12",
       "category": "Ammunition"
+    },
+    "2878180661": {
+      "displayName": "Horned Beast Bow",
+      "debugName": "Weapon_T5_2H_Bow_02",
+      "category": "Weapons"
+    },
+    "2878804719": {
+      "displayName": "Champion's Axe",
+      "debugName": "Weapon_T5_2H_GreatAxeEpic_02",
+      "category": "Weapons"
     },
     "2879496165": {
       "displayName": "Dune Armadillo Feeder",
@@ -9571,6 +11206,11 @@
       "displayName": "Warrior Arms",
       "debugName": "Armor_T2_Warrior_Rogue_Arms_Loot",
       "category": "Equipment"
+    },
+    "2882588243": {
+      "displayName": "Shellbreaker Daggers",
+      "debugName": "Weapon_T6_2H_Daggers_Poison",
+      "category": "Weapons"
     },
     "2883918272": {
       "displayName": "Licuala Seedling",
@@ -9612,6 +11252,11 @@
       "debugName": "Material_T7_Celesthium_Bar",
       "category": "Materials"
     },
+    "2894102737": {
+      "displayName": "Wolf's Hydra",
+      "debugName": "Craft_Weapon_T7_1H_Lore_Mace_ministory_04",
+      "category": "Weapons"
+    },
     "2894776039": {
       "displayName": "Chain Lightning II",
       "debugName": "Ammo_T7_Spell_Lightning_Chain_lvl47",
@@ -9636,6 +11281,11 @@
       "displayName": "Bronze Scavenger Scattershot Trophy",
       "debugName": "_Prop_Decoration_Boss_Trophy_Scavenger_Deepforest_Heavy_02_bronze",
       "category": "BuildTools"
+    },
+    "2901533456": {
+      "displayName": "Antler Bow",
+      "debugName": "Weapon_T3_2H_Bow_01",
+      "category": "Weapons"
     },
     "2901638773": {
       "displayName": "Tanning Station",
@@ -9662,6 +11312,11 @@
       "debugName": "Prop_Decoration_T0_Door_Round_Frame",
       "category": "BuildTools"
     },
+    "2908736852": {
+      "displayName": "Cryptic Wand",
+      "debugName": "Craft_Weapon_T5_1H_Lore_WandEpic_Ministory_09_Lightning",
+      "category": "Weapons"
+    },
     "2908794392": {
       "displayName": "Knight Chestplate",
       "debugName": "Armor_T3_Warrior_Rogue_Chest_Loot",
@@ -9672,6 +11327,11 @@
       "debugName": "_Flower_Pot_Medium_T3_NightFlower",
       "category": "BuildTools"
     },
+    "2913134461": {
+      "displayName": "Batwing Axe",
+      "debugName": "Weapon_T5_1H_Axe_02",
+      "category": "Weapons"
+    },
     "2913802289": {
       "displayName": "Maritime Shower",
       "debugName": "Prop_Decoration_Comfort8_T6_BathroomShower",
@@ -9681,6 +11341,11 @@
       "displayName": "Ultimate Mana Potion",
       "debugName": "Consumable_Potion_Mana_T6",
       "category": "Consumables"
+    },
+    "2916372744": {
+      "displayName": "Fell Black Knight Greatsword",
+      "debugName": "Weapon_T1-TX_2H_GreatSword_Enemy_Fogger_Knight",
+      "category": "Weapons"
     },
     "2917848991": {
       "displayName": "Crude Wooden Door",
@@ -9706,6 +11371,16 @@
       "displayName": "Trailblazer Hood",
       "debugName": "Armor_T5_Ranger_Sniper_Helmet",
       "category": "Equipment"
+    },
+    "2922416749": {
+      "displayName": "Staff Of The Serpent",
+      "debugName": "Craft_Weapon_T5_2H_StaffEpic_chineseNewYear_01",
+      "category": "Weapons"
+    },
+    "2924638789": {
+      "displayName": "Greater Golden Twinflame Sword",
+      "debugName": "Craft_Weapon_T5_1H_Lore_SwordEpic_ministory_28",
+      "category": "Weapons"
     },
     "2925532764": {
       "displayName": "Blue Floor Light II",
@@ -9751,6 +11426,11 @@
       "displayName": "Iron Scavenger Scattershot Trophy",
       "debugName": "_Prop_Decoration_Boss_Trophy_Scavenger_Deepforest_Heavy_03_iron",
       "category": "BuildTools"
+    },
+    "2936153518": {
+      "displayName": "Venomkiss",
+      "debugName": "Weapon_T4_2H_Daggers_Poison",
+      "category": "Weapons"
     },
     "2936889942": {
       "displayName": "Laurel Tree Seedling",
@@ -9806,6 +11486,21 @@
       "displayName": "Decorative Bells II",
       "debugName": "Prop_Decoration_T4_WinterProps_Bells02",
       "category": "BuildTools"
+    },
+    "2945755287": {
+      "displayName": "Staff Of Reeds",
+      "debugName": "Weapon_T6_2H_Staff_02",
+      "category": "Weapons"
+    },
+    "2946351228": {
+      "displayName": "Moon Rock Greatsword",
+      "debugName": "Weapon_T5_2H_GreatSwordEpic_01",
+      "category": "Weapons"
+    },
+    "2948392870": {
+      "displayName": "Ornate Greatsword",
+      "debugName": "Weapon_T2_2H_GreatSwordEpic_01",
+      "category": "Weapons"
     },
     "2949322768": {
       "displayName": "Health Potion +",
@@ -9866,6 +11561,11 @@
       "displayName": "Small Windmill Sails",
       "debugName": "Prop_Production_T6_Wind_Mill_Power_Small",
       "category": "BuildTools"
+    },
+    "2964612679": {
+      "displayName": "Death Gazer Axe",
+      "debugName": "Weapon_T6_1H_AxeEpic_01",
+      "category": "Weapons"
     },
     "2965594491": {
       "displayName": "Support Strut",
@@ -10097,6 +11797,26 @@
       "debugName": "Prop_Decoration_Comfort_T6_Pillow_Heart",
       "category": "BuildTools"
     },
+    "3025469016": {
+      "displayName": "Nightnebula",
+      "debugName": "Weapon_T4_2H_DaggersEpic_Parry",
+      "category": "Weapons"
+    },
+    "3025766089": {
+      "displayName": "Greater Thunderblast Axe",
+      "debugName": "Weapon_T4_2H_GreatAxeEpic_01",
+      "category": "Weapons"
+    },
+    "3026017602": {
+      "displayName": "Provisional Scythe",
+      "debugName": "Weapon_T1-TX_1H_Axe_Enemy_Scavenger",
+      "category": "Weapons"
+    },
+    "3027796816": {
+      "displayName": "Aurora Sword",
+      "debugName": "Weapon_T5_1H_SwordEpic_02",
+      "category": "Weapons"
+    },
     "3029242112": {
       "displayName": "Mystic Chest",
       "debugName": "Armor_T3_Mage_BattleWand_Chest_Loot",
@@ -10116,6 +11836,11 @@
       "displayName": "Hollow Halls Showcase (3 Small Slots)",
       "debugName": "Prop_Collection_02_Skeletons_Showcase_3SSlot",
       "category": "BuildTools"
+    },
+    "3034847985": {
+      "displayName": "Masterful Mace",
+      "debugName": "Weapon_T1_2H_Hammer_01",
+      "category": "Weapons"
     },
     "3035636701": {
       "displayName": "Gloomberry Flower",
@@ -10207,10 +11932,20 @@
       "debugName": "Armor_T5_Ranger_Assassin_Legs",
       "category": "Equipment"
     },
+    "3054076942": {
+      "displayName": "Wildheart Seekers",
+      "debugName": "Weapon_T3_2H_Daggers_Parry_Poison",
+      "category": "Weapons"
+    },
     "3056375359": {
       "displayName": "Archmage Hat",
       "debugName": "Armor_T4_Mage_Wizard_DPS_Helmet",
       "category": "Equipment"
+    },
+    "3056420264": {
+      "displayName": "Makeshift Daggers",
+      "debugName": "Weapon_T1_2H_DaggersEpic_Parry",
+      "category": "Weapons"
     },
     "3057351533": {
       "displayName": "Orange Pendant Light I",
@@ -10237,6 +11972,11 @@
       "debugName": "Prop_Decoration_Comfort_T4_Pillow_cylinder",
       "category": "BuildTools"
     },
+    "3068246206": {
+      "displayName": "Blood Omen Axe",
+      "debugName": "Weapon_T6_2H_GreatAxe_02",
+      "category": "Weapons"
+    },
     "3069345802": {
       "displayName": "Basket III",
       "debugName": "Prop_Decoration_T3_Basket_03",
@@ -10246,6 +11986,11 @@
       "displayName": "Decorative Oven II",
       "debugName": "Prop_Decoration_TX_Decorative_Oven_02",
       "category": "BuildTools"
+    },
+    "3070173423": {
+      "displayName": "Reaper's Wand",
+      "debugName": "Craft_Weapon_T4_1H_Lore_Wand_Ministory_02_Lightning",
+      "category": "Weapons"
     },
     "3072049069": {
       "displayName": "Ancient Ceiling Mobile I",
@@ -10277,6 +12022,11 @@
       "debugName": "Prop_Decoration_T5_Flagpole_06",
       "category": "BuildTools"
     },
+    "3084416953": {
+      "displayName": "Lightning Shaman Staff",
+      "debugName": "Weapon_T1-TX_2H_Staff_Enemy_Vukah_Shaman_Lightning_Elite",
+      "category": "Weapons"
+    },
     "3084703100": {
       "displayName": "Archaic Core",
       "debugName": "Material_T7_Archaic_Core",
@@ -10291,6 +12041,11 @@
       "displayName": "Jester Hat",
       "debugName": "Vanity_TX_Helmet_03_jester",
       "category": "Equipment"
+    },
+    "3090479094": {
+      "displayName": "Blackened Staff",
+      "debugName": "Weapon_T3_2H_StaffEpic_01",
+      "category": "Weapons"
     },
     "3091686369": {
       "displayName": "Soldier Helmet",
@@ -10316,6 +12071,11 @@
       "displayName": "Crestflame Pants",
       "debugName": "Armor_T7_Warrior_Tank_Legs_Loot",
       "category": "Equipment"
+    },
+    "3096148752": {
+      "displayName": "Valor Heart Daggers",
+      "debugName": "Craft_Weapon_T7_2H_Lore_DaggersEpic_Parry_bard_Hint02",
+      "category": "Weapons"
     },
     "3098589233": {
       "displayName": "High Crude Wooden Shelf",
@@ -10352,6 +12112,11 @@
       "debugName": "Prop_Decoration_T2_Bucket_Wood",
       "category": "BuildTools"
     },
+    "3108868150": {
+      "displayName": "Sacrificial Vukah Dagger",
+      "debugName": "Craft_Weapon_T2_2H_Lore_Daggers_townsfolk_female_02_hint_01",
+      "category": "Weapons"
+    },
     "3108885274": {
       "displayName": "Open Copper Jar",
       "debugName": "Prop_Furniture_Distillery_Pot_01",
@@ -10361,6 +12126,11 @@
       "displayName": "Secret Stone Door",
       "debugName": "Base_Door_Secret_Stone01",
       "category": "BuildTools"
+    },
+    "3116439516": {
+      "displayName": "Candlelight Wand",
+      "debugName": "Weapon_T7_1H_WandEpic_02_Fire",
+      "category": "Weapons"
     },
     "3116457914": {
       "displayName": "Serpent Warrior Gloves",
@@ -10381,6 +12151,11 @@
       "displayName": "Cauldron",
       "debugName": "Prop_Furniture_Cauldron_01",
       "category": "BuildTools"
+    },
+    "3120360892": {
+      "displayName": "Nocturnal Axe",
+      "debugName": "Weapon_T7_1H_Axe_01",
+      "category": "Weapons"
     },
     "3121223720": {
       "displayName": "Bamboo Fence Pole",
@@ -10431,6 +12206,11 @@
       "displayName": "Coconut Milk",
       "debugName": "Food_T6_processed_hydration_CoconutMilk",
       "category": "Consumables"
+    },
+    "3131462859": {
+      "displayName": "Staff Of The Serpent",
+      "debugName": "Craft_Weapon_T1_2H_StaffEpic_chineseNewYear_01",
+      "category": "Weapons"
     },
     "3132196839": {
       "displayName": "Simple Wooden Pole",
@@ -10487,6 +12267,11 @@
       "debugName": "_Consumable_ShroudPheromone_Grenade_T3",
       "category": "Weapons"
     },
+    "3145841208": {
+      "displayName": "Hailscourge",
+      "debugName": "Craft_Weapon_T4_1H_Lore_SwordEpic_Ministory_04",
+      "category": "Weapons"
+    },
     "3147026944": {
       "displayName": "Granite Shingle Roof Block",
       "debugName": "Block_Roof_T5_Granite_Shingles",
@@ -10516,6 +12301,11 @@
       "displayName": "Vat II",
       "debugName": "Prop_Decoration_T2_Vat_Wooden02",
       "category": "BuildTools"
+    },
+    "3153911934": {
+      "displayName": "Jezmina's Apotheosis",
+      "debugName": "Weapon_T3_1H_Lore_AxeEpic_Ministory_02",
+      "category": "Weapons"
     },
     "3155995947": {
       "displayName": "Big Blackmire Statue I",
@@ -10572,6 +12362,11 @@
       "debugName": "Armor_T4_Mage_BattleSword_Boots_Loot",
       "category": "Equipment"
     },
+    "3168936309": {
+      "displayName": "Dark Staff",
+      "debugName": "Weapon_T3_2H_Staff_01",
+      "category": "Weapons"
+    },
     "3169292847": {
       "displayName": "Ice Bolt I",
       "debugName": "Ammo_T1_Spell_Ice_Bolt_lvl5",
@@ -10601,6 +12396,11 @@
       "displayName": "Gloomberry",
       "debugName": "Food_T2_raw_nightplant_NightBerry",
       "category": "Consumables"
+    },
+    "3174763756": {
+      "displayName": "Shroudbinder Wand",
+      "debugName": "Weapon_T3_1H_WandEpic_01_Fog",
+      "category": "Weapons"
     },
     "3178080467": {
       "displayName": "Desert City Wall",
@@ -10652,6 +12452,16 @@
       "debugName": "Armor_T4_MultiClass_SkeletonArmor_Helmet",
       "category": "Equipment"
     },
+    "3188079984": {
+      "displayName": "Lunar Tides Bow",
+      "debugName": "Weapon_T7_2H_Bow_01",
+      "category": "Weapons"
+    },
+    "3192770947": {
+      "displayName": "Shroud Weaver",
+      "debugName": "Weapon_T4_2H_Lore_StaffEpic_ministory_17",
+      "category": "Weapons"
+    },
     "3194809909": {
       "displayName": "Secret Bookshelf Door",
       "debugName": "Base_Shelf_Secret_01_Fake",
@@ -10687,6 +12497,16 @@
       "debugName": "Prop_Decoration_Comfort_T4_Wall_Painting_7",
       "category": "BuildTools"
     },
+    "3202192501": {
+      "displayName": "Drak'Dal Spine",
+      "debugName": "Weapon_T6_1H_Sword_02",
+      "category": "Weapons"
+    },
+    "3202972148": {
+      "displayName": "Megalodon Greatsword",
+      "debugName": "Weapon_T6_2H_GreatSwordEpic_01",
+      "category": "Weapons"
+    },
     "3203382450": {
       "displayName": "Royal Gloves",
       "debugName": "Vanity_T2_Royal_Gloves",
@@ -10711,6 +12531,11 @@
       "displayName": "Celestium Jug",
       "debugName": "Prop_Decoration_T7_Jug_Celesthium",
       "category": "BuildTools"
+    },
+    "3205048904": {
+      "displayName": "Tainted Axe",
+      "debugName": "Weapon_T1_1H_AxeEpic_01",
+      "category": "Weapons"
     },
     "3205476444": {
       "displayName": "Orrery Display Pillar",
@@ -10782,10 +12607,20 @@
       "debugName": "Prop_Decoration_T4_Platter_Crystal",
       "category": "BuildTools"
     },
+    "3226031787": {
+      "displayName": "Bow Of The Serpent",
+      "debugName": "Craft_Weapon_T7_2H_BowEpic_chineseNewYear_01",
+      "category": "Weapons"
+    },
     "3229096192": {
       "displayName": "Coloring Station",
       "debugName": "_Prop_Production_T2_ColoringStation",
       "category": "BuildTools"
+    },
+    "3231907188": {
+      "displayName": "Sacrificial Vukah Dagger",
+      "debugName": "Craft_Weapon_T5_2H_Lore_Daggers_townsfolk_female_02_hint_01",
+      "category": "Weapons"
     },
     "3232269711": {
       "displayName": "Nomad Highlands Rubble",
@@ -10802,6 +12637,11 @@
       "debugName": "Armor_T2_Ranger_Assassin_Arms_Loot",
       "category": "Equipment"
     },
+    "3233786830": {
+      "displayName": "Darya's Remorse",
+      "debugName": "Craft_Weapon_T7_1H_Lore_Wand_ministory_06_fog",
+      "category": "Weapons"
+    },
     "3234886486": {
       "displayName": "Shroud Infused Farm Soil",
       "debugName": "Build_TerrainMaterial_T5_Farmsoil_ShroudInfused",
@@ -10816,6 +12656,11 @@
       "displayName": "Polished Wooden Throne",
       "debugName": "Prop_Decoration_Comfort5_T2_Throne",
       "category": "BuildTools"
+    },
+    "3238923785": {
+      "displayName": "White Wolf Sword",
+      "debugName": "Weapon_T2_1H_SwordEpic_01",
+      "category": "Weapons"
     },
     "3242073014": {
       "displayName": "Drak Relief III",
@@ -10837,6 +12682,11 @@
       "debugName": "_Prop_T7_Player_GemForge",
       "category": "BuildTools"
     },
+    "3252787120": {
+      "displayName": "Torchlight Staff",
+      "debugName": "Weapon_T5_2H_Staff_03",
+      "category": "Weapons"
+    },
     "3252953392": {
       "displayName": "Measuring Device I",
       "debugName": "Prop_Decoration_T7_AncientAstronomy_MeasuringDevice_01",
@@ -10857,6 +12707,11 @@
       "debugName": "Prop_Decoration_Comfort9_T7_Templeprop_Bench_01",
       "category": "BuildTools"
     },
+    "3258711765": {
+      "displayName": "Sword Of The Serpent",
+      "debugName": "Craft_Weapon_T5_1H_SwordEpic_chineseNewYear_01",
+      "category": "Weapons"
+    },
     "3259443869": {
       "displayName": "Collection Of Books I",
       "debugName": "Prop_Decoration_Book_Pile_01_A",
@@ -10872,6 +12727,11 @@
       "debugName": "Material_T1_CritterParts",
       "category": "Materials"
     },
+    "3265226455": {
+      "displayName": "Wailing Blade",
+      "debugName": "Craft_Weapon_T1_1H_Lore_SwordEpic_Ministory_09",
+      "category": "Weapons"
+    },
     "3266681262": {
       "displayName": "Guard of the North Chestplate",
       "debugName": "Armor_T2_MultiClass_FogPowered_Chest_ministory_13",
@@ -10881,6 +12741,11 @@
       "displayName": "Herbal Mountain Tea",
       "debugName": "Food_T5_dish_hydration_HerbTea",
       "category": "Consumables"
+    },
+    "3270175842": {
+      "displayName": "Blizzard Wand",
+      "debugName": "Weapon_T5_1H_WandEpic_01_Ice",
+      "category": "Weapons"
     },
     "3270347800": {
       "displayName": "Giant Bone Arrow II",
@@ -10952,6 +12817,11 @@
       "debugName": "Vanity_T2_Faedeer_Chest",
       "category": "Equipment"
     },
+    "3296468834": {
+      "displayName": "Mace of Denial",
+      "debugName": "Weapon_T5_1H_Mace_02",
+      "category": "Weapons"
+    },
     "3298516900": {
       "displayName": "Gold Vukah Brawler Trophy",
       "debugName": "Prop_Decoration_Boss_Trophy_Vukah_04_gold",
@@ -10977,6 +12847,11 @@
       "debugName": "Armor_T1_Mage_Wizard_DPS_Arms",
       "category": "Equipment"
     },
+    "3304320872": {
+      "displayName": "Executioner's Axe",
+      "debugName": "Weapon_T1_2H_GreatAxe_01",
+      "category": "Weapons"
+    },
     "3304880057": {
       "displayName": "Irrigation Gate Small",
       "debugName": "Prop_WaterGate_Small",
@@ -11001,6 +12876,11 @@
       "displayName": "Bronze Platter",
       "debugName": "Prop_Decoration_T3_Platter_Bronze",
       "category": "BuildTools"
+    },
+    "3308817829": {
+      "displayName": "Fell Marksman Bow",
+      "debugName": "Weapon_T2-TX_2H_Bow_Enemy_Fogger_Ranger_Armored",
+      "category": "Weapons"
     },
     "3309720680": {
       "displayName": "Dagger Wall Mount",
@@ -11061,6 +12941,11 @@
       "displayName": "Limestone Road Block",
       "debugName": "Build_TerrainMaterial_T3_Road_Stone_3",
       "category": "Materials"
+    },
+    "3323951069": {
+      "displayName": "Greater Golden Twinflame Sword",
+      "debugName": "Weapon_T5_1H_Lore_SwordEpic_ministory_28",
+      "category": "Weapons"
     },
     "3325960453": {
       "displayName": "Large Stone Arc",
@@ -11131,6 +13016,11 @@
       "displayName": "Drak Stone Totem I",
       "debugName": "Prop_Decoration_T6_Wetland_King_Statue",
       "category": "BuildTools"
+    },
+    "3342004247": {
+      "displayName": "Ignited Hammer",
+      "debugName": "Weapon_T3_2H_HammerEpic_01",
+      "category": "Weapons"
     },
     "3342011345": {
       "displayName": "Explosive Arrow III",
@@ -11207,6 +13097,11 @@
       "debugName": "T6_Seedling_CoffeePlant",
       "category": "BuildTools"
     },
+    "3360155667": {
+      "displayName": "Lorekeeper's Greatsword",
+      "debugName": "Weapon_T7_2H_GreatSword_01",
+      "category": "Weapons"
+    },
     "3360608010": {
       "displayName": "Hazelnut",
       "debugName": "Food_T2_raw_grain_Hazelnut",
@@ -11241,6 +13136,11 @@
       "displayName": "Fae Deer Food Bait",
       "debugName": "Food_T2_Catdeer_Bait",
       "category": "AnimalFood"
+    },
+    "3371766557": {
+      "displayName": "Shepherd's Lightning",
+      "debugName": "Weapon_T1_2H_StaffEpic_01",
+      "category": "Weapons"
     },
     "3372636314": {
       "displayName": "Carved Wooden Window Frame I",
@@ -11302,6 +13202,11 @@
       "debugName": "Prop_NPC_barber_hairstyle_dummy_wigHead_04_slickFade",
       "category": "BuildTools"
     },
+    "3381457474": {
+      "displayName": "Ironheart Greatsword",
+      "debugName": "Weapon_T3_2H_GreatSword_02",
+      "category": "Weapons"
+    },
     "3381543901": {
       "displayName": "Bronze Fell Sicklescythe Trophy",
       "debugName": "Prop_Decoration_Boss_Trophy_Fell_HeavyMage_02_bronze",
@@ -11351,6 +13256,11 @@
       "displayName": "Magician Chest",
       "debugName": "Armor_T3_Mage_Wizard_DPS_Chest_Loot",
       "category": "Equipment"
+    },
+    "3397273990": {
+      "displayName": "Horn Daggers",
+      "debugName": "Weapon_T5_2H_Daggers_DPS",
+      "category": "Weapons"
     },
     "3397322687": {
       "displayName": "Herbalist Pants",
@@ -11407,6 +13317,11 @@
       "debugName": "Material_T2_CorruptedBoarTusk",
       "category": "Materials"
     },
+    "3405497023": {
+      "displayName": "Nova",
+      "debugName": "Weapon_T4_1H_SwordEpic_02",
+      "category": "Weapons"
+    },
     "3406484035": {
       "displayName": "Granite Throne",
       "debugName": "Prop_Decoration_Comfort8_T5_Throne_Granite",
@@ -11442,6 +13357,11 @@
       "debugName": "Armor_T5_Mage_Wizard_DPS_Boots_Loot",
       "category": "Equipment"
     },
+    "3412482507": {
+      "displayName": "Crystal Knives",
+      "debugName": "Weapon_T5_2H_DaggersEpic_Poison",
+      "category": "Weapons"
+    },
     "3413337702": {
       "displayName": "Bamboo Room Divider I",
       "debugName": "Prop_Decoration_T6_Lizard_Support_4m_01_A",
@@ -11476,6 +13396,11 @@
       "displayName": "Emberfin",
       "debugName": "_Food_raw_bad_T4_fish_rare_01",
       "category": "Consumables"
+    },
+    "3419190942": {
+      "displayName": "Frozen Core Wand",
+      "debugName": "Weapon_T1_1H_WandEpic_02_Ice",
+      "category": "Weapons"
     },
     "3419379175": {
       "displayName": "Astronomy Standing Lamp",
@@ -11536,6 +13461,11 @@
       "displayName": "Prison Fence",
       "debugName": "Prop_Decoration_T4_Fence_Prison",
       "category": "BuildTools"
+    },
+    "3434497058": {
+      "displayName": "Dragon Sword",
+      "debugName": "Craft_Weapon_T4_1H_Lore_SwordEpic_ministory_29",
+      "category": "Weapons"
     },
     "3436474234": {
       "displayName": "Health Potion",
@@ -11627,6 +13557,11 @@
       "debugName": "Armor_T4_Mage_Wizard_DPS_Chest_Loot",
       "category": "Equipment"
     },
+    "3460833343": {
+      "displayName": "Horned Greatsword",
+      "debugName": "Weapon_T6_2H_GreatSwordEpic_02",
+      "category": "Weapons"
+    },
     "3460936505": {
       "displayName": "Room Divider \"Snake\"",
       "debugName": "Prop_Decoration_T5_CNY_Divider_03",
@@ -11641,6 +13576,16 @@
       "displayName": "Thyme",
       "debugName": "Food_T7_raw_herb_Thyme",
       "category": "Consumables"
+    },
+    "3467068456": {
+      "displayName": "Nightwind Bow",
+      "debugName": "Weapon_T2_2H_Bow_01",
+      "category": "Weapons"
+    },
+    "3468599477": {
+      "displayName": "Clearwater Staff",
+      "debugName": "Weapon_T5_2H_Staff_02",
+      "category": "Weapons"
     },
     "3469357538": {
       "displayName": "Lever With Indicator",
@@ -11697,6 +13642,16 @@
       "debugName": "Animal_Pet_Dog_03_Brown",
       "category": "BuildTools"
     },
+    "3484636804": {
+      "displayName": "Rattlesnake Bow",
+      "debugName": "Weapon_T6_2H_Bow_01",
+      "category": "Weapons"
+    },
+    "3486546660": {
+      "displayName": "Guillotine",
+      "debugName": "Weapon_T1_2H_GreatAxeEpic_01",
+      "category": "Weapons"
+    },
     "3486560156": {
       "displayName": "Pink Mushroom Meat",
       "debugName": "Material_T6_MushroomDrop_PinkMushroomMeat",
@@ -11706,6 +13661,11 @@
       "displayName": "Quetzal Hunter Shoes",
       "debugName": "Armor_T6_Ranger_Archer_DPS_Boots",
       "category": "Equipment"
+    },
+    "3488008219": {
+      "displayName": "Bow Of The Serpent",
+      "debugName": "Craft_Weapon_T6_2H_BowEpic_chineseNewYear_01",
+      "category": "Weapons"
     },
     "3488815830": {
       "displayName": "Large Ancient Table",
@@ -11766,6 +13726,11 @@
       "displayName": "Golden Ball",
       "debugName": "ColorPalette_T6_ColorPalette_Reward_04",
       "category": "ColorPalette"
+    },
+    "3502536665": {
+      "displayName": "Extinguished Sword",
+      "debugName": "Weapon_T4_1H_Sword_01",
+      "category": "Weapons"
     },
     "3502973158": {
       "displayName": "Tarred Shingle Roof Block",
@@ -11867,6 +13832,11 @@
       "debugName": "T6_Seedling_Grain_Rice",
       "category": "BuildTools"
     },
+    "3521922296": {
+      "displayName": "Fireblood",
+      "debugName": "Weapon_T4_2H_HammerEpic_01",
+      "category": "Weapons"
+    },
     "3522105835": {
       "displayName": "Violet Fabric",
       "debugName": "Material_T5_Fabric_Violet",
@@ -11887,10 +13857,20 @@
       "debugName": "Armor_T4_Ranger_Archer_DPS_Helmet_Loot",
       "category": "Equipment"
     },
+    "3527909057": {
+      "displayName": "Bow",
+      "debugName": "Weapon_T0_2H_Bow_Improvised_Craft",
+      "category": "Weapons"
+    },
     "3529288638": {
       "displayName": "Sushi",
       "debugName": "Food_T6_dish_fish_Sushi",
       "category": "Consumables"
+    },
+    "3530269879": {
+      "displayName": "Fenrig's Axe",
+      "debugName": "Craft_Weapon_T3_1H_Lore_Axe_Ministory_10",
+      "category": "Weapons"
     },
     "3531113233": {
       "displayName": "Iron Hydrak'Dal Trophy",
@@ -11902,10 +13882,25 @@
       "debugName": "Armor_T2_Mage_Wizard_DPS_Chest_Loot",
       "category": "Equipment"
     },
+    "3533038097": {
+      "displayName": "Sword of Radiance",
+      "debugName": "Weapon_T3_1H_SwordEpic_01",
+      "category": "Weapons"
+    },
+    "3534558679": {
+      "displayName": "Fearsome Club",
+      "debugName": "Weapon_T4_1H_MaceEpic_01",
+      "category": "Weapons"
+    },
     "3534930699": {
       "displayName": "Empty Lily Pot",
       "debugName": "Empty_Flower_Pot_CNY_Empty_01b",
       "category": "BuildTools"
+    },
+    "3536356032": {
+      "displayName": "Spiritual Cane",
+      "debugName": "Weapon_T1_2H_Staff_Craft",
+      "category": "Weapons"
     },
     "3536879371": {
       "displayName": "Standing Lantern",
@@ -11916,6 +13911,11 @@
       "displayName": "Scrap Ladle",
       "debugName": "Prop_Decoration_T1_Ladle_Scrap",
       "category": "BuildTools"
+    },
+    "3540633303": {
+      "displayName": "Pine Shortbow",
+      "debugName": "Weapon_T1_2H_Bow_03",
+      "category": "Weapons"
     },
     "3541979658": {
       "displayName": "Large Bamboo Basket",
@@ -11931,6 +13931,11 @@
       "displayName": "Prison Fence Pole",
       "debugName": "Prop_Decoration_T4_Prison_Pole_Fixed",
       "category": "BuildTools"
+    },
+    "3548335929": {
+      "displayName": "Lupa's Scalper",
+      "debugName": "Weapon_T3_1H_Lore_DaggersEpic_DPS_hunter_hint04",
+      "category": "Weapons"
     },
     "3548539501": {
       "displayName": "Glimmer Gentian",
@@ -12007,10 +14012,25 @@
       "debugName": "Armor_T4_Mage_BattleSword_Chest_Loot",
       "category": "Equipment"
     },
+    "3566462451": {
+      "displayName": "Infernal Wand",
+      "debugName": "Weapon_T2_1H_Wand_01_Fire",
+      "category": "Weapons"
+    },
+    "3566731447": {
+      "displayName": "Dragon Sword",
+      "debugName": "Craft_Weapon_T5_1H_Lore_SwordEpic_ministory_29",
+      "category": "Weapons"
+    },
     "3566928922": {
       "displayName": "Bronze Scavenger Matron Trophy",
       "debugName": "Prop_Decoration_Boss_Trophy_Scavenger_Mage_02_bronze",
       "category": "BuildTools"
+    },
+    "3567673697": {
+      "displayName": "Solstice Daggers",
+      "debugName": "Weapon_T7_2H_Daggers_DPS",
+      "category": "Weapons"
     },
     "3568382178": {
       "displayName": "Vorgoth's Eye Trophy",
@@ -12026,6 +14046,11 @@
       "displayName": "Gold Fell Thunderbrute Trophy",
       "debugName": "Prop_Decoration_Boss_Trophy_Fell_Heavy_04_gold",
       "category": "BuildTools"
+    },
+    "3570989791": {
+      "displayName": "Shroud Weaver",
+      "debugName": "Craft_Weapon_T5_2H_Lore_StaffEpic_ministory_17",
+      "category": "Weapons"
     },
     "3571051592": {
       "displayName": "Trapdoor Stone 4m",
@@ -12067,6 +14092,11 @@
       "debugName": "Build_TerrainMaterial_T2_TallTree_TreeHouseHull",
       "category": "Materials"
     },
+    "3578254606": {
+      "displayName": "Draconian Bow",
+      "debugName": "Craft_Weapon_T6_2H_Lore_BowEpic_ministory_19",
+      "category": "Weapons"
+    },
     "3580780628": {
       "displayName": "Tarpaulin Corner",
       "debugName": "_Prop_Decoration_T4_Tarpaulin_02_Corner",
@@ -12081,6 +14111,16 @@
       "displayName": "Yak Feeder",
       "debugName": "Animal_Farm_Feeder_Yak",
       "category": "BuildTools"
+    },
+    "3583521141": {
+      "displayName": "Nightfall",
+      "debugName": "Weapon_T4_2H_Daggers_Parry",
+      "category": "Weapons"
+    },
+    "3584171520": {
+      "displayName": "Dragon Sword",
+      "debugName": "Craft_Weapon_T7_1H_Lore_SwordEpic_ministory_29",
+      "category": "Weapons"
     },
     "3585387192": {
       "displayName": "Big Ammonite",
@@ -12151,6 +14191,16 @@
       "displayName": "Petrified Shroud Stalker Shell",
       "debugName": "Material_T3_PetrifiedFellShell",
       "category": "Materials"
+    },
+    "3595411093": {
+      "displayName": "Copperblade Greatsword",
+      "debugName": "Weapon_T2_2H_GreatSword_01",
+      "category": "Weapons"
+    },
+    "3597494234": {
+      "displayName": "Drak Whistle Bow",
+      "debugName": "Weapon_T6_2H_BowEpic_01",
+      "category": "Weapons"
     },
     "3599207220": {
       "displayName": "Mothling Hood",
@@ -12242,6 +14292,11 @@
       "debugName": "Prop_Decoration_T2_Fence_Wood_Tavern_Corner",
       "category": "BuildTools"
     },
+    "3618171376": {
+      "displayName": "Circus Knives",
+      "debugName": "Craft_Weapon_T7_2H_Lore_Daggers_DPS_ministory_02",
+      "category": "Weapons"
+    },
     "3619077986": {
       "displayName": "Rustic Chair",
       "debugName": "Prop_Decoration_Comfort3_T2_Chair_TallTree_Stool",
@@ -12282,10 +14337,30 @@
       "debugName": "T2_Seedling_Deepforest_Tree_02",
       "category": "BuildTools"
     },
+    "3623495333": {
+      "displayName": "Mace of Wrath",
+      "debugName": "Weapon_T5_1H_MaceEpic_02",
+      "category": "Weapons"
+    },
+    "3623508713": {
+      "displayName": "Wooden Tooth",
+      "debugName": "Weapon_T3_2H_Hammer_02",
+      "category": "Weapons"
+    },
+    "3626685627": {
+      "displayName": "Draconian Bow",
+      "debugName": "Craft_Weapon_T7_2H_Lore_BowEpic_ministory_19",
+      "category": "Weapons"
+    },
     "3627519922": {
       "displayName": "Fancy Stone Block",
       "debugName": "Block_T3_Dungeon_Fancy_REWARD",
       "category": "BuildTools"
+    },
+    "3628655306": {
+      "displayName": "Dreadbane",
+      "debugName": "Craft_Weapon_T6_2H_Lore_HammerEpic_ministory_14",
+      "category": "Weapons"
     },
     "3633377406": {
       "displayName": "Spellweaver Boots",
@@ -12362,6 +14437,11 @@
       "debugName": "Vanity_TX_CNY_snakeArmor_Boots",
       "category": "Equipment"
     },
+    "3650841772": {
+      "displayName": "Sinister Crescent Staff",
+      "debugName": "Weapon_TX_2H_Staff_HollowHall",
+      "category": "Weapons"
+    },
     "3652154887": {
       "displayName": "\"Afro\" Wig Head",
       "debugName": "Prop_NPC_barber_hairstyle_dummy_wigHead_05_afro",
@@ -12386,6 +14466,16 @@
       "displayName": "Palm Wood Side Table",
       "debugName": "Prop_Decoration_Comfort5_T4_Table_Small",
       "category": "BuildTools"
+    },
+    "3657818170": {
+      "displayName": "Elder's Staff",
+      "debugName": "Weapon_T2_2H_Staff_01",
+      "category": "Weapons"
+    },
+    "3657930477": {
+      "displayName": "Androme's Wand",
+      "debugName": "Weapon_T7_1H_WandEpic_01_Ice",
+      "category": "Weapons"
     },
     "3660770821": {
       "displayName": "Corn Seedling",
@@ -12416,6 +14506,16 @@
       "displayName": "Bamboo Bar Counter",
       "debugName": "Prop_Decoration_Comfort6_T6_BarCounter_Bamboo",
       "category": "BuildTools"
+    },
+    "3670734309": {
+      "displayName": "Dragon Sword",
+      "debugName": "Weapon_T3_1H_Lore_SwordEpic_ministory_29",
+      "category": "Weapons"
+    },
+    "3671319442": {
+      "displayName": "Greater Golden Twinflame Sword",
+      "debugName": "Craft_Weapon_T6_1H_Lore_SwordEpic_ministory_28",
+      "category": "Weapons"
     },
     "3671680423": {
       "displayName": "Wood Wall III",
@@ -12562,6 +14662,11 @@
       "debugName": "Prop_Decoration_T3_Window_Ornamented_Stone_Frame",
       "category": "BuildTools"
     },
+    "3701660969": {
+      "displayName": "Reaper's Wand",
+      "debugName": "Craft_Weapon_T2_1H_Lore_Wand_Ministory_02_Lightning",
+      "category": "Weapons"
+    },
     "3702590848": {
       "displayName": "Green Vitriol Dust",
       "debugName": "Material_T6_Green_Vitriol_Dust",
@@ -12642,6 +14747,11 @@
       "debugName": "Prop_Decoration_T7_AncientAstronomy_TelescopeHuge",
       "category": "BuildTools"
     },
+    "3717136224": {
+      "displayName": "Valor Heart Daggers",
+      "debugName": "Craft_Weapon_T4_2H_Lore_DaggersEpic_Parry_bard_Hint02",
+      "category": "Weapons"
+    },
     "3718138326": {
       "displayName": "Instrument Holder",
       "debugName": "_Prop_Collection_InstrumentHolder_Wall",
@@ -12651,6 +14761,11 @@
       "displayName": "Large Quick Stack Station",
       "debugName": "Prop_Storage_Loot_Drop_Station_24x24",
       "category": "BuildTools"
+    },
+    "3719363460": {
+      "displayName": "Sun Axe",
+      "debugName": "Weapon_T4_1H_Axe_02",
+      "category": "Weapons"
     },
     "3721356294": {
       "displayName": "Red Marble Block",
@@ -12677,6 +14792,11 @@
       "debugName": "Material_T5_Silver_Dust",
       "category": "Materials"
     },
+    "3729741852": {
+      "displayName": "Rotblood",
+      "debugName": "Weapon_T4_2H_Hammer_01",
+      "category": "Weapons"
+    },
     "3730853320": {
       "displayName": "Supply Sacks V",
       "debugName": "Prop_Decoration_T1_Sacks_05",
@@ -12697,10 +14817,20 @@
       "debugName": "Prop_Logic_Trigger",
       "category": "BuildTools"
     },
+    "3739626235": {
+      "displayName": "Cryptic Wand",
+      "debugName": "Weapon_T2_1H_Lore_WandEpic_Ministory_09_Lightning",
+      "category": "Weapons"
+    },
     "3744591176": {
       "displayName": "Meat Wrap",
       "debugName": "Food_T4_dish_meat_cooked_Wrap",
       "category": "Consumables"
+    },
+    "3748173823": {
+      "displayName": "Wand",
+      "debugName": "Weapon_T0_1H_Wand_Bone_Ice_Craft",
+      "category": "Weapons"
     },
     "3748695465": {
       "displayName": "Silver Key",
@@ -12716,6 +14846,11 @@
       "displayName": "Tin Ore",
       "debugName": "Material_T3_Ore_Tin",
       "category": "Materials"
+    },
+    "3750983634": {
+      "displayName": "Frost Wand",
+      "debugName": "Weapon_T5_1H_Wand_01_Ice",
+      "category": "Weapons"
     },
     "3752044615": {
       "displayName": "Mercenary Gloves",
@@ -12761,6 +14896,11 @@
       "displayName": "Scrap Bucket",
       "debugName": "Prop_Decoration_T1_Bucket_Scrap",
       "category": "BuildTools"
+    },
+    "3761463611": {
+      "displayName": "Frost Smasher",
+      "debugName": "Weapon_T5_2H_HammerEpic_01",
+      "category": "Weapons"
     },
     "3761680048": {
       "displayName": "Shroud Arrow I",
@@ -12827,6 +14967,11 @@
       "debugName": "Flower_Pot_Medium_StJohnswort",
       "category": "BuildTools"
     },
+    "3775746254": {
+      "displayName": "Wolf's Claw",
+      "debugName": "Weapon_T2_1H_Axe_01",
+      "category": "Weapons"
+    },
     "3775747292": {
       "displayName": "Fired Bricks Block",
       "debugName": "Block_T2_Loam_FiredBricks_CRAFTING",
@@ -12857,10 +15002,20 @@
       "debugName": "Prop_Decoration_Comfort2_T1_Bench",
       "category": "BuildTools"
     },
+    "3786259260": {
+      "displayName": "Staff Of The Serpent",
+      "debugName": "Weapon_T1_2H_StaffEpic_chineseNewYear_01",
+      "category": "Weapons"
+    },
     "3787344002": {
       "displayName": "Fertile Nomad Highlands Dirt",
       "debugName": "Build_TerrainMaterial_T3_Steppes_fertile_Highgrass",
       "category": "Materials"
+    },
+    "3791962857": {
+      "displayName": "Darya's Staff",
+      "debugName": "Weapon_T5_2H_Lore_Staff_ministory_29",
+      "category": "Weapons"
     },
     "3794499900": {
       "displayName": "Cup Runneth Over",
@@ -12922,6 +15077,11 @@
       "debugName": "T5_Seedling_Pine",
       "category": "BuildTools"
     },
+    "3816626611": {
+      "displayName": "Fool's Errand",
+      "debugName": "Weapon_TX_2H_Greatsword_HollowHall_01",
+      "category": "Weapons"
+    },
     "3816958569": {
       "displayName": "Sky Specter Gloves",
       "debugName": "Armor_T7_Ranger_Assassin_Arms",
@@ -12946,6 +15106,11 @@
       "displayName": "Flame Pact Gloves",
       "debugName": "Vanity_TX_noble_Gloves",
       "category": "Equipment"
+    },
+    "3831314886": {
+      "displayName": "Spine Splinter",
+      "debugName": "Weapon_T2_2H_HammerEpic_02",
+      "category": "Weapons"
     },
     "3831704254": {
       "displayName": "Waveborne Ritualist Boots",
@@ -12997,6 +15162,11 @@
       "debugName": "Prop_Decoration_T1_Cabinet_Carved_Wooden",
       "category": "BuildTools"
     },
+    "3843821992": {
+      "displayName": "Ancestral Star",
+      "debugName": "Craft_Weapon_T5_2H_Lore_Hammer_townsfolk_male_01_hint_01",
+      "category": "Weapons"
+    },
     "3844432901": {
       "displayName": "Archaic Essence V",
       "debugName": "Material_T5_Fognest_Ressource",
@@ -13027,6 +15197,11 @@
       "debugName": "Prop_Decoration_Comfort_T4_Wall_Painting_5",
       "category": "BuildTools"
     },
+    "3847678429": {
+      "displayName": "Soldier's Broadsword",
+      "debugName": "Weapon_T1-TX_1H_Sword_Enemy_Fogger_Soldier",
+      "category": "Weapons"
+    },
     "3847929949": {
       "displayName": "Milkmaid Garb",
       "debugName": "Vanity_TX_Maid_Farmer_Chest",
@@ -13042,10 +15217,20 @@
       "debugName": "Armor_T7_Ranger_Assassin_Boots_Loot",
       "category": "Equipment"
     },
+    "3848774794": {
+      "displayName": "Electric Initialiser",
+      "debugName": "Craft_Weapon_T7_1H_Lore_Wand_ministory_25_lightning",
+      "category": "Weapons"
+    },
     "3849285728": {
       "displayName": "Emberguard Gloves",
       "debugName": "Armor_T7_Warrior_DPS_Arms_Loot",
       "category": "Equipment"
+    },
+    "3851016100": {
+      "displayName": "Scorching Wand",
+      "debugName": "Weapon_T1_1H_WandEpic_01_Fire",
+      "category": "Weapons"
     },
     "3853102169": {
       "displayName": "Alchemist Apprentice Hat",
@@ -13056,6 +15241,11 @@
       "displayName": "Book I",
       "debugName": "Prop_Decoration_Book_02",
       "category": "BuildTools"
+    },
+    "3854011426": {
+      "displayName": "Breaching Bow",
+      "debugName": "Craft_Weapon_T7_2H_Lore_Bow_drakHeavy",
+      "category": "Weapons"
     },
     "3854402069": {
       "displayName": "Gold Fell Crimson Critter Queen Trophy",
@@ -13071,6 +15261,11 @@
       "displayName": "Jewelry Box",
       "debugName": "Prop_Decoration_T3_Clutter_Jewelry_Box",
       "category": "BuildTools"
+    },
+    "3855021353": {
+      "displayName": "Protector Greatsword",
+      "debugName": "Weapon_T2_2H_GreatSword_02",
+      "category": "Weapons"
     },
     "3856381953": {
       "displayName": "Warden Trousers",
@@ -13122,6 +15317,11 @@
       "debugName": "Armor_T3_Warrior_DPS_Legs_Loot",
       "category": "Equipment"
     },
+    "3865285429": {
+      "displayName": "Dragon's Wing",
+      "debugName": "Craft_Weapon_T7_2H_Lore_BowEpic_ministory_39",
+      "category": "Weapons"
+    },
     "3865559978": {
       "displayName": "Lifelock Helmet",
       "debugName": "Armor_T7_Mage_Healer_Helmet_Loot",
@@ -13150,6 +15350,11 @@
     "3870359442": {
       "displayName": "Explosive Crawler",
       "debugName": "Consumable_CritterCrawler_Bomb_Grenade_T5",
+      "category": "Weapons"
+    },
+    "3873714456": {
+      "displayName": "The Needles",
+      "debugName": "Weapon_T3_2H_Daggers_DPS",
       "category": "Weapons"
     },
     "3873995576": {
@@ -13197,6 +15402,11 @@
       "debugName": "Prop_production_T2_Cooking_Station",
       "category": "BuildTools"
     },
+    "3881967409": {
+      "displayName": "Hunter's Bow",
+      "debugName": "Weapon_T1_2H_Bow_01",
+      "category": "Weapons"
+    },
     "3881994599": {
       "displayName": "High Ornamented Stone Window Frame",
       "debugName": "Prop_Decoration_T3_Window_Ornamented_Stone_Frame_High",
@@ -13211,6 +15421,16 @@
       "displayName": "Pinewood Fence Gate II",
       "debugName": "Prop_Decoration_T5_Fence_PineWood_Gate_02",
       "category": "BuildTools"
+    },
+    "3886257993": {
+      "displayName": "Talion's Bow",
+      "debugName": "Craft_Weapon_T2_2H_Lore_BowEpic_Ministory_15",
+      "category": "Weapons"
+    },
+    "3886463491": {
+      "displayName": "Spine Of Dalszul",
+      "debugName": "Weapon_T6_1H_SwordEpic_02",
+      "category": "Weapons"
     },
     "3886875478": {
       "displayName": "Jezmina's War Banner I",
@@ -13296,6 +15516,11 @@
       "displayName": "Steel Pickaxe",
       "debugName": "Tool_T5_Pickaxe_Steel_Coldheights",
       "category": "BuildTools"
+    },
+    "3907468980": {
+      "displayName": "Dragon Sword",
+      "debugName": "Craft_Weapon_T3_1H_Lore_SwordEpic_ministory_29",
+      "category": "Weapons"
     },
     "3909173375": {
       "displayName": "Revelation By The Pond",
@@ -13396,6 +15621,11 @@
       "displayName": "Lamp",
       "debugName": "Prop_Decoration_Comfort_T4_Illumination_Small",
       "category": "BuildTools"
+    },
+    "3936779840": {
+      "displayName": "Sun Hammer",
+      "debugName": "Weapon_T4_2H_Hammer_02",
+      "category": "Weapons"
     },
     "3937186197": {
       "displayName": "Revelwood Dirt",
@@ -13507,6 +15737,11 @@
       "debugName": "Prop_Decoration_T4_Fence_CastIron",
       "category": "BuildTools"
     },
+    "3960008381": {
+      "displayName": "Greatsword Of The Old Order",
+      "debugName": "Weapon_T1_2H_GreatSwordEpic_02",
+      "category": "Weapons"
+    },
     "3960097842": {
       "displayName": "Red Fabric",
       "debugName": "Material_T4_Fabric_Red",
@@ -13542,6 +15777,11 @@
       "debugName": "Prop_Decoration_T1_Door_Carved_Wooden_Double",
       "category": "BuildTools"
     },
+    "3971823801": {
+      "displayName": "Avalanche Starter",
+      "debugName": "Weapon_T5_2H_BowEpic_01",
+      "category": "Weapons"
+    },
     "3972122124": {
       "displayName": "Threadbare Pants",
       "debugName": "Armor_T0_Starter_Legs",
@@ -13552,10 +15792,25 @@
       "debugName": "Armor_T2_Mage_Wizard_DPS_Arms_Loot",
       "category": "Equipment"
     },
+    "3973711368": {
+      "displayName": "Manathor's Greatsword",
+      "debugName": "Weapon_T7_2H_GreatSwordEpic_01",
+      "category": "Weapons"
+    },
+    "3974938802": {
+      "displayName": "Daggers",
+      "debugName": "Weapon_T0_2H_Daggers_DPS_Craft",
+      "category": "Weapons"
+    },
     "3975408930": {
       "displayName": "Raw Meat and Corncob Skewer",
       "debugName": "Material_T1_raw_dish_GrainSkewer",
       "category": "Materials"
+    },
+    "3979572346": {
+      "displayName": "Bronze-engraved Greatsword",
+      "debugName": "Weapon_T3_2H_GreatSwordEpic_02",
+      "category": "Weapons"
     },
     "3980109078": {
       "displayName": "Dusk Amethyst",
@@ -13581,6 +15836,11 @@
       "displayName": "Skull Stalker Helmet",
       "debugName": "Armor_T6_Ranger_Sniper_Helmet",
       "category": "Equipment"
+    },
+    "3983015116": {
+      "displayName": "Hailscourge",
+      "debugName": "Craft_Weapon_T7_1H_Lore_SwordEpic_Ministory_04",
+      "category": "Weapons"
     },
     "3983205690": {
       "displayName": "Crypt Fence",
@@ -13637,6 +15897,11 @@
       "debugName": "Food_T6_dish_sweets_CandiedGinger",
       "category": "Consumables"
     },
+    "4000975642": {
+      "displayName": "Darya's Staff",
+      "debugName": "Craft_Weapon_T5_2H_Lore_Staff_ministory_29",
+      "category": "Weapons"
+    },
     "4002507265": {
       "displayName": "Baby Flightless Redtail",
       "debugName": "Animal_Baby_Turkey",
@@ -13666,6 +15931,11 @@
       "displayName": "Antique",
       "debugName": "ColorPalette_T2_ColorPalette_01",
       "category": "ColorPalette"
+    },
+    "4016669731": {
+      "displayName": "Talion's Bow",
+      "debugName": "Craft_Weapon_T4_2H_Lore_BowEpic_Ministory_15",
+      "category": "Weapons"
     },
     "4017962470": {
       "displayName": "Fae Deer Farmer Hood",
@@ -13792,6 +16062,16 @@
       "debugName": "T1_Seedling_Material_Shrub",
       "category": "BuildTools"
     },
+    "4048093059": {
+      "displayName": "Cryptic Wand",
+      "debugName": "Craft_Weapon_T2_1H_Lore_WandEpic_Ministory_09_Lightning",
+      "category": "Weapons"
+    },
+    "4049226960": {
+      "displayName": "Sword Of The Serpent",
+      "debugName": "Craft_Weapon_T3_1H_SwordEpic_chineseNewYear_01",
+      "category": "Weapons"
+    },
     "4053229560": {
       "displayName": "Kindlewastes Bone Key",
       "debugName": "Key_Skeleton_Bone_Dungeon04",
@@ -13832,6 +16112,11 @@
       "debugName": "_Prop_Decoration_Boss_Trophy_Wildbeast_Wolf_Heavy_03_iron",
       "category": "BuildTools"
     },
+    "4061027962": {
+      "displayName": "Explorer's Machete",
+      "debugName": "Weapon_T6_1H_Sword_01",
+      "category": "Weapons"
+    },
     "4061156246": {
       "displayName": "Hawk Chest",
       "debugName": "Armor_T4_Ranger_Adventurer_Chest_Loot",
@@ -13862,10 +16147,25 @@
       "debugName": "Prop_Decoration_T2_Window_Ornamented_Wooden_Frame_High",
       "category": "BuildTools"
     },
+    "4071675176": {
+      "displayName": "Abysswalker",
+      "debugName": "Weapon_TX_2H_Hammer_FogNest",
+      "category": "Weapons"
+    },
+    "4073230411": {
+      "displayName": "Guard Of The North Sword",
+      "debugName": "Craft_Weapon_T6_2H_Lore_GreatSwordEpic_Ministory_20",
+      "category": "Weapons"
+    },
     "4075123457": {
       "displayName": "Ragged Boots",
       "debugName": "Armor_T0_Rags_Boots",
       "category": "Equipment"
+    },
+    "4075697507": {
+      "displayName": "Wolf Pack Axe",
+      "debugName": "Weapon_T2_1H_AxeEpic_01",
+      "category": "Weapons"
     },
     "4076482688": {
       "displayName": "Vanguard Wall Banner",
@@ -13911,6 +16211,11 @@
       "displayName": "Orange Floor Light II",
       "debugName": "Prop_Decoration_Comfort_T6_IlluminationFloor1_orange",
       "category": "BuildTools"
+    },
+    "4084119320": {
+      "displayName": "Calescent Axe",
+      "debugName": "Weapon_T7_1H_Axe_02",
+      "category": "Weapons"
     },
     "4084762910": {
       "displayName": "Snowball",
@@ -13977,6 +16282,11 @@
       "debugName": "Vanity_T6_BeachAttire_Legs",
       "category": "Equipment"
     },
+    "4095266738": {
+      "displayName": "Silvershot Bow",
+      "debugName": "Weapon_TX_2H_Bow_HollowHall",
+      "category": "Weapons"
+    },
     "4095370049": {
       "displayName": "Veilwater Basin Dirt",
       "debugName": "Build_TerrainMaterial_T6_Dirt_Wetlands",
@@ -14002,6 +16312,16 @@
       "debugName": "Armor_T3_Mage_FogProtection_Legs",
       "category": "Equipment"
     },
+    "4103969369": {
+      "displayName": "Wolf's Hydra",
+      "debugName": "Craft_Weapon_T3_1H_Lore_Mace_ministory_04",
+      "category": "Weapons"
+    },
+    "4104616591": {
+      "displayName": "Ritual Tempest Wand",
+      "debugName": "Weapon_T4_1H_WandEpic_02_Lightning",
+      "category": "Weapons"
+    },
     "4105535926": {
       "displayName": "Fowler Gloves",
       "debugName": "Armor_T3_Ranger_Assassin_Arms_Loot",
@@ -14026,6 +16346,11 @@
       "displayName": "Pearlfrost Mentor Pants",
       "debugName": "Armor_T5_Mage_Healer_Legs_Loot",
       "category": "Equipment"
+    },
+    "4110381914": {
+      "displayName": "Metalstar Mace",
+      "debugName": "Weapon_T1_1H_MaceEpic_01",
+      "category": "Weapons"
     },
     "4111073340": {
       "displayName": "Sunny Loungewear Boots",
@@ -14057,10 +16382,20 @@
       "debugName": "T2_Seedling_Deepforest_Tree_Maple_03",
       "category": "BuildTools"
     },
+    "4118360516": {
+      "displayName": "Darkwood Axe",
+      "debugName": "Weapon_T5_2H_GreatAxeEpic_01",
+      "category": "Weapons"
+    },
     "4120104819": {
       "displayName": "Scholar of the Young Flame Gloves",
       "debugName": "Vanity_TX_PactSun_Gloves",
       "category": "Equipment"
+    },
+    "4120929581": {
+      "displayName": "Silver Storm",
+      "debugName": "Weapon_T3_1H_WandEpic_02_Ice",
+      "category": "Weapons"
     },
     "4122286209": {
       "displayName": "Alpine Antler Gloves",
@@ -14076,6 +16411,11 @@
       "displayName": "Orange Decorative Box",
       "debugName": "_Prop_Decoration_T4_Present06_orange_Anniversary",
       "category": "BuildTools"
+    },
+    "4123213139": {
+      "displayName": "Baroness Daggers",
+      "debugName": "Weapon_T2_2H_DaggersEpic_DPS",
+      "category": "Weapons"
     },
     "4123882248": {
       "displayName": "Mauveine",
@@ -14117,6 +16457,21 @@
       "debugName": "Prop_Logic_Trap_Door_Stone_00_2m",
       "category": "BuildTools"
     },
+    "4131716794": {
+      "displayName": "Circus Knives",
+      "debugName": "Craft_Weapon_T6_2H_Lore_Daggers_DPS_ministory_02",
+      "category": "Weapons"
+    },
+    "4134622088": {
+      "displayName": "Daggers Of Liquid Light",
+      "debugName": "Weapon_T7_2H_DaggersEpic_DPS",
+      "category": "Weapons"
+    },
+    "4134797150": {
+      "displayName": "Mandible Crusher",
+      "debugName": "Weapon_TX_2H_Hammer_HollowHall",
+      "category": "Weapons"
+    },
     "4135223598": {
       "displayName": "Leather",
       "debugName": "Material_T3_Leather",
@@ -14132,6 +16487,11 @@
       "debugName": "Prop_Decoration_T6_Crate_Bamboo_01",
       "category": "BuildTools"
     },
+    "4139475742": {
+      "displayName": "Stonewrought Sword",
+      "debugName": "Weapon_T3_1H_Sword_01",
+      "category": "Weapons"
+    },
     "4139841827": {
       "displayName": "Beginning Of The End",
       "debugName": "Collection_paintings_01",
@@ -14142,6 +16502,11 @@
       "debugName": "Vanity_T2_Explorer_Boots",
       "category": "Equipment"
     },
+    "4143078949": {
+      "displayName": "Ashwood Wand",
+      "debugName": "Weapon_T7_1H_Wand_02_Fire",
+      "category": "Weapons"
+    },
     "4144267766": {
       "displayName": "Wildheart Hood",
       "debugName": "Vanity_Tx_DLC_Supporter_Ranger_Helmet",
@@ -14151,6 +16516,11 @@
       "displayName": "Awning III",
       "debugName": "_Prop_Decoration_T4_Awning_03",
       "category": "BuildTools"
+    },
+    "4148367690": {
+      "displayName": "Drak'Dal Chieftain Axe",
+      "debugName": "Weapon_T6-TX_1H_Axe_Enemy_Drak_Elite",
+      "category": "Weapons"
     },
     "4148439656": {
       "displayName": "Passionflower",
@@ -14197,6 +16567,11 @@
       "debugName": "_Prop_Decoration_T3_Present01_green_Anniversary",
       "category": "BuildTools"
     },
+    "4165069488": {
+      "displayName": "Bright Hope Sword",
+      "debugName": "Weapon_T7_1H_Sword_02",
+      "category": "Weapons"
+    },
     "4166256477": {
       "displayName": "Grilled Fish with Coconut Rice",
       "debugName": "Food_T6_dish_fish_GrilledFishCoconutRice",
@@ -14216,6 +16591,16 @@
       "displayName": "Fur Gloves",
       "debugName": "Armor_T0_Fur_Arms",
       "category": "Equipment"
+    },
+    "4171383651": {
+      "displayName": "Cracklewood Wand",
+      "debugName": "Weapon_T3_1H_Wand_01_Fire",
+      "category": "Weapons"
+    },
+    "4172837730": {
+      "displayName": "Greatsword Of Embers",
+      "debugName": "Weapon_T7_2H_GreatSword_02",
+      "category": "Weapons"
     },
     "4174277265": {
       "displayName": "Bloodfeather Helmet",
@@ -14287,10 +16672,20 @@
       "debugName": "ColorPalette_T4_ColorPalette_Reward_03",
       "category": "ColorPalette"
     },
+    "4189016694": {
+      "displayName": "Lesser Golden Twinflame Sword",
+      "debugName": "Weapon_T5_1H_Lore_Sword_ministory_28",
+      "category": "Weapons"
+    },
     "4189323092": {
       "displayName": "Large Boreal Wood Cupboard",
       "debugName": "Prop_Decoration_T5_Cupboard_Large",
       "category": "BuildTools"
+    },
+    "4192516670": {
+      "displayName": "Cryptic Wand",
+      "debugName": "Craft_Weapon_T4_1H_Lore_WandEpic_Ministory_09_Lightning",
+      "category": "Weapons"
     },
     "4193786610": {
       "displayName": "Waggon",
@@ -14306,6 +16701,11 @@
       "displayName": "Ice",
       "debugName": "Build_TerrainMaterial_T5_Ice",
       "category": "Materials"
+    },
+    "4203062243": {
+      "displayName": "Shadowbane",
+      "debugName": "Weapon_T3_2H_BowEpic_02",
+      "category": "Weapons"
     },
     "4203731022": {
       "displayName": "Gold Hollow Titan Trophy",
@@ -14356,6 +16756,11 @@
       "displayName": "Shroud Arrow II",
       "debugName": "Ammo_T5_Arrow_Fog_lvl35",
       "category": "Ammunition"
+    },
+    "4217556203": {
+      "displayName": "Fell Thunderbrute Greatsword",
+      "debugName": "Weapon_T1-TX_2H_GreatSword_Enemy_Fogger_Heavy",
+      "category": "Weapons"
     },
     "4218685557": {
       "displayName": "Kettle",
@@ -14507,6 +16912,11 @@
       "debugName": "Prop_Production_T2_Table_Saw",
       "category": "BuildTools"
     },
+    "4248181976": {
+      "displayName": "Broodmother’s Eye",
+      "debugName": "Weapon_T6_2H_DaggersEpic_Poison",
+      "category": "Weapons"
+    },
     "4248468545": {
       "displayName": "Drak Blood",
       "debugName": "Material_T6_LizardBlood",
@@ -14521,6 +16931,16 @@
       "displayName": "Drak Temple Vase III",
       "debugName": "Prop_Decoration_T6_TempleVase_03",
       "category": "BuildTools"
+    },
+    "4253086109": {
+      "displayName": "Wailing Blade",
+      "debugName": "Craft_Weapon_T3_1H_Lore_SwordEpic_Ministory_09",
+      "category": "Weapons"
+    },
+    "4253356292": {
+      "displayName": "Greatsword Of The Motherflame",
+      "debugName": "Weapon_T7_2H_GreatSwordEpic_02",
+      "category": "Weapons"
     },
     "4254847360": {
       "displayName": "Royal Doublet",
@@ -14556,6 +16976,11 @@
       "displayName": "Tidecaller Gloves",
       "debugName": "Armor_T6_Mage_Wizard_DPS_Arms_Loot",
       "category": "Equipment"
+    },
+    "4269700656": {
+      "displayName": "Shroud Vessel's Greatsword",
+      "debugName": "Craft_Weapon_T7_2H_Lore_GreatSwordLegendary_Vorgoth",
+      "category": "Weapons"
     },
     "4271896226": {
       "displayName": "Metal Sheets",
@@ -14622,6 +17047,11 @@
       "debugName": "Prop_Collection_WeaponStand_Staff",
       "category": "BuildTools"
     },
+    "4285308033": {
+      "displayName": "Dreadbane",
+      "debugName": "Weapon_T4_2H_Lore_HammerEpic_ministory_14",
+      "category": "Weapons"
+    },
     "4285761832": {
       "displayName": "Grilled Shockfin",
       "debugName": "_Food_grilled_T6_fish_epic_03",
@@ -14637,6 +17067,11 @@
       "debugName": "ColorPalette_T2_ColorPalette_Reward_02",
       "category": "ColorPalette"
     },
+    "4287106432": {
+      "displayName": "Darya's Staff",
+      "debugName": "Craft_Weapon_T6_2H_Lore_Staff_ministory_29",
+      "category": "Weapons"
+    },
     "4288816568": {
       "displayName": "Toxic Sack",
       "debugName": "Material_T6_Poison_Sack_02",
@@ -14651,6 +17086,11 @@
       "displayName": "Magician Hat",
       "debugName": "Armor_T3_Mage_Wizard_DPS_Helmet",
       "category": "Equipment"
+    },
+    "4290427358": {
+      "displayName": "Icefang Blade",
+      "debugName": "Weapon_T3_1H_SwordEpic_02",
+      "category": "Weapons"
     },
     "4291054338": {
       "displayName": "Emberguard Chestplate",
@@ -14671,6 +17111,11 @@
       "displayName": "Book IV",
       "debugName": "Prop_Decoration_Book_11",
       "category": "BuildTools"
+    },
+    "4294860398": {
+      "displayName": "Cryptic Wand",
+      "debugName": "Craft_Weapon_T3_1H_Lore_WandEpic_Ministory_09_Lightning",
+      "category": "Weapons"
     }
   },
   "groups": {
@@ -18599,6 +21044,513 @@
       2572858337,
       1101501148,
       2835143812
+    ],
+    "One-Handed Melee": [
+      979851343,
+      1181594089,
+      462958958,
+      3265226455,
+      3205048904,
+      1094447119,
+      2396593895,
+      1919278140,
+      4110381914,
+      1985879197,
+      1125155603,
+      729180175,
+      1275936258,
+      3026017602,
+      1474722178,
+      3847678429,
+      2757862595,
+      2440163799,
+      907435246,
+      197300979,
+      1058966136,
+      4075697507,
+      3775746254,
+      558617602,
+      1676088364,
+      409520008,
+      3238923785,
+      213584320,
+      2093048225,
+      2770415595,
+      662464113,
+      53318001,
+      2628423562,
+      3530269879,
+      4103969369,
+      602591868,
+      4253086109,
+      3907468980,
+      4049226960,
+      1174019207,
+      1552891650,
+      2867801060,
+      2832157981,
+      3153911934,
+      544559006,
+      3670734309,
+      1080812742,
+      2284373099,
+      3533038097,
+      4290427358,
+      4139475742
+    ],
+    "One-Handed Melee 2": [
+      1659424208,
+      2509571957,
+      1853225094,
+      2264411387,
+      3145841208,
+      246702506,
+      3434497058,
+      1605780520,
+      2130769495,
+      2427081154,
+      940748477,
+      778960030,
+      3719363460,
+      3534558679,
+      771316050,
+      102274580,
+      518418528,
+      3405497023,
+      225230490,
+      3502536665,
+      2667317119,
+      119442934,
+      2030714844,
+      1608083210,
+      65433484,
+      2829010645,
+      1092596290,
+      456631486,
+      2924638789,
+      3566731447,
+      2773595146,
+      3258711765,
+      1848614756,
+      261396527,
+      1602331229,
+      2913134461,
+      729789776,
+      213476537,
+      1352377788,
+      3323951069,
+      4189016694,
+      1893347881,
+      3623495333,
+      2010276754,
+      3296468834,
+      972169946,
+      3027796816,
+      1357893867,
+      1444578589,
+      2386596106,
+      2532794119
+    ],
+    "One-Handed Melee 3": [
+      649877474,
+      2688480639,
+      1735564804,
+      2875621972,
+      2409952376,
+      105288636,
+      3671319442,
+      2352034665,
+      1786607643,
+      2577073303,
+      2964612679,
+      2783252634,
+      1541977934,
+      1687939753,
+      2536236784,
+      534488958,
+      2120886966,
+      2825660293,
+      2828613695,
+      3886463491,
+      4061027962,
+      3202192501,
+      4148367690,
+      1323450933,
+      2594618935,
+      431218523,
+      2894102737,
+      3983015116,
+      905080090,
+      751194917,
+      3584171520,
+      2487547952,
+      2138171920,
+      564499940,
+      1051721148,
+      3120360892,
+      4084119320,
+      2360998376,
+      2244314670,
+      694341702,
+      826643327,
+      306541910,
+      1138406068,
+      1370754571,
+      4165069488,
+      1947635377,
+      1356112072,
+      2604232739,
+      2646707458,
+      66688434,
+      1403367198
+    ],
+    "Two-Handed Melee": [
+      3486546660,
+      3304320872,
+      2574399380,
+      3960008381,
+      2155262535,
+      1065671728,
+      210093577,
+      3034847985,
+      4217556203,
+      2487980733,
+      2916372744,
+      101298280,
+      2948392870,
+      2671932055,
+      3595411093,
+      3855021353,
+      2109907931,
+      3831314886,
+      2698032927,
+      1716859550,
+      1940764111,
+      19063957,
+      3979572346,
+      1514618246,
+      3381457474,
+      3342004247,
+      1785296023,
+      3623508713,
+      2528480161,
+      2000529539,
+      2385920638,
+      3025766089,
+      1465692886,
+      69105879,
+      231186353,
+      1382770309,
+      3521922296,
+      3729741852,
+      3936779840,
+      4285308033,
+      963955933,
+      2671987501,
+      2433846189,
+      3843821992,
+      4118360516,
+      2878804719,
+      2028795022,
+      1851884051,
+      2946351228,
+      392185938,
+      1594103631,
+      288905176,
+      3761463611,
+      1969596569
+    ],
+    "Two-Handed Melee 2": [
+      1064940291,
+      51216457,
+      1750564370,
+      2226962572,
+      2176171412,
+      1877646424,
+      4073230411,
+      3628655306,
+      2260780998,
+      1924413551,
+      1912269209,
+      2628714681,
+      2852876137,
+      919267046,
+      3068246206,
+      3202972148,
+      3460833343,
+      913658620,
+      1464370967,
+      7015425,
+      1359605570,
+      484392245,
+      2738560821,
+      1464929321,
+      2269196323,
+      1237806794,
+      500747971,
+      2347176360,
+      1367103932,
+      4269700656,
+      78948388,
+      1166996760,
+      2060058239,
+      430276931,
+      700880476,
+      885331494,
+      21600863,
+      662804440,
+      3973711368,
+      4253356292,
+      3360155667,
+      4172837730,
+      423612638,
+      1873149026,
+      1074128047,
+      2138338924,
+      787599473,
+      1029972982,
+      2151380048,
+      3816626611,
+      2822724630,
+      4071675176,
+      4134797150
+    ],
+    "Daggers": [
+      3974938802,
+      876348272,
+      392894300,
+      3056420264,
+      803635338,
+      301510235,
+      2860747780,
+      1613250072,
+      1729196030,
+      3108868150,
+      4123213139,
+      1008092854,
+      1551286900,
+      1710543728,
+      2700871988,
+      2387592374,
+      2837156111,
+      1072446832,
+      3548335929,
+      1851176688,
+      72164802,
+      3873714456,
+      3054076942,
+      1019461234,
+      3717136224,
+      1155686002,
+      1156795516,
+      3025469016,
+      488946154,
+      2066454242,
+      3583521141,
+      2936153518,
+      552284259,
+      1972844940,
+      890590294,
+      3231907188,
+      1790379797,
+      1262344957,
+      3412482507,
+      3397273990,
+      1177521213,
+      103223166,
+      913533703,
+      2432243778,
+      1873675161,
+      4131716794,
+      1916010187,
+      2158737906,
+      4248181976,
+      2135782770,
+      2882588243,
+      863684883,
+      3096148752,
+      3618171376,
+      764137977,
+      4134622088,
+      191356948,
+      3567673697,
+      987312206,
+      2796408306
+    ],
+    "Bows": [
+      3527909057,
+      476811263,
+      692270451,
+      2242220014,
+      3881967409,
+      327157552,
+      3540633303,
+      1482081791,
+      3886257993,
+      2296172399,
+      944519165,
+      3467068456,
+      1065913662,
+      2664238131,
+      3308817829,
+      735111003,
+      1164879675,
+      2517864696,
+      2237665335,
+      4203062243,
+      1113531582,
+      2901533456,
+      375831467,
+      486021928,
+      4016669731,
+      463074629,
+      457119037,
+      1457307757,
+      1640849157,
+      2490862466,
+      1054611658,
+      2813408350,
+      1454083076,
+      902475103,
+      689240895,
+      3971823801,
+      2178370335,
+      633590787,
+      2878180661,
+      1286173021,
+      3488008219,
+      852156015,
+      3578254606,
+      526254228,
+      3597494234,
+      1207792305,
+      3484636804,
+      957618427,
+      3226031787,
+      2676513257,
+      3626685627,
+      3865285429,
+      3854011426,
+      2187973877,
+      1136608237,
+      767990996,
+      3188079984,
+      773245753,
+      101106603,
+      1278504043,
+      886466633,
+      4095266738
+    ],
+    "Wands": [
+      3748173823,
+      2195022120,
+      1276754499,
+      3851016100,
+      3419190942,
+      1693828837,
+      1111770772,
+      4048093059,
+      3701660969,
+      3739626235,
+      1792316220,
+      1595482967,
+      3566462451,
+      2711958397,
+      4294860398,
+      381008328,
+      3174763756,
+      4120929581,
+      4171383651,
+      909355745,
+      4192516670,
+      3070173423,
+      2305089639,
+      4104616591,
+      2568349283,
+      2524297201,
+      2908736852,
+      14483003,
+      2104873327,
+      2331017633,
+      3270175842,
+      2562946422,
+      2198697693,
+      3750983634,
+      2128179343,
+      1893776834,
+      2563601506,
+      9995480,
+      1561187159,
+      2566943046,
+      1838764116,
+      2125128982,
+      943332960,
+      2053280664,
+      397149581,
+      3233786830,
+      3848774794,
+      1142953776,
+      62683222,
+      2642629621,
+      873336281,
+      1030886695,
+      3657930477,
+      3116439516,
+      1914469572,
+      4143078949,
+      1181407134,
+      571871007
+    ],
+    "Staffs": [
+      1210271138,
+      3131462859,
+      3371766557,
+      2515033100,
+      3786259260,
+      1157288032,
+      3536356032,
+      2749653597,
+      2003053902,
+      3084416953,
+      1867962129,
+      1255239784,
+      3657818170,
+      57961640,
+      3090479094,
+      3168936309,
+      1343375854,
+      1454542780,
+      3192770947,
+      1992044990,
+      1108364648,
+      1063813998,
+      458314937,
+      3570989791,
+      4000975642,
+      2922416749,
+      3791962857,
+      2078337024,
+      254978705,
+      1532433428,
+      515309917,
+      3468599477,
+      3252787120,
+      1621727293,
+      4287106432,
+      1990416434,
+      1585517315,
+      217755813,
+      836618234,
+      2945755287,
+      1069361064,
+      1271805655,
+      1857201018,
+      1803273188,
+      1062282832,
+      2307065448,
+      444948198,
+      1404050036,
+      3650841772
     ]
   }
 }
