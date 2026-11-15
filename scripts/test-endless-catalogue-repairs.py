@@ -78,9 +78,8 @@ assert sum(counts[k] for k in ("color-size-form", "fern-size-form", "grass-size-
 assert counts["named-pot"] == 11
 assert counts["numbered-piece"] == 5
 assert not any(
-    isinstance(item, dict) and not item.get("unresolved")
+    isinstance(item, dict) and "unresolved" in item
     for group in catalogue["groups"].values() for item in group
-    if isinstance(item, dict)
 )
 
 print("PASS: 100 original 0.5.1 identity repairs still pinned, "
