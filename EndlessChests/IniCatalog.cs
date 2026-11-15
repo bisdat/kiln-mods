@@ -96,8 +96,37 @@ internal sealed class IniCatalog
         ["Alchemist Hanging II"] = (1372134498u, "Collection_Alchemist_WallHang_Piece_02"),
     };
 
+    // The game has two items displayed as "Indigo Plant". The lower ID is
+    // a decorative plant pot, not the material recipes consume. Pin both
+    // exact game identities; retain the legacy labels in user-owned INIs.
+    private const uint IndigoMaterialId = 4276529065u;
+    private const uint IndigoDecorativePotId = 3965963935u;
+
+    private static ItemInfo? LookupIndigo(uint id)
+    {
+        string? expectedDebugName = id switch
+        {
+            IndigoMaterialId => "Material_T2_Indigo_Plant",
+            IndigoDecorativePotId => "Flower_Pot_Round_Large_Indigo",
+            _ => null
+        };
+        if (expectedDebugName is null) return null;
+        var item = GetVerifiedVariant("Indigo Plant", id, regularVanity: false);
+        return item is not null &&
+            string.Equals(item.Name, expectedDebugName, StringComparison.Ordinal)
+            ? item : null;
+    }
+
     private static ItemInfo? LookupItem(string name)
     {
+        // The original shipped INI used "Indigo Plant" for the crafting
+        // ingredient and the obsolete "Indigo Plant Pot" for decoration.
+        // Old INIs are deliberately not overwritten on upgrade.
+        if (name.Equals("Indigo Plant", StringComparison.OrdinalIgnoreCase))
+            return LookupIndigo(IndigoMaterialId);
+        if (name.Equals("Indigo Plant Pot", StringComparison.OrdinalIgnoreCase))
+            return LookupIndigo(IndigoDecorativePotId);
+
         if (LegacyWallHangingIds.TryGetValue(name, out var hanging))
         {
             // Keep user-owned pre-0.4.4 INIs working without replacing them.
@@ -137,6 +166,8 @@ internal sealed class IniCatalog
             if (!uint.TryParse(idText, System.Globalization.NumberStyles.None,
                     System.Globalization.CultureInfo.InvariantCulture, out var id))
                 return null;
+            if (label.Equals("Indigo Plant", StringComparison.OrdinalIgnoreCase))
+                return LookupIndigo(id); // Also verify internal ID in new defaults.
             return GetVerifiedVariant(label, id, regularVanity: false);
         }
 
@@ -156,6 +187,10 @@ internal sealed class IniCatalog
         foreach (var name in Groups.Keys.Concat(Aliases.Keys)
                      .Concat(Groups.Values.SelectMany(x => x))
                      .Concat(DisabledItems)
+                     // Preserve direct game-UI chest names after the bundled
+                     // group entries move to explicit Variant <ID> names.
+                     .Append("Indigo Plant")
+                     .Append("Indigo Plant Pot")
                      .Append("Empty"))
         {
             if (names.Add(name)) _nameMatcher.Add(name);
