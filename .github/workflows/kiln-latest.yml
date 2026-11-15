@@ -157,6 +157,7 @@ jobs:
         run: |
           python3 scripts/validate-endless-catalogue.py
           python3 scripts/test-endless-catalogue-repairs.py
+          python3 scripts/test-endless-final-27.py
 
       - name: Stage Endless Chests settings INI and canonical JSON
         if: matrix.mod == 'EndlessChests'
