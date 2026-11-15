@@ -10,6 +10,10 @@ on:
       - 'scripts/resolve-kiln-release.py'
       - 'scripts/build-compat.sh'
       - 'scripts/build-compat.py'
+      - 'scripts/validate-endless-*.py'
+      - 'scripts/test-endless-*.py'
+      - 'scripts/test-chest-*.py'
+      - 'scripts/data/endless-chests-*.json'
       - 'tests/kiln-release/**'
       - 'SurvivalQoL/**'
       - 'tests/survival-qol/**'
@@ -22,6 +26,10 @@ on:
       - 'scripts/resolve-kiln-release.py'
       - 'scripts/build-compat.sh'
       - 'scripts/build-compat.py'
+      - 'scripts/validate-endless-*.py'
+      - 'scripts/test-endless-*.py'
+      - 'scripts/test-chest-*.py'
+      - 'scripts/data/endless-chests-*.json'
       - 'tests/kiln-release/**'
       - 'tests/survival-qol/**'
       - 'NoClipToggle/**'
@@ -127,7 +135,8 @@ jobs:
         run: |
           case "${{ matrix.mod }}" in
             EndlessChests)
-              python3 scripts/validate-endless-ini.py
+              # The 0.5.x catalogue is JSON-owned; INI is settings only.
+              python3 scripts/validate-endless-settings.py
               python3 scripts/test-chest-name-hashes.py
               python3 scripts/test-chest-case.py
               ;;
@@ -143,15 +152,19 @@ jobs:
       - name: Package using checksum-verified official release SDK
         run: bash scripts/build-compat.sh "${{ matrix.mod }}"
 
-      - name: Verify Endless Chests item IDs from exact tagged source
+      - name: Verify Endless Chests canonical identities against exact Kiln SDK
         if: matrix.mod == 'EndlessChests'
-        run: python3 scripts/test-endless-item-ids.py
+        run: |
+          python3 scripts/validate-endless-catalogue.py
+          python3 scripts/test-endless-catalogue-repairs.py
 
-      - name: Stage standalone Endless Chests INI
+      - name: Stage Endless Chests settings INI and canonical JSON
         if: matrix.mod == 'EndlessChests'
         run: |
           cp EndlessChests/defaults/endless-chests.defaults.ini bin/Release/endless-chests.defaults.ini
+          cp EndlessChests/defaults/catalogue.json bin/Release/endless-chests.catalogue.json
           cmp EndlessChests/defaults/endless-chests.defaults.ini bin/Release/endless-chests.defaults.ini
+          cmp EndlessChests/defaults/catalogue.json bin/Release/endless-chests.catalogue.json
 
       - name: Give this mod's provenance an unambiguous filename
         run: cp bin/Release/kiln-sdk-provenance.json "bin/Release/kiln-sdk-provenance-${{ matrix.mod }}.json"
@@ -164,6 +177,7 @@ jobs:
             bin/Release/*.zip
             bin/Release/kiln-sdk-provenance-${{ matrix.mod }}.json
             bin/Release/endless-chests.defaults.ini
+            bin/Release/endless-chests.catalogue.json
           if-no-files-found: error
           retention-days: 90
 
@@ -244,12 +258,17 @@ jobs:
                       raise SystemExit(f"Duplicate distribution asset: {dest.name}")
                   copy2(asset, dest)
                   published.append(dest.name)
-          ini = root / f"kiln-{version}-EndlessChests" / "endless-chests.defaults.ini"
-          if not ini.is_file() or ini.stat().st_size == 0:
-              raise SystemExit("Missing Endless Chests editable defaults INI")
-          copy2(ini, output / ini.name)
-          published.append(ini.name)
-          if len(published) != 7:
+          endless_assets = ("endless-chests.defaults.ini", "endless-chests.catalogue.json")
+          for name in endless_assets:
+              asset = root / f"kiln-{version}-EndlessChests" / name
+              if not asset.is_file() or asset.stat().st_size == 0:
+                  raise SystemExit(f"Missing Endless Chests standalone asset: {name}")
+              dest = output / name
+              if dest.exists():
+                  raise SystemExit(f"Duplicate distribution asset: {name}")
+              copy2(asset, dest)
+              published.append(name)
+          if len(published) != 8:
               raise SystemExit(f"Incorrect asset count: {published}")
           print(f"Verified official Kiln {tag}@{kiln_sha} for mod source {source_sha}")
           for asset in published:
@@ -272,7 +291,7 @@ jobs:
 
             - **Mods built:** Survival QoL, Endless Chests and NoClip Toggle. Cross-base Storage research is archived, not shipped.
             - **Mod source:** ${{ needs.check.outputs.source_sha }}
-            - **Checks:** release tag matches its published Git commit, official NuGet checksums verified, all three mod builds and contract tests passed.
+            - **Checks:** release tag matches its published Git commit, official NuGet checksums verified, all three mod builds and contract tests passed. Endless Chests canonical JSON item IDs and the 100 audited repairs were validated against this exact Kiln source.
             - **Provenance:** separate kiln-sdk-provenance-<mod>.json per mod, including the exact Kiln release, Git SHA and official SDK hashes.
 
             These are development compatibility prereleases, **not stable mod version upgrades or in-game acceptance**. Install manually through Kiln Library and back up saves before testing.
