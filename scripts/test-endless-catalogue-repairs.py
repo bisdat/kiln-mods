@@ -12,6 +12,10 @@ import json
 root = Path(__file__).resolve().parents[1]
 audit = json.loads((root / "scripts/data/endless-chests-identity-audit-0.5.1.json").read_text(encoding="utf-8"))
 catalogue = json.loads((root / "EndlessChests/defaults/catalogue.json").read_text(encoding="utf-8"))
+final_audit = json.loads((root / "scripts/data/endless-chests-identity-audit-0.5.2.json").read_text(encoding="utf-8"))
+final_by_position = {
+    (x["group"], x["position"]): x for x in final_audit["mappings"]
+}
 sdk = root / ".kiln-upstream/managed/services/Kiln.Items/Data/items.tsv"
 assert sdk.exists(), "Build against the pinned Kiln SDK before testing"
 
@@ -50,16 +54,18 @@ for entry in audit["resolutions"]:
         "numbered-piece"
     }, entry
 
+# The 27 entries left by the old audit must be covered, not deleted,
+# by the subsequent 0.5.2 catalogue repair. All original positions remain.
 for entry in audit["remaining"]:
     key = entry["group"], entry["position"]
-    assert key not in seen, key
+    assert key not in seen and key in final_by_position, key
     seen.add(key)
+    mapping = final_by_position[key]
+    assert mapping["previousLabel"] == entry["unresolved"], (key, mapping)
     slot = catalogue["groups"][key[0]][key[1]]
-    assert slot == {
-        k: v for k, v in entry.items() if k not in ("group", "position")
-    }, (key, slot)
-    assert isinstance(slot["unresolved"], str) and slot["unresolved"]
-    assert all(id_ in registry for id_ in slot.get("candidates", []))
+    ids = [slot] if isinstance(slot, int) else slot.get("variants", [])
+    assert ids == [item["id"] for item in mapping["selected"]], (key, slot)
+    assert ids and all(id_ in registry for id_ in ids), key
 
 assert len(seen) == 127
 counts = Counter(
@@ -77,5 +83,5 @@ assert not any(
     if isinstance(item, dict)
 )
 
-print("PASS: 100 original unresolved entries pinned to exact game identities, "
-      "27 intentionally unresolved, all original positions retained")
+print("PASS: 100 original 0.5.1 identity repairs still pinned, "
+      "27 subsequent fixes validated against original audit positions")
