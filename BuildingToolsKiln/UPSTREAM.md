@@ -28,10 +28,13 @@ and SHA256, retaining the licence and keeping Kiln's loader intact.
 ## Controlled update process
 
 1. The upstream author publishes an official GitHub release (normally
-   followed by a Nexus upload).
-2. The upstream watcher checks for a **newer non-prerelease version**,
-   downloads the official ZIP and its published SHA256, and proposes
-   a new version in release.json via a **draft pull request**.
+   followed by a Nexus upload). GitHub can publish the release page
+   **before** the downloadable ZIP and SHA256 have been uploaded.
+   In that case, the watcher reports a **warning** and retries on the next
+   daily run; this is **not** a failure of Kiln or of the adapter.
+2. Only once **both** official files are present and fully uploaded does
+   the watcher download the ZIP, validate its published SHA256, and
+   propose a new version in release.json via a **draft pull request**.
    It increments the Kiln adapter patch version without copying any source.
 3. CI builds a candidate Kiln ZIP from the actual upstream binary, verifies
    its bytes and licence, tests archive safety, and checks reproducibility.
