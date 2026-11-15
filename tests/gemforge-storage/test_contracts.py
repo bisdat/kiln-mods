@@ -34,6 +34,11 @@ class ConservationPolicy(unittest.TestCase):
         self.assertIn('Nearby.Entities(player, ReachMeters, "ShroudForge")', SRC)
         self.assertIn('Spawn.FindByName("GemForge"', SRC)
         self.assertIn('EndsWith("_Player_GemForge"', SRC)
+        self.assertIn('World.Find("UsedItem")', SRC)
+        self.assertIn('World.TryRead<uint>(entity, "UsedItem"', SRC)
+        self.assertIn("3250908839u", SRC)
+        self.assertIn("gforge probe", SRC)
+        self.assertIn("private const double ReachMeters = 8", SRC)
         self.assertIn("s.ItemEntity == loan.Plan.Instance", SRC)
         self.assertIn("session.Original.GetValueOrDefault", SRC)
 

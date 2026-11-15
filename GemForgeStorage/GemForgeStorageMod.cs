@@ -11,8 +11,12 @@ namespace GemForgeStorage;
 /// </summary>
 public sealed class GemForgeStorageMod : Mod
 {
-    private const double ReachMeters = 4;
-    private const double LeaveMeters = 10;
+    // Placed props can have an origin well behind their interaction point.
+    private const double ReachMeters = 8;
+    private const double LeaveMeters = 16;
+    // Item ID of the placeable Gem Forge, verified in Kiln's game item catalogue.
+    // A placed prop may expose UsedItem without a GemForge template name.
+    private const uint PlaceableGemForgeItem = 3250908839u;
     private const int MaxEssencePerType = 2000;
     private const int MaxGemLoans = 24;
     private const int ReserveGenericSlots = 4;
@@ -59,9 +63,9 @@ public sealed class GemForgeStorageMod : Mod
     public override void OnLoad()
     {
         _command = Commands.Register("gforge", Command, CommandPermission.Everyone,
-            usage: "[status|scan|return]", description: "Magic Chest inventory access at Gem Forges.");
+            usage: "[status|scan|probe|return]", description: "Magic Chest inventory access at Gem Forges.");
         Context.Tick.Pre += Tick;
-        Log.Info("Gem Forge Storage v0.1.1 loaded: loaded Magic Chests only; Archaic Essence + weapon gems, Kiln.Items.Move.");
+        Log.Info("Gem Forge Storage v0.1.2 loaded: loaded Magic Chests only; Archaic Essence + weapon gems, Kiln.Items.Move.");
     }
 
     public override void OnUnload()
@@ -145,22 +149,76 @@ public sealed class GemForgeStorageMod : Mod
         return new Session(player, forge, world, plans, own);
     }
 
+    private static bool IsPlacedGemForge(EntityId entity) =>
+        World.TryRead<uint>(entity, "UsedItem", out var itemId) && itemId == PlaceableGemForgeItem;
+
     private static EntityId NearestForge(EntityId player)
     {
-        // Gem Forge may expose its station template without ShroudForge on its
-        // root ECS entity. Check both forms before reporting 'not found'.
+        // Use the native Kiln ECS and placed-prop inventory data independently.
+        // The earlier ShroudLink-inspired component-only lookup missed real
+        // placed forges in the hosted client world.
+        var at = World.Position(player);
+        if (at is null) return default;
         var byComponent = Nearby.Entities(player, ReachMeters, "ShroudForge").FirstOrDefault();
         if (!byComponent.IsNone) return byComponent;
-        if (World.Position(player) is not { } at) return default;
-        foreach (var entity in Spawn.FindByName("GemForge", at, ReachMeters, max: 32))
-        {
-            var name = Spawn.Inspect(entity)?.TemplateName;
-            if (name is not null &&
+
+        var byTemplate = Spawn.FindByName("GemForge", at, ReachMeters, max: 64)
+            .FirstOrDefault(e => Spawn.Inspect(e)?.TemplateName is { } name &&
                 (name.EndsWith("_Player_GemForge", StringComparison.OrdinalIgnoreCase) ||
-                 name.EndsWith("_GemForge", StringComparison.OrdinalIgnoreCase)))
-                return entity;
+                 name.EndsWith("_GemForge", StringComparison.OrdinalIgnoreCase)));
+        if (!byTemplate.IsNone) return byTemplate;
+
+        // Fallback: player-placed game props carry UsedItem (four-byte item ID).
+        // Their runtime template may not have the same name as their placeable.
+        var closest = default(EntityId);
+        var minDistance = ReachMeters;
+        foreach (var entity in World.Find("UsedItem"))
+        {
+            if (!IsPlacedGemForge(entity) || World.Position(entity) is not { } pos)
+                continue;
+            var distance = pos.DistanceTo(at.Value);
+            if (distance <= minDistance)
+            {
+                minDistance = distance;
+                closest = entity;
+            }
         }
-        return default;
+        return closest;
+    }
+
+    /// <summary>Read-only ECS census. This does not require an active loan or a detected forge.</summary>
+    private static void ProbeForge(CommandContext command, EntityId player)
+    {
+        var at = World.Position(player);
+        if (at is null)
+        {
+            command.Reply("Gem Forge probe: your character has no server-world position.");
+            return;
+        }
+
+        var components = World.Find("ShroudForge");
+        var templates = Spawn.FindByName("GemForge", max: 256);
+        var placed = World.Find("UsedItem").Where(IsPlacedGemForge).ToArray();
+        command.Reply($"Gem Forge probe: player={player}, position={at}; " +
+            $"ShroudForge component={components.Count}, GemForge templates={templates.Count}, " +
+            $"GemForge placed-item={placed.Length}, reach={ReachMeters} m.");
+
+        var evidence = new Dictionary<EntityId, string>();
+        foreach (var e in components) evidence.TryAdd(e, "ShroudForge");
+        foreach (var e in templates) evidence.TryAdd(e, "template");
+        foreach (var e in placed) evidence.TryAdd(e, "UsedItem");
+        var nearest = evidence
+            .Select(entry => (Id: entry.Key, Source: entry.Value,
+                Position: World.Position(entry.Key)))
+            .OrderBy(entry => entry.Position is { } pos ? pos.DistanceTo(at.Value) : double.MaxValue)
+            .Take(6)
+            .Select(entry =>
+                $"{entry.Id}: " +
+                (entry.Position is { } pos ? $"{pos.DistanceTo(at.Value):0.0}m" : "no position") +
+                $" [{entry.Source}] {Spawn.Inspect(entry.Id)?.TemplateName ?? "(no template)"}")
+            .ToArray();
+        command.Reply(nearest.Length > 0 ? $"Nearest forge candidates: {string.Join("; ", nearest)}" :
+            "No forge candidates by ECS component, template or placeable item. Check the placed entity in Kiln.");
     }
 
     private void Tick(in TickInfo tick)
@@ -173,11 +231,14 @@ public sealed class GemForgeStorageMod : Mod
             {
                 if (!_warned)
                 {
-                    Log.Warn("Gem Forge Storage is inactive: Kiln.Items moves, World, Spawn or Players unavailable.");
+                    Log.Warn($"Gem Forge Storage waiting for services: moves={Items.MovesAvailable}, " +
+                        $"world={World.Available}, spawn={Spawn.Available}, players={Players.Available}.");
                     _warned = true;
                 }
                 return;
             }
+            if (_warned)
+                Log.Info("Gem Forge Storage: all required Kiln services are now available.");
             _warned = false;
             var world = Saves.WorldId;
             if (world is null)
@@ -373,16 +434,24 @@ public sealed class GemForgeStorageMod : Mod
     private void Command(CommandContext command)
     {
         var verb = command.ArgOrDefault(0, "status")!.ToLowerInvariant();
-        if (verb is not ("scan" or "status" or "return" or "help"))
-            throw command.Usage("status | scan | return | help");
+        if (verb is not ("scan" or "status" or "probe" or "return" or "help"))
+            throw command.Usage("status | scan | probe | return | help");
         if (verb == "help")
         {
-            command.Reply("gforge status (current loan), scan (read-only sources), return (return now and suspend until leaving). " +
-                "Transfers start automatically within 4 m of a Gem Forge and return beyond 10 m.");
+            command.Reply("gforge status (current loan), scan (read-only sources), probe (forge detection), " +
+                "return (return now and suspend until leaving). Transfers start automatically " +
+                "within 8 m of a Gem Forge and return beyond 16 m.");
             return;
         }
         var player = command.Source.Player;
         if (player.IsNone) throw new CommandException("Run this as a player inside the world.");
+        if (verb == "probe")
+        {
+            if (!World.Available || !Spawn.Available)
+                throw new CommandException("Kiln World or Spawn is not available.");
+            ProbeForge(command, player);
+            return;
+        }
         if (verb == "status")
         {
             command.Reply(_sessions.TryGetValue(player, out var session)
@@ -408,7 +477,8 @@ public sealed class GemForgeStorageMod : Mod
         if (!Items.MovesAvailable || !Spawn.Available || !World.Available)
             throw new CommandException("Kiln item transfer, Spawn or World service is not ready.");
         var forgeId = NearestForge(player);
-        if (forgeId.IsNone) throw new CommandException("No Gem Forge within 4 m.");
+        if (forgeId.IsNone)
+            throw new CommandException("No Gem Forge within 8 m. Run gforge probe for the world-entity census and distances.");
         var at = World.Position(forgeId) ?? throw new CommandException("Gem Forge has no position.");
         var chests = LoadedMagicChests(at);
         var gems = 0;
