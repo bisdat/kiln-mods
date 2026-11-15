@@ -2,7 +2,7 @@
   <PropertyGroup>
     <KilnModId>endless-chests-kiln</KilnModId>
     <KilnModName>Endless Chests (Kiln)</KilnModName>
-    <Version>0.4.5</Version>
+    <Version>0.5.0</Version>
     <Authors>bisdat</Authors>
     <Description>Persistent, safe chest refills through the Kiln SDK item transaction service.</Description>
     <PackageProjectUrl>https://github.com/bisdat/kiln-mods</PackageProjectUrl>
@@ -12,6 +12,7 @@
     <KilnGameIds>None</KilnGameIds>
   </PropertyGroup>
   <ItemGroup>
-    <EmbeddedResource Include="defaults/endless-chests.defaults.ini" LogicalName="EndlessChests.DefaultsIni" />
+    <EmbeddedResource Include="defaults/endless-chests.defaults.ini" LogicalName="EndlessChests.DefaultSettingsIni" />
+    <EmbeddedResource Include="defaults/catalogue.json" LogicalName="EndlessChests.CatalogueJson" />
   </ItemGroup>
 </Project>

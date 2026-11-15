@@ -5,8 +5,8 @@ The game exposes only an FNV-1a64 ID, not the original text. The Kiln
 matcher enumerates bounded ASCII case branches from both ends of the hash
 instead of reading a private game string store. Test the same logic here.
 """
-from configparser import ConfigParser
 from pathlib import Path
+import json
 
 OFFSET = 0xCBF29CE484222325
 PRIME = 0x100000001B3
@@ -85,12 +85,8 @@ assert not is_ascii_case_of("Tools", fnv("Random Chest"))
 assert not is_ascii_case_of("Animals", fnv("Animal"))
 assert not is_ascii_case_of("Starter Blocks", fnv("Starter Block"))
 
-path = Path(__file__).resolve().parents[1] / "EndlessChests/defaults/endless-chests.defaults.ini"
-cfg = ConfigParser(interpolation=None)
-cfg.optionxform = str
-with path.open(encoding="utf-8-sig") as stream:
-    cfg.read_file(stream)
-groups = dict(cfg.items("Groups"))
+path = Path(__file__).resolve().parents[1] / "EndlessChests/defaults/catalogue.json"
+groups = json.loads(path.read_text(encoding="utf-8"))["groups"]
 assert len(groups) == 195
 for name in groups:
     # Explicitly verify that every original group can be matched with
