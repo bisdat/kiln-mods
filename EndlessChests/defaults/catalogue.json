@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "kilnSdkCommit": "eba9a5e1e0e0044a9146fdd53021a751e2957030",
   "items": {
     "3087876": {
@@ -100,6 +100,11 @@
     "32887851": {
       "displayName": "Flag Pole I",
       "debugName": "Prop_Decoration_T5_Flagpole_01",
+      "category": "BuildTools"
+    },
+    "33507171": {
+      "displayName": "Veilwater Basin Boardwalk I",
+      "debugName": "Prop_Decoration_T6_Boardwalk_8m_01_A",
       "category": "BuildTools"
     },
     "33917198": {
@@ -462,6 +467,11 @@
       "debugName": "Ammo_T2_Spell_Bone_Channel_lvl15",
       "category": "Ammunition"
     },
+    "147747455": {
+      "displayName": "Collection Of Books II",
+      "debugName": "Prop_Decoration_Book_Pile_03_C",
+      "category": "BuildTools"
+    },
     "147999202": {
       "displayName": "Medium Ancient Table",
       "debugName": "Prop_Decoration_Comfort9_T7_Table_Medium",
@@ -511,6 +521,11 @@
       "displayName": "Greatsword Gauntlets",
       "debugName": "Armor_T6_Unique_Greatsword_Arms",
       "category": "Equipment"
+    },
+    "161588181": {
+      "displayName": "Carved Tropical Wood Fence Pole",
+      "debugName": "Prop_Decoration_T6_Fence_Wood_Pole_01",
+      "category": "BuildTools"
     },
     "163823517": {
       "displayName": "Yellow Flower",
@@ -581,6 +596,11 @@
       "displayName": "Flame Mosaic Piece IV",
       "debugName": "Collection_mosaics_01_flame_piece4",
       "category": "Collectibles"
+    },
+    "186386614": {
+      "displayName": "Collection Of Books III",
+      "debugName": "Prop_Decoration_Book_Pile_05_E",
+      "category": "BuildTools"
     },
     "190504416": {
       "displayName": "Huge Ancient Door",
@@ -1106,6 +1126,11 @@
       "displayName": "Fae Deer Farmer Gloves",
       "debugName": "Vanity_T2_Faedeer_Gloves",
       "category": "Equipment"
+    },
+    "371722890": {
+      "displayName": "Bamboo Room Divider I",
+      "debugName": "Prop_Decoration_T6_Lizard_Gate_01",
+      "category": "BuildTools"
     },
     "372029138": {
       "displayName": "Charcoal",
@@ -1677,6 +1702,11 @@
       "debugName": "Ammo_T3_Arrow_Bronze_Poison_lvl20",
       "category": "Ammunition"
     },
+    "553841242": {
+      "displayName": "Conifer Crate",
+      "debugName": "Prop_Decoration_T5_Crate_Conifer02",
+      "category": "BuildTools"
+    },
     "553983871": {
       "displayName": "Medium Hollow Halls Banner",
       "debugName": "Prop_Decoration_T4_Banner_Hollow_Medium",
@@ -1815,6 +1845,11 @@
     "601260094": {
       "displayName": "Small Palm Wood Cupboard",
       "debugName": "Prop_Decoration_T4_Cupboard_Small_Ornate_Palmwood",
+      "category": "BuildTools"
+    },
+    "604994553": {
+      "displayName": "Empty Farmbed",
+      "debugName": "Prop_Decoration_Farmbed_01c",
       "category": "BuildTools"
     },
     "605709950": {
@@ -2080,6 +2115,11 @@
     "672261632": {
       "displayName": "Stone Column Base",
       "debugName": "Prop_Decoration_T6_ThroneRoom_Column_Base",
+      "category": "BuildTools"
+    },
+    "673405648": {
+      "displayName": "Fern",
+      "debugName": "Empty_Flower_Pot_CNY_Fern_01",
       "category": "BuildTools"
     },
     "674281730": {
@@ -3017,6 +3057,11 @@
       "debugName": "Armor_T5-TX_Ranger_Archer_DPS_Arms_Loot",
       "category": "Equipment"
     },
+    "996296787": {
+      "displayName": "Large Backpack",
+      "debugName": "Backpack_T3_NEW",
+      "category": "Equipment"
+    },
     "996907151": {
       "displayName": "Grappling Hook Swing Anchor",
       "debugName": "Prop_GrappleHook_Anchor_Swing",
@@ -3667,6 +3712,11 @@
       "debugName": "Prop_Collection_Mannequin_Armor_pose01",
       "category": "BuildTools"
     },
+    "1195149031": {
+      "displayName": "Veilwater Basin Boardwalk II",
+      "debugName": "Prop_Decoration_T6_Simple_Boardwalk_4m_01_A",
+      "category": "BuildTools"
+    },
     "1195343032": {
       "displayName": "Fae Deer",
       "debugName": "Animal_Farming_Catdeer",
@@ -4011,6 +4061,11 @@
       "displayName": "Rare Fishing Bait",
       "debugName": "Material_T6_03RARE_FishingBait_Improved",
       "category": "Ammunition"
+    },
+    "1313835688": {
+      "displayName": "Resource  Bundle I",
+      "debugName": "Prop_Decoration_T1_RessourceBundle_01",
+      "category": "BuildTools"
     },
     "1316536777": {
       "displayName": "Harvest Festival",
@@ -4367,6 +4422,11 @@
       "debugName": "Prop_Decoration_T2_JumpPad_Medium",
       "category": "BuildTools"
     },
+    "1412268864": {
+      "displayName": "Bamboo Crate I",
+      "debugName": "Prop_Decoration_T6_Crate_Bamboo_02",
+      "category": "BuildTools"
+    },
     "1414430028": {
       "displayName": "Iron Fell Critter Queen Trophy",
       "debugName": "_Prop_Decoration_Boss_Trophy_critterQueen_03_iron",
@@ -4692,6 +4752,11 @@
       "debugName": "Material_T6_SlurpBroth",
       "category": "Materials"
     },
+    "1506922480": {
+      "displayName": "Large Bamboo Basket",
+      "debugName": "Prop_Decoration_T6_Basket_Large_02",
+      "category": "BuildTools"
+    },
     "1508295032": {
       "displayName": "Metal Water Dispenser II",
       "debugName": "Prop_WaterDispenser_Metal_spillUntilCovered_ancient",
@@ -4725,6 +4790,11 @@
     "1517397958": {
       "displayName": "Boreal Wood Chair",
       "debugName": "Prop_Decoration_Comfort6_T5_Chair",
+      "category": "BuildTools"
+    },
+    "1517467835": {
+      "displayName": "Bamboo Stairs",
+      "debugName": "Prop_Decoration_T6_Lizard_Stairs_2m_01_A",
       "category": "BuildTools"
     },
     "1518794687": {
@@ -6782,6 +6852,11 @@
       "debugName": "Prop_Decoration_T0_Fence_Palisade_01",
       "category": "BuildTools"
     },
+    "2125538426": {
+      "displayName": "Empty Cymbidium Pot",
+      "debugName": "Empty_Flower_Pot_CNY_Empty_02b",
+      "category": "BuildTools"
+    },
     "2125851720": {
       "displayName": "Blue Goblet",
       "debugName": "ColorPalette_T2_ColorPalette_Reward_01",
@@ -7147,6 +7222,11 @@
       "debugName": "Collection_Planetarium_piece3",
       "category": "Collectibles"
     },
+    "2242544273": {
+      "displayName": "Simple Wood Support",
+      "debugName": "Prop_Decoration_T6_Simple_Support_4m_02_A",
+      "category": "BuildTools"
+    },
     "2243725147": {
       "displayName": "Resource Bundle II",
       "debugName": "Prop_Decoration_T1_RessourceBundle_02",
@@ -7417,10 +7497,20 @@
       "debugName": "Prop_Decoration_T1_Door_Carved_Wooden",
       "category": "BuildTools"
     },
+    "2326445767": {
+      "displayName": "Large Bamboo Crate",
+      "debugName": "Prop_Decoration_T6_Crate_Bamboo_Large_02",
+      "category": "BuildTools"
+    },
     "2327796444": {
       "displayName": "Exclusive Hollow Boots",
       "debugName": "Vanity_TX_skeleton_armor_purple_Boots",
       "category": "Equipment"
+    },
+    "2328440963": {
+      "displayName": "Empty Lily Pot",
+      "debugName": "Empty_Flower_Pot_CNY_Empty_01a",
+      "category": "BuildTools"
     },
     "2330097805": {
       "displayName": "Round Sea Urchin",
@@ -8380,6 +8470,11 @@
     "2581939916": {
       "displayName": "Shroud Wood Block",
       "debugName": "Block_T1_Wood_Deadwood_CRAFTING",
+      "category": "BuildTools"
+    },
+    "2583752204": {
+      "displayName": "Iron Grate",
+      "debugName": "Prop_Decoration_T4_Grate_Iron_Big",
       "category": "BuildTools"
     },
     "2583959345": {
@@ -9817,6 +9912,11 @@
       "debugName": "Material_T3_MonstrousRibs",
       "category": "Materials"
     },
+    "2975370828": {
+      "displayName": "Book I",
+      "debugName": "Prop_Decoration_Book_01",
+      "category": "BuildTools"
+    },
     "2977882835": {
       "displayName": "Blue Globe",
       "debugName": "Prop_Decoration_T4_Clutter_Globe",
@@ -10280,6 +10380,11 @@
     "3119388545": {
       "displayName": "Cauldron",
       "debugName": "Prop_Furniture_Cauldron_01",
+      "category": "BuildTools"
+    },
+    "3121223720": {
+      "displayName": "Bamboo Fence Pole",
+      "debugName": "Prop_Decoration_T6_Fence_Bamboo_Pole_01",
       "category": "BuildTools"
     },
     "3121479110": {
@@ -10750,6 +10855,11 @@
     "3255588039": {
       "displayName": "Ancient Temple Bench",
       "debugName": "Prop_Decoration_Comfort9_T7_Templeprop_Bench_01",
+      "category": "BuildTools"
+    },
+    "3259443869": {
+      "displayName": "Collection Of Books I",
+      "debugName": "Prop_Decoration_Book_Pile_01_A",
       "category": "BuildTools"
     },
     "3260045641": {
@@ -11420,6 +11530,11 @@
     "3434002836": {
       "displayName": "Medium Albaneve Summits Brazier",
       "debugName": "Prop_Decoration_Comfort_T5_IlluminationFloor_Brazier_medium",
+      "category": "BuildTools"
+    },
+    "3434035481": {
+      "displayName": "Prison Fence",
+      "debugName": "Prop_Decoration_T4_Fence_Prison",
       "category": "BuildTools"
     },
     "3436474234": {
@@ -12547,6 +12662,11 @@
       "debugName": "ColorPalette_T4_ColorPalette_04",
       "category": "ColorPalette"
     },
+    "3728213390": {
+      "displayName": "Small Backpack",
+      "debugName": "Backpack_T1_NEW",
+      "category": "Equipment"
+    },
     "3728449442": {
       "displayName": "Carved Limestone Vase II",
       "debugName": "Prop_Decoration_T3_Vase_LimeStone_02",
@@ -12685,6 +12805,11 @@
     "3771575140": {
       "displayName": "Farmer Boots",
       "debugName": "Vanity_TX_Farmer_Boots",
+      "category": "Equipment"
+    },
+    "3773368910": {
+      "displayName": "Medium Backpack",
+      "debugName": "Backpack_T2_NEW",
       "category": "Equipment"
     },
     "3773857537": {
@@ -14202,6 +14327,11 @@
       "debugName": "8kLoreText_mapPiece_communityQuest_2025_01_mae",
       "category": "Collectibles"
     },
+    "4206640908": {
+      "displayName": "Palm Leaf Basket",
+      "debugName": "Prop_Decoration_T6_Basket_01",
+      "category": "BuildTools"
+    },
     "4208954912": {
       "displayName": "Black Coffee",
       "debugName": "Food_T6_dish_hydration_CoffeeBlack",
@@ -14697,27 +14827,9 @@
     ],
     "Backpacks": [
       531058391,
-      {
-        "unresolved": "Small Backpack",
-        "candidates": [
-          3728213390,
-          4231879756
-        ]
-      },
-      {
-        "unresolved": "Medium Backpack",
-        "candidates": [
-          3773368910,
-          4053516652
-        ]
-      },
-      {
-        "unresolved": "Large Backpack",
-        "candidates": [
-          996296787,
-          3131144042
-        ]
-      }
+      3728213390,
+      3773368910,
+      996296787
     ],
     "Bandages": [
       1539486909,
@@ -14802,22 +14914,21 @@
     ],
     "Books": [
       {
-        "unresolved": "Book I",
-        "candidates": [
+        "variants": [
+          2975370828,
+          3853710961,
+          1042567701,
+          676824530,
+          1665817031,
+          743954578,
+          2283198170,
+          1920341845,
+          3330526371,
+          2548133338,
           413542990,
           589587638,
-          676824530,
-          743954578,
-          1042567701,
-          1665817031,
-          1878602124,
-          1920341845,
-          2283198170,
-          2548133338,
-          2975370828,
-          3330526371,
-          3853710961,
-          4242562036
+          4242562036,
+          1878602124
         ]
       },
       767398960,
@@ -14825,22 +14936,19 @@
       4294020720,
       1054905308,
       {
-        "unresolved": "Collection Of Books I",
-        "candidates": [
-          1276880412,
-          3259443869
+        "variants": [
+          3259443869,
+          1276880412
         ]
       },
       {
-        "unresolved": "Collection Of Books II",
-        "candidates": [
+        "variants": [
           147747455,
           1732682352
         ]
       },
       {
-        "unresolved": "Collection Of Books III",
-        "candidates": [
+        "variants": [
           186386614,
           523691097
         ]
@@ -15346,13 +15454,7 @@
     ],
     "Decorations 2": [
       3607939791,
-      {
-        "unresolved": "Bamboo Stairs",
-        "candidates": [
-          1517467835,
-          2175416596
-        ]
-      },
+      1517467835,
       2175416596,
       1158688307,
       2942267456,
@@ -15401,14 +15503,7 @@
       1732682352,
       523691097,
       2537359689,
-      {
-        "unresolved": "Conifer Crate",
-        "candidates": [
-          553841242,
-          2537359689,
-          3904030989
-        ]
-      },
+      553841242,
       3904030989,
       2430442830
     ],
@@ -15426,35 +15521,13 @@
       3340302763,
       467801292,
       4135259126,
-      {
-        "unresolved": "Empty Cymbidium Pot",
-        "candidates": [
-          2125538426,
-          4135259126
-        ]
-      },
+      2125538426,
       3916554796,
       1392367211,
-      {
-        "unresolved": "Empty Farmbed",
-        "candidates": [
-          604994553,
-          1392367211,
-          2425261321,
-          3310867211,
-          3916554796
-        ]
-      },
+      604994553,
       2425261321,
       3224973803,
-      {
-        "unresolved": "Empty Lily Pot",
-        "candidates": [
-          2328440963,
-          3534930699,
-          3593229714
-        ]
-      },
+      2328440963,
       3534930699,
       3593229714,
       3462191401,
@@ -15536,15 +15609,7 @@
       3039294020,
       3732364492,
       3541979658,
-      {
-        "unresolved": "Large Bamboo Basket",
-        "candidates": [
-          1506922480,
-          2694217922,
-          2867139849,
-          3541979658
-        ]
-      },
+      1506922480,
       2867139849,
       2694217922,
       3554673768,
@@ -15594,15 +15659,7 @@
       418495712,
       440235364,
       3758512906,
-      {
-        "unresolved": "Simple Wood Support",
-        "candidates": [
-          2242544273,
-          2587423299,
-          3556756437,
-          3758512906
-        ]
-      },
+      2242544273,
       2587423299,
       3556756437,
       1887370548,
@@ -15654,23 +15711,9 @@
       669605144,
       1030788931,
       123726817,
-      {
-        "unresolved": "Veilwater Basin Boardwalk I",
-        "candidates": [
-          33507171,
-          123726817,
-          669605144,
-          1030788931
-        ]
-      },
+      33507171,
       4043051492,
-      {
-        "unresolved": "Veilwater Basin Boardwalk II",
-        "candidates": [
-          1195149031,
-          4043051492
-        ]
-      },
+      1195149031,
       3568382178,
       1643475525,
       3504476430,
@@ -15718,12 +15761,11 @@
     ],
     "Dividers": [
       {
-        "unresolved": "Bamboo Room Divider I",
-        "candidates": [
-          260723984,
+        "variants": [
           371722890,
-          1950301003,
+          260723984,
           3413337702,
+          1950301003,
           3607939791
         ]
       },
@@ -15999,8 +16041,7 @@
     ],
     "Fences 1": [
       {
-        "unresolved": "Bamboo Fence Pole",
-        "candidates": [
+        "variants": [
           3121223720,
           3349466374
         ]
@@ -16012,8 +16053,7 @@
       3343616857,
       1248457047,
       {
-        "unresolved": "Carved Tropical Wood Fence Pole",
-        "candidates": [
+        "variants": [
           161588181,
           1698793327,
           2429035331
@@ -16057,13 +16097,7 @@
       3212731674,
       1994301209,
       3546099400,
-      {
-        "unresolved": "Prison Fence",
-        "candidates": [
-          2452070869,
-          3434035481
-        ]
-      },
+      3434035481,
       989071130,
       2439362338,
       156080606,
@@ -16251,9 +16285,7 @@
       163823517,
       3643820464,
       1526921804,
-      {
-        "unresolved": "Fern Pot"
-      },
+      673405648,
       2019603203,
       1228884892,
       1665119413,
@@ -16493,13 +16525,7 @@
     ],
     "Illumination 2": [
       4178847220,
-      {
-        "unresolved": "Wall Lantern",
-        "candidates": [
-          2560383707,
-          3019273830
-        ]
-      },
+      2560383707,
       1631158255,
       3936746657,
       3129268711,
@@ -16912,18 +16938,16 @@
       675151487,
       1343767117,
       {
-        "unresolved": "Bamboo Crate I",
-        "candidates": [
-          1412268864,
-          4136278992
+        "variants": [
+          4136278992,
+          1412268864
         ]
       },
       1749305549,
       {
-        "unresolved": "Large Bamboo Crate",
-        "candidates": [
-          2326445767,
-          3554673768
+        "variants": [
+          3554673768,
+          2326445767
         ]
       },
       56166095,
@@ -16962,8 +16986,7 @@
     ],
     "Miscellaneous 2": [
       {
-        "unresolved": "Iron Grate",
-        "candidates": [
+        "variants": [
           2583752204,
           3638722075
         ]
@@ -16972,18 +16995,15 @@
       476656696,
       1543478105,
       {
-        "unresolved": "Palm Leaf Basket",
-        "candidates": [
+        "variants": [
+          4206640908,
           1108421963,
-          4179466778,
-          4206640908
+          4179466778
         ]
       },
       1485009287,
       2746999550,
-      {
-        "unresolved": "Resource Bundle I"
-      },
+      1313835688,
       2243725147,
       2938349424,
       2829385261,

@@ -64,7 +64,7 @@ internal sealed class ItemCatalogue
     {
         using var document = JsonDocument.Parse(json);
         var root = document.RootElement;
-        if (root.GetProperty("schemaVersion").GetInt32() != 1)
+        if (root.GetProperty("schemaVersion").GetInt32() != 2)
             throw new InvalidDataException("Unsupported Endless Chests catalogue schema");
         var catalogue = new ItemCatalogue();
         foreach (var property in root.GetProperty("items").EnumerateObject())
@@ -97,12 +97,35 @@ internal sealed class ItemCatalogue
                     entries.Add(new GroupEntry(id, null));
                 }
                 else if (value.ValueKind == JsonValueKind.Object &&
+                         value.TryGetProperty("variants", out var variants))
+                {
+                    // One historical group position can denote multiple real
+                    // decorative forms sharing an in-game display name.
+                    // IDs remain authoritative; expand in source order so
+                    // all valid variants refill without a name-based guess.
+                    if (value.EnumerateObject().Count() != 1 ||
+                        variants.ValueKind != JsonValueKind.Array ||
+                        variants.GetArrayLength() is < 2 or > 64)
+                        throw new InvalidDataException(
+                            $"Group '{property.Name}' has invalid variants");
+                    var seen = new HashSet<uint>();
+                    foreach (var variant in variants.EnumerateArray())
+                    {
+                        if (variant.ValueKind != JsonValueKind.Number ||
+                            !variant.TryGetUInt32(out var id) || id == 0 ||
+                            !catalogue._identities.ContainsKey(id) || !seen.Add(id))
+                            throw new InvalidDataException(
+                                $"Group '{property.Name}' has unknown or duplicated variant ID");
+                        entries.Add(new GroupEntry(id, null));
+                    }
+                }
+                else if (value.ValueKind == JsonValueKind.Object &&
                          value.TryGetProperty("unresolved", out var missing) &&
                          missing.ValueKind == JsonValueKind.String &&
                          !string.IsNullOrWhiteSpace(missing.GetString()))
                 {
-                    // Preserve uncertain membership for review without trying
-                    // another item with a similar/ambiguous display name.
+                    // Keep an explicit unresolved marker as a safe fallback
+                    // for future game SDK changes; never guess display names.
                     entries.Add(new GroupEntry(null, missing.GetString()));
                 }
                 else
