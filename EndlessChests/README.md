@@ -1,8 +1,10 @@
-# Endless Chests (Kiln) — v0.5.0 (experimental)
+# Endless Chests (Kiln) — v0.5.1 (experimental)
 
 An independent C# implementation through the Kiln SDK, using the original Endless Chests group defaults (attributed to HipShot808). It does **not** load or redistribute the Windows ShroudForge DLL or use undocumented native memory offsets.
 
-**v0.5.0 catalogue refactor — [issue #38](https://github.com/bisdat/kiln-mods/issues/38):** The bundled [canonical JSON catalogue](defaults/catalogue.json) is the sole source of group membership and game-item identities. All **195 original group names and 3,464 positions** remain in their original order. **3,337 entries** now reference verified game IDs (**2,812 distinct items**); **127 genuinely uncertain entries** are explicit unresolved markers that cannot spawn a wrong item. This also repairs **Mycelium crafting material** (`3509012331`) versus the **Mycelium overgrowth object** (`1353762644`), **133 loot armour aliases**, **17 unambiguous potted plants**, the real `Torch` and current `Oven`. Previous fixes for Indigo, Basalt, Rough Wood Block, Mirage and Alchemist wall hangings are covered by exact-ID tests. Fishing Bait includes the pinned Grasshopper and Scarab identities. A failed refill transaction now logs the specific item and continues attempting later items, unless the inventory is no longer available.
+**v0.5.1 catalogue reconciliation — [issue #38](https://github.com/bisdat/kiln-mods/issues/38):** Resolve **100 of the remaining 127** uncertain legacy catalogue labels by verified item IDs. Current coverage is **3,437 of 3,464 group positions**, across **2,908 distinct game item IDs**; **27** ambiguous/absent labels remain explicit unresolved markers, without invented substitutions. This update repairs 45 colour/size-specific plant pots, 5 Magic Chest sizes, 4 ordinary chest sizes, 24 quoted inscription/decoration/mannequin labels, 5 numbered collectible pieces, and other carefully identified items including tier-specific flasks. The audit lists [all 100 mappings and every remaining candidate](../docs/research/ENDLESS-CHESTS-CATALOGUE-RECONCILIATION.md). **Only catalogue data and tests changed; the v0.5.0 refill runtime, settings format, and name/Empty semantics are unchanged.** Group order, size and total count remain the same.
+
+**v0.5.0 catalogue refactor — [issue #38](https://github.com/bisdat/kiln-mods/issues/38):** The bundled [canonical JSON catalogue](defaults/catalogue.json) is the sole source of group membership and game-item identities. All **195 original group names and 3,464 positions** remain in their original order. In v0.5.0, **3,337 entries** referenced verified game IDs (**2,812 distinct items**); **127 uncertain entries** were explicit unresolved markers that cannot spawn a wrong item. This also repairs **Mycelium crafting material** (`3509012331`) versus the **Mycelium overgrowth object** (`1353762644`), **133 loot armour aliases**, **17 unambiguous potted plants**, the real `Torch` and current `Oven`. Previous fixes for Indigo, Basalt, Rough Wood Block, Mirage and Alchemist wall hangings are covered by exact-ID tests. Fishing Bait includes the pinned Grasshopper and Scarab identities. A failed refill transaction now logs the specific item and continues attempting later items, unless the inventory is no longer available.
 
 **Breaking catalogue configuration change:** No historical item aliases or suffixes are supported in v0.5.0. `endless-chests.ini` is **settings only** (options, aliases, disabled groups and numeric-ID disabled items); an old `[Groups]` section may remain on disk but is **ignored**. The source of truth is embedded `catalogue.json`, which is shipped separately for inspection. Normal group names, automatic chest-name matching, `chests.json` bindings and destructive rename/Empty semantics are retained. This migration is intentional because there is currently only one user.
 
@@ -17,7 +19,7 @@ Each JSON `groups` array refers directly to a decimal ID defined under `items`; 
 
 This snippet illustrates the IDs, not a complete JSON file. Names such as `Mycelium`, `Indigo Plant` or `Mirage` can refer to more than one game identity. A chest named with a **unique** item display name still resolves automatically; ambiguous direct item names must use a group or numeric ID. You can also run `echest bind 3509012331` for a direct ID binding.
 
-Items without a proven match are encoded as `{"unresolved":"Original Label"}` (sometimes with candidate IDs for review) rather than silently substituting another item. They produce one diagnostic warning per group per reload. Further curation is tracked in issue #38.
+Items without a proven match are encoded as `{"unresolved":"Original Label"}` (sometimes with candidate IDs for review) rather than silently substituting another item. They produce one diagnostic warning per group per reload. The remaining 27 ambiguous or absent identities and rationale are tracked in [the reconciliation audit](../docs/research/ENDLESS-CHESTS-CATALOGUE-RECONCILIATION.md) and issue #38.
 
 ## Name-change behaviour
 
@@ -48,12 +50,12 @@ No private string-store reads or Windows-client DLLs are required. The original 
 
 ## Canonical catalogue and user settings
 
-- [`defaults/catalogue.json`](defaults/catalogue.json) is **embedded into the mod and authoritative**. It defines 195 named groups, 3,464 entry positions, 2,812 verified item IDs with metadata, and 127 explicit unresolved entries. Group selection no longer reads display-name lists from an INI.
+- [`defaults/catalogue.json`](defaults/catalogue.json) is **embedded into the mod and authoritative**. It defines 195 named groups, 3,464 entry positions, 2,908 verified item IDs with metadata, and 27 explicit unresolved entries. Group selection no longer reads display-name lists from an INI.
 - [`defaults/endless-chests.defaults.ini`](defaults/endless-chests.defaults.ini) contains only `[Options]`, `[Aliases]`, `[DisabledGroups]`, and `[DisabledItems]`. The runtime copies it to its writable `endless-chests.ini` on first installation; an existing file remains in place, but any old `[Groups]` entries are ignored with a logged warning. To clean up an old file, back it up and replace its settings with the new small defaults, then `echest reload`.
 - `[DisabledItems]` uses **numeric game IDs**, for example `3509012331=1`. Disabled groups exclude their item IDs globally even if another group includes them. Ambiguous plain display names are no longer valid exclusion keys. Two original aliases remain; the obsolete Diver's Endurance Flask alias was removed because its target is absent from the pinned catalogue.
 - To curate uncertain identities, edit the tracked JSON catalogue in the repository and rebuild; do not edit the packaged binary or attempt display-name substitutions. The CI contract validates every explicit ID against the pinned Kiln registry.
 
-The **tagged GitHub Release** publishes `endless-chests-kiln-0.5.0.zip`, standalone `endless-chests.catalogue.json` (reference), and `endless-chests.defaults.ini` (settings template). **Neither JSON nor INI is a Kiln-installable mod.**
+The **tagged GitHub Release** publishes `endless-chests-kiln-0.5.1.zip`, standalone `endless-chests.catalogue.json` (reference), and `endless-chests.defaults.ini` (settings template). **Neither JSON nor INI is a Kiln-installable mod.**
 
 The active `chests.json` file (typically in `kiln/data/endless-chests-kiln/`) stores existing manual chest bindings and settings:
 
@@ -82,7 +84,7 @@ Gear level/rarity/perk upgrades and gem-level special items from ShroudForge are
 1. **Back up the world**, especially chests with valuables.
 2. Use a compatible Kiln runtime (this repo pins published Kiln `v0.2.0-dev.15`).
 3. From a successful [Endless Chests packaging run](https://github.com/bisdat/kiln-mods/actions/workflows/endless-chests.yml), download the `endless-chests-kiln-package` artifact, or use the [tagged GitHub Releases](https://github.com/bisdat/kiln-mods/releases) page for the individual ZIP and JSON catalogue and INI settings assets.
-4. Extract the Actions artifact (if downloaded) and import the enclosed **`endless-chests-kiln-0.5.0.zip`** into Kiln's Library. Enable v0.5.0 in the active profile and restart Enshrouded. The accompanying JSON and settings INI are separate reference downloads, **not** an installable Kiln package.
+4. Extract the Actions artifact (if downloaded) and import the enclosed **`endless-chests-kiln-0.5.1.zip`** into Kiln's Library. Enable v0.5.1 in the active profile and restart Enshrouded. The accompanying JSON and settings INI are separate reference downloads, **not** an installable Kiln package.
 5. Try **`TOOLS → starter blocks → My Storage → Empty`** on a throwaway chest. The unrecognised name must **not** delete the blocks; Empty **must** clear them without confirmation.
 
 ## Kiln console commands (optional)
@@ -115,7 +117,7 @@ cat kiln/control/console/probe.result.json
 
 ## CI and development
 
-The GitHub Actions workflow validates all 195 groups and 3,464 entry positions, verifies every one of the 2,812 canonical game IDs against the pinned Kiln SDK, asserts the 127 unresolved markers are explicit, and tests Mycelium, Indigo, Basalt, Grasshopper, Scarab, Torch, Oven, loot armour and historical fixes. It also tests INI settings, 32 Empty case variants and game-name FNV fingerprints. Release assets include the compiled mod, catalogue JSON and settings INI.
+The GitHub Actions workflow validates all 195 groups and 3,464 entry positions, verifies all 2,908 canonical game IDs against the pinned Kiln SDK, asserts the 27 unresolved markers are explicit, and validates all 100 individual repaired identities against the audit, and tests Mycelium, Indigo, Basalt, Grasshopper, Scarab, Torch, Oven, loot armour and historical fixes. It also tests INI settings, 32 Empty case variants and game-name FNV fingerprints. Release assets include the compiled mod, catalogue JSON and settings INI.
 
 Local Linux build:
 
@@ -125,4 +127,4 @@ KILN_SDK_VERSION=0.2.0-dev.local.20261107.61500 \
 bash scripts/build.sh EndlessChests
 ```
 
-Output: `bin/Release/endless-chests-kiln-0.5.0.zip`. After merging this change into `main`, publishing tag **`endless-chests-v0.5.0`** triggers all three release assets automatically. Unresolved catalogue identities are tracked in [issue #38](https://github.com/bisdat/kiln-mods/issues/38); other gameplay parity checks remain in [issue #4](https://github.com/bisdat/kiln-mods/issues/4).
+Output: `bin/Release/endless-chests-kiln-0.5.1.zip`. After merging this change into `main`, publishing tag **`endless-chests-v0.5.1`** triggers all three release assets automatically. Unresolved catalogue identities are tracked in [issue #38](https://github.com/bisdat/kiln-mods/issues/38); other gameplay parity checks remain in [issue #4](https://github.com/bisdat/kiln-mods/issues/4).
