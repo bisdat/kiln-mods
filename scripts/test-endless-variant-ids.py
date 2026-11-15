@@ -46,7 +46,7 @@ for group, names in groups.items():
         )
         variants.append((group, label, item_id, debug, category))
 
-assert len(variants) == 90, f"Expected 90 disambiguated items, got {len(variants)}"
+assert len(variants) == 92, f"Expected 92 disambiguated items, got {len(variants)}"
 assert ("Songs", "Mirage", 1165213726, "8kLoreText_scroll_bard_song_12",
         "Collectibles") in variants, "Mirage sheet not mapped correctly"
 assert items[1992044990] == ("Weapon_T4_2H_StaffEpic_01", "Mirage", "Weapons")
@@ -122,7 +122,7 @@ assert not any(
     for entry in names
 ), "shipped defaults must not contain unnumbered Variant suffixes"
 
-print("PASS: 90 verified Variant <ID> entries (66 original numbered, "
-      "22 repaired, 2 Alchemist wall hanging pieces), in 195 groups; "
+print("PASS: 92 verified Variant <ID> entries (66 original numbered, "
+      "22 repaired, 2 Alchemist wall hanging pieces, 2 Indigo identities), in 195 groups; "
       "Mirage sheet not weapon; 22 legacy vanity and 2 legacy "
       "Alchemist labels resolve by verified identities")

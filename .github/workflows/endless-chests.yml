@@ -69,6 +69,9 @@ jobs:
       - name: Verify variant-suffixed catalogue items against pinned SDK data
         run: python3 scripts/test-endless-variant-ids.py
 
+      - name: Verify Indigo crafting material and decorative pot identities
+        run: python3 scripts/test-endless-indigo-ids.py
+
       - name: Stage editable INI catalogue for the release
         run: |
           cp EndlessChests/defaults/endless-chests.defaults.ini bin/Release/endless-chests.defaults.ini
