@@ -15,6 +15,9 @@ public sealed class AutomaticDoorsMod : Mod
     private long _next;
     private bool _scanning, _stopping, _warned;
     private int _doors, _players, _npcs;
+    // Stage counts distinguish 'no doors loaded' from a mismatched ECS signature.
+    private int _switches, _directionals, _paired, _withPosition, _readable;
+    private double? _nearestDoorMetres;
 
     public override void OnLoad()
     {
@@ -70,21 +73,39 @@ public sealed class AutomaticDoorsMod : Mod
             int delay = Math.Clamp(cfg.CloseDelayMs, 0, 10000);
             long now = Environment.TickCount64;
             _seen.Clear();
-            _doors = 0;
+            _doors = _paired = _withPosition = _readable = 0;
+            _nearestDoorMetres = null;
+            // Independent query: door entities may be represented differently
+            // from ordinary toggles on this version of the game.
+            _directionals = World.Find("DirectionalInteraction").Count;
+            var switches = World.Query<Ecs.ServerToggleState>();
+            _switches = switches.Count;
 
             // A door has both ServerToggleState and DirectionalInteraction.
             // InteractionToggle excludes unrelated directional-only entities.
-            foreach (var door in World.Query<Ecs.ServerToggleState>())
+            foreach (var door in switches)
             {
                 if (_stopping) return;
-                if (!World.Has(door, "DirectionalInteraction") ||
-                    !World.Has(door, "InteractionToggle")) continue;
-                if (World.Position(door) is not { } at ||
-                    !World.TryRead<Ecs.ServerToggleState>(door, "ServerToggleState", out var state)) continue;
+                if (!World.Has(door, "DirectionalInteraction")) continue;
+                _paired++;
+                // Do not remove the safety filter until we have live evidence
+                // that another game object genuinely represents a door.
+                if (!World.Has(door, "InteractionToggle")) continue;
+                if (World.Position(door) is not { } at) continue;
+                _withPosition++;
+                if (!World.TryRead<Ecs.ServerToggleState>(door, "ServerToggleState", out var state)) continue;
+                _readable++;
 
                 uint id = door.Value;
                 _doors++;
                 _seen.Add(id);
+                foreach (var actor in actors)
+                {
+                    double dx = actor.X - at.X, dz = actor.Z - at.Z;
+                    double metres = Math.Sqrt(dx * dx + dz * dz);
+                    if (_nearestDoorMetres is null || metres < _nearestDoorMetres)
+                        _nearestDoorMetres = metres;
+                }
                 bool nearOpen = false;
                 bool nearClose = false;
                 foreach (var actor in actors)
@@ -143,7 +164,11 @@ public sealed class AutomaticDoorsMod : Mod
     {
         if (mode != "status") throw c.Usage("use /adoors status");
         return "Automatic Doors experimental; " + (_config.Value.Enabled ? "enabled" : "disabled") +
-            "; doors=" + _doors + "; players=" + _players + "; NPCs=" + _npcs +
+            "; doors=" + _doors + "; switches=" + _switches +
+            "; directional=" + _directionals + "; paired=" + _paired +
+            "; positioned=" + _withPosition + "; readable=" + _readable +
+            "; nearest=" + (_nearestDoorMetres is { } d ? d.ToString("F1") + "m" : "none") +
+            "; players=" + _players + "; NPCs=" + _npcs +
             "; mod-opened=" + _owned.Count + "; writes=" + World.SupportsTrackedWrites;
     }
 
