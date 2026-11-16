@@ -68,7 +68,7 @@ Standalone Kiln mod v0.1.1 (backtick default following the accepted v0.1.0 toggl
 
 [Prototype source and test plan](AutomaticDoors/README.md) | [Package workflow](.github/workflows/automatic-doors.yml)
 
-Native Kiln proximity door automation for players and friendly NPCs, version 0.1.0 test candidate. Uses tracked ServerToggleState writes; visual movement, collision and NPC pathfinding remain unverified in game. No release until acceptance.
+Native Kiln proximity door automation for players and friendly NPCs, version 0.1.1 diagnostic test candidate. Uses tracked ServerToggleState writes; visual movement, collision and NPC pathfinding remain unverified in game. No release until acceptance.
 
 ## Licence
 
