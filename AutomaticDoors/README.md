@@ -1,4 +1,4 @@
-# Automatic Doors — experimental 0.1.0
+# Automatic Doors — experimental 0.1.1
 
 **Test candidate only; do not publish as a working mod yet.** Kiln currently has no dedicated door-operation API. This prototype uses Kiln.World.Update on the game's ServerToggleState component. It remains unverified whether doing so updates door animations, colliders, water blocking and NPC pathfinding. If anything looks open but blocks passage, stop testing.
 
@@ -14,7 +14,7 @@ Current implementation checks recognised doors anywhere in the loaded world. A b
 
 On a **backup save**, verify: (1) a closed door opens when the player approaches; (2) the animated door becomes physically passable; (3) it stays open during passage and closes only when everyone has moved clear; (4) a friendly NPC can path through; (5) a manually opened distant door remains open; (6) swing from both sides, tall gates, multistorey layouts, save/reload and removal; (7) no new errors in kiln.log. Also verify whether logic-driven doors are affected before relying on this mod.
 
-Use GitHub Actions > Package Automatic Doors (experimental) to build the branch and download the ZIP artifact for installation in Kiln. Build locally with bash scripts/build-compat.sh AutomaticDoors.
+Stand right beside an actual placed door before taking /adoors status: in offline-hosted worlds, typed chat commands may not be handled. Use GitHub Actions > Package Automatic Doors (experimental) to build the branch and download the ZIP artifact for installation in Kiln. Build locally with bash scripts/build-compat.sh AutomaticDoors.
 
 **Technical limitation:** the tracked state write is not equivalent to the game's door interaction or the future EMF door_set API. Do not declare success without animation, collider and path-grid acceptance.
 
