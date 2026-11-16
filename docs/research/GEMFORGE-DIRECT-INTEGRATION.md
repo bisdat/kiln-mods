@@ -84,7 +84,13 @@ The user separately confirms the genuine game's forge UI shows its **long list o
 
 **Safe research boundary:** do not patch a guessed client RVA, attach an unvalidated `Kiln.Sigs` detour, insert client-only synthetic gems, treat client-rendered entities as server inventory identities, or reintroduce inventory borrowing. The native client provider and server transaction authority must both be identified before proposing implementation.
 
-## 2.5. Next native reverse-engineering anchor: client play-state UI dispatch
+## 2.5. Visual corroboration — scrollable Gem Forge grid, not an inventory slot list
+
+An earlier user-supplied in-game screenshot of the native `SELECT ITEM` page visibly shows a left-hand `GEMS` grid with **three columns of item icons**, a vertical scrollbar, and many rows of gem candidates, beside the selected weapon's detail panel (Electric Initialiser). The screenshot demonstrates the game's full visual candidate interface independently of the v0.2.1 slot logging. It is a **rendered icon grid**, and its actual item enumeration/source is not exposed by `Ui.Values.SubscribeSlots` in our real-game tests. The screenshot alone does not prove the renderer's internal function or the inventory owner.
+
+This refines the client trace: inspect the **icon-grid item provider / item-thumbnail path** in the `HudScreen.ShroudForge=45` branch rather than assuming that every candidate is painted through `ui/ItemSlot`. The distinction is grounded by comparison between the screenshot and full log; that the UI uses a *different rendering primitive* remains a hypothesis pending disassembly. Upstream issue [Kiln #42](https://github.com/frostdev-ops/kiln/issues/42) has this evidence.
+
+## 2.6. Next native reverse-engineering anchor: client play-state UI dispatch
 
 Kiln's versioned signature database at [`sigdb/symbols/client.d/ui.json`](https://github.com/frostdev-ops/kiln/blob/v0.2.0-dev.29/sigdb/symbols/client.d/ui.json) identifies **`ui/PlayStateUi`** as the current play-state UI dispatcher. It decodes `ui/state.play` and **`ui/play.hud_screen`**, the latter carrying the `keen::HudScreenType` byte. Public [`GameUi.cs`](https://github.com/frostdev-ops/kiln/blob/v0.2.0-dev.29/managed/services/Kiln.Ui/GameUi.cs) enumerates `HudScreen.ShroudForge=45`. The dispatcher is called under `ui/GameUiFrame`.
 
