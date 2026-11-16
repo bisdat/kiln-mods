@@ -2,7 +2,7 @@
   <PropertyGroup>
     <KilnModId>automatic-doors</KilnModId>
     <KilnModName>Automatic Doors</KilnModName>
-    <Version>0.1.0</Version>
+    <Version>0.1.1</Version>
     <Authors>bisdat</Authors>
     <Description>Experimental proximity opening and closing of Enshrouded doors for players and friendly NPCs.</Description>
     <PackageProjectUrl>https://github.com/bisdat/kiln-mods</PackageProjectUrl>
