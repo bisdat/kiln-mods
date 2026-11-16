@@ -42,9 +42,13 @@ public sealed class AutomaticDoorsMod : Mod
         {
             var cfg = _config.Value;
             if (!cfg.Enabled) return;
-            if (!World.Available || !World.SupportsTrackedWrites || !Players.Available)
+            // During hosted-world bootstrap the mod can tick before the
+            // authoritative world and its write program become available.
+            // Do not report this normal startup condition as a permanent fault.
+            if (!World.Available || !World.Status.WorldLive) return;
+            if (!World.SupportsTrackedWrites || !Players.Available)
             {
-                Warn("Kiln.World tracked writes or Kiln.Players unavailable.");
+                Warn("Kiln.World tracked writes or Kiln.Players unavailable in the live world.");
                 return;
             }
 
