@@ -34,9 +34,9 @@ jobs:
         run: bash scripts/build-compat.sh AutomaticDoors
       - uses: actions/upload-artifact@v4
         with:
-          name: automatic-doors-0.1.0-experimental
+          name: automatic-doors-0.1.1-experimental
           path: |
-            bin/Release/automatic-doors-0.1.0.zip
+            bin/Release/automatic-doors-0.1.1.zip
             bin/Release/kiln-sdk-provenance.json
           if-no-files-found: error
           retention-days: 90
