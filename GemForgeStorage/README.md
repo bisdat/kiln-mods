@@ -38,6 +38,12 @@ The v0.2.1 client UI probe **worked** on Kiln dev.29: `HudScreen.ShroudForge` id
 
 **Next observational test (no new build):** with `gforge ui-watch on` enabled, select **Wolf's Hydra → empty socket → choose a gem for insertion**, but **do not actually insert one**. Close the forge and collect `gforge ui`, `gforge ui-recent`, `gforge ui-watch off` as shown above. If the short history misses the insertion list, the full bounded logs prefixed `Gem Forge Research UI:` in Kiln's log may retain it. This distinguishes socketed-gem removal views from the genuine new-gem insertion picker. No new state-changing code is proposed.
 
+## Complete v0.2.1 log outcome — 16 November 2026
+
+The second full `kiln.log` capture (03:53:13–03:53:32) confirmed that the UI observer always reported only the **same two already-socketed gems** plus, when drawn, the three previously identified weapons. While the game visibly shows a **long gem list immediately on opening the native forge**, **no additional gem IDs appear anywhere in the entire recorded observer output**. Thus `Ui.Values.SubscribeSlots` does not expose the forge's full gem catalogue and further runs of this probe are not necessary.
+
+The next development milestone is to locate the *native client-side gem catalogue builder and inventory source*, not to invent a separate gem selection UI or reinstate transfer/return. `docs/re/game-ui.md` describes generic immediate-mode UI draw paths, and `docs/re/items.md` §16 documents the authoritative server gem handler; neither provides the client's Gem Forge catalogue enumeration routine. **No change to live inventory, UI or binary is authorised at this stage.** See the research document for exact log intervals and evidence.
+
 ## Verified facts
 
 - The user's hosted Enshrouded world reported **zero entities** with the `ShroudForge` ECS component.

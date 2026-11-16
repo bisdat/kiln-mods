@@ -67,6 +67,23 @@ Read-only v0.2.1 probe successfully subscribed to the native forge HUD. **18,941
 
 Next **safe read-only experiment with the existing v0.2.1 build**: start `gforge ui-watch on`, open the forge, choose `Wolf's Hydra`'s empty gem socket, open the **choose/insertion gem** list (without actually inserting or upgrading), close it, collect `gforge ui` + `gforge ui-recent` and turn the watch off. Compare that list's drawn slot holder/page patterns against the current socketed-gem display. If needed, collect the bounded `Gem Forge Research UI:` lines from `kiln.log` to avoid losing intermediate frames from the six-entry `ui-recent` output.
 
+## 2.4. Complete dev.29 UI diagnostic log — main gem catalogue remains invisible to slot inspector
+
+Source: user's **full** `grep -F 'Gem Forge Research UI:' kiln/logs/kiln.log | tail -n 45` output, 2026-11-16. The output contains both captured sessions and no other `Gem Forge Research UI:` entries in those intervals.
+
+| UTC interval | Native screen transitions | Logged visible item IDs | Slot draws |
+|---|---|---|---|
+| 03:46:03–03:46:07 | `InGame/InGame -> Other/ShroudForge -> InGame/InGame` | two existing socketed gems plus three weapons | 3, 6 or 8 |
+| 03:53:13–03:53:32 | same screen transitions | the **same** two existing socketed gems and three weapons | 3, 6 or 8 |
+
+During the second session at **03:53:15–03:53:30**, the three weapon entries drop out of the *captured* slots, leaving only `0xe52a5ac0` (socketed Gem of Storm's Eye) and `0x03c1b61e` (socketed Gem of Focused Light). They reappear in the recorded slots just before the forge closes. That is evidence of *different visible slot sets*, **not** proof of which forge tab or selection state was active.
+
+The user separately confirms the genuine game's forge UI shows its **long list of available gems immediately on opening**, including the two socketed gems. Because **no other gem IDs appear anywhere in the full observer output**, the `Ui.Values.SubscribeSlots` instrumentation has an incomplete view of the Gem Forge's item list. The captured list should not be interpreted as the forge's actual candidate set or as a sign that it cannot see inventory items.
+
+**Upstream reference check:** Kiln's `docs/re/game-ui.md` describes the game's immediate-mode UI and generic slot drawing, while `docs/re/items.md` §16 documents the **server** `equipment_actions` path. Neither currently identifies the **client-side Gem Forge gem catalogue construction/enumeration routine**. The next dependency is native client reverse engineering of that catalogue/provider path on a supported game build; no further `ui-watch` sampling or destructive gem actions are justified by this evidence.
+
+**Safe research boundary:** do not patch a guessed client RVA, attach an unvalidated `Kiln.Sigs` detour, insert client-only synthetic gems, treat client-rendered entities as server inventory identities, or reintroduce inventory borrowing. The native client provider and server transaction authority must both be identified before proposing implementation.
+
 ## 3. Required production behaviour
 
 1. Existing Gem Forge UI presents the backpack's gems plus any **eligible Magic Chest gems**, preserving the exact gem's level/rarity/instance identity, and the user's normal weapon selection. `Kiln.Items.FindInventories` covers *loaded* chest inventories only.
