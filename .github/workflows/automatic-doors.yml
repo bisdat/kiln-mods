@@ -1,0 +1,42 @@
+name: Package Automatic Doors (experimental)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'AutomaticDoors/**'
+      - 'tests/automatic-doors/**'
+      - 'scripts/build-compat.py'
+      - '.github/workflows/automatic-doors.yml'
+  pull_request:
+    paths:
+      - 'AutomaticDoors/**'
+      - 'tests/automatic-doors/**'
+      - 'scripts/build-compat.py'
+      - '.github/workflows/automatic-doors.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    name: Build experimental Automatic Doors against official Kiln SDK
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Check safety contracts
+        run: python3 -m unittest discover -s tests/automatic-doors -p 'test_*.py' -v
+      - name: Build and package with checksum-verified SDK
+        run: bash scripts/build-compat.sh AutomaticDoors
+      - uses: actions/upload-artifact@v4
+        with:
+          name: automatic-doors-0.1.0-experimental
+          path: |
+            bin/Release/automatic-doors-0.1.0.zip
+            bin/Release/kiln-sdk-provenance.json
+          if-no-files-found: error
+          retention-days: 90
