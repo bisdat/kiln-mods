@@ -23,7 +23,7 @@ public sealed class AutomaticDoorsMod : Mod
         Log.Info("Automatic Doors 0.1.0 EXPERIMENTAL: verify animation, collision and pathfinding in game.");
     }
 
-    private void OnTick(in TickInfo _)
+    private void OnTick(in TickInfo tick)
     {
         if (_scanning || _stopping) return;
         long now = Environment.TickCount64;
