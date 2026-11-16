@@ -84,6 +84,24 @@ The user separately confirms the genuine game's forge UI shows its **long list o
 
 **Safe research boundary:** do not patch a guessed client RVA, attach an unvalidated `Kiln.Sigs` detour, insert client-only synthetic gems, treat client-rendered entities as server inventory identities, or reintroduce inventory borrowing. The native client provider and server transaction authority must both be identified before proposing implementation.
 
+## 2.5. Next native reverse-engineering anchor: client play-state UI dispatch
+
+Kiln's versioned signature database at [`sigdb/symbols/client.d/ui.json`](https://github.com/frostdev-ops/kiln/blob/v0.2.0-dev.29/sigdb/symbols/client.d/ui.json) identifies **`ui/PlayStateUi`** as the current play-state UI dispatcher. It decodes `ui/state.play` and **`ui/play.hud_screen`**, the latter carrying the `keen::HudScreenType` byte. Public [`GameUi.cs`](https://github.com/frostdev-ops/kiln/blob/v0.2.0-dev.29/managed/services/Kiln.Ui/GameUi.cs) enumerates `HudScreen.ShroudForge=45`. The dispatcher is called under `ui/GameUiFrame`.
+
+**Concrete reverse-engineering sequence, requiring the supported game client binary or upstream native research:**
+
+1. Resolve the `ui/PlayStateUi` signature and `ui/play.hud_screen` field on **the actual client game build** (research notes cover client 26430625; the original `ui.json` comment references 26404966, so do **not** carry historical RVAs across builds). If signature fails, stop.
+2. In Ghidra/disassembly, find the branch/table dispatch that handles `HudScreenType=45`; follow that branch into the actual Gem Forge UI construction function(s), distinguishing the screen-open path and per-frame list construction.
+3. Locate the input enumerable/source structure for the **full available gem catalogue**, rather than `ui/ItemSlot` render calls, because the v0.2.1 complete log observes only two socketed gems and three weapons while the player sees a long list on screen.
+4. Determine whether the catalogue draws only visible/virtualised rows, uses a custom entry widget rather than the slot renderer, filters by possession/location/weapon compatibility, and whether socketed gems are represented as synthetic item views. For each case, record *observed evidence* separately from hypotheses.
+5. Trace source inventory holder/page and player identity without treating any client's `UiItemView.ClientEntity` number as an authoritative server item identity. Read-only inspection of the **native candidate provider** must precede any proposed injection or overlay.
+6. Only once the candidate provider is known, evaluate a dev.29 **typed, layout-validated hook** for a strictly passive observation stage, with capability disabling on unsupported game builds. Do not hook guessed addresses or `PlayStateUi` generically just to collect another frame count; a validated candidate-provider signature is the decision gate.
+7. Independently inspect the server-side `equipment_actions` / `weaponGemAction` gem transaction path, including gem identity, essence consumption, source eligibility and all-or-nothing commits. The client picker change alone cannot authorize transfers or pay items in foreign inventories.
+
+**Upstream tracking:** [frostdev-ops/kiln issue #42](https://github.com/frostdev-ops/kiln/issues/42) requests the narrow client candidate-source seam or an API, with anonymized v0.2.1 test evidence. An unrelated existing mod, `bjck/shroudlink/mod/mods/gemforge/src/lib.rs`, explicitly uses temporary backpack lending; it does not provide a direct candidate provider and must **not** be copied back into this mod.
+
+**Current decision:** PR #48 remains draft, v0.2.1 is sufficient read-only proof of screen access, no further in-game UI sampling or guessed native hooks. This is a game-client RE/API dependency, not a failing inventory scan.
+
 ## 3. Required production behaviour
 
 1. Existing Gem Forge UI presents the backpack's gems plus any **eligible Magic Chest gems**, preserving the exact gem's level/rarity/instance identity, and the user's normal weapon selection. `Kiln.Items.FindInventories` covers *loaded* chest inventories only.
