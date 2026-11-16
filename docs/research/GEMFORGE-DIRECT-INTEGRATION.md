@@ -2,7 +2,7 @@
 
 **Status:** investigation / read-only; user rejected the proximity-loan/return model after it failed inventory return.
 **Repository:** `bisdat/kiln-mods`, draft PR [#48](https://github.com/bisdat/kiln-mods/pull/48).
-**Last verified:** 2026-11-15; Enshrouded hosted in Kiln v0.2.0-dev.28 through Proton.
+**Last verified:** 2026-11-16; Enshrouded hosted in Kiln v0.2.0-dev.29 through Proton, NoClip confirmed fixed by user.
 **Constraint:** no borrowing into the player's backpack, no synthetic gems, no return queue, and no unverified debit/credit operations.
 
 ## 1. Observed facts (user's live hosted world)
@@ -57,7 +57,14 @@ The specific *client* function that supplies Gem Forge selectable gems has **not
 4. A completed transaction debits source Magic Chests **exactly once** and publishes an authoritative inventory/game-state update. No temporary player backpack loan, no duplicate or cloned gem, no creation/deletion of unrelated items. Cross-base *unloaded* storage is a **separate** integration dependency requiring Building Tools-specific research.
 5. The mod must fail closed on unsupported game/SDK builds, permissions, a disconnected player, a moved/changed chest, or absent native hooks. Do not claim success before a source/target/essence comparison against the engine's committed result.
 
-## 4. Research sequence and evidence needed
+## 4. Dev.29 research checkpoint
+
+- Kiln **0.2.0-dev.29 was published 2026-11-16 00:04 UTC** and the user confirmed it installed on their Proton-hosted game; NoClip works again (upstream's release notes credit the user's report).
+- The dev.29 SDK now exposes `Ui.Values.SubscribeSlots`, `Ui.Screens.Current`, and `HudScreen.ShroudForge`. The candidate read-only v0.2.1 mod uses these **client-side** services to capture the forge's displayed slot inventory and a screen transition log. A slot drawn in the client UI is not necessarily a server item instance; client entity IDs cannot be reused as server IDs.
+- Dev.29 additionally publishes `Kiln.Systems` program wraps and typed hooks, which may support **later** server-side observation of `equipment_actions` and its gem handler without hard-coded RVAs. They are not used in the client probe, and no inventory writes have been authorized.
+- **Pending in-game acceptance:** confirmation that v0.2.1 reports `HudScreen.ShroudForge` and the forge's rendered slots (or an explicit capability failure). Until then, do not claim the screen's item-provider has been identified.
+
+## 4a. Research sequence and evidence needed
 
 - **Read-only client screen census:** verify the game reports `HudScreen.ShroudForge` while opening the user-placed forge. When an official dev.29 SDK arrives, use the **read-only** slot snapshot API to correlate drawn gem entries with the backpack. This alone does not add storage entries.
 - **Server gem-operation trace:** with explicit user consent, on a backed-up throwaway item, observe an actual `weaponGemAction` and inventory deltas for an operation; do not require destructive tests merely to infer the UI picker. Label action payload dwords as **uninterpreted** until field meanings are proven.

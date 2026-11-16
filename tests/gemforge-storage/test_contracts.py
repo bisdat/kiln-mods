@@ -37,12 +37,24 @@ class ResearchMode(unittest.TestCase):
         self.assertIn('EndsWith("_Magic"', SRC)
         self.assertIn("ItemCategory.WeaponGem", SRC)
 
-    def test_server_only_and_no_advanced_hooking(self):
-        self.assertRegex(PROJECT, r"<KilnSide>server</KilnSide>")
-        self.assertIn("<KilnServices>Items;World;Spawn;Players;Chat</KilnServices>", PROJECT)
-        self.assertIn('Kiln.Sdk/0.2.0-dev.28', PROJECT)
-        self.assertIn("<Version>0.2.0</Version>", PROJECT)
+    def test_both_sides_for_client_ui_and_no_advanced_hooking(self):
+        self.assertRegex(PROJECT, r"<KilnSide>both</KilnSide>")
+        self.assertIn("<KilnServices>Items;World;Spawn;Players;Chat;Ui</KilnServices>", PROJECT)
+        self.assertIn('Kiln.Sdk/0.2.0-dev.29', PROJECT)
+        self.assertIn("<Version>0.2.1</Version>", PROJECT)
         self.assertNotIn("<KilnAdvanced>true</KilnAdvanced>", PROJECT)
+        self.assertIn("<KilnClients>mod</KilnClients>", PROJECT)
+
+    def test_client_ui_probe_is_observational_only(self):
+        self.assertIn("HudScreen.ShroudForge", SRC)
+        self.assertIn("Ui.Values.SubscribeSlots(OnUiSlotFrame)", SRC)
+        self.assertIn("Ui.Screens.Changed += OnUiScreenChanged", SRC)
+        self.assertIn("Ui.Screens.Changed -= OnUiScreenChanged", SRC)
+        self.assertIn("_slotRegistration?.Dispose()", SRC)
+        self.assertIn("private readonly object _uiLock", SRC)
+        self.assertIn("Client entity IDs are NOT server inventory IDs", SRC)
+        self.assertIn("gforge ui-watch on", SRC)
+        self.assertIn("gforge ui-recent", SRC)
 
 if __name__ == "__main__":
     unittest.main()

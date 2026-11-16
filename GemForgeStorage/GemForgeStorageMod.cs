@@ -19,6 +19,20 @@ public sealed class GemForgeStorageMod : Mod
     private const int MaxChestScan = 256;
 
     private readonly HashSet<EntityId> _watchers = [];
+    // Client-main-thread frame callbacks and server-world console commands run
+    // on different threads in a hosted world. No client entity ID is ever
+    // treated as an authoritative server entity ID.
+    private readonly object _uiLock = new();
+    private readonly Queue<string> _uiHistory = new();
+    private UiValueRegistration? _slotRegistration;
+    private volatile bool _uiWatching;
+    private long _uiFrames;
+    private long _forgeFrames;
+    private long _uiCaptured;
+    private string? _uiLastSignature;
+    private string? _uiLastError;
+    private ulong _uiLastCaptureMs;
+    private const int MaxUiHistory = 30;
     private readonly Queue<string> _history = new();
     private EventSubscription? _actionSubscription;
     private CommandRegistration? _command;
@@ -28,9 +42,9 @@ public sealed class GemForgeStorageMod : Mod
     public override void OnLoad()
     {
         _command = Commands.Register("gforge", Command, CommandPermission.Everyone,
-            usage: "[status|forge|scan|watch on|watch off|recent|clear|help]",
+            usage: "[status|forge|scan|watch on|watch off|recent|ui|ui-watch on/off|ui-recent|clear|help]",
             description: "Read-only Gem Forge integration research (never moves inventory).");
-        Log.Info("Gem Forge Research v0.2.0 loaded: READ ONLY; no borrowing, returning, " +
+        Log.Info("Gem Forge Research v0.2.1 loaded: READ ONLY; no borrowing, returning, " +
             "inventory transactions, client-action cancellation, or patches.");
     }
 
@@ -39,9 +53,14 @@ public sealed class GemForgeStorageMod : Mod
         _unloading = true;
         _actionSubscription?.Dispose();
         _actionSubscription = null;
+        _uiWatching = false;
+        Ui.Screens.Changed -= OnUiScreenChanged;
+        _slotRegistration?.Dispose();
+        _slotRegistration = null;
         _command?.Dispose();
         _watchers.Clear();
         _history.Clear();
+        lock (_uiLock) _uiHistory.Clear();
     }
 
     private static bool IsPlacedGemForge(EntityId entity) =>
@@ -109,6 +128,149 @@ public sealed class GemForgeStorageMod : Mod
         }
     }
 
+    // UI observation exists only in dev.29's client service. No server-world
+    // inventory APIs may be called from any of these client UI callbacks.
+    private void UiRecord(string entry)
+    {
+        lock (_uiLock)
+        {
+            _uiHistory.Enqueue(entry);
+            while (_uiHistory.Count > MaxUiHistory) _uiHistory.Dequeue();
+            _uiCaptured++;
+        }
+        Log.Info("Gem Forge Research UI: " + entry);
+    }
+
+    private void OnUiScreenChanged(GameScreen before, GameScreen now)
+    {
+        if (_unloading || !_uiWatching) return;
+        if (before.Hud != HudScreen.ShroudForge && now.Hud != HudScreen.ShroudForge)
+            return;
+        UiRecord($"screen {before.Kind}/{before.Hud} -> {now.Kind}/{now.Hud} " +
+            $"state={now.State} frame={now.Frame}");
+    }
+
+    private void OnUiSlotFrame(VisibleSlotsResult result)
+    {
+        if (_unloading || !_uiWatching) return;
+        // Called after each frame on the CLIENT MAIN THREAD. Keep it short.
+        try
+        {
+            if (!result.Ok || result.Snapshot is not { } snapshot)
+            {
+                var reason = result.Reason ?? "unknown";
+                if (_uiLastError != reason)
+                {
+                    _uiLastError = reason;
+                    UiRecord("slot inspector temporarily unavailable: " + reason);
+                }
+                return;
+            }
+
+            Interlocked.Increment(ref _uiFrames);
+            if (snapshot.Screen.Hud != HudScreen.ShroudForge) return;
+            Interlocked.Increment(ref _forgeFrames);
+            _uiLastError = null;
+
+            var filled = snapshot.Slots.Where(x => x.Count > 0 && x.Item != default).ToArray();
+            var pages = snapshot.Slots
+                .GroupBy(x => (x.Holder, x.HolderSerial, x.InventoryPage))
+                .Take(8)
+                .Select(g => $"holder={g.Key.Holder} serial={g.Key.HolderSerial} " +
+                    $"page={g.Key.InventoryPage} slots={g.Count()}")
+                .ToArray();
+
+            // Log only when the visible item composition changes or on the first
+            // capture after a 3-second interval, not every client frame.
+            var signature = string.Join(",", filled.Select(x =>
+                $"{x.InventoryPage}:{x.SlotIndex}:{x.Item}:{x.Count}"));
+            var enoughTime = snapshot.CaptureMs >= _uiLastCaptureMs + 3000ul;
+            if (signature == _uiLastSignature && !enoughTime) return;
+            _uiLastSignature = signature;
+            _uiLastCaptureMs = snapshot.CaptureMs;
+
+            var samples = filled.Take(12).Select(x =>
+                $"item={x.Item} count={x.Count} holder={x.Holder} " +
+                $"page={x.InventoryPage} slot={x.SlotIndex} " +
+                $"clientEntity={x.ClientEntity} holderFlags={x.HolderFlags}");
+
+            UiRecord($"forge-frame={snapshot.Frame} hud={snapshot.Screen.Hud} " +
+                $"slots={snapshot.Slots.Count} filled={filled.Length} " +
+                $"holders/pages=[{string.Join("; ", pages)}] " +
+                $"first=[{string.Join("; ", samples)}]. " +
+                "Client entity IDs are NOT server inventory IDs.");
+        }
+        catch (Exception ex)
+        {
+            if (_uiLastError != ex.Message)
+            {
+                _uiLastError = ex.Message;
+                UiRecord("slot capture failed: " + ex.Message);
+            }
+        }
+    }
+
+    private void UiCommand(CommandContext command, string verb)
+    {
+        if (verb == "ui")
+        {
+            var current = Ui.Available && Ui.Screens.Available ? Ui.Screens.Current : GameScreen.None;
+            long frameCount = Interlocked.Read(ref _uiFrames);
+            long forgeCount = Interlocked.Read(ref _forgeFrames);
+            lock (_uiLock)
+                command.Reply($"Gem Forge UI v0.2.1: read-only watch={_uiWatching} " +
+                    $"uiAvailable={Ui.Available}, screenAvailable={Ui.Screens.Available}, " +
+                    $"screen={current.Kind}/{current.Hud}, clientFrames={frameCount}, " +
+                    $"forgeFrames={forgeCount}, captures={_uiCaptured}. " +
+                    "Only game-rendered slots are inspected; source inventory is unchanged.");
+            return;
+        }
+        if (verb == "ui-recent")
+        {
+            string[] latest;
+            lock (_uiLock) latest = _uiHistory.Reverse().Take(6).ToArray();
+            if (latest.Length == 0) command.Reply("No UI observations. Use gforge ui-watch on, open the Gem Forge, then close it.");
+            else foreach (var entry in latest) command.Reply(entry);
+            return;
+        }
+        var state = command.ArgOrDefault(1, "")!.ToLowerInvariant();
+        if (state == "off")
+        {
+            _uiWatching = false;
+            Ui.Screens.Changed -= OnUiScreenChanged;
+            _slotRegistration?.Dispose();
+            _slotRegistration = null;
+            command.Reply("Gem Forge UI watch OFF; client slot callback detached.");
+            return;
+        }
+        if (state != "on") throw command.Usage("ui-watch on | ui-watch off");
+        if (!Ui.Available || !Ui.Screens.Available)
+            throw new CommandException("Kiln.Ui client screen service is unavailable. Use a hosted game with Kiln dev.29+.");
+        if (_uiWatching)
+        {
+            command.Reply("Gem Forge UI watch is already ON.");
+            return;
+        }
+
+        // Registration is explicit, so this probe does not permanently hook
+        // the client slot collector just because the mod was installed.
+        UiValueRegistration registration;
+        try { registration = Ui.Values.SubscribeSlots(OnUiSlotFrame); }
+        catch (Exception ex) { throw new CommandException("Cannot inspect UI slots: " + ex.Message); }
+        if (!registration.Ok)
+        {
+            var why = registration.Reason ?? "no reason";
+            registration.Dispose();
+            throw new CommandException("Kiln refused UI slot inspection: " + why);
+        }
+        _slotRegistration = registration;
+        _uiWatching = true;
+        Ui.Screens.Changed += OnUiScreenChanged;
+        command.Reply("Gem Forge UI watch ON. Open the forge, browse gems, and close it. " +
+            "Then use gforge ui-recent and ui-watch off. This probe observes ONLY drawn client UI slots; " +
+            "it never changes inventory or cancels an operation.");
+    }
+
     private void Command(CommandContext command)
     {
         var player = command.Source.Player;
@@ -118,8 +280,13 @@ public sealed class GemForgeStorageMod : Mod
         var verb = command.ArgOrDefault(0, "status")!.ToLowerInvariant();
         if (verb == "help")
         {
-            command.Reply("gforge status|forge|scan|watch on|watch off|recent|clear. " +
+            command.Reply("gforge status|forge|scan|watch on/off|recent|ui|ui-watch on/off|ui-recent|clear. " +
                 "READ ONLY: this version never moves items or changes the Gem Forge.");
+            return;
+        }
+        if (verb is "ui" or "ui-watch" or "ui-recent")
+        {
+            UiCommand(command, verb);
             return;
         }
         if (verb == "status")
@@ -127,11 +294,11 @@ public sealed class GemForgeStorageMod : Mod
             var action = PlayerStates.Available
                 ? PlayerStates.ClientActions.FirstOrDefault(a => a.Name == "weaponGemAction")
                 : null;
-            command.Reply($"Gem Forge Research v0.2.0: READ ONLY, watch={_watchers.Contains(player)}, " +
+            command.Reply($"Gem Forge Research v0.2.1: READ ONLY, watch={_watchers.Contains(player)}, " +
                 $"observed={_observed}, saved={_history.Count}, playerstate={PlayerStates.Available}, " +
                 $"weaponGemAction={(action is null ? "not exposed" : $"{action.Bytes} bytes, canCancel={action.CanCancel}")}, " +
                 $"world={World.Available}, spawn={Spawn.Available}, items={Items.Available}. " +
-                "No automatic inventory transfers.");
+                $"clientUi={Ui.Available}, uiWatch={_uiWatching}. No automatic inventory transfers.");
             return;
         }
         if (verb == "recent")
@@ -147,7 +314,8 @@ public sealed class GemForgeStorageMod : Mod
         if (verb == "clear")
         {
             _history.Clear();
-            command.Reply("Read-only action history cleared; nothing changed in the game.");
+            lock (_uiLock) _uiHistory.Clear();
+            command.Reply("Read-only action and UI histories cleared; nothing changed in the game.");
             return;
         }
         if (verb == "watch")

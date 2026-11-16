@@ -64,12 +64,12 @@ Standalone data-only Kiln mod v0.1.0: changes `Tool_T6_FishingRod_epic` Fishing 
 
 Standalone Kiln mod v0.1.1 (backtick default following the accepted v0.1.0 toggle) for Kiln 0.2.0-dev.27 or newer. **backtick key** toggles Kiln's native NoClip with HUD feedback; remap the shortcut under Kiln → Keys. Unlike implementing separate collision handling, this mod delegates flight and safe-position recovery to Kiln. Hosted single-player uses the authoritative world tick; optional multiplayer requests are checked against Kiln's NoClip admin permission. Kiln's native NoClip and the initial toggle passed in-game on Bazzite/Proton. If an earlier keybinding was saved, reset it under Kiln → Keys to adopt the backtick default. The backtick shortcut was also confirmed in-game on Bazzite/Proton.
 
-## Gem Forge native integration — read-only research v0.2.0
+## Gem Forge native integration — read-only research v0.2.1
 
 [Gem Forge research guide](GemForgeStorage/README.md) |
 [Build workflow](.github/workflows/gemforge-storage.yml)
 
-The previous v0.1.x approach (temporarily lending gems from Magic Chests into the backpack) was rejected after a return failure. It is **removed** from the current source. The experimental Kiln-native v0.2.0 research package reads nearby Gem Forge entities and Magic Chest inventories and can observe `weaponGemAction` while enabled. **It does not transfer, consume, create or change any items.** The long-term aim is to integrate Magic Chests directly with the actual Gem Forge UI and authoritative transaction; that integration is **not implemented yet**. Draft PR #48 remains unmerged. [Native integration research findings](docs/research/GEMFORGE-DIRECT-INTEGRATION.md).
+The previous v0.1.x approach (temporarily lending gems from Magic Chests into the backpack) was rejected after a return failure. It is **removed** from the current source. The experimental Kiln-native v0.2.1 research package reads nearby Gem Forge entities and Magic Chest inventories and can observe `weaponGemAction` while enabled. **It does not transfer, consume, create or change any items.** The long-term aim is to integrate Magic Chests directly with the actual Gem Forge UI and authoritative transaction; that integration is **not implemented yet**. Draft PR #48 remains unmerged. [Native integration research findings](docs/research/GEMFORGE-DIRECT-INTEGRATION.md).
 
 ## Licence
 

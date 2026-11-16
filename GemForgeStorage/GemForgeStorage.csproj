@@ -1,15 +1,15 @@
-<Project Sdk="Kiln.Sdk/0.2.0-dev.28">
+<Project Sdk="Kiln.Sdk/0.2.0-dev.29">
   <PropertyGroup>
     <KilnModId>gemforge-magic-storage</KilnModId>
     <KilnModName>Gem Forge Integration Research</KilnModName>
-    <Version>0.2.0</Version>
+    <Version>0.2.1</Version>
     <Authors>bisdat</Authors>
     <Description>Read-only investigation of native Gem Forge actions and Magic Chest inventory access. Never moves items.</Description>
     <PackageProjectUrl>https://github.com/bisdat/kiln-mods</PackageProjectUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <KilnSide>server</KilnSide>
-    <KilnClients>none</KilnClients>
-    <KilnServices>Items;World;Spawn;Players;Chat</KilnServices>
+    <KilnSide>both</KilnSide>
+    <KilnClients>mod</KilnClients>
+    <KilnServices>Items;World;Spawn;Players;Chat;Ui</KilnServices>
     <KilnGameIds>None</KilnGameIds>
   </PropertyGroup>
 </Project>

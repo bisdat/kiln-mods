@@ -1,6 +1,34 @@
-# Gem Forge Integration Research — v0.2.0 (read-only)
+# Gem Forge Integration Research — v0.2.1 (read-only)
 
 **Experimental investigation, not a Gem Forge integration or production mod.** The original v0.1.x proximity-loan/return feature was rejected after an in-game failure: gems could remain in the backpack when their original chest became full. **All item-moving code has been removed from this research build.** It never calls `Items.Move`, `Items.Give`, `Items.Take`, `Events.Cancel`, `Hooks.Detour` or any other state-changing API.
+
+## Dev.29 client UI inspection (new in v0.2.1)
+
+This build compiles against Kiln **0.2.0-dev.29** and runs on **both** the client and server sides, because the old server-only mod cannot see the client's screen or rendered Gem Forge slots. This is a diagnostic decision for a hosted solo game; joining a remote server with this installed would also require the corresponding mod on the server. Do not publish a production package from this probe.
+
+The new **`ui-watch`** mode subscribes to `Ui.Values.SubscribeSlots` and `Ui.Screens.Changed`. These read the last client-rendered slots and identify the screen type (`HudScreen.ShroudForge=45`). **No slot is injected, and no gem is moved.** Its client entity IDs are *never equated* to the server's chest/item entities. The callback is throttled, with a 30-record bounded history and no game-state API calls.
+
+At your placed Gem Forge, in the hosted world:
+
+```bash
+GAME="$HOME/.local/share/Steam/steamapps/common/Enshrouded"
+CONSOLE="$GAME/kiln/control/console"
+printf 'gforge status\ngforge ui\ngforge ui-watch on\n' > "$CONSOLE/gforge-ui-start.tmp"
+mv "$CONSOLE/gforge-ui-start.tmp" "$CONSOLE/gforge-ui-start.cmd"
+sleep 2
+cat "$CONSOLE/gforge-ui-start.result.json"
+```
+
+Open the Gem Forge, select or browse some gems **without applying an upgrade or recycling anything**, then close the UI. Collect the client observations:
+
+```bash
+printf 'gforge ui\ngforge ui-recent\ngforge ui-watch off\n' > "$CONSOLE/gforge-ui-findings.tmp"
+mv "$CONSOLE/gforge-ui-findings.tmp" "$CONSOLE/gforge-ui-findings.cmd"
+sleep 2
+cat "$CONSOLE/gforge-ui-findings.result.json"
+```
+
+If the UI screen is detected but no gem slots appear, inspect `kiln/logs/kiln.log` for `Gem Forge Research UI:` lines. This tells us whether the forge shares Kiln's tracked inventory-slot renderer; it does **not** demonstrate the native forge's underlying item provider or enable Magic Chest items in that provider.
 
 ## Verified facts
 
@@ -13,7 +41,7 @@
 
 **Before upgrading:** Ensure no v0.1.x loan session is still returning, and manually place any leftover lent gems from the old version into the desired Magic Chest. The research build intentionally **cannot repair or reassign** items already left behind by v0.1.x. Back up the character/world before any future write experiments. Disable/remove v0.1.x before installing this new build.
 
-Install the inner `gemforge-magic-storage-0.2.0.zip` from the PR's successful GitHub Actions artifact using Kiln. The mod retains `gforge` commands but has completely different, read-only behaviour.
+Install the inner `gemforge-magic-storage-0.2.1.zip` from the PR's successful GitHub Actions artifact using Kiln. The mod retains `gforge` commands but has completely different, read-only behaviour.
 
 With the game running, stand at the placed Gem Forge and write commands to Kiln's control console:
 
@@ -42,7 +70,7 @@ grep -F 'Gem Forge Research: weaponGemAction' "$GAME/kiln/logs/kiln.log" | tail 
 
 ## In-game result — 15 November 2026
 
-User's Bazzite/Proton **hosted** game with v0.2.0:
+User's Bazzite/Proton **hosted** game with v0.2.1:
 
 - `gforge status`: read-only; playerstate=True; `weaponGemAction=28 bytes, canCancel=True`; all World/Spawn/Items services available.
 - `gforge forge`: placeable forge entity **5930**, distance **3.0m**, template **`Shroud_Gem_Forge_07_AncientLands_Premium_PLAYER_CRAFTED`**, no `ShroudForge` ECS component.
@@ -51,7 +79,7 @@ User's Bazzite/Proton **hosted** game with v0.2.0:
 
 The current Kiln source has a critical reverse-engineering lead: `docs/re/items.md` section 16 identifies the server-side `equipment_actions` program and its `0x144bb0` weapon-gem helper (server binary 26430253), which emits `GemCraftingEvent`. **The RVA is build-specific, not tested as a hook on the user's live executable.**
 
-The game client exposes `HudScreen.ShroudForge=45` through `Ui.Screens.Current`. Upstream also documents `Ui.Values.Slots/SubscribeSlots`, a read-only snapshot of what the game rendered, but explicitly places those hooks in **Kiln dev.29**; the newest verified published SDK at this time is **dev.28**. Even those slot snapshots only inspect items that the game already drew: they cannot add entries to the forge selection UI.
+The game client exposes `HudScreen.ShroudForge=45` through `Ui.Screens.Current`. Upstream also documents `Ui.Values.Slots/SubscribeSlots`, a read-only snapshot of what the game rendered, but explicitly places those hooks in **Kiln dev.29**; dev.29 has now been published (2026-11-16) and is the basis for this version. Even those slot snapshots only inspect items that the game already drew: they cannot add entries to the forge selection UI.
 
 See [the native integration research record](../docs/research/GEMFORGE-DIRECT-INTEGRATION.md).
 
