@@ -21,6 +21,11 @@ class DoorContracts(unittest.TestCase):
         self.assertIn('World.Find("DynamicActiveNpcState")', SOURCE)
         self.assertIn("OpenForPlayers", CONFIG)
         self.assertIn("OpenForNpcs", CONFIG)
+    def test_discovery_stage_counters(self):
+        for text in ('World.Find("DirectionalInteraction")', 'switches.Count',
+                     '_paired++', '_withPosition++', '_readable++'):
+            self.assertIn(text, SOURCE)
+
     def test_close_only_own_after_hysteresis(self):
         self.assertIn("_owned.TryGetValue", SOURCE)
         self.assertIn("if (nearClose)", SOURCE)
