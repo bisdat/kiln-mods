@@ -49,6 +49,24 @@ Upstream docs also describe `Ui.Values.Slots()` and `SubscribeSlots()` to **insp
 
 The specific *client* function that supplies Gem Forge selectable gems has **not yet been identified**. The vanilla picker is separate from the server's authoritative transaction; being able to read Magic Chest inventories on the host alone does not populate the client's list.
 
+## 2.3. Dev.29 client forge slot capture — observed and corrected (2026-11-16 03:46 UTC)
+
+Read-only v0.2.1 probe successfully subscribed to the native forge HUD. **18,941 client UI frames**, including **3,357 `HudScreen.ShroudForge` frames**, with 10 bounded captures. The UI listener was detached cleanly by `gforge ui-watch off`. The sampled forge display showed 3–8 slot *draws* per frame (some repeated, not additional items). Those drawn entries resolved through Kiln's dev.29 catalogue:
+
+| Client item ID | Item name | Slot provenance shown by client |
+|---|---|---|
+| `0xe52a5ac0` | Gem of Storm's Eye | `holder=0, holderFlags=0` |
+| `0x03c1b61e` | Gem of Focused Light | `holder=0, holderFlags=0` |
+| `0x340e0dd9` | Electric Initialiser | `holder=1, holderFlags=7` |
+| `0x3f512650` | Dragoncore Staff | `holder=1, holderFlags=7` |
+| `0x20754f9e` | Wolf's Hydra | `holder=1, holderFlags=7` |
+
+**Essential correction provided by the user:** Both gems are **already socketed in weapons** and shown by the forge as **available for removal only**. `Wolf's Hydra` is an intentionally selected test weapon with an **empty** gem socket. Accordingly, the two `holder=0` entries are *display views of socketed gems*, **not newly discovered external inventory sources**, and their numeric client IDs do not establish which player weapon they belong to or any Magic Chest association.
+
+**Actual unanswered question:** Which function supplies the **new gem candidates** when the user selects the empty socket in `Wolf's Hydra` and opens the forge's insertion picker? None of the above sampled frames establishes that list's source. **Do not** implement or claim a Magic Chest UI provider based on these socketed-gem display records.
+
+Next **safe read-only experiment with the existing v0.2.1 build**: start `gforge ui-watch on`, open the forge, choose `Wolf's Hydra`'s empty gem socket, open the **choose/insertion gem** list (without actually inserting or upgrading), close it, collect `gforge ui` + `gforge ui-recent` and turn the watch off. Compare that list's drawn slot holder/page patterns against the current socketed-gem display. If needed, collect the bounded `Gem Forge Research UI:` lines from `kiln.log` to avoid losing intermediate frames from the six-entry `ui-recent` output.
+
 ## 3. Required production behaviour
 
 1. Existing Gem Forge UI presents the backpack's gems plus any **eligible Magic Chest gems**, preserving the exact gem's level/rarity/instance identity, and the user's normal weapon selection. `Kiln.Items.FindInventories` covers *loaded* chest inventories only.

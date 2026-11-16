@@ -30,6 +30,14 @@ cat "$CONSOLE/gforge-ui-findings.result.json"
 
 If the UI screen is detected but no gem slots appear, inspect `kiln/logs/kiln.log` for `Gem Forge Research UI:` lines. This tells us whether the forge shares Kiln's tracked inventory-slot renderer; it does **not** demonstrate the native forge's underlying item provider or enable Magic Chest items in that provider.
 
+## In-game result and correction — 16 November 2026
+
+The v0.2.1 client UI probe **worked** on Kiln dev.29: `HudScreen.ShroudForge` identified and 3,357 forge UI frames captured. The sampled UI draws included two gem IDs (`0xe52a5ac0` = **Gem of Storm's Eye**, `0x03c1b61e` = **Gem of Focused Light**) with unresolved client holders, plus three player-owned weapons (**Electric Initialiser**, **Dragoncore Staff**, **Wolf's Hydra**).
+
+**The user confirmed that both displayed gems are already socketed in their weapons and are shown as available for removal only.** Their `holder=0` rendered slots therefore do **not** demonstrate a new-gem inventory source, and must not be mistaken for items in Magic Chests. `Wolf's Hydra` is the test weapon with an **empty gem socket**.
+
+**Next observational test (no new build):** with `gforge ui-watch on` enabled, select **Wolf's Hydra → empty socket → choose a gem for insertion**, but **do not actually insert one**. Close the forge and collect `gforge ui`, `gforge ui-recent`, `gforge ui-watch off` as shown above. If the short history misses the insertion list, the full bounded logs prefixed `Gem Forge Research UI:` in Kiln's log may retain it. This distinguishes socketed-gem removal views from the genuine new-gem insertion picker. No new state-changing code is proposed.
+
 ## Verified facts
 
 - The user's hosted Enshrouded world reported **zero entities** with the `ShroudForge` ECS component.
