@@ -23,7 +23,7 @@ public sealed class AutomaticDoorsMod : Mod
     {
         _config = Config.Register<AutomaticDoorsConfig>();
         Context.Tick.Pre += OnTick;
-        Log.Info("Automatic Doors 0.1.0 EXPERIMENTAL: verify animation, collision and pathfinding in game.");
+        Log.Info("Automatic Doors 0.1.1 EXPERIMENTAL: verify animation, collision and pathfinding in game.");
     }
 
     private void OnTick(in TickInfo tick)
