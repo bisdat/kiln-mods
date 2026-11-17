@@ -60,10 +60,10 @@ class Contracts(unittest.TestCase):
                 self.assertFalse(matches(rejected))
     def test_exactly_26_type_toggles(self):
         import re
-        declared = re.findall(r"public bool (\\w+) \\{ get; set; \\} = true;", CONFIG)
+        declared = re.findall(r"public bool (\w+) \{ get; set; \} = true;", CONFIG)
         self.assertEqual(len(declared), 26)
         self.assertEqual(len(set(declared)), 26)
-        templates = re.findall(r'"(T\\w+_Factory)"\\s*=>\\s*enabled\\.(\\w+)', SRC)
+        templates = re.findall(r'"(T\w+_Factory)"\s*=>\s*enabled\.(\w+)', SRC)
         self.assertEqual(len(templates), 26)
         self.assertEqual(set(declared), {property for _, property in templates})
         self.assertEqual(len({template for template, _ in templates}), 26)
