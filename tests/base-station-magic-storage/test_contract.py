@@ -13,10 +13,15 @@ class Contracts(unittest.TestCase):
         self.assertIn('case "enable":', SRC)
         self.assertIn('case "disable":', SRC)
         self.assertIn("CommandPermission.Admin", SRC)
+        self.assertIn("Items.ContainerNamesAvailable", SRC)
+        self.assertIn("OutputName(Items.ContainerName(chest))", SRC)
+        self.assertIn('"BSMS Output"', SRC)
+        self.assertIn("Stations.All()", SRC)
+        self.assertIn("Bases.Storage(@base, deposit: true)", SRC)
     def test_only_supported_native_actions(self):
-        for name in ("Stations.Plan(id, options)", "Stations.Fill(id, options)", "Stations.CollectToBase(id)", "Player is intentionally absent"):
+        for name in ("Stations.Plan(id, options)", "Stations.Fill(id, options)", "Stations.Collect(id, chest, item)", "Player is intentionally absent"):
             self.assertIn(name, SRC)
-        for forbidden in ("Items.Move(", "Items.Take(", "Items.Give(", "Gems.Socket(", "Stations.Select(", "Stations.Stop(", "Stations.Resume("):
+        for forbidden in ("Stations.CollectToBase(", "Items.Move(", "Items.Take(", "Items.Give(", "Gems.Socket(", "Stations.Select(", "Stations.Stop(", "Stations.Resume("):
             self.assertNotIn(forbidden, SRC)
     def test_stop_world_and_capacity_safety(self):
         for token in ("s.StoppedByPlayer", "s.StopPending", "s.SelectedRecipe == 0",
@@ -30,3 +35,4 @@ class Contracts(unittest.TestCase):
         self.assertIn("**Default OFF.**", README)
         self.assertIn("not cross-base", README)
         self.assertIn("FactoryStation", README)
+        self.assertIn("BSMS Output", README)

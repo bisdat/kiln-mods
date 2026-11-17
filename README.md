@@ -68,7 +68,7 @@ Standalone Kiln mod v0.1.1 (backtick default following the accepted v0.1.0 toggl
 
 [User guide](BaseStationMagicStorage/README.md) | [Candidate build](.github/workflows/base-station-magic-storage.yml) | [Issue #50](https://github.com/bisdat/kiln-mods/issues/50)
 
-An independent mod using Kiln API 0.2.6 to auto-fill FactoryStations from **their own base's Magic Chests** and collect finished outputs into deposit-enabled chests. Off by default and enabled by an admin per base. It does not borrow items through the player's backpack, change a recipe or a station's stop state, or pretend the Gem Forge or hand-crafting bench is a FactoryStation. In-game acceptance is pending; no public release.
+An independent mod using Kiln API 0.2.6 to auto-fill FactoryStations from **their own base's Magic Chests** and collect finished outputs into deposit-enabled chests. Off by default and enabled by an admin per base. It only collects outputs into dedicated Magic Chests named **BSMS Output** (or BSMS Output 2), preventing accidental delivery into an Endless Chests **Empty** chest. These outputs become shared crafting stock for other stations and the blacksmith. It does not borrow items through the player's backpack, change a recipe or a station's stop state, or pretend the Gem Forge or hand-crafting bench is a FactoryStation. In-game acceptance is pending; no public release.
 
 ## Licence
 
