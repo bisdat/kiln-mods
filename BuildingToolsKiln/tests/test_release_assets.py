@@ -41,7 +41,34 @@ class ReleaseCompletenessTests(unittest.TestCase):
         release = make()
         del release["assets"][1]
         self.assertFalse(module.inspect_release(release)[1])
-        self.assertTrue(module.inspect_release(release)[2][0].endswith(".sha256"))
+        self.assertIn("SHA256SUMS", module.inspect_release(release)[2][0])
+        self.assertIsNone(module.checksum_asset(release))
+
+    def test_new_sha256sums_is_a_complete_release(self):
+        release = make(version="0.33.2")
+        release["assets"][1]["name"] = "SHA256SUMS"
+        release["assets"][1]["size"] = 298
+        version, ready, missing = module.inspect_release(release)
+        self.assertEqual(version, "0.33.2")
+        self.assertTrue(ready)
+        self.assertEqual(missing, [])
+        self.assertEqual(module.checksum_asset(release), "SHA256SUMS")
+
+    def test_legacy_checksum_still_supported_and_preferred_if_both_exist(self):
+        release = make(version="0.31.2")
+        self.assertEqual(module.checksum_asset(release), "EnshroudedBuildingTools-0.31.2.zip.sha256")
+        release["assets"].append({"name": "SHA256SUMS", "size": 298, "state": "uploaded"})
+        self.assertEqual(module.checksum_asset(release), "EnshroudedBuildingTools-0.31.2.zip.sha256")
+
+    def test_new_checksum_pending_if_not_uploaded(self):
+        release = make(version="0.33.2")
+        release["assets"][1]["name"] = "SHA256SUMS"
+        for bad in ("new", "starter", "deleted"):
+            release["assets"][1]["state"] = bad
+            self.assertFalse(module.inspect_release(release)[1])
+        release["assets"][1]["state"] = "uploaded"
+        release["assets"][1]["size"] = 0
+        self.assertFalse(module.inspect_release(release)[1])
 
     def test_upload_in_progress_blocks_update(self):
         release = make()
