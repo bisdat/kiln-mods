@@ -64,12 +64,13 @@ Standalone data-only Kiln mod v0.1.0: changes `Tool_T6_FishingRod_epic` Fishing 
 
 Standalone Kiln mod v0.1.1 (backtick default following the accepted v0.1.0 toggle) for Kiln 0.2.0-dev.27 or newer. **backtick key** toggles Kiln's native NoClip with HUD feedback; remap the shortcut under Kiln → Keys. Unlike implementing separate collision handling, this mod delegates flight and safe-position recovery to Kiln. Hosted single-player uses the authoritative world tick; optional multiplayer requests are checked against Kiln's NoClip admin permission. Kiln's native NoClip and the initial toggle passed in-game on Bazzite/Proton. If an earlier keybinding was saved, reset it under Kiln → Keys to adopt the backtick default. The backtick shortcut was also confirmed in-game on Bazzite/Proton.
 
-## Gem Forge native integration — read-only research v0.2.1
+## Gem Forge Magic Storage — automatic native integration v1.0.0
 
-[Gem Forge research guide](GemForgeStorage/README.md) |
-[Build workflow](.github/workflows/gemforge-storage.yml)
+[Installation and feature guide](GemForgeStorage/README.md) | [Build workflow](.github/workflows/gemforge-storage.yml) | [Releases](https://github.com/bisdat/kiln-mods/releases)
 
-The previous v0.1.x approach (temporarily lending gems from Magic Chests into the backpack) was rejected after a return failure. It is **removed** from the current source. The experimental Kiln-native v0.2.1 research package reads nearby Gem Forge entities and Magic Chest inventories and can observe `weaponGemAction` while enabled. **It does not transfer, consume, create or change any items.** The long-term aim is to integrate Magic Chests directly with the actual Gem Forge UI and authoritative transaction; that integration is **not implemented yet**. Draft PR #48 remains unmerged. [Native integration research findings](docs/research/GEMFORGE-DIRECT-INTEGRATION.md).
+**Automatically** makes eligible Magic Chest gems from the player's current flame-altar base appear in Enshrouded's original Gem Forge **GEMS** grid, using Kiln's supported server-authoritative item transactions. Player-held weapons can receive chest gems, while Archaic Essence payments use player inventory first and then the current base's Magic Chest storage. Recycling rewards and removed gems go to the player's backpack. **No console commands, enable switches, inventory loans, memory patches or custom UI.**
+
+Requires **Kiln 0.2.0-dev.29.15+** on the hosting server and on the client viewing offered gems. The mod itself is installed server-side only. Tests on the precursor v0.3.0 integration passed for native selection, socket/unsocket, exact chest-funded upgrading, insufficient-funds refusal, recycling and withdrawal; the production v1.0.0 removes the test commands. The abandoned temporary gem-lending design remains retired, and historical findings remain in [Gem Forge research](docs/research/GEMFORGE-DIRECT-INTEGRATION.md).
 
 ## Licence
 
