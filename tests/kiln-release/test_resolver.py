@@ -43,6 +43,15 @@ class KilnDevReleaseTests(unittest.TestCase):
         self.assertEqual(found["tag"], "v0.2.0-dev.21")
         self.assertEqual(found["release_target"], "a" * 40)
 
+    def test_published_dev_patch_sdk_release(self):
+        selected = resolver.select_release(
+            [release(29, "2026-11-16T00:04:22Z"),
+             release("29.14", "2026-11-17T06:13:19Z")],
+            "v0.2.0-dev.29.14",
+        )
+        self.assertEqual(selected["version"], "0.2.0-dev.29.14")
+        self.assertEqual(selected["tag"], "v0.2.0-dev.29.14")
+
     def test_drafts_and_unpublished_are_ignored(self):
         found = resolver.select_release([
             release(22, "2026-11-11T06:00:00Z", draft=True),
