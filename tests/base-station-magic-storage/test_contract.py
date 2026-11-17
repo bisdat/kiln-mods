@@ -16,7 +16,8 @@ class Contracts(unittest.TestCase):
         self.assertIn('case "all":', SRC)
         self.assertIn("public bool AllStations { get; set; }", SRC)
         self.assertIn("public List<string> Included { get; set; } = [];", SRC)
-        self.assertIn("!p.AllStations && !p.Included.Contains", SRC)
+        self.assertIn("(p.AllStations || p.Included.Contains(key, StringComparer.Ordinal))", SRC)
+        self.assertIn("Rule(p, key)?.Enabled != false", SRC)
         self.assertIn("CommandPermission.Admin", SRC)
         self.assertIn("Items.ContainerNamesAvailable", SRC)
         self.assertIn("OutputName(Items.ContainerName(chest))", SRC)
@@ -27,6 +28,13 @@ class Contracts(unittest.TestCase):
         self.assertNotIn('"BSMS Output"', SRC)
         self.assertIn("Stations.All()", SRC)
         self.assertIn("Bases.Storage(@base, deposit: true)", SRC)
+
+    def test_station_json_controls_and_reload(self):
+        for token in ("public List<StationSetting> Stations { get; set; } = [];","public bool Enabled { get; set; } = true;","public bool Fill { get; set; } = true;","public bool Collect { get; set; } = true;",'case "config":','verb == "reload"','RuleOrAdd(p2, key)','var revision = _configRevision','_configRevision != revision','Rule(p, key)?.Collect == false','Rule(p, key)?.Fill == false','Eligible(p, key)'):
+            with self.subTest(token=token):
+                self.assertIn(token, SRC)
+        for token in ("bstation config sync", "bstation station collect off", '"collect": false', "Existing v0.1.2 JSON files remain valid"):
+            self.assertIn(token, README)
     def test_only_supported_native_actions(self):
         for name in ("Stations.Plan(id, options)", "Stations.Fill(id, options)", "Stations.Collect(id, chest, item)", "Player is intentionally absent"):
             self.assertIn(name, SRC)
@@ -54,7 +62,7 @@ class Contracts(unittest.TestCase):
                 self.assertFalse(matches(rejected))
     def test_sdk(self):
         self.assertIn("Kiln.Sdk/0.2.0-dev.29.14", PROJ)
-        self.assertIn("<Version>0.1.2</Version>", PROJ)
+        self.assertIn("<Version>0.1.3</Version>", PROJ)
         self.assertIn("<KilnSide>server</KilnSide>", PROJ)
         self.assertIn("**Default OFF.**", README)
         self.assertIn("not cross-base", README)
