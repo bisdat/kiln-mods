@@ -1,147 +1,75 @@
-# Gem Forge × Magic Chest: direct native integration research
+# Gem Forge × Magic Chest — direct native integration
 
-**Status:** investigation / read-only; user rejected the proximity-loan/return model after it failed inventory return.
-**Repository:** `bisdat/kiln-mods`, draft PR [#48](https://github.com/bisdat/kiln-mods/pull/48).
-**Last verified:** 2026-11-16; Enshrouded hosted in Kiln v0.2.0-dev.29 through Proton, NoClip confirmed fixed by user.
-**Constraint:** no borrowing into the player's backpack, no synthetic gems, no return queue, and no unverified debit/credit operations.
+**Status:** design / SDK integration research; no production implementation.
+**As of:** 2026-11-17. **Downstream:** [bisdat/kiln-mods draft PR #48](https://github.com/bisdat/kiln-mods/pull/48).
+**Upstream:** [Kiln #42](https://github.com/frostdev-ops/kiln/issues/42) **closed (candidate snapshot delivered)**; [Kiln #61](https://github.com/frostdev-ops/kiln/issues/61) **open (remaining native Magic Chest integration)**.
+**Runtime:** the last actual tested mod is **GemForgeStorage v0.2.1**, read-only, compiled for Kiln dev.29. **It has not been updated, built or tested against Kiln 0.2.0-dev.29.11 / mod API 0.2.5.**
+**Non-negotiable:** no proximity/temporary inventory borrowing, no return queue, no duplicated or phantom gems, no unvalidated source/payment changes, and no replacement for the native Gem Forge UI.
 
-## 1. Observed facts (user's live hosted world)
+## Goal and acceptance boundary
 
-| Test | Observation |
-|---|---|
-| Player | `bis_dat`, player entity 1 |
-| Native Gem Forge | Entity **5930**, **3.0 m**, `Shroud_Gem_Forge_07_AncientLands_Premium_PLAYER_CRAFTED`; placed item `UsedItem=3250908839` |
-| `ShroudForge` ECS | Absent on this placed forge; **do not** assume its presence |
-| Magic Chest scan | **133** loaded chest inventories |
-| Gem inventory | **85** weapon-gem slot entries; includes fully identified item instances |
-| Archaic Essence | **13,750** units in loaded Magic Chests |
-| Kiln services | `PlayerStates`, `Items`, `World`, `Spawn` available |
-| `PlayerStates.ClientActions` | `weaponGemAction` exists, **28 bytes**, **CanCancel=True** |
-| UI browsing with watch | **0 captured `weaponGemAction`**, while user browsed a Gem Forge and selected items |
-| Inventory writes in v0.2.0 | **None**; observational code only |
+At the game's own Shroud Forge, the GEMS picker should list eligible loose gems from authorised **Magic Chests**, alongside the normal player gems and socketed-gem rows. The player should be able to select **any suitable player-held weapon** and insert one of those chest gems, without moving either item into a temporary holder. Upgrading/recycling chest gems and paying the forge's normal **Archaic Essence** price from authorised chests are also desired. Respect the game's forge tier, gem level, compatibility, socket and failure checks.
 
-Interpret the absence narrowly: selecting/previewing items in this specific test did not produce a captured **server** `weaponGemAction`. It does **not** prove where the UI is implemented or whether actually socketing, extracting, upgrading, or recycling produces that event.
+A working inventory scan or passive UI snapshot is **not** acceptance of this behaviour. We will not tag/release PR #48 while the above user-facing path is absent.
 
-## 2. Verified upstream source leads
+## SDK 0.2.5 — verified public contracts (source-reviewed, not yet game-tested here)
 
-### 2.1 Actual server operation
+Kiln **0.2.0-dev.29.11** was announced by its developer in [#42](https://github.com/frostdev-ops/kiln/issues/42#issuecomment-6931871143), with mod API **0.2.5** and documented support for the new gem system.
 
-Source: [`docs/re/items.md` section 16](https://github.com/frostdev-ops/kiln/blob/main/docs/re/items.md).
-
-The Kiln research team reverse-engineered the native program **`equipment_actions`**, which handles both ordinary equipment changes and the **weapon-gem action**. On the specific research server build **26430253**, it identifies:
-
-- `equipment_actions` update RVA **`0x1472c0`**.
-- Weapon-gem helper RVA **`0x144bb0`**, distinct from equip helper `0x144950`.
-- Other-write components: `Inventory`, `InventoryEmptyState`, `InventorySetup`, `ItemState`, `Level`, `OwnerRelationship`, `SlotSelection`, `WeaponGemSlot`.
-- Native output event **`GemCraftingEvent`** and `InventoryFull`.
-
-**Scope of proof:** these are documentation of offline/static RE plus lab work on that named executable. They are not verified addresses on the user's client or a safe, complete transactional hook. Do not apply a hard-coded RVA or change a `weaponGemAction` payload without tracing its exact layout and validation.
-
-The server control-event API [`PlayerClientActionEvent`](https://github.com/frostdev-ops/kiln/blob/main/docs/kiln/modding/player-states.md) exposes the raw 28-byte action from client, provided a gem operation actually sends it. It can hold/cancel the action but **does not provide a replacement Gem Forge operation** or make source inventory authoritative by itself.
-
-### 2.2 Client-side forge picker
-
-Source: [Kiln UI API](https://github.com/frostdev-ops/kiln/blob/main/docs/kiln/ui.md), [`Kiln.Ui/PublicAPI.Shipped.txt`](https://github.com/frostdev-ops/kiln/blob/main/managed/services/Kiln.Ui/PublicAPI.Shipped.txt).
-
-Kiln's existing game-screen reflection includes **`HudScreen.ShroudForge=45`**, readable through `Ui.Screens.Current` on a client. **Note:** this UI enum's name is *not* evidence that a placed forge carries the `ShroudForge` ECS component; the live test found it absent.
-
-Upstream docs also describe `Ui.Values.Slots()` and `SubscribeSlots()` to **inspect slots drawn in the last UI frame**. The doc says this feature comes from **Kiln v0.2.0-dev.29**, which was **not the latest published release on 2026-11-15** (GitHub Releases still had dev.28). It cannot inject extra Magic Chest slots or alter the underlying UI inventory-provider routine, even once available. A client-side mod/probe should use it only after an SDK release containing it, and must not equate client entity IDs with server entity IDs.
-
-The specific *client* function that supplies Gem Forge selectable gems has **not yet been identified**. The vanilla picker is separate from the server's authoritative transaction; being able to read Magic Chest inventories on the host alone does not populate the client's list.
-
-## 2.3. Dev.29 client forge slot capture — observed and corrected (2026-11-16 03:46 UTC)
-
-Read-only v0.2.1 probe successfully subscribed to the native forge HUD. **18,941 client UI frames**, including **3,357 `HudScreen.ShroudForge` frames**, with 10 bounded captures. The UI listener was detached cleanly by `gforge ui-watch off`. The sampled forge display showed 3–8 slot *draws* per frame (some repeated, not additional items). Those drawn entries resolved through Kiln's dev.29 catalogue:
-
-| Client item ID | Item name | Slot provenance shown by client |
+| Capability / API | Supported | Critical limitation |
 |---|---|---|
-| `0xe52a5ac0` | Gem of Storm's Eye | `holder=0, holderFlags=0` |
-| `0x03c1b61e` | Gem of Focused Light | `holder=0, holderFlags=0` |
-| `0x340e0dd9` | Electric Initialiser | `holder=1, holderFlags=7` |
-| `0x3f512650` | Dragoncore Staff | `holder=1, holderFlags=7` |
-| `0x20754f9e` | Wolf's Hydra | `holder=1, holderFlags=7` |
+| `ui.gemforge.inspect`: `Ui.Values.GemForgeCandidates()`, `SubscribeGemForgeCandidates` | Immutable snapshot of the native **GEMS** list, including scroll-hidden rows, source/display views, socketed weapon carriers, selected row and selection context | **Observation only.** Chest items are not in the native list; it cannot inject a new entry or authorise any server transaction. Client-only; currently restricted to measured game client build 26430625 |
+| `gems.read`: `Gems.Catalog`, `Gems.Get`, `Gems.Equipped`, `Gems.Socket(item)` | Read gem definitions/equipment and socket contents | Does not turn a UI view into an authoritative chest identity |
+| `gems.craft`: `Gems.Socket(player, carrier, gem, forge, options)` / `Unsocket` / `Upgrade` / `Recycle` | Code-driven native forge actions with validated instance refs, cost, results and events | Server-side and **single source holder**; requires actual forge; not a client-grid action replacement |
+| `GemCraftOptions.Holder` | Can target one authorised non-player inventory such as a chest for gem/carrier lookup | In `GemCrafting.Submit`, **both carrier and gem** are resolved from `Items.Read(options.Holder ?? player)`. Thus a loose chest gem can be upgraded/recycled by code, and socketing works if **both items are in the same holder**; **player-held weapon + chest gem** is not directly supported |
+| `GemCraftOptions.Cost` | Can replace the required resource/item and count or make the action free | **Player still pays.** It is *not* a payment-inventory selector; recycle output and unsocket return also go to the player |
+| `GemCraftingEvent` / `GemCraftedEvent` | Observe or cancel native actions, observe completed actions | Cancel is not a supported redirect to alternate item/source inventory; do not substitute a two-step debit/recredit workaround |
 
-**Essential correction provided by the user:** Both gems are **already socketed in weapons** and shown by the forge as **available for removal only**. `Wolf's Hydra` is an intentionally selected test weapon with an **empty** gem socket. Accordingly, the two `holder=0` entries are *display views of socketed gems*, **not newly discovered external inventory sources**, and their numeric client IDs do not establish which player weapon they belong to or any Magic Chest association.
+**Canonical references:** [gem UI snapshot](https://github.com/frostdev-ops/kiln/blob/main/docs/kiln/ui-gemforge.md), [forge actions](https://github.com/frostdev-ops/kiln/blob/main/docs/kiln/services/gems-forge.md), [implementation of `GemCrafting.Submit`](https://github.com/frostdev-ops/kiln/blob/main/managed/services/Kiln.Abilities/Gems/GemCrafting.cs), [release notes](https://github.com/frostdev-ops/kiln/blob/main/docs/kiln/release-notes/0.2.0-dev.29.11.md).
 
-**Actual unanswered question:** Which function supplies the **new gem candidates** when the user selects the empty socket in `Wolf's Hydra` and opens the forge's insertion picker? None of the above sampled frames establishes that list's source. **Do not** implement or claim a Magic Chest UI provider based on these socketed-gem display records.
+Distinguish the overload `Gems.Socket(item)` (**read socket**) from `Gems.Socket(player, carrier, gem, forge, options)` (**perform insert**). `GemForgeCandidates` becomes unavailable when the GEMS grid is closed or undrawn; its selected row is client display context, not authority for any action.
 
-Next **safe read-only experiment with the existing v0.2.1 build**: start `gforge ui-watch on`, open the forge, choose `Wolf's Hydra`'s empty gem socket, open the **choose/insertion gem** list (without actually inserting or upgrading), close it, collect `gforge ui` + `gforge ui-recent` and turn the watch off. Compare that list's drawn slot holder/page patterns against the current socketed-gem display. If needed, collect the bounded `Gem Forge Research UI:` lines from `kiln.log` to avoid losing intermediate frames from the six-entry `ui-recent` output.
+### What changed from the original reverse-engineering plan
 
-## 2.4. Complete dev.29 UI diagnostic log — main gem catalogue remains invisible to slot inspector
+Upstream's client disassembly identified the forge screen at RVA `0xcacb20`, list builder `0xd27cb0` and grid `0xcaefc0` for client build **26430625 only**. The builder combines loose gems in the player's Generic inventory pages with existing socketed-gem carrier rows. The grid does use the ordinary `ItemSlot` renderer (our previous hypothesis that it used a separate primitive was incorrect). The unknown coverage gap of our original slot probe is now bypassed by the supported `GemForgeCandidates` snapshot API. **Do not hook build-specific RVAs or extend the old observer.**
 
-Source: user's **full** `grep -F 'Gem Forge Research UI:' kiln/logs/kiln.log | tail -n 45` output, 2026-11-16. The output contains both captured sessions and no other `Gem Forge Research UI:` entries in those intervals.
+These findings and the official API close the previous request [Kiln #42](https://github.com/frostdev-ops/kiln/issues/42); they do **not** provide an editable native provider or chest-source transaction.
 
-| UTC interval | Native screen transitions | Logged visible item IDs | Slot draws |
-|---|---|---|---|
-| 03:46:03–03:46:07 | `InGame/InGame -> Other/ShroudForge -> InGame/InGame` | two existing socketed gems plus three weapons | 3, 6 or 8 |
-| 03:53:13–03:53:32 | same screen transitions | the **same** two existing socketed gems and three weapons | 3, 6 or 8 |
+## Remaining upstream contracts — tracked in Kiln #61
 
-During the second session at **03:53:15–03:53:30**, the three weapon entries drop out of the *captured* slots, leaving only `0xe52a5ac0` (socketed Gem of Storm's Eye) and `0x03c1b61e` (socketed Gem of Focused Light). They reappear in the recorded slots just before the forge closes. That is evidence of *different visible slot sets*, **not** proof of which forge tab or selection state was active.
+1. **Cross-holder gem transaction:** safely combine a player-held carrier and an authorised chest's precise gem instance, with server-side validation and an atomic native socket operation. One `GemCraftOptions.Holder` cannot express two different owners.
+2. **Native GEMS provider extension:** insert eligible remote/chest candidates into the *original* selectable gem grid, and translate a selection to an authenticated server request. A read-only copied candidate list cannot insert rows; the native selected-row lookup currently knows only player inventory.
+3. **Price source (Archaic Essence):** permit a separately authorised chest/inventory as the forge's normal price source, with transactional insufficient-funds/refund behaviour. `GemCraftOptions.Cost` specifies price, not its holder. Recycle rewards and unsocket destination should be defined as part of the same contract, rather than emulated through unrelated inventory moves.
 
-The user separately confirms the genuine game's forge UI shows its **long list of available gems immediately on opening**, including the two socketed gems. Because **no other gem IDs appear anywhere in the full observer output**, the `Ui.Values.SubscribeSlots` instrumentation has an incomplete view of the Gem Forge's item list. The captured list should not be interpreted as the forge's actual candidate set or as a sign that it cannot see inventory items.
+**Authorisation and consistency:** on the authoritative server resolve fresh item references (including per-instance level and socket state), verify that the player can use each chest, confirm forge access, currency, compatibility, available space and current world. Fail closed on stale references, unloaded chests, refilled/full chests, simultaneous actions, lost connections and build/capability mismatches. Never accept client `UiItemView.ClientEntity` or a displayed row as a server-side item ID.
 
-**Upstream reference check:** Kiln's `docs/re/game-ui.md` describes the game's immediate-mode UI and generic slot drawing, while `docs/re/items.md` §16 documents the **server** `equipment_actions` path. Neither currently identifies the **client-side Gem Forge gem catalogue construction/enumeration routine**. The next dependency is native client reverse engineering of that catalogue/provider path on a supported game build; no further `ui-watch` sampling or destructive gem actions are justified by this evidence.
+No part of 0.2.5 has been shown to offer cross-base inventory access to **unloaded** chests. Do not assume it.
 
-**Safe research boundary:** do not patch a guessed client RVA, attach an unvalidated `Kiln.Sigs` detour, insert client-only synthetic gems, treat client-rendered entities as server inventory identities, or reintroduce inventory borrowing. The native client provider and server transaction authority must both be identified before proposing implementation.
+## Existing real-game evidence — retained for context
 
-## 2.5. Visual corroboration — scrollable Gem Forge grid, not an inventory slot list
+User-tested on **Kiln 0.2.0-dev.29**, hosted Enshrouded under Proton, before SDK 0.2.5:
 
-An earlier user-supplied in-game screenshot of the native `SELECT ITEM` page visibly shows a left-hand `GEMS` grid with **three columns of item icons**, a vertical scrollbar, and many rows of gem candidates, beside the selected weapon's detail panel (Electric Initialiser). The screenshot demonstrates the game's full visual candidate interface independently of the v0.2.1 slot logging. It is a **rendered icon grid**, and its actual item enumeration/source is not exposed by `Ui.Values.SubscribeSlots` in our real-game tests. The screenshot alone does not prove the renderer's internal function or the inventory owner.
+- Native placed forge: entity `5930`, 3 m away; template `Shroud_Gem_Forge_07_AncientLands_Premium_PLAYER_CRAFTED`. It did **not** carry the `ShroudForge` ECS component in that test. `HudScreen.ShroudForge=45` refers to the UI, not an ECS requirement.
+- Read-only chest scan: **133** loaded Magic Chest inventories, **85** weapon-gem entries and **13,750** Archaic Essence units. These numbers describe **that session only**, not a guaranteed current count or authoritative cross-world reach.
+- v0.2.1 UI probes: client `HudScreen.ShroudForge` detected; `Ui.Values.SubscribeSlots` saw 3–8 draws from the same **two already-socketed gems** (Gem of Storm's Eye and Gem of Focused Light) and up to three player-held weapons (Electric Initialiser, Dragoncore Staff, Wolf's Hydra). The user confirmed Wolf's Hydra's gem socket was empty. The long native GEMS list visible to the player was **not fully captured** by the probe.
+- The old server event watcher saw **zero** `weaponGemAction` events while **browsing** only. That is not evidence about an actual committed forge operation.
+- The abandoned **v0.1.x loan/return** design left items in the player's backpack if an original chest was full/refilled, hence the permanent no-loan constraint.
 
-This refines the client trace: inspect the **icon-grid item provider / item-thumbnail path** in the `HudScreen.ShroudForge=45` branch rather than assuming that every candidate is painted through `ui/ItemSlot`. The distinction is grounded by comparison between the screenshot and full log; that the UI uses a *different rendering primitive* remains a hypothesis pending disassembly. Upstream issue [Kiln #42](https://github.com/frostdev-ops/kiln/issues/42) has this evidence.
+For raw frame logs, original function research, experimental commands and historical test results, see [Gem Forge dev.29 probe history](GEMFORGE-DEV29-PROBE-HISTORY.md). That file is archival evidence; its old next-test instructions are superseded.
 
-## 2.6. Next native reverse-engineering anchor: client play-state UI dispatch
+## Implementation plan when #61 resolves or a supported alternative is confirmed
 
-Kiln's versioned signature database at [`sigdb/symbols/client.d/ui.json`](https://github.com/frostdev-ops/kiln/blob/v0.2.0-dev.29/sigdb/symbols/client.d/ui.json) identifies **`ui/PlayStateUi`** as the current play-state UI dispatcher. It decodes `ui/state.play` and **`ui/play.hud_screen`**, the latter carrying the `keen::HudScreenType` byte. Public [`GameUi.cs`](https://github.com/frostdev-ops/kiln/blob/v0.2.0-dev.29/managed/services/Kiln.Ui/GameUi.cs) enumerates `HudScreen.ShroudForge=45`. The dispatcher is called under `ui/GameUiFrame`.
+**Phase A — supported, non-mutating observability:** update the research mod against **SDK 0.2.5**, replacing the generic slot census for the GEMS grid with `GemForgeCandidates()` / `SubscribeGemForgeCandidates`. Confirm correct capability checks, immutable list, source vs displayed gem, carrier vs loose gem, selected row and refresh behaviour; compare with separate server-side `Items.Read` *without attempting to join client entity IDs to server IDs*. Use a disposable test profile and no inventory mutation.
 
-**Concrete reverse-engineering sequence, requiring the supported game client binary or upstream native research:**
+**Phase B — exact inventory and payment plan:** using only **authoritative server-side** Kiln APIs and confirmed upstream contracts, check source chest, player-held carrier, cost chest, valid refs, permissions and location. Surface unsupported combinations as **not supported**, never silently move items. Demonstrate fail-closed behaviour with stale/duplicate/missing entries.
 
-1. Resolve the `ui/PlayStateUi` signature and `ui/play.hud_screen` field on **the actual client game build** (research notes cover client 26430625; the original `ui.json` comment references 26404966, so do **not** carry historical RVAs across builds). If signature fails, stop.
-2. In Ghidra/disassembly, find the branch/table dispatch that handles `HudScreenType=45`; follow that branch into the actual Gem Forge UI construction function(s), distinguishing the screen-open path and per-frame list construction.
-3. Locate the input enumerable/source structure for the **full available gem catalogue**, rather than `ui/ItemSlot` render calls, because the v0.2.1 complete log observes only two socketed gems and three weapons while the player sees a long list on screen.
-4. Determine whether the catalogue draws only visible/virtualised rows, uses a custom entry widget rather than the slot renderer, filters by possession/location/weapon compatibility, and whether socketed gems are represented as synthetic item views. For each case, record *observed evidence* separately from hypotheses.
-5. Trace source inventory holder/page and player identity without treating any client's `UiItemView.ClientEntity` number as an authoritative server item identity. Read-only inspection of the **native candidate provider** must precede any proposed injection or overlay.
-6. Only once the candidate provider is known, evaluate a dev.29 **typed, layout-validated hook** for a strictly passive observation stage, with capability disabling on unsupported game builds. Do not hook guessed addresses or `PlayStateUi` generically just to collect another frame count; a validated candidate-provider signature is the decision gate.
-7. Independently inspect the server-side `equipment_actions` / `weaponGemAction` gem transaction path, including gem identity, essence consumption, source eligibility and all-or-nothing commits. The client picker change alone cannot authorize transfers or pay items in foreign inventories.
+**Phase C — backed-up acceptance test, only after a safe native path exists:** test one controlled socket operation first, comparing source gem, destination socket and essence before and after. Then test upgrade, recycle, unsocket, chest refills, full inventories, concurrent actions, disconnect/rejoin and invalid destinations. No blind retries of uncertain commits.
 
-**Upstream tracking:** [frostdev-ops/kiln issue #42](https://github.com/frostdev-ops/kiln/issues/42) requests the narrow client candidate-source seam or an API, with anonymized v0.2.1 test evidence. An unrelated existing mod, `bjck/shroudlink/mod/mods/gemforge/src/lib.rs`, explicitly uses temporary backpack lending; it does not provide a direct candidate provider and must **not** be copied back into this mod.
+**Production gate:** native UI really shows eligible Magic Chest gems and uses selected item/weapon as intended, no borrowing/return, game-consistent cost and success/refusal. Only then consider merging/tagging PR #48.
 
-**Current decision:** PR #48 remains draft, v0.2.1 is sufficient read-only proof of screen access, no further in-game UI sampling or guessed native hooks. This is a game-client RE/API dependency, not a failing inventory scan.
+## Administrative state
 
-## 3. Required production behaviour
-
-1. Existing Gem Forge UI presents the backpack's gems plus any **eligible Magic Chest gems**, preserving the exact gem's level/rarity/instance identity, and the user's normal weapon selection. `Kiln.Items.FindInventories` covers *loaded* chest inventories only.
-2. On an action, the server resolves the chosen gem's actual chest/slot/item instance and verifies proximity/authorization/source identity. It must not trust a client-reported item, source holder, or slot without independent validation.
-3. Actual insertion, extraction, recycling, and upgrading must execute the game's legitimate forge constraints (essence tier/count, maximum level, weapon socket state). Material consumption and gem state update must be **atomic**, or correctly rolled back on any refusal.
-4. A completed transaction debits source Magic Chests **exactly once** and publishes an authoritative inventory/game-state update. No temporary player backpack loan, no duplicate or cloned gem, no creation/deletion of unrelated items. Cross-base *unloaded* storage is a **separate** integration dependency requiring Building Tools-specific research.
-5. The mod must fail closed on unsupported game/SDK builds, permissions, a disconnected player, a moved/changed chest, or absent native hooks. Do not claim success before a source/target/essence comparison against the engine's committed result.
-
-## 4. Dev.29 research checkpoint
-
-- Kiln **0.2.0-dev.29 was published 2026-11-16 00:04 UTC** and the user confirmed it installed on their Proton-hosted game; NoClip works again (upstream's release notes credit the user's report).
-- The dev.29 SDK now exposes `Ui.Values.SubscribeSlots`, `Ui.Screens.Current`, and `HudScreen.ShroudForge`. The candidate read-only v0.2.1 mod uses these **client-side** services to capture the forge's displayed slot inventory and a screen transition log. A slot drawn in the client UI is not necessarily a server item instance; client entity IDs cannot be reused as server IDs.
-- Dev.29 additionally publishes `Kiln.Systems` program wraps and typed hooks, which may support **later** server-side observation of `equipment_actions` and its gem handler without hard-coded RVAs. They are not used in the client probe, and no inventory writes have been authorized.
-- **Pending in-game acceptance:** confirmation that v0.2.1 reports `HudScreen.ShroudForge` and the forge's rendered slots (or an explicit capability failure). Until then, do not claim the screen's item-provider has been identified.
-
-## 4a. Research sequence and evidence needed
-
-- **Read-only client screen census:** verify the game reports `HudScreen.ShroudForge` while opening the user-placed forge. When an official dev.29 SDK arrives, use the **read-only** slot snapshot API to correlate drawn gem entries with the backpack. This alone does not add storage entries.
-- **Server gem-operation trace:** with explicit user consent, on a backed-up throwaway item, observe an actual `weaponGemAction` and inventory deltas for an operation; do not require destructive tests merely to infer the UI picker. Label action payload dwords as **uninterpreted** until field meanings are proven.
-- **Native handler analysis:** trace `equipment_actions` → gem handler `0x144bb0` on the *verified current* executable and find the validation/debit/commit path. Use Kiln's advanced hooks only after signature-based symbol qualification; do not reuse a build-specific RVA blindly.
-- **Client item-provider analysis:** identify the forge gem-list and eligibility predicate. Determine whether it can enumerate remote Magic Chest slot identities under the game's own source model, or whether a client-side proxy/overlay is necessary. Vanilla-compatible UI integration must be demonstrated rather than assumed.
-- **Transaction safety acceptance:** multiple visually identical gems with different levels; partially filled/full/refilled chests; spent essence versus upgrade failure; concurrent clients; disconnect/restart; same gem held in multiple worlds; insertion/extraction/recycling; limitations of unloaded bases. Fail closed and compare stable identities.
-
-## 5. Explicit decisions
-
-- **Reject proximity-loan design**, including retries, refill workarounds, and default/alternate chests. That architecture was in v0.1.x but is absent from the research build v0.2.0.
-- **No more changes to live inventory** until the native action and client selection path are understood.
-- **Keep PR #48 draft**, no merge/tag/release of a merely read-only probe or an unverified transaction implementation.
-- **Do not conflate** ShroudLink's historical `gemforge` proximity-lending module, the game's `HudScreen.ShroudForge`, and the `ShroudForge` ECS component. They are different things.
-
-## 6. Evidence and sources
-
-- User test output, 2026-11-15 21:23–21:24 UTC; relevant command lines and results are recorded in this conversation.
-- [Kiln UI API and UI slot inspection notes](https://github.com/frostdev-ops/kiln/blob/main/docs/kiln/ui.md) (dev.28 screen reflection, unreleased dev.29 slot inspection).
-- [Kiln native RE dossier, items §16](https://github.com/frostdev-ops/kiln/blob/main/docs/re/items.md) (equipment_actions and weapon-gem function).
-- [Kiln player action reflection](https://github.com/frostdev-ops/kiln/blob/main/docs/kiln/modding/player-states.md) (`weaponGemAction`).
-- [Kiln advanced hook API](https://github.com/frostdev-ops/kiln/blob/main/docs/kiln/hooks.md) (symbol-based hooks, build safety).
+- [Kiln issue #42](https://github.com/frostdev-ops/kiln/issues/42): completed; SDK candidate snapshot delivered.
+- [Kiln issue #61](https://github.com/frostdev-ops/kiln/issues/61): upstream API discussion of three remaining contracts.
+- [bisdat/kiln draft PR #1](https://github.com/bisdat/kiln/pull/1): former raw `play.models` probe, **superseded** by official snapshot API; it was never compiled/tested and should not be installed.
+- [bisdat/kiln-mods draft PR #48](https://github.com/bisdat/kiln-mods/pull/48): research mod remains read-only v0.2.1; no build, release, live inventory change or merge made for SDK 0.2.5.
