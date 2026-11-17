@@ -137,6 +137,7 @@ public sealed class GemForgeStorageMod : Mod
 
             var next = new HashSet<EntityId>();
             var count = 0;
+            string? refusal = null;
             foreach (var (chest, gems) in EligibleChests(baseId))
             {
                 // Never exceed Kiln's 256-offer limit for the player.
@@ -148,7 +149,7 @@ public sealed class GemForgeStorageMod : Mod
                 var offer = Gems.OfferChestGems(e.Player, chest, SourceOptions);
                 if (!offer.Ok)
                 {
-                    WarnOnce("chest offer refused: " + offer.Refusal);
+                    refusal ??= offer.Refusal;
                     continue;
                 }
                 if (offer.Gems.Count == 0) continue;
@@ -163,7 +164,8 @@ public sealed class GemForgeStorageMod : Mod
 
             if (next.Count > 0) _offered[e.Player] = next;
             else _offered.Remove(e.Player);
-            _lastWarning = null; // allow a future distinct failure to be logged once
+            if (refusal is null) _lastWarning = null;
+            else WarnOnce("chest offer refused: " + refusal);
         }
         catch (Exception ex)
         {
