@@ -1,7 +1,7 @@
 {
-  "adapter_version": "1.0.0",
-  "upstream_version": "0.31.2",
-  "upstream_sha256": "416b615ff854b6bd332074eb52731a4bc485fb510cc1779b772258dfeb5ec5fe",
+  "adapter_version": "1.0.1",
+  "upstream_version": "0.33.2",
+  "upstream_sha256": "96b95340c0f63cb5f49d853ac659cf66d3360293c80682f707f68a54e7d2201e",
   "tested_client_sha256": "5d9ef2f140b8ed49e30dbee655841b89d08baec20f799a1817e171a18a850c77",
   "gameplay_verified_upstream_version": "0.31.2"
 }
