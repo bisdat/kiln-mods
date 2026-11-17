@@ -40,13 +40,20 @@ class CompatibilityWorkflowContracts(unittest.TestCase):
         for name in ("validate-endless-*.py", "test-endless-*.py", "test-chest-*.py"):
             self.assertIn(f"'scripts/{name}'", s)
 
+    def test_four_mod_compatibility_matrix(self):
+        s = self.source
+        self.assertIn("mod: [SurvivalQoL, EndlessChests, NoClipToggle, BaseStationMagicStorage]", s)
+        self.assertIn('"BaseStationMagicStorage": "base-station-magic-storage-*.zip"', s)
+        self.assertIn("tests/base-station-magic-storage", s)
+        self.assertIn("all four mod builds and contract tests passed", s)
+
     def test_packaging_and_release_include_canonical_json(self):
         s = self.source
         filename = "endless-chests.catalogue.json"
         self.assertIn(f"cp EndlessChests/defaults/catalogue.json bin/Release/{filename}", s)
         self.assertIn(f"bin/Release/{filename}", s)
         self.assertIn(f"endless_assets = (\"endless-chests.defaults.ini\", \"{filename}\")", s)
-        self.assertIn("if len(published) != 8:", s)
+        self.assertIn("if len(published) != 10:", s)
         self.assertIn("python3 scripts/validate-endless-catalogue.py", self.normal)
         self.assertIn(f"bin/Release/{filename}", self.normal)
 
