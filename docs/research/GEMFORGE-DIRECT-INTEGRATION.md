@@ -35,6 +35,18 @@ Upstream's client disassembly identified the forge screen at RVA `0xcacb20`, lis
 
 These findings and the official API close the previous request [Kiln #42](https://github.com/frostdev-ops/kiln/issues/42); they do **not** provide an editable native provider or chest-source transaction.
 
+## Developer's prioritised next-patch design (17 November 2026) — **not shipped**
+
+In [Kiln issue #61](https://github.com/frostdev-ops/kiln/issues/61#issuecomment-6940602682), the developer says **all three gaps are now prioritised for the next patch**, and proposes an additive API design. These names **are provisional** and are not present in the latest verified runtime, **0.2.0-dev.29.14 / mod API 0.2.6**.
+
+1. `GemCraftOptions.GemHolder` (gem source) and `CarrierHolder` (weapon inventory), each defaulting to the player. The authoritative server re-reads and validates exact item/level/socket state and commits the native forge action across both inventories as one transaction. A refused transaction must move/consume **nothing**. Mod policy authorises eligible storage: **loaded** Magic Chest; use `Bases.Of(chest) == Bases.Of(player)` to restrict to the player's current base.
+2. A capability-gated **native GEMS grid provider**, with short-lived **server-minted opaque chest-slot/item-instance tokens**. The UI presents real chest gems alongside vanilla candidates; selection submits a token, which the server revalidates, rejecting stale, inaccessible or duplicate entries. Never fabricate `UiItemView` client entity IDs or replace the game UI.
+3. `GemCraftOptions.PayFrom` for player / specific chest / player's base Magic Chests (game's normal stock rule), and `ReturnTo` for removed-gem and recycling output destinations. The **game still decides Archaic Essence cost**; debit and item changes are atomic. A missing cost fails `NotEnough` without moving items.
+
+The developer explicitly notes names may change until release, and will provide the final API contract when shipped. **Do not compile against provisional members**, implement temporary backpack lending, or claim the native UI is now editable. The intended policy matches our requirements and does not need a separate custom UI or a cross-base remote-loading assumption.
+
+**Downstream action once released:** inspect the exact new `docs/kiln/services/gems-forge.md`, UI API and SDK source, then update draft PR #48 and test a single controlled socket transaction on a backed-up world, verifying source gem, weapon socket and Archaic Essence before/after. Do not merge or tag before acceptance.
+
 ## Remaining upstream contracts — tracked in Kiln #61
 
 1. **Cross-holder gem transaction:** safely combine a player-held carrier and an authorised chest's precise gem instance, with server-side validation and an atomic native socket operation. One `GemCraftOptions.Holder` cannot express two different owners.

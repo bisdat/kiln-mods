@@ -12,6 +12,8 @@ The user rejected all proximity loan/return behaviour: it caused items to remain
 
 Official references: [UI](https://github.com/frostdev-ops/kiln/blob/main/docs/kiln/ui-gemforge.md), [forge actions](https://github.com/frostdev-ops/kiln/blob/main/docs/kiln/services/gems-forge.md), [Gems guide](https://github.com/frostdev-ops/kiln/blob/main/docs/kiln/services/gems.md).
 
+**17 November 2026 development update:** the Kiln developer has prioritised **all three missing contracts** for the next patch: proposed `GemHolder`/`CarrierHolder`, a token-validated native GEMS grid provider, and `PayFrom`/`ReturnTo` for Archaic Essence and returned gems. See [the developer's API proposal](https://github.com/frostdev-ops/kiln/issues/61#issuecomment-6940602682). These are **not part of SDK 0.2.6**; do not write code against the proposed names yet.
+
 ## Next work and blockers
 
 1. **Upstream:** [Kiln issue #61](https://github.com/frostdev-ops/kiln/issues/61) requests authorised cross-holder gem operation, native GEMS list/selection extension and separate chest payment source. [Kiln #42](https://github.com/frostdev-ops/kiln/issues/42) is closed after delivery of the read-only list API.
