@@ -15,7 +15,7 @@ from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
 URL = "https://api.github.com/repos/frostdev-ops/kiln/releases?per_page=100"
-TAG = re.compile(r"^v(?P<version>\d+\.\d+\.\d+-dev\.\d+)$", re.ASCII)
+TAG = re.compile(r"^v(?P<version>\d+\.\d+\.\d+-dev\.\d+(?:\.\d+)*)$", re.ASCII)
 SHA = re.compile(r"^[0-9a-f]{40}$", re.ASCII)
 
 
