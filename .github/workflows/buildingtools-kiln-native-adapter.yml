@@ -35,16 +35,36 @@ jobs:
           print("upstream="+p["upstream_version"])
           print("checksum="+p["upstream_sha256"])
           PY
+      - name: Find checksum asset for the exact pinned upstream release
+        id: upstream_assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+          UPSTREAM: ${{ steps.pin.outputs.upstream }}
+        run: |
+          set -euo pipefail
+          gh api "repos/AleksanderWojtal-CC/Enshrouded-BuildingTools/releases/tags/v$UPSTREAM" \
+            > /tmp/building-tools-upstream-release.json
+          python3 BuildingToolsKiln/release_assets.py \
+            /tmp/building-tools-upstream-release.json > /tmp/building-tools-assets.env
+          grep -Fx "version=$UPSTREAM" /tmp/building-tools-assets.env
+          grep -Fx 'ready=true' /tmp/building-tools-assets.env
+          cat /tmp/building-tools-assets.env >> "$GITHUB_OUTPUT"
       - name: Download official pinned upstream ZIP and checksum
         env:
           UPSTREAM: ${{ steps.pin.outputs.upstream }}
           PIN: ${{ steps.pin.outputs.checksum }}
+          CHECKSUM_ASSET: ${{ steps.upstream_assets.outputs.checksum_asset }}
         run: |
           set -euo pipefail
           BASE="https://github.com/AleksanderWojtal-CC/Enshrouded-BuildingTools/releases/download/v$UPSTREAM"
+          mkdir -p /tmp/buildingtools-official-checksums
           curl -fsSL --retry 3 "$BASE/EnshroudedBuildingTools-$UPSTREAM.zip" -o "/tmp/EnshroudedBuildingTools-$UPSTREAM.zip"
-          curl -fsSL --retry 3 "$BASE/EnshroudedBuildingTools-$UPSTREAM.zip.sha256" -o "/tmp/EnshroudedBuildingTools-$UPSTREAM.zip.sha256"
-          printf '%s  %s\n' "$PIN" "/tmp/EnshroudedBuildingTools-$UPSTREAM.zip" | sha256sum --check
+          curl -fsSL --retry 3 "$BASE/$CHECKSUM_ASSET" -o "/tmp/buildingtools-official-checksums/$CHECKSUM_ASSET"
+          python3 BuildingToolsKiln/official_checksum.py \
+            --archive "/tmp/EnshroudedBuildingTools-$UPSTREAM.zip" \
+            --checksum "/tmp/buildingtools-official-checksums/$CHECKSUM_ASSET" \
+            --normalized "/tmp/EnshroudedBuildingTools-$UPSTREAM.zip.sha256" \
+            --expected-sha256 "$PIN"
       - name: Produce versioned install ZIP and checksum
         env:
           ADAPTER: ${{ steps.pin.outputs.adapter }}
