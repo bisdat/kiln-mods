@@ -64,6 +64,12 @@ Standalone data-only Kiln mod v0.1.0: changes `Tool_T6_FishingRod_epic` Fishing 
 
 Standalone Kiln mod v0.1.1 (backtick default following the accepted v0.1.0 toggle) for Kiln 0.2.0-dev.27 or newer. **backtick key** toggles Kiln's native NoClip with HUD feedback; remap the shortcut under Kiln → Keys. Unlike implementing separate collision handling, this mod delegates flight and safe-position recovery to Kiln. Hosted single-player uses the authoritative world tick; optional multiplayer requests are checked against Kiln's NoClip admin permission. Kiln's native NoClip and the initial toggle passed in-game on Bazzite/Proton. If an earlier keybinding was saved, reset it under Kiln → Keys to adopt the backtick default. The backtick shortcut was also confirmed in-game on Bazzite/Proton.
 
+## Base Station Magic Storage — native production automation (test candidate)
+
+[User guide](BaseStationMagicStorage/README.md) | [Candidate build](.github/workflows/base-station-magic-storage.yml) | [Issue #50](https://github.com/bisdat/kiln-mods/issues/50)
+
+An independent mod using Kiln API 0.2.6 to auto-fill FactoryStations from **their own base's Magic Chests** and collect finished outputs into deposit-enabled chests. Off by default; an admin can opt in a **single station** for testing, then deliberately enable the entire base with **bstation all on**. It only collects outputs into dedicated Magic Chests named **BSMS Output** (or BSMS Output 2), preventing accidental delivery into an Endless Chests **Empty** chest. These outputs become shared crafting stock for other stations and the blacksmith. It does not borrow items through the player's backpack, change a recipe or a station's stop state, or pretend the Gem Forge or hand-crafting bench is a FactoryStation. In-game acceptance is pending; no public release.
+
 ## Gem Forge Magic Storage — automatic native integration v1.0.0
 
 [Installation and feature guide](GemForgeStorage/README.md) | [Build workflow](.github/workflows/gemforge-storage.yml) | [Releases](https://github.com/bisdat/kiln-mods/releases)

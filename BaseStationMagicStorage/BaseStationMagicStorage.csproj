@@ -1,0 +1,15 @@
+<Project Sdk="Kiln.Sdk/0.2.0-dev.29.14">
+  <PropertyGroup>
+    <KilnModId>base-station-magic-storage</KilnModId>
+    <KilnModName>Base Station Magic Storage</KilnModName>
+    <Version>0.1.3</Version>
+    <Authors>bisdat</Authors>
+    <Description>Opt-in Magic Chest automatic supply and output collection for production stations.</Description>
+    <PackageProjectUrl>https://github.com/bisdat/kiln-mods</PackageProjectUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <KilnSide>server</KilnSide>
+    <KilnClients>none</KilnClients>
+    <KilnServices>Blocks;Items;Saves;Players;Chat</KilnServices>
+    <KilnGameIds>None</KilnGameIds>
+  </PropertyGroup>
+</Project>

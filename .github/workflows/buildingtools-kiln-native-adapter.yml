@@ -35,16 +35,36 @@ jobs:
           print("upstream="+p["upstream_version"])
           print("checksum="+p["upstream_sha256"])
           PY
+      - name: Find checksum asset for the exact pinned upstream release
+        id: upstream_assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+          UPSTREAM: ${{ steps.pin.outputs.upstream }}
+        run: |
+          set -euo pipefail
+          gh api "repos/AleksanderWojtal-CC/Enshrouded-BuildingTools/releases/tags/v$UPSTREAM" \
+            > /tmp/building-tools-upstream-release.json
+          python3 BuildingToolsKiln/release_assets.py \
+            /tmp/building-tools-upstream-release.json > /tmp/building-tools-assets.env
+          grep -Fx "version=$UPSTREAM" /tmp/building-tools-assets.env
+          grep -Fx 'ready=true' /tmp/building-tools-assets.env
+          cat /tmp/building-tools-assets.env >> "$GITHUB_OUTPUT"
       - name: Download official pinned upstream ZIP and checksum
         env:
           UPSTREAM: ${{ steps.pin.outputs.upstream }}
           PIN: ${{ steps.pin.outputs.checksum }}
+          CHECKSUM_ASSET: ${{ steps.upstream_assets.outputs.checksum_asset }}
         run: |
           set -euo pipefail
           BASE="https://github.com/AleksanderWojtal-CC/Enshrouded-BuildingTools/releases/download/v$UPSTREAM"
+          mkdir -p /tmp/buildingtools-official-checksums
           curl -fsSL --retry 3 "$BASE/EnshroudedBuildingTools-$UPSTREAM.zip" -o "/tmp/EnshroudedBuildingTools-$UPSTREAM.zip"
-          curl -fsSL --retry 3 "$BASE/EnshroudedBuildingTools-$UPSTREAM.zip.sha256" -o "/tmp/EnshroudedBuildingTools-$UPSTREAM.zip.sha256"
-          printf '%s  %s\n' "$PIN" "/tmp/EnshroudedBuildingTools-$UPSTREAM.zip" | sha256sum --check
+          curl -fsSL --retry 3 "$BASE/$CHECKSUM_ASSET" -o "/tmp/buildingtools-official-checksums/$CHECKSUM_ASSET"
+          python3 BuildingToolsKiln/official_checksum.py \
+            --archive "/tmp/EnshroudedBuildingTools-$UPSTREAM.zip" \
+            --checksum "/tmp/buildingtools-official-checksums/$CHECKSUM_ASSET" \
+            --normalized "/tmp/EnshroudedBuildingTools-$UPSTREAM.zip.sha256" \
+            --expected-sha256 "$PIN"
       - name: Produce versioned install ZIP and checksum
         env:
           ADAPTER: ${{ steps.pin.outputs.adapter }}
@@ -106,16 +126,22 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v4
-      - name: Gate publication on explicit upstream gameplay acceptance
+      - name: Gate publication on gameplay verification or version-specific owner approval
         id: pin
         run: |
           set -euo pipefail
           python3 - <<'PY' >> "$GITHUB_OUTPUT"
           import json
           p=json.load(open("BuildingToolsKiln/release.json"))
-          assert p["upstream_version"]==p["gameplay_verified_upstream_version"], "New upstream version requires manual game acceptance before release"
+          verified=p["upstream_version"]==p["gameplay_verified_upstream_version"]
+          manual=p.get("release_approved_upstream_version")==p["upstream_version"]
+          assert verified or manual, "New upstream version requires gameplay verification or explicit version-specific owner release approval"
+          if manual and not verified:
+              assert p.get("release_approval_note"), "Unverified owner approval requires an explanatory release note"
           print("adapter="+p["adapter_version"])
           print("upstream="+p["upstream_version"])
+          print("prerelease="+("false" if verified else "true"))
+          print("release_basis="+("gameplay_verified" if verified else "owner_approved_unverified"))
           PY
       - name: Create approved version tag, or verify existing tag
         env:
@@ -142,14 +168,12 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           ADAPTER: ${{ steps.pin.outputs.adapter }}
           UPSTREAM: ${{ steps.pin.outputs.upstream }}
+          PRERELEASE: ${{ steps.pin.outputs.prerelease }}
+          RELEASE_BASIS: ${{ steps.pin.outputs.release_basis }}
         run: |
           set -euo pipefail
           (cd dist && sha256sum --check "building-tools-kiln-$ADAPTER.zip.sha256")
           TAG="building-tools-kiln-v$ADAPTER"
-          if gh release view "$TAG" >/dev/null 2>&1; then
-            echo "Existing release retained; no assets overwritten"
-            exit 0
-          fi
           cat > /tmp/buildingtools-release.md <<NOTES
           Building Tools for Kiln $ADAPTER. Official upstream Building Tools
           $UPSTREAM by Aleksander Wojtal, MIT-licensed, unchanged DLL.
@@ -160,9 +184,41 @@ jobs:
           Source and upstream update process:
           https://github.com/bisdat/kiln-mods/tree/main/BuildingToolsKiln
           NOTES
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            # Promotion is allowed only when the very same packaged bytes
+            # have now been accepted in game; the tag and assets remain intact.
+            current_pre="$(gh release view "$TAG" --json isPrerelease --jq '.isPrerelease')"
+            if [[ "$PRERELEASE" == "false" && "$current_pre" == "true" ]]; then
+              mkdir -p /tmp/building-tools-published
+              gh release download "$TAG" -p "building-tools-kiln-$ADAPTER.zip" -D /tmp/building-tools-published
+              cmp "dist/building-tools-kiln-$ADAPTER.zip" "/tmp/building-tools-published/building-tools-kiln-$ADAPTER.zip"
+              cat >> /tmp/buildingtools-release.md <<'ACCEPTANCE'
+
+          GAMEPLAY ACCEPTANCE: On 17 November 2026 the user confirmed
+          Building Tools 0.33.2 working in-game. Ingredient-deduction counts
+          and save/reload conservation were not separately reported.
+          ACCEPTANCE
+              gh release edit "$TAG" --prerelease=false --notes-file /tmp/buildingtools-release.md
+              echo "Promoted accepted, byte-identical release; no assets overwritten"
+            else
+              echo "Existing release retained; no assets overwritten"
+            fi
+            exit 0
+          fi
+          release_flags=()
+          if [[ "$PRERELEASE" == "true" ]]; then
+            cat >> /tmp/buildingtools-release.md <<'WARNING'
+
+          RELEASE STATUS: OWNER-APPROVED PRERELEASE; GAMEPLAY VERIFICATION PENDING.
+          This upstream version has not been reported as tested in game.
+          Back up saves and verify Magic Chest ingredient deductions and
+          save/reload consistency before routine use.
+          WARNING
+            release_flags+=(--prerelease)
+          fi
           gh release create "$TAG" \
             "dist/building-tools-kiln-$ADAPTER.zip" \
             "dist/building-tools-kiln-$ADAPTER.zip.sha256" \
-            --verify-tag --latest=false \
+            --verify-tag --latest=false "${release_flags[@]}" \
             --title "Building Tools for Kiln $ADAPTER" \
             --notes-file /tmp/buildingtools-release.md

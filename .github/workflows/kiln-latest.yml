@@ -20,6 +20,8 @@ on:
       - 'EndlessChests/**'
       - 'NoClipToggle/**'
       - 'tests/noclip-toggle/**'
+      - 'BaseStationMagicStorage/**'
+      - 'tests/base-station-magic-storage/**'
   pull_request:
     paths:
       - '.github/workflows/kiln-latest.yml'
@@ -34,6 +36,8 @@ on:
       - 'tests/survival-qol/**'
       - 'NoClipToggle/**'
       - 'tests/noclip-toggle/**'
+      - 'BaseStationMagicStorage/**'
+      - 'tests/base-station-magic-storage/**'
   schedule:
     - cron: '17,47 * * * *'
   workflow_dispatch:
@@ -114,7 +118,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        mod: [SurvivalQoL, EndlessChests, NoClipToggle]
+        mod: [SurvivalQoL, EndlessChests, NoClipToggle, BaseStationMagicStorage]
     runs-on: ubuntu-24.04
     env:
       GITHUB_TOKEN: ${{ github.token }}
@@ -146,6 +150,9 @@ jobs:
               ;;
             NoClipToggle)
               python3 -m unittest discover -s tests/noclip-toggle -p 'test_*.py' -v
+              ;;
+            BaseStationMagicStorage)
+              python3 -m unittest discover -s tests/base-station-magic-storage -p 'test_*.py' -v
               ;;
           esac
 
@@ -196,7 +203,7 @@ jobs:
       KILN_RELEASE_VERSION: ${{ needs.check.outputs.release_version }}
       EXPECTED_SOURCE_SHA: ${{ needs.check.outputs.source_sha }}
     steps:
-      - name: Download all three completed, verified packages
+      - name: Download all four completed, verified packages
         uses: actions/download-artifact@v4
         with:
           pattern: kiln-${{ needs.check.outputs.release_version }}-*
@@ -218,6 +225,7 @@ jobs:
               "SurvivalQoL": "survival-qol-*.zip",
               "EndlessChests": "endless-chests-kiln-*.zip",
               "NoClipToggle": "noclip-toggle-*.zip",
+              "BaseStationMagicStorage": "base-station-magic-storage-*.zip",
           }
           version = os.environ["KILN_RELEASE_VERSION"]
           tag = os.environ["KILN_RELEASE_TAG"]
@@ -270,7 +278,7 @@ jobs:
                   raise SystemExit(f"Duplicate distribution asset: {name}")
               copy2(asset, dest)
               published.append(name)
-          if len(published) != 8:
+          if len(published) != 10:
               raise SystemExit(f"Incorrect asset count: {published}")
           print(f"Verified official Kiln {tag}@{kiln_sha} for mod source {source_sha}")
           for asset in published:
@@ -291,9 +299,9 @@ jobs:
           body: |
             Automated compatibility build for **official Kiln ${{ needs.check.outputs.release_tag }}**.
 
-            - **Mods built:** Survival QoL, Endless Chests and NoClip Toggle. Cross-base Storage research is archived, not shipped.
+            - **Mods built:** Survival QoL, Endless Chests, NoClip Toggle and Base Station Magic Storage. Cross-base Storage research is archived, not shipped.
             - **Mod source:** ${{ needs.check.outputs.source_sha }}
-            - **Checks:** release tag matches its published Git commit, official NuGet checksums verified, all three mod builds and contract tests passed. Endless Chests canonical JSON item IDs and the 100 audited repairs were validated against this exact Kiln source.
+            - **Checks:** release tag matches its published Git commit, official NuGet checksums verified, all four mod builds and contract tests passed. Endless Chests canonical JSON item IDs and the 100 audited repairs were validated against this exact Kiln source.
             - **Provenance:** separate kiln-sdk-provenance-<mod>.json per mod, including the exact Kiln release, Git SHA and official SDK hashes.
 
             These are development compatibility prereleases, **not stable mod version upgrades or in-game acceptance**. Install manually through Kiln Library and back up saves before testing.

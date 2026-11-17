@@ -39,22 +39,17 @@ jobs:
         id: checksum
         env:
           VERSION: ${{ steps.latest.outputs.version }}
+          CHECKSUM_ASSET: ${{ steps.latest.outputs.checksum_asset }}
         run: |
           set -euo pipefail
           BASE="https://github.com/AleksanderWojtal-CC/Enshrouded-BuildingTools/releases/download/v$VERSION"
+          mkdir -p /tmp/buildingtools-official-checksums
           curl -fsSL --retry 3 "$BASE/EnshroudedBuildingTools-$VERSION.zip" -o "/tmp/EnshroudedBuildingTools-$VERSION.zip"
-          curl -fsSL --retry 3 "$BASE/EnshroudedBuildingTools-$VERSION.zip.sha256" -o "/tmp/EnshroudedBuildingTools-$VERSION.zip.sha256"
-          python3 - <<'PY' >> "$GITHUB_OUTPUT"
-          import hashlib,os,pathlib,re
-          version=os.environ["VERSION"]
-          root=pathlib.Path("/tmp")
-          text=(root/f"EnshroudedBuildingTools-{version}.zip.sha256").read_text().strip()
-          match=re.fullmatch(r"([0-9a-fA-F]{64})(?:\s+\*?[^\r\n]+)?",text)
-          assert match, "Invalid official upstream checksum"
-          actual=hashlib.sha256((root/f"EnshroudedBuildingTools-{version}.zip").read_bytes()).hexdigest()
-          assert actual==match.group(1).lower(), "Upstream checksum mismatch"
-          print("sha256="+actual)
-          PY
+          curl -fsSL --retry 3 "$BASE/$CHECKSUM_ASSET" -o "/tmp/buildingtools-official-checksums/$CHECKSUM_ASSET"
+          python3 BuildingToolsKiln/official_checksum.py \
+            --archive "/tmp/EnshroudedBuildingTools-$VERSION.zip" \
+            --checksum "/tmp/buildingtools-official-checksums/$CHECKSUM_ASSET" \
+            --normalized "/tmp/EnshroudedBuildingTools-$VERSION.zip.sha256" >> "$GITHUB_OUTPUT"
       - name: Prepare draft profile update, never transfer gameplay acceptance
         if: steps.latest.outputs.ready == 'true'
         id: propose
