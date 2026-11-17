@@ -15,6 +15,11 @@ public sealed class BaseStationMagicStorageMod : Mod
     private const int MaxTarget = 20;
     private const int MaxStationsPerScan = 128;
 
+    // Only explicitly named, unbound Magic Chests are acceptable output buffers.
+    // Endless Chests can automatically DELETE the contents of an "Empty" chest:
+    // never send finished products to arbitrary storage chosen by FindRoomFor.
+    private const string OutputSinkName = "BSMS Output";
+
     private sealed class Settings
     {
         public List<BasePolicy> Bases { get; set; } = [];
@@ -51,7 +56,7 @@ public sealed class BaseStationMagicStorageMod : Mod
         _settingsFile = Path.Combine(Context.DataDirectory, "base-station-magic-storage.json");
         LoadSettings();
         _command = Commands.Register("bstation", HandleCommand, CommandPermission.Admin,
-            usage: "status|bases|list|plan [n]|enable [n]|disable|target n|fill on|off|collect on|off|exclude|include",
+            usage: "status|bases|list|sinks|stock|plan [n]|enable [n]|disable|target n|fill on|off|collect on|off|exclude|include",
             description: "Opt-in Magic Chest automation of base production stations.");
         Context.Tick.Pre += OnTick;
         Log.Info("Base Station Magic Storage v0.1.0 loaded: automation OFF until bstation enable; " +
@@ -145,6 +150,29 @@ public sealed class BaseStationMagicStorageMod : Mod
         return player;
     }
 
+    // This name is deliberately not an Endless Chests catalogue name.
+    // It is still the owner's responsibility to leave the chest unbound from
+    // other automatic clearing/refilling mods.
+    private static bool OutputName(string? name) =>
+        name is not null && (name.Equals(OutputSinkName, StringComparison.OrdinalIgnoreCase) ||
+            name.StartsWith(OutputSinkName + " ", StringComparison.OrdinalIgnoreCase));
+
+    private static bool CanAccept(EntityId chest, ItemId item)
+    {
+        var inv = Items.Read(chest);
+        if (inv is not { Initialized: true } || inv.IsPlayer || inv.IsNpc) return false;
+        var max = Items.Get(item)?.MaxStack ?? 1;
+        return inv.Slots.Any(slot => slot.IsEmpty || (slot.Item == item && slot.Count < max));
+    }
+
+    private static IReadOnlyList<EntityId> OutputSinks(BaseId b)
+    {
+        if (!Items.ContainerNamesAvailable) return [];
+        return Bases.Storage(b, deposit: true)
+            .Where(c => OutputName(Items.ContainerName(c)))
+            .ToArray();
+    }
+
     private static int Crafts(string value) =>
         int.TryParse(value, out var n) && n is >= 1 and <= MaxTarget
             ? n : throw new CommandException($"Crafts must be between 1 and {MaxTarget}.");
@@ -162,6 +190,7 @@ public sealed class BaseStationMagicStorageMod : Mod
                     $"world={world ?? "none"}, stations={Stations.Available}, bases={Bases.Available}, " +
                     $"scanned={Stations.Scanned}, read={Capabilities.Is(Stations.ReadCapability)}, " +
                     $"fill={Capabilities.Is(Stations.FillCapability)}, items.move={Capabilities.Is("items.move")}, " +
+                    $"items.names={Items.ContainerNamesAvailable}, " +
                     $"enabled bases here={_settings.Bases.Count(p => p.World == world && p.Enabled)}. " +
                     "All bases are disabled by default.");
                 return;
@@ -187,11 +216,43 @@ public sealed class BaseStationMagicStorageMod : Mod
             var home = Bases.Of(who) ?? throw new CommandException("Stand inside a Flame Altar base.");
             var existing = Policy(home, w);
 
+            if (verb == "sinks")
+            {
+                if (!Items.ContainerNamesAvailable)
+                    throw new CommandException("Kiln items.names is unavailable; output collection is disabled.");
+                var sinks = OutputSinks(home.Id);
+                Say($"Base {home.Id}: {sinks.Count} dedicated output chests (must be renamed '{OutputSinkName}' or '{OutputSinkName} 2').");
+                foreach (var chest in sinks.Take(20))
+                {
+                    var inv = Items.Read(chest);
+                    Say($"  {chest}: '{Items.ContainerName(chest)}', {inv?.UsedSlots ?? 0} used slot(s), deposit enabled.");
+                }
+                if (sinks.Count > 20) Say($"  plus {sinks.Count - 20} additional output chests.");
+                return;
+            }
+
+            if (verb == "stock")
+            {
+                var stock = Bases.Stock(home.Id);
+                var produced = Stations.InBase(home.Id).Select(id => Stations.Read(id))
+                    .Where(si => si is { SelectedRecipe: not 0 })
+                    .SelectMany(si => Stations.Recipe(si!.SelectedRecipe)?.Outputs ?? [])
+                    .Select(output => output.Item)
+                    .Distinct()
+                    .Take(48)
+                    .ToArray();
+                Say($"Base {home.Id}: {stock.Count} item types in the base's Magic Chest stock; " +
+                    $"{produced.Length} distinct types from selected production recipes.");
+                foreach (var item in produced)
+                    Say($"  produced item {item}: Magic Chest stock now {stock.GetValueOrDefault(item)}");
+                return;
+            }
+
             if (verb == "list")
             {
                 Say($"{home.Id}: stations={home.StationCount}, Magic stock={home.StorageCount}, " +
                     $"water={home.WaterCount}, enabled={existing?.Enabled == true}.");
-                foreach (var id in Stations.InBase(home.Id).Take(24))
+                foreach (var id in Stations.InBase(home.Id).Take(64))
                 {
                     var s = Stations.Read(id);
                     if (s is null) continue;
@@ -200,7 +261,7 @@ public sealed class BaseStationMagicStorageMod : Mod
                         $"outputs={s.Outputs.Count}, stopped={s.StoppedByPlayer}, " +
                         $"excluded={existing?.Excluded.Contains(Key(s), StringComparer.Ordinal) == true}");
                 }
-                if (home.StationCount > 24) Say("Only first 24 stations shown.");
+                if (home.StationCount > 64) Say("Only first 64 stations shown.");
                 return;
             }
 
@@ -221,7 +282,7 @@ public sealed class BaseStationMagicStorageMod : Mod
             }
 
             if (verb is not ("enable" or "disable" or "target" or "fill" or "collect" or "exclude" or "include"))
-                throw new CommandException("Use status|bases|list|plan [n]|enable [n]|disable|target n|fill on|off|collect on|off|exclude|include.");
+                throw new CommandException("Use status|bases|list|sinks|stock|plan [n]|enable [n]|disable|target n|fill on|off|collect on|off|exclude|include.");
             var p2 = AddOrGetPolicy(home, w);
             switch (verb)
             {
@@ -279,8 +340,13 @@ public sealed class BaseStationMagicStorageMod : Mod
         _elapsed += Math.Clamp(tick.WallDelta.TotalSeconds, 0, 1);
         if (_elapsed < ScanSeconds) return;
         _elapsed = 0;
-        if (!Stations.Available || !Bases.Available || !Stations.Scanned ||
+        if (!Stations.Available || !Bases.Available || !Capabilities.Is(Stations.ReadCapability) ||
             !Capabilities.Is(Stations.FillCapability) || !Capabilities.Is("items.move")) return;
+        // Kiln's Scanned flag is set by its first station enumeration (or an
+        // active station-event watcher). Merely waiting for Scanned would leave
+        // automation permanently idle after a fresh game start.
+        _ = Stations.All();
+        if (!Stations.Scanned) return;
         if (WorldId() is { } world) _ = Scan(world);
     }
 
@@ -322,8 +388,34 @@ public sealed class BaseStationMagicStorageMod : Mod
             if (s is null || s.Base != @base || p.Excluded.Contains(Key(s), StringComparer.Ordinal)) return;
             if (p.AutoCollect && s.Outputs.Count > 0)
             {
-                var collect = await Stations.CollectToBase(id);
-                Report(id, "collect", collect);
+                if (!Items.ContainerNamesAvailable)
+                    Warn(id, "collect", "items.names unavailable; output remains safely at station.");
+                else
+                {
+                    var sinks = OutputSinks(@base);
+                    if (sinks.Count == 0)
+                        Warn(id, "collect", "No dedicated output Magic Chest. Rename an unbound, deposit-enabled Magic Chest 'BSMS Output'.");
+                    else
+                    {
+                        foreach (var item in s.Outputs.Select(slot => slot.Item).Distinct().ToArray())
+                        {
+                            foreach (var chest in sinks)
+                            {
+                                if (_stopping || !_configOk || WorldId() != world || !p.Enabled || !p.AutoCollect)
+                                    return;
+                                // A renamed, moved or deposit-disabled chest must never
+                                // receive anything after the previous snapshot.
+                                if (!Bases.Storage(@base, deposit: true).Contains(chest) ||
+                                    !OutputName(Items.ContainerName(chest)) || !CanAccept(chest, item))
+                                    continue;
+                                var result = await Stations.Collect(id, chest, item);
+                                Report(id, "collect", result);
+                                if (Stations.Read(id)?.Outputs.All(slot => slot.Item != item) == true)
+                                    break;
+                            }
+                        }
+                    }
+                }
             }
             if (_stopping || WorldId() != world || !p.Enabled || !p.AutoFill) return;
             s = Stations.Read(id); // refresh after async collection
