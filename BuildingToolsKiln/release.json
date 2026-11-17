@@ -3,5 +3,7 @@
   "upstream_version": "0.33.2",
   "upstream_sha256": "96b95340c0f63cb5f49d853ac659cf66d3360293c80682f707f68a54e7d2201e",
   "tested_client_sha256": "5d9ef2f140b8ed49e30dbee655841b89d08baec20f799a1817e171a18a850c77",
-  "gameplay_verified_upstream_version": "0.31.2"
+  "gameplay_verified_upstream_version": "0.31.2",
+  "release_approved_upstream_version": "0.33.2",
+  "release_approval_note": "Owner explicitly requested merge and versioned release on 2026-11-17. Gameplay acceptance of upstream v0.33.2 has not been reported; publish as a prerelease only."
 }

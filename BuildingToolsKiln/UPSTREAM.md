@@ -57,10 +57,16 @@ and SHA256, retaining the licence and keeping Kiln's loader intact.
    with the install ZIP and checksum. No existing `BuildingTools.ini`
    settings are packaged or overwritten.
 
-**Safety gate:** The production release job refuses publication when
-`upstream_version` differs from `gameplay_verified_upstream_version`.
-The scheduled update checker can never silently merge, install, tag or
-publish a new upstream DLL.
+**Safety gate:** Production publication normally requires
+`gameplay_verified_upstream_version` to equal `upstream_version`.
+If the repository owner **explicitly requests release of an unverified
+version**, a separate version-specific `release_approved_upstream_version`
+and `release_approval_note` may be recorded. In that case the release is
+automatically marked **prerelease**, with its missing gameplay verification
+disclosed in the release notes. This approval is NOT gameplay verification
+and must never advance `gameplay_verified_upstream_version`.
+New upstream versions do not inherit either approval. The scheduled update
+checker can never silently merge, install, tag or publish a new upstream DLL.
 
 If GitHub repository settings prevent Actions from opening draft PRs,
 the workflow attempts to create an issue with the proposed branch link
