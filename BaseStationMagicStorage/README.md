@@ -1,6 +1,6 @@
-# Base Station Magic Storage — v0.1.3 per-station configuration candidate
+# Base Station Magic Storage — v0.1.3 station-type switches candidate
 
-Standalone Kiln mod for all supported autonomous production stations (FactoryStation: charcoal kilns, smelters, looms, grinders and seed beds) inside a Flame Altar base. Requires Kiln **0.2.0-dev.29.14 / mod API 0.2.6**. v0.1.2 has passed in-game acceptance and remains the published stable release. v0.1.3 adds editable per-station switches and requires separate in-game acceptance before merge.
+Standalone Kiln mod for all supported autonomous production stations (FactoryStation: charcoal kilns, smelters, looms, grinders and seed beds) inside a Flame Altar base. Requires Kiln **0.2.0-dev.29.14 / mod API 0.2.6**. v0.1.2 is the stable released version. v0.1.3 is a test candidate that adds 26 global station-type checkboxes to Kiln's Mods > Base Station Magic Storage configuration menu.
 
 ## Behaviour
 
@@ -9,12 +9,50 @@ Standalone Kiln mod for all supported autonomous production stations (FactorySta
 - Moves finished outputs through native Stations.Collect into **explicitly marked, deposit-enabled Magic Chests** named **crafting output**, optionally followed by any suffix. Matching ignores case and whitespace anywhere in the name. Those chests are then part of the base's normal crafting stock, making charcoal and other outputs immediately available to other production stations and to the blacksmith's native base-stock crafting. It leaves leftovers, inputs and ordinary chests alone.
 - **No output destination is selected automatically.** If there is no suitably named Magic Chest, or its name cannot be read reliably, finished products stay safely in the producing station. This prevents accidental deposits into Endless Chests named **Empty**, which are deliberately cleared by that mod.
 - Does not change recipe, select options, start/stop states or user decisions. Stopped, stop-pending and no-recipe stations are not auto-filled.
-- **Two-stage opt-in for safety:** enabling a base does not activate all its production stations. Select individual stations using **bstation station on** first. After testing, explicitly activate every production station in that base with **bstation all on**. Per-station `enabled`, `fill`, and `collect` switches override the base-wide policy, so an oven can retain its products while other stations collect. Existing exclusions still apply. Each scan is serialized (up to 128 stations) and repeated errors are throttled.
+- **26 type-level checkboxes:** each switch controls **every instance** of a station type in every base. Turning **Oven** OFF disables BSMS fill and collection at all ovens: cooked food stays at the ovens, with ordinary manual crafting unchanged. Turning it ON resumes the base's chosen automation. All default ON to preserve v0.1.2 behaviour. Existing base opt-in and legacy exclusion policies remain authoritative. Each scan is serialized (up to 128 stations) and repeated errors are throttled.
 - Fails closed when two configured altar policies merge into one base, or when its settings file is invalid.
 
 **This is base-local, not cross-base.** The API works on a station's own Flame Altar base. Even when Building Tools shows chests from another base, that is not part of Kiln.Bases stock.
 
 FactoryStations are not ordinary hand-crafting workbenches or NPC crafting (which already use the game's base-stock path), and not the Gem Forge (see upstream [Kiln #61](https://github.com/frostdev-ops/kiln/issues/61)). No borrowed inventory, external loader, game-memory patches or custom UI.
+
+
+## In-game settings: one switch per production-station type
+
+Open the game's **Kiln Mods menu** (Insert or Mods in the game menu), then open **Configs → Base Station Magic Storage**. The 26 station types are individual checkboxes, exactly like the Survival QoL options. Click **Apply** to save changes. A checked box (ON) permits BSMS automation for **all instances** of that type. An unchecked box (OFF) prevents automatic filling **and** output collection for that entire type, everywhere in the world. Manual vanilla production continues normally.
+
+**Example:** uncheck **Oven** and Apply. All ovens retain finished food, while enabled smelters, charcoal kilns and other types can continue sending finished items to the named Magic Chest `crafting output`.
+
+Settings are global across bases. They are stored by Kiln's config system in its active profile's `configDir`, in `base-station-magic-storage.json`, **not** the per-world/base policy JSON under the mod's data folder. The existing base settings (`autoFill: false`, `autoCollect: true`, `allStations: true`) are unchanged by these new switches. A type ON cannot override a base that is disabled, the base's fill/collect switches, or a legacy per-instance exclusion. All 26 switches default ON, so upgrading does not unexpectedly change collections. Unknown future station templates are not automated until explicitly supported and exposed in the menu.
+
+**Production station options:**
+
+- Alchemy Station (`AlchemyStation`)
+- Kiln (`Kiln`)
+- Carding Machine (`CardingMachine`)
+- Blast Furnace (`BlastFurnace`)
+- Coffee Brewer (`CoffeeBrewer`)
+- Seedling Station (`SeedlingStation`)
+- Improved Grinder (`ImprovedGrinder`)
+- Drying Rack (`DryingRack`)
+- Forge (`Forge`)
+- Oven (`Oven`)
+- Smelter (`Smelter`)
+- Table Saw (`TableSaw`)
+- Hand Grinder (`HandGrinder`)
+- Spinning Wheel (`SpinningWheel`)
+- Loom (`Loom`)
+- Hand Spindle (`HandSpindle`)
+- Honey Station (`HoneyStation`)
+- Laboratory (`Laboratory`)
+- Infusion Station (`InfusionStation`)
+- Fireplace (`Fireplace`)
+- Coloring Station (`ColoringStation`)
+- Coffee Roaster (`CoffeeRoaster`)
+- Ectoplasm Press (`EctoplasmPress`)
+- Charcoal Kiln (`CharcoalKiln`)
+- Tanning Station (`TanningStation`)
+- Medieval Grill (`MedievalGrill`)
 
 ## Commands (admin only)
 
@@ -22,16 +60,11 @@ FactoryStations are not ordinary hand-crafting workbenches or NPC crafting (whic
 |---|---|
 | bstation status | Read-only capability, world, configuration and enabled-base status |
 | bstation bases | Read-only all-base inventory and policy overview |
-| bstation list | Read-only station listing with persistent keys, status, and per-station switches (up to 64) |
-| bstation config | Show settings path and currently registered stations |
-| bstation config sync | Generate missing station entries in JSON from all discovered production stations in current base; preserve previous settings |
-| bstation reload | Reload edited JSON immediately; invalid files safely disable automation |
+| bstation list | Read-only stations in the base where you stand (up to 64), including `type-enabled` from Kiln Configs |
 | bstation sinks | Read-only eligible Magic Chest output destinations in this base |
 | bstation stock | Read-only current Magic Chest stock of the items produced by the base's selected station recipes |
 | bstation plan [n] | **Read-only** fill plan for nearest production station within 12 metres |
-| bstation station on / station off | Enable/disable all BSMS actions at nearest station, even with all-stations mode (12 m) |
-| bstation station fill on / off | Per-station automatic ingredient replenishment switch |
-| bstation station collect on / off | Per-station output collection switch (e.g. oven output stays in the oven) |
+| bstation station on / station off | Include/exclude nearest station from individual opt-in mode (12 m). Does not enable the base |
 | bstation all on / all off | Deliberately enable automation for every station in this base, or return to individual opt-in |
 | bstation enable [n] | Enable the base's automation policy; only individually opted-in stations run unless all on is set. Optional target crafts 1–20 |
 | bstation disable | Disable this base's automation |
@@ -67,38 +100,18 @@ The shared output chest remains a normal Magic Chest, so downstream native recip
 
 After a single kiln is accepted, **bstation all on** enables every supported production station in the current base, allowing finished products from any station to feed other stations and manual blacksmith crafting. The second base containing 25 production stations is configured and enabled separately. **bstation exclude** still overrides all mode; **bstation all off** returns to the individually opted-in stations.
 
-## Settings — each production station
+## Legacy per-base settings
 
-Settings file (per-world and persistent Flame Altar base):
+Kiln stores world + persistent Flame Altar GUID policies in its per-mod data folder:
+kiln/data/base-station-magic-storage/base-station-magic-storage.json
 
-`kiln/data/base-station-magic-storage/base-station-magic-storage.json`
-
-**To keep finished products in the oven while other stations still collect:**
-
-1. Enter the base and run `bstation config sync`. This adds a JSON entry for **each discovered station** without overwriting existing choices.
-2. Open the settings file. Search for `Oven` in the base's `stations` array, and change **only** that station's `"collect"` to `false`.
-3. Save the JSON, run `bstation reload`, and verify with `bstation list`. This setting survives game restarts.
-
-Example entry (illustrative coordinates; use the generated key, do not copy the example's coordinates):
-
-```json
-{
-  "key": "T3_Oven_Factory@10.0,20.0,30.0",
-  "enabled": true,
-  "fill": true,
-  "collect": false
-}
-```
-
-`enabled: false` stops both BSMS actions for that instance; `fill: false` disables only its automatic ingredient loading; `collect: false` leaves completed items at that station. These are **per-station permissions**, not independent activators: the base must still be enabled, the station opted in (or `allStations: true`), and global `autoFill`/`autoCollect` must be enabled for that respective operation. **With your current `autoFill: false`, manual production remains unchanged** while collection is controlled per station.
-
-**Without editing JSON:** while standing by the oven (within 12 metres), run `bstation station collect off`; run `bstation station collect on` to reverse. `bstation station off` disables both actions for the nearest station, including in `bstation all on` mode. `bstation config` displays saved switches and the exact file path.
-
-Existing v0.1.2 JSON files remain valid; missing station entries default to `enabled=true, fill=true, collect=true`, preserving previous behaviour. A new station can be added with another `bstation config sync`. A moved station gets a new key (template plus position rounded to 0.1 m); stale keys are retained to avoid unintended changes. Settings are written atomically after explicit commands. Invalid JSON or save failures disable automation rather than risk routing outputs incorrectly. A reload aborts subsequent actions from scans using the old configuration, after any already-started native transaction completes.
+This is separate from the 26 global switches in Kiln Configs. A file is only written after an explicit setting command. It is written through a temporary file; parse or write errors disable automation. Station exclusions use template and world position rounded to decimetres; if you move a station, exclude it again.
 
 
-## Build
+## Build and test
 
-The candidate workflow uses the checksum-verified official Kiln v0.2.0-dev.29.14 SDK with **scripts/build-compat.sh BaseStationMagicStorage**. PR builds upload **base-station-magic-storage-0.1.3.zip** as a test artifact. The independent **base-station-magic-storage-v0.1.3** release tag and installable ZIP will be published only after in-game acceptance and merge. The scheduled latest-Kiln compatibility matrix also includes this mod.
+The candidate workflow builds with checksum-verified official Kiln v0.2.0-dev.29.14 SDK via `scripts/build-compat.sh BaseStationMagicStorage`. The PR publishes only a test artifact `base-station-magic-storage-0.1.3`; it does not merge, tag or release before in-game acceptance.
 
-Tracking: [issue #50](https://github.com/bisdat/kiln-mods/issues/50) and the [official Stations/Bases API](https://github.com/frostdev-ops/kiln/blob/main/docs/kiln/services/stations.md).
+Acceptance: install the v0.1.3 Actions ZIP through Kiln Library, open **Mods → Configs → Base Station Magic Storage**, verify 26 checkboxes, switch **Oven** OFF, Apply, produce in at least one oven and verify finished goods remain at the oven. Verify other enabled production types continue depositing to `crafting output`; switch Oven ON to restore collection and verify persistence across restart. Global `fill=False` should remain unchanged, and no per-instance station selection or JSON editing is required.
+
+Tracking: [draft PR #52](https://github.com/bisdat/kiln-mods/pull/52), [original issue #50](https://github.com/bisdat/kiln-mods/issues/50), and [official Kiln Stations/Bases API](https://github.com/frostdev-ops/kiln/blob/main/docs/kiln/services/stations.md).
