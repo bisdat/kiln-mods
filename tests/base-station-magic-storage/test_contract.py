@@ -20,7 +20,11 @@ class Contracts(unittest.TestCase):
         self.assertIn("CommandPermission.Admin", SRC)
         self.assertIn("Items.ContainerNamesAvailable", SRC)
         self.assertIn("OutputName(Items.ContainerName(chest))", SRC)
-        self.assertIn('"BSMS Output"', SRC)
+        self.assertIn('"crafting output"', SRC)
+        self.assertIn('"craftingoutput"', SRC)
+        self.assertIn("name.Where(c => !char.IsWhiteSpace(c)).ToArray()", SRC)
+        self.assertIn("StartsWith(OutputSinkKey, StringComparison.OrdinalIgnoreCase)", SRC)
+        self.assertNotIn('"BSMS Output"', SRC)
         self.assertIn("Stations.All()", SRC)
         self.assertIn("Bases.Storage(@base, deposit: true)", SRC)
     def test_only_supported_native_actions(self):
@@ -34,11 +38,26 @@ class Contracts(unittest.TestCase):
                       "s.Base != @base", "MaxStationsPerScan = 128",
                       "Take(2).ToArray()", "File.Move(temp", "Saves.WorldId"):
             self.assertIn(token, SRC)
+    def test_output_chest_name_matching_contract(self):
+        # Mirror the normalization rule used by OutputName, including suffixes.
+        def matches(value):
+            return "".join(c for c in value if not c.isspace()).casefold().startswith("craftingoutput")
+        for accepted in (
+            "crafting output", "CRAFTING OUTPUT", " Crafting  Output ",
+            "craftingoutput2", "CRAFTING OUTPUT - Smelter",
+            "cra ft ing out put extras", "c\tR a f t i n g\nO u t p u t#7",
+        ):
+            with self.subTest(accepted=accepted):
+                self.assertTrue(matches(accepted))
+        for rejected in ("BSMS Output", "ordinary chest", "output crafting", "crafting-output"):
+            with self.subTest(rejected=rejected):
+                self.assertFalse(matches(rejected))
     def test_sdk(self):
         self.assertIn("Kiln.Sdk/0.2.0-dev.29.14", PROJ)
-        self.assertIn("<Version>0.1.1</Version>", PROJ)
+        self.assertIn("<Version>0.1.2</Version>", PROJ)
         self.assertIn("<KilnSide>server</KilnSide>", PROJ)
         self.assertIn("**Default OFF.**", README)
         self.assertIn("not cross-base", README)
         self.assertIn("FactoryStation", README)
-        self.assertIn("BSMS Output", README)
+        self.assertIn("crafting output", README)
+        self.assertIn("ignores case and all whitespace", README)

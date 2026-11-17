@@ -18,7 +18,8 @@ public sealed class BaseStationMagicStorageMod : Mod
     // Only explicitly named, unbound Magic Chests are acceptable output buffers.
     // Endless Chests can automatically DELETE the contents of an "Empty" chest:
     // never send finished products to arbitrary storage chosen by FindRoomFor.
-    private const string OutputSinkName = "BSMS Output";
+    private const string OutputSinkName = "crafting output";
+    private const string OutputSinkKey = "craftingoutput";
 
     private sealed class Settings
     {
@@ -63,7 +64,7 @@ public sealed class BaseStationMagicStorageMod : Mod
             usage: "status|bases|list|sinks|stock|plan [n]|station on|off|all on|off|enable [n]|disable|target n|fill on|off|collect on|off|exclude|include",
             description: "Opt-in Magic Chest automation of base production stations.");
         Context.Tick.Pre += OnTick;
-        Log.Info("Base Station Magic Storage v0.1.1 loaded: automation OFF until bstation enable; " +
+        Log.Info("Base Station Magic Storage v0.1.2 loaded: automation OFF until bstation enable; " +
                  "FactoryStations only, base-local Magic Chests only.");
     }
 
@@ -159,9 +160,11 @@ public sealed class BaseStationMagicStorageMod : Mod
     // This name is deliberately not an Endless Chests catalogue name.
     // It is still the owner's responsibility to leave the chest unbound from
     // other automatic clearing/refilling mods.
+    // Case-insensitive: ignore whitespace anywhere in the name and accept any suffix.
+    // A chest must still be deposit-enabled Magic storage in the station's own base.
     private static bool OutputName(string? name) =>
-        name is not null && (name.Equals(OutputSinkName, StringComparison.OrdinalIgnoreCase) ||
-            name.StartsWith(OutputSinkName + " ", StringComparison.OrdinalIgnoreCase));
+        name is not null && new string(name.Where(c => !char.IsWhiteSpace(c)).ToArray())
+            .StartsWith(OutputSinkKey, StringComparison.OrdinalIgnoreCase);
 
     private static bool CanAccept(EntityId chest, ItemId item)
     {
@@ -192,7 +195,7 @@ public sealed class BaseStationMagicStorageMod : Mod
             if (verb == "status")
             {
                 var world = WorldId();
-                Say($"v0.1.1 config={(_configOk ? "OK" : "INVALID/OFF")}, " +
+                Say($"v0.1.2 config={(_configOk ? "OK" : "INVALID/OFF")}, " +
                     $"world={world ?? "none"}, stations={Stations.Available}, bases={Bases.Available}, " +
                     $"scanned={Stations.Scanned}, read={Capabilities.Is(Stations.ReadCapability)}, " +
                     $"fill={Capabilities.Is(Stations.FillCapability)}, items.move={Capabilities.Is("items.move")}, " +
@@ -228,7 +231,7 @@ public sealed class BaseStationMagicStorageMod : Mod
                 if (!Items.ContainerNamesAvailable)
                     throw new CommandException("Kiln items.names is unavailable; output collection is disabled.");
                 var sinks = OutputSinks(home.Id);
-                Say($"Base {home.Id}: {sinks.Count} dedicated output chests (must be renamed '{OutputSinkName}' or '{OutputSinkName} 2').");
+                Say($"Base {home.Id}: {sinks.Count} dedicated output chests (name starts with '{OutputSinkName}'; ignore case/spaces, any suffix).");
                 foreach (var chest in sinks.Take(20))
                 {
                     var inv = Items.Read(chest);
@@ -425,7 +428,7 @@ public sealed class BaseStationMagicStorageMod : Mod
                 {
                     var sinks = OutputSinks(@base);
                     if (sinks.Count == 0)
-                        Warn(id, "collect", "No dedicated output Magic Chest. Rename an unbound, deposit-enabled Magic Chest 'BSMS Output'.");
+                        Warn(id, "collect", "No dedicated output Magic Chest. Rename an unbound, deposit-enabled Magic Chest 'crafting output' (case/spaces ignored, any suffix).");
                     else
                     {
                         foreach (var item in s.Outputs.Select(slot => slot.Item).Distinct().ToArray())
