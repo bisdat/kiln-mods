@@ -2,14 +2,14 @@
   <PropertyGroup>
     <KilnModId>gemforge-magic-storage</KilnModId>
     <KilnModName>Gem Forge Magic Chest Integration</KilnModName>
-    <Version>0.3.0</Version>
+    <Version>1.0.0</Version>
     <Authors>bisdat</Authors>
-    <Description>Experimental native Gem Forge access to authorised Magic Chest gems and base-storage essence. No inventory loans.</Description>
+    <Description>Automatically adds same-base Magic Chest gems to the native Gem Forge and pays for upgrades from base storage. No inventory loans.</Description>
     <PackageProjectUrl>https://github.com/bisdat/kiln-mods</PackageProjectUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <KilnSide>server</KilnSide>
     <KilnClients>none</KilnClients>
-    <KilnServices>Abilities;Stations;Items;Spawn;Players;Chat</KilnServices>
+    <KilnServices>Abilities;Stations;Items;Spawn;Players</KilnServices>
     <KilnGameIds>None</KilnGameIds>
   </PropertyGroup>
 </Project>
