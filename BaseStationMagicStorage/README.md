@@ -71,30 +71,30 @@ After a single kiln is accepted, **bstation all on** enables every supported pro
 
 Settings file (per-world and persistent Flame Altar base):
 
-\`kiln/data/base-station-magic-storage/base-station-magic-storage.json\`
+`kiln/data/base-station-magic-storage/base-station-magic-storage.json`
 
 **To keep finished products in the oven while other stations still collect:**
 
-1. Enter the base and run \`bstation config sync\`. This adds a JSON entry for **each discovered station** without overwriting existing choices.
-2. Open the settings file. Search for \`Oven\` in the base's \`stations\` array, and change **only** that station's \`"collect"\` to \`false\`.
-3. Save the JSON, run \`bstation reload\`, and verify with \`bstation list\`. This setting survives game restarts.
+1. Enter the base and run `bstation config sync`. This adds a JSON entry for **each discovered station** without overwriting existing choices.
+2. Open the settings file. Search for `Oven` in the base's `stations` array, and change **only** that station's `"collect"` to `false`.
+3. Save the JSON, run `bstation reload`, and verify with `bstation list`. This setting survives game restarts.
 
 Example entry (illustrative coordinates; use the generated key, do not copy the example's coordinates):
 
-\`\`\`json
+```json
 {
   "key": "T3_Oven_Factory@10.0,20.0,30.0",
   "enabled": true,
   "fill": true,
   "collect": false
 }
-\`\`\`
+```
 
-\`enabled: false\` stops both BSMS actions for that instance; \`fill: false\` disables only its automatic ingredient loading; \`collect: false\` leaves completed items at that station. These are **per-station permissions**, not independent activators: the base must still be enabled, the station opted in (or \`allStations: true\`), and global \`autoFill\`/\`autoCollect\` must be enabled for that respective operation. **With your current \`autoFill: false\`, manual production remains unchanged** while collection is controlled per station.
+`enabled: false` stops both BSMS actions for that instance; `fill: false` disables only its automatic ingredient loading; `collect: false` leaves completed items at that station. These are **per-station permissions**, not independent activators: the base must still be enabled, the station opted in (or `allStations: true`), and global `autoFill`/`autoCollect` must be enabled for that respective operation. **With your current `autoFill: false`, manual production remains unchanged** while collection is controlled per station.
 
-**Without editing JSON:** while standing by the oven (within 12 metres), run \`bstation station collect off\`; run \`bstation station collect on\` to reverse. \`bstation station off\` disables both actions for the nearest station, including in \`bstation all on\` mode. \`bstation config\` displays saved switches and the exact file path.
+**Without editing JSON:** while standing by the oven (within 12 metres), run `bstation station collect off`; run `bstation station collect on` to reverse. `bstation station off` disables both actions for the nearest station, including in `bstation all on` mode. `bstation config` displays saved switches and the exact file path.
 
-Existing v0.1.2 JSON files remain valid; missing station entries default to \`enabled=true, fill=true, collect=true\`, preserving previous behaviour. A new station can be added with another \`bstation config sync\`. A moved station gets a new key (template plus position rounded to 0.1 m); stale keys are retained to avoid unintended changes. Settings are written atomically after explicit commands. Invalid JSON or save failures disable automation rather than risk routing outputs incorrectly. A reload aborts subsequent actions from scans using the old configuration, after any already-started native transaction completes.
+Existing v0.1.2 JSON files remain valid; missing station entries default to `enabled=true, fill=true, collect=true`, preserving previous behaviour. A new station can be added with another `bstation config sync`. A moved station gets a new key (template plus position rounded to 0.1 m); stale keys are retained to avoid unintended changes. Settings are written atomically after explicit commands. Invalid JSON or save failures disable automation rather than risk routing outputs incorrectly. A reload aborts subsequent actions from scans using the old configuration, after any already-started native transaction completes.
 
 
 ## Build
