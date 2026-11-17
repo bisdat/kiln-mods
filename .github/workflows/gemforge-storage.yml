@@ -8,12 +8,16 @@ on:
       - 'GemForgeStorage/**'
       - 'tests/gemforge-storage/**'
       - 'scripts/build-compat.py'
+      - 'scripts/resolve-kiln-release.py'
+      - 'tests/kiln-release/**'
       - '.github/workflows/gemforge-storage.yml'
   pull_request:
     paths:
       - 'GemForgeStorage/**'
       - 'tests/gemforge-storage/**'
       - 'scripts/build-compat.py'
+      - 'scripts/resolve-kiln-release.py'
+      - 'tests/kiln-release/**'
       - '.github/workflows/gemforge-storage.yml'
   workflow_dispatch:
 
@@ -35,6 +39,8 @@ jobs:
           dotnet-version: '10.0.x'
       - name: Contract and conservation-policy checks
         run: python3 -m unittest discover -s tests/gemforge-storage -p 'test_*.py' -v
+      - name: Official release resolver regression tests
+        run: python3 -m unittest discover -s tests/kiln-release -p 'test_*.py' -v
       - name: Build and package
         env:
           GITHUB_TOKEN: ${{ github.token }}
