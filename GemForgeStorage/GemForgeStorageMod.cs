@@ -138,8 +138,10 @@ public sealed class GemForgeStorageMod : Mod
                 SetLast("gems.sources or gems.payers unavailable; no offers");
                 return;
             }
+            BaseId baseId = BaseId.None;
+            string reason = "";
             if (e.Forge.IsNone ||
-                !TryCurrentBase(e.Player, out var baseId, out var reason) ||
+                !TryCurrentBase(e.Player, out baseId, out reason) ||
                 Bases.Of(e.Forge)?.Id != baseId)
             {
                 Withdraw(e.Player);
