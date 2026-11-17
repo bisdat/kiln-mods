@@ -3,7 +3,6 @@ name: Package Gem Forge Magic Storage
 on:
   push:
     branches: [main, feature/gemforge-magic-storage]
-    tags: ['gemforge-magic-storage-v*']
     paths:
       - 'GemForgeStorage/**'
       - 'tests/gemforge-storage/**'
@@ -37,27 +36,27 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.0.x'
-      - name: Contract and conservation-policy checks
+      - name: Production invariants and API contract checks
         run: python3 -m unittest discover -s tests/gemforge-storage -p 'test_*.py' -v
-      - name: Official release resolver regression tests
+      - name: Official SDK release resolver regression tests
         run: python3 -m unittest discover -s tests/kiln-release -p 'test_*.py' -v
-      - name: Build and package
+      - name: Build and package against signed-off official Kiln release
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: bash scripts/build-compat.sh GemForgeStorage
-      - name: Upload the TEST-ONLY package
+      - name: Upload versioned package
         uses: actions/upload-artifact@v4
         with:
-          name: gemforge-magic-storage-0.3.0-TEST
+          name: gemforge-magic-storage-1.0.0
           path: |
-            bin/Release/gemforge-magic-storage-0.3.0.zip
+            bin/Release/gemforge-magic-storage-1.0.0.zip
             bin/Release/kiln-sdk-provenance.json
           if-no-files-found: error
           retention-days: 90
 
   release:
-    name: Publish version-tagged release after in-game acceptance
-    if: startsWith(github.ref, 'refs/tags/gemforge-magic-storage-v')
+    name: Publish Gem Forge Magic Storage v1.0.0 once on main
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: package
     runs-on: ubuntu-24.04
     permissions:
@@ -65,10 +64,22 @@ jobs:
     steps:
       - uses: actions/download-artifact@v4
         with:
-          name: gemforge-magic-storage-0.3.0-TEST
+          name: gemforge-magic-storage-1.0.0
           path: dist
-      - uses: softprops/action-gh-release@v2
-        with:
-          files: dist/gemforge-magic-storage-0.3.0.zip
-          generate_release_notes: true
-          fail_on_unmatched_files: true
+      - name: Create version tag and release if not published
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          tag=gemforge-magic-storage-v1.0.0
+          if gh release view "$tag" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "Already published $tag; preserving existing tag and release assets"
+            exit 0
+          fi
+          gh release create "$tag" \
+            dist/gemforge-magic-storage-1.0.0.zip \
+            dist/kiln-sdk-provenance.json \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$GITHUB_SHA" \
+            --title "Gem Forge Magic Storage v1.0.0" \
+            --notes "Automatic same-base Magic Chest gems in Enshrouded's native Gem Forge; Kiln v0.2.0-dev.29.15+ required. Normal gem socket, upgrade, recycle and Magic Chest-funded Archaic Essence transactions. No console commands, no temporary backpack loans."
