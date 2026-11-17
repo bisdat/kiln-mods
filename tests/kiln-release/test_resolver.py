@@ -43,6 +43,23 @@ class KilnDevReleaseTests(unittest.TestCase):
         self.assertEqual(found["tag"], "v0.2.0-dev.21")
         self.assertEqual(found["release_target"], "a" * 40)
 
+    def test_patch_numbered_dev_release_is_selected_and_can_be_pinned(self):
+        patched = release(
+            29,
+            "2026-11-17T16:36:47Z",
+            tag_name="v0.2.0-dev.29.15",
+            html_url="https://github.com/frostdev-ops/kiln/releases/tag/v0.2.0-dev.29.15",
+            assets=[
+                {"name": "Kiln.Sdk.0.2.0-dev.29.15.nupkg"},
+                {"name": "Kiln.Api.0.2.0-dev.29.15.nupkg"},
+                {"name": "SHA256SUMS"},
+            ],
+        )
+        old = release(29, "2026-11-17T08:00:00Z")
+        self.assertEqual(resolver.select_release([old, patched])["tag"], "v0.2.0-dev.29.15")
+        self.assertEqual(resolver.select_release([old, patched], "v0.2.0-dev.29.15")["version"],
+                         "0.2.0-dev.29.15")
+
     def test_drafts_and_unpublished_are_ignored(self):
         found = resolver.select_release([
             release(22, "2026-11-11T06:00:00Z", draft=True),
