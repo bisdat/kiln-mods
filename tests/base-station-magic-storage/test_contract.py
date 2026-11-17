@@ -6,6 +6,7 @@ ROOT = pathlib.Path(__file__).resolve().parents[2]
 SRC = (ROOT / "BaseStationMagicStorage" / "BaseStationMagicStorageMod.cs").read_text()
 PROJ = (ROOT / "BaseStationMagicStorage" / "BaseStationMagicStorage.csproj").read_text()
 README = (ROOT / "BaseStationMagicStorage" / "README.md").read_text()
+CONFIG = (ROOT / "BaseStationMagicStorage" / "BSMSStationConfig.cs").read_text()
 
 class Contracts(unittest.TestCase):
     def test_disabled_default_and_admin_commands(self):
@@ -27,6 +28,11 @@ class Contracts(unittest.TestCase):
         self.assertNotIn('"BSMS Output"', SRC)
         self.assertIn("Stations.All()", SRC)
         self.assertIn("Bases.Storage(@base, deposit: true)", SRC)
+        self.assertIn("Config.Register<BSMSStationConfig>()", SRC)
+        self.assertIn("StationTypeEnabled(s)", SRC)
+        self.assertIn("StationTypeEnabled(current)", SRC)
+        self.assertIn("StationTypeEnabled(check)", SRC)
+        self.assertIn("type-enabled={StationTypeEnabled(s)}", SRC)
     def test_only_supported_native_actions(self):
         for name in ("Stations.Plan(id, options)", "Stations.Fill(id, options)", "Stations.Collect(id, chest, item)", "Player is intentionally absent"):
             self.assertIn(name, SRC)
@@ -52,9 +58,42 @@ class Contracts(unittest.TestCase):
         for rejected in ("BSMS Output", "ordinary chest", "output crafting", "crafting-output"):
             with self.subTest(rejected=rejected):
                 self.assertFalse(matches(rejected))
+    def test_exactly_26_type_toggles(self):
+        import re
+        declared = re.findall(r"public bool (\w+) \{ get; set; \} = true;", CONFIG)
+        self.assertEqual(len(declared), 26)
+        self.assertEqual(len(set(declared)), 26)
+        templates = re.findall(r'"(T\w+_Factory)"\s*=>\s*enabled\.(\w+)', SRC)
+        self.assertEqual(len(templates), 26)
+        self.assertEqual(set(declared), {property for _, property in templates})
+        self.assertEqual(len({template for template, _ in templates}), 26)
+        self.assertIn('T3_Oven_Factory" => enabled.Oven', SRC)
+        self.assertIn('T6_Medieval_Grill_Factory" => enabled.SeafoodGrill', SRC)
+        self.assertIn('T2_Fireplace_Factory" => enabled.CookingStation', SRC)
+        self.assertIn('T5_cardingMachine_Factory" => enabled.SpinningMachine', SRC)
+        self.assertIn("LegacyStationValues()", SRC)
+        self.assertIn("_stationTypes.TrySet(name, saved, out var error)", SRC)
+        self.assertIn("if (!migrationOk) _configOk = false;", SRC)
+        self.assertIn("Name audit", README)
+        self.assertIn("Config.Register<BSMSStationConfig>()", SRC)
+        self.assertIn("Kiln Configs", README)
+        self.assertIn("game menu", README)
+        self.assertNotIn("bstation config sync", README)
+        for old, new in (
+            ("CardingMachine", "SpinningMachine"), ("CoffeeBrewer", "CoffeeBrewery"),
+            ("SeedlingStation", "Seedbed"), ("ImprovedGrinder", "Mill"),
+            ("HandGrinder", "GrindingStones"), ("HoneyStation", "Beehive"),
+            ("InfusionStation", "InfusionAltar"), ("Fireplace", "CookingStation"),
+            ("CoffeeRoaster", "CoffeeDrumRoaster"), ("MedievalGrill", "SeafoodGrill"),
+        ):
+            with self.subTest(old=old, new=new):
+                self.assertIn('public bool ' + new + ' { get; set; } = true;', CONFIG)
+                self.assertNotIn('public bool ' + old + ' { get; set; } = true;', CONFIG)
+                self.assertIn('("' + old[:1].lower() + old[1:] + '", "' + new[:1].lower() + new[1:] + '")', SRC)
+
     def test_sdk(self):
         self.assertIn("Kiln.Sdk/0.2.0-dev.29.14", PROJ)
-        self.assertIn("<Version>0.1.2</Version>", PROJ)
+        self.assertIn("<Version>0.1.3</Version>", PROJ)
         self.assertIn("<KilnSide>server</KilnSide>", PROJ)
         self.assertIn("**Default OFF.**", README)
         self.assertIn("not cross-base", README)
