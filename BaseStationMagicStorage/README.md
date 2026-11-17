@@ -1,6 +1,6 @@
-# Base Station Magic Storage — v0.1.3 station-type switches candidate
+# Base Station Magic Storage — v0.1.3 station-type controls
 
-Standalone Kiln mod for all supported autonomous production stations (FactoryStation: charcoal kilns, smelters, looms, grinders and seed beds) inside a Flame Altar base. Requires Kiln **0.2.0-dev.29.14 / mod API 0.2.6**. v0.1.2 is the stable released version. v0.1.3 is a test candidate that adds 26 global station-type checkboxes to Kiln's Mods > Base Station Magic Storage configuration menu.
+Standalone Kiln mod for all supported autonomous production stations (FactoryStation: charcoal kilns, smelters, looms, grinders and seed beds) inside a Flame Altar base. Requires Kiln **0.2.0-dev.29.14 / mod API 0.2.6**. v0.1.3 adds 26 global station-type checkboxes to Kiln's Mods > Base Station Magic Storage configuration menu; functionality, updated names and ON/OFF behaviour passed in-game acceptance on 17 November 2026. Prior v0.1.2 remains the last earlier stable version.
 
 ## Behaviour
 
@@ -127,8 +127,8 @@ This is separate from the 26 global switches in Kiln Configs. A file is only wri
 
 ## Build and test
 
-The candidate workflow builds with checksum-verified official Kiln v0.2.0-dev.29.14 SDK via `scripts/build-compat.sh BaseStationMagicStorage`. The PR publishes only a test artifact `base-station-magic-storage-0.1.3`; it does not merge, tag or release before in-game acceptance.
+The candidate workflow builds with checksum-verified official Kiln v0.2.0-dev.29.14 SDK via `scripts/build-compat.sh BaseStationMagicStorage`. The PR builds the installable `base-station-magic-storage-0.1.3` artifact; after acceptance and merge to `main`, the release workflow publishes tag `base-station-magic-storage-v0.1.3` with the installable ZIP and SDK provenance.
 
-Acceptance: install the v0.1.3 Actions ZIP through Kiln Library, open **Mods → Configs → Base Station Magic Storage**, verify 26 checkboxes, switch **Oven** OFF, Apply, produce in at least one oven and verify finished goods remain at the oven. Verify other enabled production types continue depositing to `crafting output`; switch Oven ON to restore collection and verify persistence across restart. Global `fill=False` should remain unchanged, and no per-instance station selection or JSON editing is required.
+Acceptance confirmed in-game: 26 type-level checkboxes operate correctly, including ON/OFF, and the corrected station labels are displayed. With `fill=False`, automation continues to collect finished goods from types enabled for BSMS. No per-instance station selection or JSON editing is needed.
 
 Tracking: [draft PR #52](https://github.com/bisdat/kiln-mods/pull/52), [original issue #50](https://github.com/bisdat/kiln-mods/issues/50), and [official Kiln Stations/Bases API](https://github.com/frostdev-ops/kiln/blob/main/docs/kiln/services/stations.md).
