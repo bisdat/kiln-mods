@@ -1,7 +1,7 @@
 # Gem Forge × Magic Chest — direct native integration
 
 > **Historical SDK 0.2.5 research snapshot, superseded by Kiln v0.2.0-dev.29.15 (API 0.2.7).**
-> The three previously blocked contracts (cross-holder actions, native chest-gem offers and base-storage essence payment) shipped in that release. The active experimental v0.3.0 implementation and its current acceptance plan are in [GemForgeStorage/README.md](../../GemForgeStorage/README.md). The older analysis below is preserved as evidence of why item lending was rejected, **not** as a current API reference.
+> The three previously blocked contracts (cross-holder actions, native chest-gem offers and base-storage essence payment) shipped in that release. The production v1.0.0 implementation, in-game acceptance summary and installation guide are in [GemForgeStorage/README.md](../../GemForgeStorage/README.md). The older analysis below is preserved as evidence of why item lending was rejected, **not** as a current API reference.
 
 **Status:** design / SDK integration research; no production implementation.
 **As of:** 2026-11-17. **Downstream:** [bisdat/kiln-mods draft PR #48](https://github.com/bisdat/kiln-mods/pull/48).
