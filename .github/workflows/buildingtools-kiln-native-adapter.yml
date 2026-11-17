@@ -174,10 +174,6 @@ jobs:
           set -euo pipefail
           (cd dist && sha256sum --check "building-tools-kiln-$ADAPTER.zip.sha256")
           TAG="building-tools-kiln-v$ADAPTER"
-          if gh release view "$TAG" >/dev/null 2>&1; then
-            echo "Existing release retained; no assets overwritten"
-            exit 0
-          fi
           cat > /tmp/buildingtools-release.md <<NOTES
           Building Tools for Kiln $ADAPTER. Official upstream Building Tools
           $UPSTREAM by Aleksander Wojtal, MIT-licensed, unchanged DLL.
@@ -188,6 +184,27 @@ jobs:
           Source and upstream update process:
           https://github.com/bisdat/kiln-mods/tree/main/BuildingToolsKiln
           NOTES
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            # Promotion is allowed only when the very same packaged bytes
+            # have now been accepted in game; the tag and assets remain intact.
+            current_pre="$(gh release view "$TAG" --json isPrerelease --jq '.isPrerelease')"
+            if [[ "$PRERELEASE" == "false" && "$current_pre" == "true" ]]; then
+              mkdir -p /tmp/building-tools-published
+              gh release download "$TAG" -p "building-tools-kiln-$ADAPTER.zip" -D /tmp/building-tools-published
+              cmp "dist/building-tools-kiln-$ADAPTER.zip" "/tmp/building-tools-published/building-tools-kiln-$ADAPTER.zip"
+              cat >> /tmp/buildingtools-release.md <<'ACCEPTANCE'
+
+          GAMEPLAY ACCEPTANCE: On 17 November 2026 the user confirmed
+          Building Tools 0.33.2 working in-game. Ingredient-deduction counts
+          and save/reload conservation were not separately reported.
+          ACCEPTANCE
+              gh release edit "$TAG" --prerelease=false --notes-file /tmp/buildingtools-release.md
+              echo "Promoted accepted, byte-identical release; no assets overwritten"
+            else
+              echo "Existing release retained; no assets overwritten"
+            fi
+            exit 0
+          fi
           release_flags=()
           if [[ "$PRERELEASE" == "true" ]]; then
             cat >> /tmp/buildingtools-release.md <<'WARNING'

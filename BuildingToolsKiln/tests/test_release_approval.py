@@ -13,7 +13,8 @@ class ReleaseApprovalTests(unittest.TestCase):
         pin = json.loads(PROFILE.read_text())
         self.assertEqual(pin["upstream_version"], "0.33.2")
         self.assertEqual(pin["release_approved_upstream_version"], "0.33.2")
-        self.assertEqual(pin["gameplay_verified_upstream_version"], "0.31.2")
+        self.assertEqual(pin["gameplay_verified_upstream_version"], "0.33.2")
+        self.assertIn("tested and working in game", pin["gameplay_acceptance_note"])
         self.assertTrue(pin["release_approval_note"])
 
     def test_unverified_release_requires_prerelease_warning(self):
@@ -22,6 +23,8 @@ class ReleaseApprovalTests(unittest.TestCase):
         self.assertIn('print("prerelease="+("false" if verified else "true"))', content)
         self.assertIn('release_flags+=(--prerelease)', content)
         self.assertIn("GAMEPLAY VERIFICATION PENDING", content)
+        self.assertIn("gh release edit", content)
+        self.assertIn("cmp ", content)
 
 
 if __name__ == "__main__":
