@@ -25,6 +25,23 @@ Open the game's **Kiln Mods menu** (Insert or Mods in the game menu), then open 
 
 Settings are global across bases. They are stored by Kiln's config system in its active profile's `configDir`, in `base-station-magic-storage.json`, **not** the per-world/base policy JSON under the mod's data folder. The existing base settings (`autoFill: false`, `autoCollect: true`, `allStations: true`) are unchanged by these new switches. A type ON cannot override a base that is disabled, the base's fill/collect switches, or a legacy per-instance exclusion. All 26 switches default ON, so upgrading does not unexpectedly change collections. Unknown future station templates are not automated until explicitly supported and exposed in the menu.
 
+**Name audit (10 corrections).** Names were checked against the [Official Enshrouded Wiki's production-station list](https://enshrouded.wiki.gg/wiki/Category:Production_Places) and [crafting equipment](https://enshrouded.wiki.gg/wiki/Crafting). Kiln's [client game catalogue](https://github.com/bisdat/kiln/blob/main/docs/kiln/modding/catalogs.md) provides authoritative English workshop names when generated from the user's installed game; the local catalogue is not stored in GitHub. The other 16 station types already have matching player-facing names.
+
+| Internal game template (unchanged) | Old BSMS menu label | Updated game name | Config property migration |
+|---|---|---|---|
+| `T5_cardingMachine_Factory` | Carding Machine | **Spinning Machine** | `CardingMachine` → `SpinningMachine` |
+| `T6_coffeemaker_brewer_Factory` | Coffee Brewer | **Coffee Brewery** | `CoffeeBrewer` → `CoffeeBrewery` |
+| `T1_Seedling_Factory` | Seedling Station | **Seedbed** | `SeedlingStation` → `Seedbed` |
+| `T6_Improved_Grinder_Factory` | Improved Grinder | **Mill** | `ImprovedGrinder` → `Mill` |
+| `T1_HandGrinder_Factory` | Hand Grinder | **Grinding Stones** | `HandGrinder` → `GrindingStones` |
+| `T4_Honey_Factory` | Honey Station | **Beehive** | `HoneyStation` → `Beehive` |
+| `T7_Infusion_Station_Factory` | Infusion Station | **Infusion Altar** | `InfusionStation` → `InfusionAltar` |
+| `T2_Fireplace_Factory` | Fireplace | **Cooking Station** | `Fireplace` → `CookingStation` |
+| `T6_coffemaker_roaster_Factory` | Coffee Roaster | **Coffee Drum Roaster** | `CoffeeRoaster` → `CoffeeDrumRoaster` |
+| `T6_Medieval_Grill_Factory` | Medieval Grill | **Seafood Grill** | `MedievalGrill` → `SeafoodGrill` |
+
+**Preserving your choices:** BSMS reads the existing Kiln station-type config before registering the new properties. Where an old key exists and a new key does not, its saved boolean is migrated with `ConfigFile.TrySet`. Existing new-key values always win. The other 16 switches (including **Oven**) are unchanged. If the migration cannot read or persist a saved setting, BSMS disables automation rather than silently resetting that choice. Obsolete old keys might remain marked unknown by Kiln's JSONC writer, but they are no longer consulted.
+
 **Production station options:**
 
 - Alchemy Station (`AlchemyStation`)
