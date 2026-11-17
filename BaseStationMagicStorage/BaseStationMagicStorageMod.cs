@@ -63,7 +63,7 @@ public sealed class BaseStationMagicStorageMod : Mod
             usage: "status|bases|list|sinks|stock|plan [n]|station on|off|all on|off|enable [n]|disable|target n|fill on|off|collect on|off|exclude|include",
             description: "Opt-in Magic Chest automation of base production stations.");
         Context.Tick.Pre += OnTick;
-        Log.Info("Base Station Magic Storage v0.1.0 loaded: automation OFF until bstation enable; " +
+        Log.Info("Base Station Magic Storage v0.1.1 loaded: automation OFF until bstation enable; " +
                  "FactoryStations only, base-local Magic Chests only.");
     }
 
@@ -192,7 +192,7 @@ public sealed class BaseStationMagicStorageMod : Mod
             if (verb == "status")
             {
                 var world = WorldId();
-                Say($"v0.1.0 config={(_configOk ? "OK" : "INVALID/OFF")}, " +
+                Say($"v0.1.1 config={(_configOk ? "OK" : "INVALID/OFF")}, " +
                     $"world={world ?? "none"}, stations={Stations.Available}, bases={Bases.Available}, " +
                     $"scanned={Stations.Scanned}, read={Capabilities.Is(Stations.ReadCapability)}, " +
                     $"fill={Capabilities.Is(Stations.FillCapability)}, items.move={Capabilities.Is("items.move")}, " +

@@ -36,13 +36,13 @@ jobs:
       - name: Check official release SDK and compile mod
         run: bash scripts/build-compat.sh BaseStationMagicStorage
       - name: Verify package
-        run: test -s bin/Release/base-station-magic-storage-0.1.0.zip
+        run: test -s bin/Release/base-station-magic-storage-0.1.1.zip
       - name: Upload candidate only, no GitHub Release
         uses: actions/upload-artifact@v4
         with:
-          name: base-station-magic-storage-0.1.0
+          name: base-station-magic-storage-0.1.1
           path: |
-            bin/Release/base-station-magic-storage-0.1.0.zip
+            bin/Release/base-station-magic-storage-0.1.1.zip
             bin/Release/kiln-sdk-provenance.json
           if-no-files-found: error
           retention-days: 60

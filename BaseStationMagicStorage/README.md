@@ -1,4 +1,4 @@
-# Base Station Magic Storage — v0.1.0 test candidate
+# Base Station Magic Storage — v0.1.1 test candidate
 
 Standalone Kiln mod for all supported autonomous production stations (FactoryStation: charcoal kilns, smelters, looms, grinders and seed beds) inside a Flame Altar base. Requires Kiln **0.2.0-dev.29.14 / mod API 0.2.6**. This is an untested candidate, not a public release.
 
@@ -71,6 +71,6 @@ A file is only written after an explicit setting command. It is written through 
 
 ## Build
 
-The draft-only workflow uses the checksum-verified official Kiln v0.2.0-dev.29.14 SDK with **scripts/build-compat.sh BaseStationMagicStorage** and uploads an experimental base-station-magic-storage-0.1.0.zip artifact. It does not publish a release or add this candidate to the scheduled latest-Kiln workflow.
+The draft-only workflow uses the checksum-verified official Kiln v0.2.0-dev.29.14 SDK with **scripts/build-compat.sh BaseStationMagicStorage** and uploads an experimental base-station-magic-storage-0.1.1.zip artifact. It does not publish a release or add this candidate to the scheduled latest-Kiln workflow.
 
 Tracking: [issue #50](https://github.com/bisdat/kiln-mods/issues/50) and the [official Stations/Bases API](https://github.com/frostdev-ops/kiln/blob/main/docs/kiln/services/stations.md).

@@ -36,6 +36,7 @@ class Contracts(unittest.TestCase):
             self.assertIn(token, SRC)
     def test_sdk(self):
         self.assertIn("Kiln.Sdk/0.2.0-dev.29.14", PROJ)
+        self.assertIn("<Version>0.1.1</Version>", PROJ)
         self.assertIn("<KilnSide>server</KilnSide>", PROJ)
         self.assertIn("**Default OFF.**", README)
         self.assertIn("not cross-base", README)
