@@ -39,6 +39,16 @@ public sealed class BaseStationMagicStorageMod : Mod
         public List<string> Included { get; set; } = [];
         public int TargetCrafts { get; set; } = 3;
         public List<string> Excluded { get; set; } = [];
+        // Explicit per-station overrides. Missing entries preserve v0.1.2 behaviour.
+        public List<StationSetting> Stations { get; set; } = [];
+    }
+
+    private sealed class StationSetting
+    {
+        public string Key { get; set; } = "";
+        public bool Enabled { get; set; } = true;
+        public bool Fill { get; set; } = true;
+        public bool Collect { get; set; } = true;
     }
 
     private static readonly JsonSerializerOptions Json = new()
@@ -54,6 +64,7 @@ public sealed class BaseStationMagicStorageMod : Mod
     private bool _configOk = true, _stopping, _scanning;
     private double _elapsed;
     private readonly Dictionary<string, (string Message, DateTime When)> _warnings = new();
+    private int _configRevision;
 
     public override void OnLoad()
     {
@@ -61,10 +72,10 @@ public sealed class BaseStationMagicStorageMod : Mod
         _settingsFile = Path.Combine(Context.DataDirectory, "base-station-magic-storage.json");
         LoadSettings();
         _command = Commands.Register("bstation", HandleCommand, CommandPermission.Admin,
-            usage: "status|bases|list|sinks|stock|plan [n]|station on|off|all on|off|enable [n]|disable|target n|fill on|off|collect on|off|exclude|include",
+            usage: "status|bases|list|config [sync]|reload|sinks|stock|plan [n]|station on|off|station fill on|off|station collect on|off|all on|off|enable [n]|disable|target n|fill on|off|collect on|off|exclude|include",
             description: "Opt-in Magic Chest automation of base production stations.");
         Context.Tick.Pre += OnTick;
-        Log.Info("Base Station Magic Storage v0.1.2 loaded: automation OFF until bstation enable; " +
+        Log.Info("Base Station Magic Storage v0.1.3 loaded: automation OFF until bstation enable; " +
                  "FactoryStations only, base-local Magic Chests only.");
     }
 
@@ -90,14 +101,19 @@ public sealed class BaseStationMagicStorageMod : Mod
                     p.Excluded is null || p.Excluded.Count > 256 ||
                     p.Excluded.Any(s => string.IsNullOrWhiteSpace(s) || s.Length > 256) ||
                     p.Included is null || p.Included.Count > 256 ||
-                    p.Included.Any(s => string.IsNullOrWhiteSpace(s) || s.Length > 256)))
+                    p.Included.Any(s => string.IsNullOrWhiteSpace(s) || s.Length > 256) ||
+                    p.Stations is null || p.Stations.Count > 256 ||
+                    p.Stations.Any(s => s is null || string.IsNullOrWhiteSpace(s.Key) || s.Key.Length > 256) ||
+                    p.Stations.Select(s => s.Key).Distinct(StringComparer.Ordinal).Count() != p.Stations.Count))
                 throw new InvalidDataException("Invalid base policies.");
             _configOk = true;
+            _configRevision++;
         }
         catch (Exception e) when (e is IOException or JsonException or InvalidDataException or UnauthorizedAccessException)
         {
             _settings = new();
             _configOk = false;
+            _configRevision++;
             Log.Error(e, "BSMS: settings invalid; automation disabled, file left untouched.");
         }
     }
@@ -109,6 +125,7 @@ public sealed class BaseStationMagicStorageMod : Mod
             var temp = _settingsFile + ".tmp";
             File.WriteAllText(temp, JsonSerializer.Serialize(_settings, Json));
             File.Move(temp, _settingsFile, overwrite: true);
+            _configRevision++;
             return true;
         }
         catch (Exception e) when (e is IOException or UnauthorizedAccessException)
@@ -149,6 +166,23 @@ public sealed class BaseStationMagicStorageMod : Mod
         string.Join(",", new[] { s.Position.X, s.Position.Y, s.Position.Z }
             .Select(n => Math.Round(n, 1, MidpointRounding.AwayFromZero)
                 .ToString("F1", CultureInfo.InvariantCulture)));
+
+    private static StationSetting? Rule(BasePolicy p, string key) =>
+        p.Stations.FirstOrDefault(s => string.Equals(s.Key, key, StringComparison.Ordinal));
+
+    private static bool Eligible(BasePolicy p, string key) =>
+        !p.Excluded.Contains(key, StringComparer.Ordinal) &&
+        (p.AllStations || p.Included.Contains(key, StringComparer.Ordinal)) &&
+        Rule(p, key)?.Enabled != false;
+
+    private static StationSetting RuleOrAdd(BasePolicy p, string key)
+    {
+        if (Rule(p, key) is { } found) return found;
+        if (p.Stations.Count >= 256) throw new CommandException("Per-base station override limit (256) reached.");
+        var created = new StationSetting { Key = key };
+        p.Stations.Add(created);
+        return created;
+    }
 
     private static EntityId Requester(CommandContext c)
     {
@@ -195,13 +229,21 @@ public sealed class BaseStationMagicStorageMod : Mod
             if (verb == "status")
             {
                 var world = WorldId();
-                Say($"v0.1.2 config={(_configOk ? "OK" : "INVALID/OFF")}, " +
+                Say($"v0.1.3 config={(_configOk ? "OK" : "INVALID/OFF")}, " +
                     $"world={world ?? "none"}, stations={Stations.Available}, bases={Bases.Available}, " +
                     $"scanned={Stations.Scanned}, read={Capabilities.Is(Stations.ReadCapability)}, " +
                     $"fill={Capabilities.Is(Stations.FillCapability)}, items.move={Capabilities.Is("items.move")}, " +
                     $"items.names={Items.ContainerNamesAvailable}, " +
                     $"enabled bases here={_settings.Bases.Count(p => p.World == world && p.Enabled)}. " +
                     "All bases are disabled by default.");
+                return;
+            }
+            if (verb == "reload")
+            {
+                LoadSettings();
+                if (!_configOk)
+                    throw new CommandException("Settings invalid: automation disabled. Fix the JSON then run bstation reload.");
+                Say($"Reloaded {_settingsFile}; {_settings.Bases.Count} base policy/policies.");
                 return;
             }
             if (!_configOk) throw new CommandException("Invalid settings: automation disabled; restore the settings file.");
@@ -225,6 +267,16 @@ public sealed class BaseStationMagicStorageMod : Mod
             if (who.IsNone) throw new CommandException("Run as a player; file console requires exactly one player.");
             var home = Bases.Of(who) ?? throw new CommandException("Stand inside a Flame Altar base.");
             var existing = Policy(home, w);
+
+            if (verb == "config" && (c.Count == 1 || c.Args[1] == "show"))
+            {
+                Say($"Configuration: {_settingsFile}.");
+                Say($"Current base: {existing?.Stations.Count ?? 0} station entry/entries. " +
+                    "Run bstation config sync to list all stations in the JSON, edit enabled/fill/collect, then bstation reload.");
+                foreach (var entry in existing?.Stations ?? [])
+                    Say($"  {entry.Key}: enabled={entry.Enabled}, fill={entry.Fill}, collect={entry.Collect}");
+                return;
+            }
 
             if (verb == "sinks")
             {
@@ -267,11 +319,16 @@ public sealed class BaseStationMagicStorageMod : Mod
                 {
                     var s = Stations.Read(id);
                     if (s is null) continue;
+                    var key = Key(s);
+                    var station = existing is null ? null : Rule(existing, key);
                     Say($"{id}: {s.Template ?? $"workshop 0x{s.Workshop:x8}"} " +
                         $"state={s.State}, recipe=0x{s.SelectedRecipe:x8}, loaded={s.CraftsLoaded}, " +
                         $"outputs={s.Outputs.Count}, stopped={s.StoppedByPlayer}, " +
-                        $"excluded={existing?.Excluded.Contains(Key(s), StringComparer.Ordinal) == true}, " +
-                        $"opted-in={existing?.Included.Contains(Key(s), StringComparer.Ordinal) == true}");
+                        $"excluded={existing?.Excluded.Contains(key, StringComparer.Ordinal) == true}, " +
+                        $"opted-in={existing?.Included.Contains(key, StringComparer.Ordinal) == true}, " +
+                        $"active={existing is { Enabled: true } && Eligible(existing, key)}, " +
+                        $"station-enabled={station?.Enabled ?? true}, station-fill={station?.Fill ?? true}, " +
+                        $"station-collect={station?.Collect ?? true}, key='{key}'");
                 }
                 if (home.StationCount > 64) Say("Only first 64 stations shown.");
                 return;
@@ -293,11 +350,36 @@ public sealed class BaseStationMagicStorageMod : Mod
                 return;
             }
 
-            if (verb is not ("enable" or "disable" or "target" or "fill" or "collect" or "exclude" or "include" or "station" or "all"))
-                throw new CommandException("Use status|bases|list|sinks|stock|plan [n]|station on|off|all on|off|enable [n]|disable|target n|fill on|off|collect on|off|exclude|include.");
+            if (verb is not ("enable" or "disable" or "target" or "fill" or "collect" or "exclude" or "include" or "station" or "all" or "config"))
+                throw new CommandException("Use status|bases|list|config [sync]|reload|sinks|stock|plan [n]|station on|off|station fill on|off|station collect on|off|all on|off|enable [n]|disable|target n|fill on|off|collect on|off|exclude|include.");
             var p2 = AddOrGetPolicy(home, w);
             switch (verb)
             {
+                case "config":
+                {
+                    if (c.Count < 2 || c.Args[1] != "sync")
+                        throw new CommandException("config sync (or config show)");
+                    _ = Stations.All();
+                    if (!Stations.Scanned)
+                        throw new CommandException("Stations are still loading; retry config sync.");
+                    var keys = Stations.InBase(home.Id)
+                        .Select(id => Stations.Read(id))
+                        .Where(si => si is not null)
+                        .Select(si => Key(si!))
+                        .Distinct(StringComparer.Ordinal)
+                        .OrderBy(key => key, StringComparer.Ordinal)
+                        .ToArray();
+                    var added = 0;
+                    foreach (var key in keys)
+                    {
+                        if (Rule(p2, key) is not null) continue;
+                        RuleOrAdd(p2, key);
+                        added++;
+                    }
+                    Say($"Registered {added} new station(s); {p2.Stations.Count} entries " +
+                        $"in {_settingsFile}. Existing switches preserved.");
+                    break;
+                }
                 case "enable":
                     if (!Capabilities.Is(Stations.FillCapability) || !Capabilities.Is("items.move"))
                         throw new CommandException("stations.fill or items.move unavailable.");
@@ -337,19 +419,33 @@ public sealed class BaseStationMagicStorageMod : Mod
                     var key = Key(s);
                     if (verb == "station")
                     {
-                        if (c.Count < 2 || (c.Args[1] != "on" && c.Args[1] != "off"))
-                            throw new CommandException("station on|off");
-                        p2.Included.RemoveAll(k => string.Equals(k, key, StringComparison.Ordinal));
-                        if (c.Args[1] == "on")
+                        if (c.Count < 2) throw new CommandException("station on|off|fill on|off|collect on|off");
+                        var setting = RuleOrAdd(p2, key);
+                        var action = c.Args[1].ToLowerInvariant();
+                        if (action is "fill" or "collect")
                         {
-                            p2.Included.Add(key);
-                            p2.Excluded.RemoveAll(k => string.Equals(k, key, StringComparison.Ordinal));
+                            if (c.Count < 3 || (c.Args[2] != "on" && c.Args[2] != "off"))
+                                throw new CommandException("station fill on|off OR station collect on|off");
+                            if (action == "fill") setting.Fill = c.Args[2] == "on";
+                            else setting.Collect = c.Args[2] == "on";
                         }
+                        else if (action is "on" or "off")
+                        {
+                            setting.Enabled = action == "on";
+                            p2.Included.RemoveAll(k => string.Equals(k, key, StringComparison.Ordinal));
+                            if (setting.Enabled)
+                            {
+                                p2.Included.Add(key);
+                                p2.Excluded.RemoveAll(k => string.Equals(k, key, StringComparison.Ordinal));
+                            }
+                        }
+                        else throw new CommandException("station on|off|fill on|off|collect on|off");
                     }
                     else
                     {
                         p2.Excluded.RemoveAll(k => string.Equals(k, key, StringComparison.Ordinal));
                         if (verb == "exclude") p2.Excluded.Add(key);
+                        else RuleOrAdd(p2, key).Enabled = true;
                     }
                     break;
                 }
@@ -357,7 +453,7 @@ public sealed class BaseStationMagicStorageMod : Mod
             if (!Save()) throw new CommandException("Could not save settings; automation disabled.");
             Say($"Base {home.Id}: enabled={p2.Enabled}, fill={p2.AutoFill}, collect={p2.AutoCollect}, " +
                 $"target={p2.TargetCrafts}, all={p2.AllStations}, selected={p2.Included.Count}, " +
-                $"excluded={p2.Excluded.Count}. " +
+                $"excluded={p2.Excluded.Count}, station-entries={p2.Stations.Count}. " +
                 "No recipe or stop state changed.");
         }
         catch (Exception e) when (e is CommandException or KilnUnavailableException or
@@ -387,6 +483,7 @@ public sealed class BaseStationMagicStorageMod : Mod
     {
         if (_scanning) return;
         _scanning = true;
+        var revision = _configRevision;
         try
         {
             var count = 0;
@@ -398,8 +495,8 @@ public sealed class BaseStationMagicStorageMod : Mod
                 foreach (var id in Stations.InBase(b.Id))
                 {
                     if (++count > MaxStationsPerScan) return;
-                    if (_stopping || WorldId() != world || !p.Enabled) return;
-                    await Service(id, b.Id, p, world);
+                    if (_stopping || WorldId() != world || !p.Enabled || _configRevision != revision) return;
+                    await Service(id, b.Id, p, world, revision);
                 }
             }
         }
@@ -413,14 +510,16 @@ public sealed class BaseStationMagicStorageMod : Mod
         }
     }
 
-    private async Task Service(EntityId id, BaseId @base, BasePolicy p, string world)
+    private async Task Service(EntityId id, BaseId @base, BasePolicy p, string world, int revision)
     {
         try
         {
+            if (_configRevision != revision) return;
             var s = Stations.Read(id);
-            if (s is null || s.Base != @base || p.Excluded.Contains(Key(s), StringComparer.Ordinal) ||
-                (!p.AllStations && !p.Included.Contains(Key(s), StringComparer.Ordinal))) return;
-            if (p.AutoCollect && s.Outputs.Count > 0)
+            if (s is null || s.Base != @base) return;
+            var key = Key(s);
+            if (!Eligible(p, key)) return;
+            if (p.AutoCollect && Rule(p, key)?.Collect != false && s.Outputs.Count > 0)
             {
                 if (!Items.ContainerNamesAvailable)
                     Warn(id, "collect", "items.names unavailable; output remains safely at station.");
@@ -435,8 +534,9 @@ public sealed class BaseStationMagicStorageMod : Mod
                         {
                             foreach (var chest in sinks)
                             {
-                                if (_stopping || !_configOk || WorldId() != world || !p.Enabled || !p.AutoCollect)
-                                    return;
+                                if (_stopping || !_configOk || _configRevision != revision ||
+                                    WorldId() != world || !p.Enabled || !p.AutoCollect ||
+                                    !Eligible(p, key) || Rule(p, key)?.Collect == false) return;
                                 // A renamed, moved or deposit-disabled chest must never
                                 // receive anything after the previous snapshot.
                                 if (!Bases.Storage(@base, deposit: true).Contains(chest) ||
@@ -451,7 +551,8 @@ public sealed class BaseStationMagicStorageMod : Mod
                     }
                 }
             }
-            if (_stopping || WorldId() != world || !p.Enabled || !p.AutoFill) return;
+            if (_stopping || _configRevision != revision || WorldId() != world ||
+                !p.Enabled || !p.AutoFill || !Eligible(p, key) || Rule(p, key)?.Fill == false) return;
             s = Stations.Read(id); // refresh after async collection
             if (s is null || s.Base != @base || s.SelectedRecipe == 0 ||
                 s.StoppedByPlayer || s.StopPending || s.State == StationState.Stopped ||
@@ -468,7 +569,8 @@ public sealed class BaseStationMagicStorageMod : Mod
             if (!plan.Ok || plan.CraftsPlanned <= 0) return;
             var check = Stations.Read(id);
             if (check is null || check.Base != @base || check.SelectedRecipe != s.SelectedRecipe ||
-                check.StoppedByPlayer || check.StopPending) return;
+                check.StoppedByPlayer || check.StopPending || _configRevision != revision ||
+                !Eligible(p, key) || Rule(p, key)?.Fill == false) return;
 
             var fill = await Stations.Fill(id, options);
             Report(id, "fill", fill);
