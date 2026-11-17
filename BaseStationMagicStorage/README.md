@@ -1,6 +1,6 @@
 # Base Station Magic Storage — v0.1.2 test candidate
 
-Standalone Kiln mod for all supported autonomous production stations (FactoryStation: charcoal kilns, smelters, looms, grinders and seed beds) inside a Flame Altar base. Requires Kiln **0.2.0-dev.29.14 / mod API 0.2.6**. This is an experimental candidate, not a public release; prior v0.1.1 in-game automation tests passed.
+Standalone Kiln mod for all supported autonomous production stations (FactoryStation: charcoal kilns, smelters, looms, grinders and seed beds) inside a Flame Altar base. Requires Kiln **0.2.0-dev.29.14 / mod API 0.2.6**. The v0.1.2 chest-name change has passed in-game acceptance, following v0.1.1 production tests. This version is approved for independent release.
 
 ## Behaviour
 
@@ -47,8 +47,8 @@ Commands work in in-game admin chat. The Kiln atomic file console works in a hos
 6. Run **bstation sinks** and confirm that your renamed output chest is listed. This is read-only.
 7. Run **bstation enable 1**. Compare the Magic Chest, kiln and your backpack after a scan. Only the base Magic Chest should lose valid inputs; nothing should pass through your backpack.
 8. After one production cycle, confirm finished charcoal enters **crafting output**. Run **bstation stock** and confirm the charcoal appears in the base's crafting stock; use a blacksmith recipe or the **bstation plan 1** for another charcoal-consuming production station to check downstream availability. Run **bstation disable**.
-9. Repeat with a manually stopped station (its stop flag stays), a full destination, and then smelter, loom and water-dependent stations. Check multiple bases, restart and overlapping altars.
-10. Inspect kiln/logs/kiln.log for bounded BSMS messages. Do not release until tests pass.
+9. v0.1.1 passed automatic fill/collect across 16 distinct station types in a 26-station base; the user accepted the shared-stock charcoal test. Verify additional cases (stopped station, full sink, restarts, other bases) as future regression checks.
+10. Inspect kiln/logs/kiln.log for bounded BSMS messages. The v0.1.2 naming change was accepted in-game.
 
 Disable prevents future actions, but cannot undo a previously submitted native transaction.
 
@@ -71,6 +71,6 @@ A file is only written after an explicit setting command. It is written through 
 
 ## Build
 
-The draft-only workflow uses the checksum-verified official Kiln v0.2.0-dev.29.14 SDK with **scripts/build-compat.sh BaseStationMagicStorage** and uploads an experimental base-station-magic-storage-0.1.1.zip artifact. It does not publish a release or add this candidate to the scheduled latest-Kiln workflow.
+The release workflow uses the checksum-verified official Kiln v0.2.0-dev.29.14 SDK with **scripts/build-compat.sh BaseStationMagicStorage**. It publishes the independent **base-station-magic-storage-v0.1.2** release tag and installable ZIP after a successful build on main. The scheduled latest-Kiln compatibility matrix also includes this mod to detect SDK regressions.
 
 Tracking: [issue #50](https://github.com/bisdat/kiln-mods/issues/50) and the [official Stations/Bases API](https://github.com/frostdev-ops/kiln/blob/main/docs/kiln/services/stations.md).

@@ -1,6 +1,15 @@
-name: Build Base Station Magic Storage (test only)
+name: Package Base Station Magic Storage
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - 'BaseStationMagicStorage/**'
+      - 'tests/base-station-magic-storage/**'
+      - 'scripts/build-compat.py'
+      - 'scripts/build-compat.sh'
+      - 'scripts/resolve-kiln-release.py'
+      - '.github/workflows/base-station-magic-storage.yml'
   pull_request:
     paths:
       - 'BaseStationMagicStorage/**'
@@ -15,12 +24,12 @@ permissions:
   contents: read
 
 concurrency:
-  group: bsms-candidate-${{ github.ref }}
+  group: bsms-package-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
   package:
-    name: Compile and package experimental candidate
+    name: Compile and package accepted mod
     runs-on: ubuntu-24.04
     env:
       KILN_RELEASE_TAG: v0.2.0-dev.29.14
@@ -37,7 +46,7 @@ jobs:
         run: bash scripts/build-compat.sh BaseStationMagicStorage
       - name: Verify package
         run: test -s bin/Release/base-station-magic-storage-0.1.2.zip
-      - name: Upload candidate only, no GitHub Release
+      - name: Upload installable package and SDK provenance
         uses: actions/upload-artifact@v4
         with:
           name: base-station-magic-storage-0.1.2
@@ -45,4 +54,53 @@ jobs:
             bin/Release/base-station-magic-storage-0.1.2.zip
             bin/Release/kiln-sdk-provenance.json
           if-no-files-found: error
-          retention-days: 60
+          retention-days: 90
+
+  release:
+    name: Publish Base Station Magic Storage v0.1.2
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: package
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: base-station-magic-storage-0.1.2
+          path: dist
+      - name: Validate installable package and SDK provenance
+        shell: bash
+        run: |
+          test -s dist/base-station-magic-storage-0.1.2.zip
+          test -s dist/kiln-sdk-provenance.json
+          python3 - <<'PY'
+          import json
+          data = json.load(open("dist/kiln-sdk-provenance.json", encoding="utf-8"))
+          assert data["mod"] == "BaseStationMagicStorage"
+          assert data["tag"] == "v0.2.0-dev.29.14"
+          assert data["version"] == "0.2.0-dev.29.14"
+          assert data["mod_source_sha"] == "${{ github.sha }}"
+          print("Verified BSMS v0.1.2 build provenance")
+          PY
+      - name: Create version tag and publish accepted GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: base-station-magic-storage-v0.1.2
+          target_commitish: ${{ github.sha }}
+          name: Base Station Magic Storage v0.1.2
+          prerelease: false
+          draft: false
+          fail_on_unmatched_files: true
+          generate_release_notes: true
+          body: |
+            Base Station Magic Storage v0.1.2 — accepted in-game on Enshrouded/Kiln v0.2.0-dev.29.14 (SDK API 0.2.6).
+
+            - Automatic output collection from production stations into named, deposit-enabled Magic Chests in the same Flame Altar base.
+            - Rename unbound output chest to crafting output; matching ignores case and whitespace anywhere and allows any suffix. Older BSMS Output name is no longer recognized.
+            - Opt-in per base with bstation enable and optionally bstation all on. Use bstation fill off for manual production with automatic finished-product collection.
+            - Verified with one-station charcoal crafting/shared stock and successful fill/collect across 16 station types in a 26-station base.
+            - No recipe changes, no batch logic, no player-backpack sourcing, no cross-base stock.
+            - Requires Kiln 0.2.0-dev.29.14+ with stations and items-name capabilities. Keep output chests unbound from Endless Chests.
+          files: |
+            dist/base-station-magic-storage-0.1.2.zip
+            dist/kiln-sdk-provenance.json

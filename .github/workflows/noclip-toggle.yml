@@ -29,6 +29,9 @@ jobs:
   package:
     name: Build NoClip Toggle against official Kiln SDK
     runs-on: ubuntu-24.04
+    env:
+      # Avoid unauthenticated GitHub release API rate limits (HTTP 403).
+      GITHUB_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-dotnet@v4
