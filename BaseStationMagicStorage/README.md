@@ -2,6 +2,10 @@
 
 Standalone Kiln mod for all supported autonomous production stations (FactoryStation: charcoal kilns, smelters, looms, grinders and seed beds) inside a Flame Altar base. Requires Kiln **0.2.0-dev.29.14 / mod API 0.2.6**. v0.1.3 adds 26 global station-type checkboxes to Kiln's Mods > Base Station Magic Storage configuration menu; functionality, updated names and ON/OFF behaviour passed in-game acceptance on 17 November 2026. Prior v0.1.2 remains the last earlier stable version.
 
+## Future: use station outputs in place (research)
+
+BSMS currently moves completed products into an explicitly named Magic Chest. A proposed alternative would leave outputs at the producer while allowing downstream native crafting and manual remote withdrawal. This is **not implemented**; Kiln currently exposes station output totals as read-only, not as a native crafting source. See [virtual station outputs research](docs/virtual-station-outputs.md), [BSMS #57](https://github.com/bisdat/kiln-mods/issues/57) and [upstream Kiln API request #68](https://github.com/frostdev-ops/kiln/issues/68). Current behaviour and settings are unchanged.
+
 ## Behaviour
 
 **Default OFF.** At a base you explicitly enable, every 5 seconds the mod:
