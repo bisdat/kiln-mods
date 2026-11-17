@@ -34,6 +34,17 @@ def release(number=21, published="2026-11-10T03:49:21Z", **change):
 
 
 class KilnDevReleaseTests(unittest.TestCase):
+    def test_compatibility_packager_accepts_patch_numbered_sdk(self):
+        path = Path(__file__).resolve().parents[2] / "scripts/build-compat.py"
+        spec = importlib.util.spec_from_file_location("kiln_build_compat", path)
+        assert spec and spec.loader
+        builder = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(builder)
+        for tag in ("v0.2.0-dev.29", "v0.2.0-dev.29.15"):
+            with self.subTest(tag=tag):
+                self.assertIsNotNone(builder.TAG.fullmatch(tag))
+
+
     def test_newest_published_release_is_selected(self):
         found = resolver.select_release([
             release(20, "2026-11-09T06:27:11Z"),
