@@ -48,6 +48,49 @@ public sealed class BaseStationMagicStorageMod : Mod
         PropertyNameCaseInsensitive = true,
     };
 
+    // Old 0.1.3 candidate keys -> displayed player-facing names. Read before
+    // Config.Register rewrites the canonical JSONC file.
+    private static readonly (string Old, string New)[] RenamedStationKeys =
+    [
+        ("cardingMachine", "spinningMachine"),
+        ("coffeeBrewer", "coffeeBrewery"),
+        ("seedlingStation", "seedbed"),
+        ("improvedGrinder", "mill"),
+        ("handGrinder", "grindingStones"),
+        ("honeyStation", "beehive"),
+        ("infusionStation", "infusionAltar"),
+        ("fireplace", "cookingStation"),
+        ("coffeeRoaster", "coffeeDrumRoaster"),
+        ("medievalGrill", "seafoodGrill"),
+    ];
+
+    private static Dictionary<string, bool> LegacyStationValues()
+    {
+        var migrated = new Dictionary<string, bool>(StringComparer.Ordinal);
+        var file = Path.Combine(Config.Directory, "base-station-magic-storage.json");
+        if (!File.Exists(file)) return migrated;
+
+        using var doc = JsonDocument.Parse(File.ReadAllText(file),
+            new JsonDocumentOptions
+            {
+                CommentHandling = JsonCommentHandling.Skip,
+                AllowTrailingCommas = true,
+            });
+        if (doc.RootElement.ValueKind != JsonValueKind.Object)
+            throw new InvalidDataException("BSMS station-type config root must be an object.");
+
+        foreach (var (oldKey, newKey) in RenamedStationKeys)
+        {
+            // New user choices always win over stale legacy keys.
+            if (doc.RootElement.TryGetProperty(newKey, out _)) continue;
+            if (!doc.RootElement.TryGetProperty(oldKey, out var previous)) continue;
+            if (previous.ValueKind is not (JsonValueKind.True or JsonValueKind.False))
+                throw new InvalidDataException($"Invalid saved boolean for '{oldKey}'.");
+            migrated[newKey] = previous.GetBoolean();
+        }
+        return migrated;
+    }
+
     private ModConfig<BSMSStationConfig> _stationTypes = null!;
     private Settings _settings = new();
     private string _settingsFile = "";
@@ -60,11 +103,31 @@ public sealed class BaseStationMagicStorageMod : Mod
     {
         // Uses Kiln's native in-game mod-config editor, not a custom UI or
         // per-physical-station JSON. This config is shared by all bases.
+        Dictionary<string, bool> oldValues;
+        bool migrationOk = true;
+        try
+        {
+            oldValues = LegacyStationValues();
+        }
+        catch (Exception e) when (e is IOException or JsonException or InvalidDataException or UnauthorizedAccessException)
+        {
+            oldValues = new();
+            migrationOk = false;
+            Log.Error(e, "BSMS: station-type config migration check failed; automation disabled.");
+        }
         _stationTypes = Config.Register<BSMSStationConfig>();
+        // Import only existing values without a new key; no reset to defaults.
+        foreach (var (name, saved) in oldValues)
+        {
+            if (_stationTypes.TrySet(name, saved, out var error)) continue;
+            migrationOk = false;
+            Log.Error($"BSMS: could not preserve saved station switch '{name}': {error}");
+        }
         _stationTypes.Changed += OnStationConfigChanged;
         Directory.CreateDirectory(Context.DataDirectory);
         _settingsFile = Path.Combine(Context.DataDirectory, "base-station-magic-storage.json");
         LoadSettings();
+        if (!migrationOk) _configOk = false;
         _command = Commands.Register("bstation", HandleCommand, CommandPermission.Admin,
             usage: "status|bases|list|sinks|stock|plan [n]|station on|off|all on|off|enable [n]|disable|target n|fill on|off|collect on|off|exclude|include",
             description: "Opt-in Magic Chest automation of base production stations.");
@@ -76,6 +139,8 @@ public sealed class BaseStationMagicStorageMod : Mod
     private void OnStationConfigChanged(ConfigChangedEvent change)
     {
         Log.Info($"BSMS: station-type switches updated in Kiln Configs: {string.Join(", ", change.Changed)}");
+        // The typed configuration is live; no station IDs, positions or caches
+        // are involved. An already in-flight native transaction may finish.
     }
 
     public override void OnUnload()
@@ -170,30 +235,30 @@ public sealed class BaseStationMagicStorageMod : Mod
         {
             "T3_Alchemy_Station_Factory" => enabled.AlchemyStation,
             "T2_Kiln_Factory" => enabled.Kiln,
-            "T5_cardingMachine_Factory" => enabled.CardingMachine,
+            "T5_cardingMachine_Factory" => enabled.SpinningMachine,
             "T5_BlastFurnace_Factory" => enabled.BlastFurnace,
-            "T6_coffeemaker_brewer_Factory" => enabled.CoffeeBrewer,
-            "T1_Seedling_Factory" => enabled.SeedlingStation,
-            "T6_Improved_Grinder_Factory" => enabled.ImprovedGrinder,
+            "T6_coffeemaker_brewer_Factory" => enabled.CoffeeBrewery,
+            "T1_Seedling_Factory" => enabled.Seedbed,
+            "T6_Improved_Grinder_Factory" => enabled.Mill,
             "T1_Drying_Rack_Factory" => enabled.DryingRack,
             "T1_Forge_Factory" => enabled.Forge,
             "T3_Oven_Factory" => enabled.Oven,
             "T2_Smelter_Factory" => enabled.Smelter,
             "T2_Table_Saw_Factory" => enabled.TableSaw,
-            "T1_HandGrinder_Factory" => enabled.HandGrinder,
+            "T1_HandGrinder_Factory" => enabled.GrindingStones,
             "T4_SpinningWheel_Factory" => enabled.SpinningWheel,
             "T4_Loom_Factory" => enabled.Loom,
             "T2_HandSpindle_Factory" => enabled.HandSpindle,
-            "T4_Honey_Factory" => enabled.HoneyStation,
+            "T4_Honey_Factory" => enabled.Beehive,
             "T4_Laboratory_Factory" => enabled.Laboratory,
-            "T7_Infusion_Station_Factory" => enabled.InfusionStation,
-            "T2_Fireplace_Factory" => enabled.Fireplace,
+            "T7_Infusion_Station_Factory" => enabled.InfusionAltar,
+            "T2_Fireplace_Factory" => enabled.CookingStation,
             "T2_ColoringStation_Factory" => enabled.ColoringStation,
-            "T6_coffemaker_roaster_Factory" => enabled.CoffeeRoaster,
+            "T6_coffemaker_roaster_Factory" => enabled.CoffeeDrumRoaster,
             "T2_EctoplasmPress_Factory" => enabled.EctoplasmPress,
             "T1_Charcoal_Kiln_Factory" => enabled.CharcoalKiln,
             "T3_Tanning_Station_Factory" => enabled.TanningStation,
-            "T6_Medieval_Grill_Factory" => enabled.MedievalGrill,
+            "T6_Medieval_Grill_Factory" => enabled.SeafoodGrill,
             _ => false,
         };
     }

@@ -68,10 +68,28 @@ class Contracts(unittest.TestCase):
         self.assertEqual(set(declared), {property for _, property in templates})
         self.assertEqual(len({template for template, _ in templates}), 26)
         self.assertIn('T3_Oven_Factory" => enabled.Oven', SRC)
+        self.assertIn('T6_Medieval_Grill_Factory" => enabled.SeafoodGrill', SRC)
+        self.assertIn('T2_Fireplace_Factory" => enabled.CookingStation', SRC)
+        self.assertIn('T5_cardingMachine_Factory" => enabled.SpinningMachine', SRC)
+        self.assertIn("LegacyStationValues()", SRC)
+        self.assertIn("_stationTypes.TrySet(name, saved, out var error)", SRC)
+        self.assertIn("if (!migrationOk) _configOk = false;", SRC)
+        self.assertIn("Name audit", README)
         self.assertIn("Config.Register<BSMSStationConfig>()", SRC)
         self.assertIn("Kiln Configs", README)
         self.assertIn("game menu", README)
         self.assertNotIn("bstation config sync", README)
+        for old, new in (
+            ("CardingMachine", "SpinningMachine"), ("CoffeeBrewer", "CoffeeBrewery"),
+            ("SeedlingStation", "Seedbed"), ("ImprovedGrinder", "Mill"),
+            ("HandGrinder", "GrindingStones"), ("HoneyStation", "Beehive"),
+            ("InfusionStation", "InfusionAltar"), ("Fireplace", "CookingStation"),
+            ("CoffeeRoaster", "CoffeeDrumRoaster"), ("MedievalGrill", "SeafoodGrill"),
+        ):
+            with self.subTest(old=old, new=new):
+                self.assertIn('public bool ' + new + ' { get; set; } = true;', CONFIG)
+                self.assertNotIn('public bool ' + old + ' { get; set; } = true;', CONFIG)
+                self.assertIn('("' + old[:1].lower() + old[1:] + '", "' + new[:1].lower() + new[1:] + '")', SRC)
 
     def test_sdk(self):
         self.assertIn("Kiln.Sdk/0.2.0-dev.29.14", PROJ)
