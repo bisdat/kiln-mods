@@ -21,7 +21,7 @@ ROOT = Path(__file__).resolve().parents[1]
 MOD_IDS = {"SurvivalQoL": "survival-qol", "EndlessChests": "endless-chests-kiln", "NoClipToggle": "noclip-toggle", "GemForgeStorage": "gemforge-magic-storage"}
 SHA = re.compile(r"[0-9a-f]{40}")
 DIGEST = re.compile(r"[0-9a-fA-F]{64}")
-TAG = re.compile(r"v\d+\.\d+\.\d+-dev\.\d+")
+TAG = re.compile(r"v\d+\.\d+\.\d+-dev\.\d+(?:\.\d+)*")
 
 
 def run(*args: str, cwd: Path = ROOT) -> str:
