@@ -104,7 +104,7 @@ public sealed class BaseStationMagicStorageMod : Mod
                     p.Included.Any(s => string.IsNullOrWhiteSpace(s) || s.Length > 256) ||
                     p.Stations is null || p.Stations.Count > 256 ||
                     p.Stations.Any(s => s is null || string.IsNullOrWhiteSpace(s.Key) || s.Key.Length > 256) ||
-                    p.Stations.Select(s => s.Key).Distinct(StringComparer.Ordinal).Count() != p.Stations.Count))
+                    p.Stations.GroupBy(entry => entry.Key, StringComparer.Ordinal).Any(group => group.Count() != 1)))
                 throw new InvalidDataException("Invalid base policies.");
             _configOk = true;
             _configRevision++;
