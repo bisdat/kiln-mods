@@ -29,12 +29,18 @@ and SHA256, retaining the licence and keeping Kiln's loader intact.
 
 1. The upstream author publishes an official GitHub release (normally
    followed by a Nexus upload). GitHub can publish the release page
-   **before** the downloadable ZIP and SHA256 have been uploaded.
-   In that case, the watcher reports a **warning** and retries on the next
+   **before** the downloadable ZIP and checksum have been uploaded.
+   Older releases provide an individual `.zip.sha256` asset; newer releases
+   provide `SHA256SUMS` for multiple assets. The watcher accepts either
+   published format and checks the checksum against the exact ordinary ZIP.
+   An incomplete upload produces a **warning** and retries on the next
    daily run; this is **not** a failure of Kiln or of the adapter.
-2. Only once **both** official files are present and fully uploaded does
-   the watcher download the ZIP, validate its published SHA256, and
-   propose a new version in release.json via a **draft pull request**.
+2. Only once the official ZIP and a published checksum asset are fully
+   uploaded does the watcher download the ZIP, validate the matching
+   SHA256 from the individual checksum or multi-file `SHA256SUMS`,
+   and propose a new version in release.json via a **draft pull request**.
+   The packaging workflow independently verifies the same official checksum
+   and the repository's reviewed archive SHA256 pin.
    It increments the Kiln adapter patch version without copying any source.
 3. CI builds a candidate Kiln ZIP from the actual upstream binary, verifies
    its bytes and licence, tests archive safety, and checks reproducibility.

@@ -3,6 +3,7 @@
 
 GitHub can publish a Release before uploading its binary assets. An assetless
 release is pending, not a broken Kiln build, and must not create an upgrade PR.
+Accepts either the legacy ZIP.sha256 or the new SHA256SUMS manifest.
 Exits successfully but emits a GitHub Actions warning and ready=false; the
 daily watcher checks again. Unrecognized release metadata fails closed.
 """
@@ -34,19 +35,39 @@ def inspect_release(info: dict) -> tuple[str, bool, list[str]]:
         x["name"]: x for x in assets
         if isinstance(x, dict) and isinstance(x.get("name"), str)
     }
-    required = (
-        f"EnshroudedBuildingTools-{version}.zip",
-        f"EnshroudedBuildingTools-{version}.zip.sha256",
-    )
-    pending = []
-    for name in required:
+    archive = f"EnshroudedBuildingTools-{version}.zip"
+    legacy = archive + ".sha256"
+
+    def uploaded(name: str) -> bool:
         asset = by_name.get(name)
-        if (asset is None or not isinstance(asset.get("size"), int)
-                or isinstance(asset.get("size"), bool)
-                or asset["size"] <= 0
-                or asset.get("state") != "uploaded"):
-            pending.append(name)
+        return (isinstance(asset, dict) and
+                isinstance(asset.get("size"), int) and
+                not isinstance(asset["size"], bool) and asset["size"] > 0
+                and asset.get("state") == "uploaded")
+
+    # The upstream releases now use SHA256SUMS instead of a ZIP.sha256.
+    pending = []
+    if not uploaded(archive):
+        pending.append(archive)
+    if not (uploaded(legacy) or uploaded("SHA256SUMS")):
+        pending.append(f"{legacy} or SHA256SUMS")
     return version, not pending, pending
+
+def checksum_asset(info: dict) -> str | None:
+    """Return the official uploaded checksum asset for the ordinary ZIP."""
+    version, ready, _ = inspect_release(info)
+    if not ready:
+        return None
+    archive = f"EnshroudedBuildingTools-{version}.zip"
+    for name in (archive + ".sha256", "SHA256SUMS"):
+        for asset in info["assets"]:
+            if (isinstance(asset, dict) and asset.get("name") == name
+                    and isinstance(asset.get("size"), int)
+                    and not isinstance(asset["size"], bool)
+                    and asset["size"] > 0
+                    and asset.get("state") == "uploaded"):
+                return name
+    raise AssertionError("ready release has no uploaded checksum")
 
 
 def main() -> None:
@@ -63,7 +84,9 @@ def main() -> None:
     print(f"version={version}")
     print(f"ready={'true' if ready else 'false'}")
     if ready:
-        print(f"Official Building Tools v{version}: both assets uploaded",
+        asset = checksum_asset(data)
+        print(f"checksum_asset={asset}")
+        print(f"Official Building Tools v{version}: ZIP and {asset} uploaded",
               file=sys.stderr)
     else:
         print("::warning title=Building Tools upstream release incomplete::"
