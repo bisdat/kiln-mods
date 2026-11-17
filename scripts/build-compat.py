@@ -18,7 +18,7 @@ import time
 from urllib.request import Request, urlopen
 
 ROOT = Path(__file__).resolve().parents[1]
-MOD_IDS = {"SurvivalQoL": "survival-qol", "EndlessChests": "endless-chests-kiln", "NoClipToggle": "noclip-toggle", "BaseStationMagicStorage": "base-station-magic-storage"}
+MOD_IDS = {"SurvivalQoL": "survival-qol", "EndlessChests": "endless-chests-kiln", "NoClipToggle": "noclip-toggle", "BaseStationMagicStorage": "base-station-magic-storage", "GemForgeStorage": "gemforge-magic-storage"}
 SHA = re.compile(r"[0-9a-f]{40}")
 DIGEST = re.compile(r"[0-9a-fA-F]{64}")
 TAG = re.compile(r"v\d+\.\d+\.\d+-dev\.\d+(?:\.\d+)*")
@@ -26,7 +26,14 @@ TAG = re.compile(r"v\d+\.\d+\.\d+-dev\.\d+(?:\.\d+)*")
 
 def run(*args: str, cwd: Path = ROOT) -> str:
     print("+", " ".join(args), flush=True)
-    return subprocess.check_output(args, cwd=cwd, text=True).strip()
+    try:
+        return subprocess.check_output(args, cwd=cwd, text=True, stderr=subprocess.STDOUT).strip()
+    except subprocess.CalledProcessError as exc:
+        # CI must show the compiler's actual diagnostics; suppressing stdout on
+        # failure turns a concrete error into an opaque exit status.
+        if exc.stdout:
+            print(exc.stdout, file=sys.stderr, flush=True)
+        raise
 
 
 def download(url: str, destination: Path) -> bytes:
@@ -141,7 +148,7 @@ def build(mod: str) -> None:
 def main() -> int:
     try:
         if len(sys.argv) != 2:
-            raise ValueError("usage: build-compat.py SurvivalQoL|EndlessChests|NoClipToggle|BaseStationMagicStorage")
+            raise ValueError("usage: build-compat.py SurvivalQoL|EndlessChests|NoClipToggle|BaseStationMagicStorage|GemForgeStorage")
         build(sys.argv[1])
     except (OSError, ValueError, subprocess.CalledProcessError) as exc:
         print(f"Kiln compatibility build FAILED: {exc}", file=sys.stderr)

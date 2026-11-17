@@ -52,6 +52,34 @@ class KilnDevReleaseTests(unittest.TestCase):
         self.assertEqual(selected["version"], "0.2.0-dev.29.14")
         self.assertEqual(selected["tag"], "v0.2.0-dev.29.14")
 
+    def test_compatibility_packager_accepts_patch_numbered_sdk(self):
+        path = Path(__file__).resolve().parents[2] / "scripts/build-compat.py"
+        spec = importlib.util.spec_from_file_location("kiln_build_compat", path)
+        assert spec and spec.loader
+        builder = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(builder)
+        for tag in ("v0.2.0-dev.29", "v0.2.0-dev.29.15"):
+            with self.subTest(tag=tag):
+                self.assertIsNotNone(builder.TAG.fullmatch(tag))
+
+
+    def test_patch_numbered_dev_release_is_selected_and_can_be_pinned(self):
+        patched = release(
+            29,
+            "2026-11-17T16:36:47Z",
+            tag_name="v0.2.0-dev.29.15",
+            html_url="https://github.com/frostdev-ops/kiln/releases/tag/v0.2.0-dev.29.15",
+            assets=[
+                {"name": "Kiln.Sdk.0.2.0-dev.29.15.nupkg"},
+                {"name": "Kiln.Api.0.2.0-dev.29.15.nupkg"},
+                {"name": "SHA256SUMS"},
+            ],
+        )
+        old = release(29, "2026-11-17T08:00:00Z")
+        self.assertEqual(resolver.select_release([old, patched])["tag"], "v0.2.0-dev.29.15")
+        self.assertEqual(resolver.select_release([old, patched], "v0.2.0-dev.29.15")["version"],
+                         "0.2.0-dev.29.15")
+
     def test_drafts_and_unpublished_are_ignored(self):
         found = resolver.select_release([
             release(22, "2026-11-11T06:00:00Z", draft=True),

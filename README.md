@@ -70,6 +70,14 @@ Standalone Kiln mod v0.1.1 (backtick default following the accepted v0.1.0 toggl
 
 An independent mod using Kiln API 0.2.6 to auto-fill FactoryStations from **their own base's Magic Chests** and collect finished outputs into deposit-enabled chests. Off by default; an admin can opt in a **single station** for testing, then deliberately enable the entire base with **bstation all on**. It only collects outputs into dedicated Magic Chests named **BSMS Output** (or BSMS Output 2), preventing accidental delivery into an Endless Chests **Empty** chest. These outputs become shared crafting stock for other stations and the blacksmith. It does not borrow items through the player's backpack, change a recipe or a station's stop state, or pretend the Gem Forge or hand-crafting bench is a FactoryStation. In-game acceptance is pending; no public release.
 
+## Gem Forge Magic Storage — automatic native integration v1.0.0
+
+[Installation and feature guide](GemForgeStorage/README.md) | [Build workflow](.github/workflows/gemforge-storage.yml) | [Releases](https://github.com/bisdat/kiln-mods/releases)
+
+**Automatically** makes eligible Magic Chest gems from the player's current flame-altar base appear in Enshrouded's original Gem Forge **GEMS** grid, using Kiln's supported server-authoritative item transactions. Player-held weapons can receive chest gems, while Archaic Essence payments use player inventory first and then the current base's Magic Chest storage. Recycling rewards and removed gems go to the player's backpack. **No console commands, enable switches, inventory loans, memory patches or custom UI.**
+
+Requires **Kiln 0.2.0-dev.29.15+** on the hosting server and on the client viewing offered gems. The mod itself is installed server-side only. Tests on the precursor v0.3.0 integration passed for native selection, socket/unsocket, exact chest-funded upgrading, insufficient-funds refusal, recycling and withdrawal; the production v1.0.0 removes the test commands. The abandoned temporary gem-lending design remains retired, and historical findings remain in [Gem Forge research](docs/research/GEMFORGE-DIRECT-INTEGRATION.md).
+
 ## Licence
 
 Original code, scripts and documentation in this repository are available under
