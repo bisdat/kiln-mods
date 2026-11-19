@@ -16,19 +16,19 @@ public sealed class SurvivalQoLConfig
     [Comment("Keep player mana at 100% via Kiln.Rules.")]
     public bool InfiniteMana { get; set; } = true;
 
-    [Comment("Heal players at a fixed rate while injured. Does not prevent lethal damage.")]
+    [Comment("Apply optional bonus healing while injured. Zero additional HP/s leaves the game\'s normal regeneration unchanged. Does not prevent lethal damage.")]
     public bool FastHealthRegen { get; set; } = true;
 
-    [Comment("Additional health points per second.")]
+    [Comment("Bonus health per second: 0 = normal game (no added healing); 1-500 adds HP/s while injured.")]
     [Range(0, 500)]
-    public int HealthRegenPerSecond { get; set; } = 25;
+    public int HealthRegenPerSecond { get; set; } = 0;
 
-    [Comment("Regenerate mana over time; useful if infinite mana is disabled.")]
+    [Comment("Apply optional bonus mana regeneration. Zero additional mana/s leaves normal game recovery unchanged.")]
     public bool FastManaRegen { get; set; } = true;
 
-    [Comment("Additional mana points per second.")]
+    [Comment("Bonus mana per second: 0 = normal game (no added mana); 1-500 adds mana/s when below maximum.")]
     [Range(0, 500)]
-    public int ManaRegenPerSecond { get; set; } = 35;
+    public int ManaRegenPerSecond { get; set; } = 0;
 
     [Comment("Cancel fall damage for players, including the hard-landing stagger.")]
     public bool NoFallDamage { get; set; } = true;
