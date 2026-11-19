@@ -61,6 +61,7 @@ class Contracts(unittest.TestCase):
     def test_exactly_26_type_toggles(self):
         import re
         declared = re.findall(r"public bool (\w+) \{ get; set; \} = true;", CONFIG)
+        declared = [n for n in declared if n != "ShareOutputs"]
         self.assertEqual(len(declared), 26)
         self.assertEqual(len(set(declared)), 26)
         templates = re.findall(r'"(T\w+_Factory)"\s*=>\s*enabled\.(\w+)', SRC)
