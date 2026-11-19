@@ -19,15 +19,15 @@ public sealed class SurvivalQoLConfig
     [Comment("Apply optional bonus healing while injured. Zero additional HP/s leaves the game\'s normal regeneration unchanged. Does not prevent lethal damage.")]
     public bool FastHealthRegen { get; set; } = true;
 
-    [Comment("Bonus health per second: 0 = normal game (no added healing); 1-500 adds HP/s while injured.")]
-    [Range(0, 500)]
+    [Comment("Bonus health per second: 0 = normal game (no added healing); 1-100 adds HP/s while injured.")]
+    [Range(0, 100)]
     public int HealthRegenPerSecond { get; set; } = 0;
 
     [Comment("Apply optional bonus mana regeneration. Zero additional mana/s leaves normal game recovery unchanged.")]
     public bool FastManaRegen { get; set; } = true;
 
-    [Comment("Bonus mana per second: 0 = normal game (no added mana); 1-500 adds mana/s when below maximum.")]
-    [Range(0, 500)]
+    [Comment("Bonus mana per second: 0 = normal game (no added mana); 1-100 adds mana/s when below maximum.")]
+    [Range(0, 100)]
     public int ManaRegenPerSecond { get; set; } = 0;
 
     [Comment("Cancel fall damage for players, including the hard-landing stagger.")]
