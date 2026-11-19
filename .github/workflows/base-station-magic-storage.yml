@@ -95,8 +95,8 @@ jobs:
           body: |
             Base Station Magic Storage v0.1.4 — two independently configurable output modes, Kiln dev.29.17 / mod API 0.2.9.
 
-            - NEW: ShareOutputs checkbox (default OFF) lends finished station outputs to same-base station fills and player crafting via Kiln #68, without first transferring them to Magic Chests.
-            - CollectOutputs checkbox (default ON) retains v0.1.3 collection into dedicated Magic Chests named crafting output. Both checkboxes appear in Insert -> Mods -> Configs -> Base Station Magic Storage.
+            - NEW: ShareOutputs checkbox (default ON) lends finished station outputs to same-base station fills and player crafting via Kiln #68, without first transferring them to Magic Chests.
+            - CollectOutputs checkbox (default OFF) retains v0.1.3 collection into dedicated Magic Chests named crafting output. Both checkboxes appear in Insert -> Mods -> Configs -> Base Station Magic Storage.
             - Existing 26 per-type checkboxes and base opt-ins/exclusions continue controlling eligibility. Sharing registration is tracked and revoked when disabled.
             - If both output modes are ON, the timed collector may move output before crafting draws it directly. For in-place sharing, enable ShareOutputs and disable CollectOutputs.
             - Server transaction safety, queued-input/leftover exclusions, same-base limits and permission rules are supplied by the upstream Kiln API.
