@@ -10,12 +10,12 @@ namespace Bisdat.BaseStationMagicStorage;
 /// </summary>
 public sealed class BSMSStationConfig
 {
-    // Upgrade defaults preserve 0.1.3 behaviour until a user opts into sharing.
+    // Requested defaults: finished products stay at the station and are shared directly.
     [Comment("Share outputs: allow finished products to be crafted from directly while they remain in their producing station. Same-base only, no queued inputs.")]
-    public bool ShareOutputs { get; set; } = false;
+    public bool ShareOutputs { get; set; } = true;
 
     [Comment("Collect outputs: automatically move finished products to explicitly named crafting output Magic Chests, as in v0.1.3. Disable to keep products in their producing stations.")]
-    public bool CollectOutputs { get; set; } = true;
+    public bool CollectOutputs { get; set; } = false;
 
     [Comment("Alchemy Station: allow BSMS to fill ingredients (if base auto-fill is enabled) and collect finished goods (if base auto-collection is enabled).")]
     public bool AlchemyStation { get; set; } = true;
