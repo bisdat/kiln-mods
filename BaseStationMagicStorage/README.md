@@ -6,18 +6,18 @@ Standalone Kiln mod for production stations (FactoryStation: charcoal kilns, sme
 
 Open **Insert → Mods → Configs → Base Station Magic Storage**. There are **two independent checkboxes**, above the 26 station-type checkboxes:
 
-- **Share outputs** (`ShareOutputs`, default **OFF**): finished products remain *in the producing station* and become available to same-base player crafting and `Stations.Fill`. Upstream Kiln only lends eligible finished outputs, not inputs, leftovers, or products that are also inputs. Requires `stations.output_sources` for the opt-in; `stations.craft_sources` and `stations.craft_ui` govern server player crafting and Kiln-client menu counts. The existing base enablement, individual/all-stations selection, exclusions and station-type switches still apply.
-- **Collect outputs** (`CollectOutputs`, default **ON**): retains v0.1.3 automatic transfer to explicitly named, deposit-enabled Magic Chests beginning with `crafting output`. Also respects the existing per-base `bstation collect on|off` policy.
+- **Share outputs** (`ShareOutputs`, default **ON**): finished products remain *in the producing station* and become available to same-base player crafting and `Stations.Fill`. Upstream Kiln only lends eligible finished outputs, not inputs, leftovers, or products that are also inputs. Requires `stations.output_sources` for the opt-in; `stations.craft_sources` and `stations.craft_ui` govern server player crafting and Kiln-client menu counts. The existing base enablement, individual/all-stations selection, exclusions and station-type switches still apply.
+- **Collect outputs** (`CollectOutputs`, default **OFF**): retains v0.1.3 automatic transfer to explicitly named, deposit-enabled Magic Chests beginning with `crafting output`. Also respects the existing per-base `bstation collect on|off` policy.
 
-Both can be ON independently. **With both ON, the collector may empty the station's shared output into its named chest during the next scan.** For output to remain in producing stations, enable **Share outputs** and disable **Collect outputs**, then click **Apply**. Existing saved BSMS settings continue collecting by default: sharing is not silently enabled on upgrade.
+Both can be ON independently. **With both ON, the collector may empty the station's shared output into its named chest during the next scan.** For output to remain in producing stations, enable **Share outputs** and disable **Collect outputs**, then click **Apply**. Fresh configuration defaults to sharing without collection. Existing saved checkbox values remain authoritative, so if you tested an earlier v0.1.4 candidate, explicitly set **Share outputs ON / Collect outputs OFF** in the Insert menu.
 
 Sharing is base-local, not cross-base. It works even when BSMS automatic filling is OFF and needs no output chest. The original station-screen Fill button can remain greyed out even if shared outputs cover ingredients; mod-driven `Stations.Fill` can use the outputs. Clients without Kiln retain vanilla crafting counts. Creative Mode can disable player-crafting capability; check `bstation status`.
 
-BSMS records which output-source opt-ins it owns by world and stable station identity, so switching sharing, a station type or its base policy OFF revokes BSMS-owned sources on the next five-second scan, without switching off another mod's registrations. Native craft payment is revalidated on the server. **This candidate requires in-game acceptance; compilation does not establish that the crafting menu works on a hosted or joined client.**
+BSMS records which output-source opt-ins it owns by world and stable station identity, so switching sharing, a station type or its base policy OFF revokes BSMS-owned sources on the next five-second scan, without switching off another mod's registrations. Native craft payment is revalidated on the server. ****In-game FAIL reported:** the smelter did not recognise newly crafted charcoal still held at the charcoal kiln with ShareOutputs enabled. Upstream documents that the native station Fill button cannot count station outputs (while mod-driven Stations.Fill can). This is unresolved; do not merge/tag this candidate until the native-UI acceptance gap is addressed and the output-source registration is verified.**
 
 ## Behaviour
 
-**Default OFF.** At a base you explicitly enable, every 5 seconds the mod follows the two output-mode switches:
+**Base automation default OFF.** At a base you explicitly enable, every 5 seconds the mod follows the two output-mode switches:
 - Tops up the station's **currently selected** recipe to 3 complete crafts (configurable 1–20) through the game's Stations.Fill transaction. Inputs come **only from this base's Magic Chests**, not the player backpack. Water uses the base's water sources.
 - When **Collect outputs** is enabled, moves finished outputs through native Stations.Collect into **explicitly marked, deposit-enabled Magic Chests** named **crafting output**, optionally followed by any suffix. Matching ignores case and whitespace anywhere in the name. Those chests are then part of the base's normal crafting stock, making charcoal and other outputs immediately available to other production stations and to the blacksmith's native base-stock crafting. It leaves leftovers, inputs and ordinary chests alone.
 - **No output destination is selected automatically.** If there is no suitably named Magic Chest, or its name cannot be read reliably, finished products stay safely in the producing station. This prevents accidental deposits into Endless Chests named **Empty**, which are deliberately cleared by that mod.
@@ -29,6 +29,15 @@ BSMS records which output-source opt-ins it owns by world and stable station ide
 
 FactoryStations are not ordinary hand-crafting workbenches or NPC crafting (which already use the game's base-stock path), and not the Gem Forge (see upstream [Kiln #61](https://github.com/frostdev-ops/kiln/issues/61)). No borrowed inventory, external loader, game-memory patches or custom UI.
 
+
+## Smelter acceptance investigation (unresolved)
+
+The reported test is **FAIL**: with Share outputs ON, charcoal was produced in a charcoal kiln, but the smelter did not recognise it as material. There are two separate checks:
+
+1. `bstation list` (in the same base) must show the **charcoal kiln** as `output-source=True` with at least one output stack/item. If not, review `bstation status`, base enablement, `all on` / `station on` selection, CharcoalKiln type switch and `stations.output_sources` capability.
+2. Stand near the **smelter**, select the desired recipe, and run `bstation plan 1` (read-only). This now prints `shared station outputs=<quantity>` per ingredient. If nonzero and affordable while the native smelter UI stays greyed out, the remaining gap is **Kiln's client-side Fill button**, documented upstream in [stations.md](https://github.com/frostdev-ops/kiln/blob/main/docs/kiln/services/stations.md#station-outputs-as-crafting-stock). This is not an accepted replacement for normal station operation.
+
+The smelter's *automatic production cycle* still uses its own inventory; sharing does not make a source station produce from thin air. A recipient station must first receive inputs via `Stations.Fill` or the native fill action. Existing BSMS `bstation fill on` enables its optional automatic `Stations.Fill`, but is not a substitute for fixing the native Fill interface. Preserve queued inputs and never move station outputs to arbitrary Magic Chests.
 
 ## In-game settings: one switch per production-station type
 
