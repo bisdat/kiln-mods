@@ -564,21 +564,21 @@ public sealed class BaseStationMagicStorageMod : Mod
         if (_scanning) return;
         _scanning = true;
         var justEnabled = new List<EntityId>();
+        var targets = new List<(EntityId Id, BaseId Base, BasePolicy Policy)>();
         bool sourcesChanged = false;
         var seen = new HashSet<string>(StringComparer.Ordinal);
-        bool complete = true;
         try
         {
-            var serviceCount = 0;
+            // Do ALL source registration/revocation before any await: Kiln's
+            // SetOutputSource is tick-thread-only. The later async collection
+            // / fill service must not resume and call it from a worker thread.
             foreach (var b in Bases.All)
             {
-                if (_stopping || WorldId() != world) { complete = false; return; }
+                if (_stopping || WorldId() != world) return;
                 var p = Policy(b, world);
                 foreach (var id in Stations.InBase(b.Id))
                 {
-                    // Ownership/revocation must cover EVERY opted-in station.
-                    // The 128-station bound applies only to expensive automation.
-                    if (_stopping || WorldId() != world) { complete = false; return; }
+                    if (_stopping || WorldId() != world) return;
                     var s = Stations.Read(id);
                     if (s is null) continue;
                     seen.Add(Key(s));
@@ -588,29 +588,36 @@ public sealed class BaseStationMagicStorageMod : Mod
                         if (SyncOutputSource(id, s, world, wantShare, justEnabled)) sourcesChanged = true;
                     }
                     catch (Exception e) { Warn(id, "share", $"{e.GetType().Name}: {e.Message}"); }
+                    // Only the costly auto-service is limited to 128 stations.
+                    // Output-source revocation must cover every opted-in station.
                     if (_configOk && p is { Enabled: true } && Eligible(s, p) &&
                         ((p.AutoCollect && _stationTypes.Value.CollectOutputs) || p.AutoFill) &&
-                        ++serviceCount <= MaxStationsPerScan)
-                        await Service(id, b.Id, p, world);
+                        targets.Count < MaxStationsPerScan)
+                        targets.Add((id, b.Id, p));
                 }
             }
-            if (complete && _settings.SharedSources.RemoveAll(x => x.World == world && !seen.Contains(x.Station)) > 0)
+            if (_settings.SharedSources.RemoveAll(x => x.World == world && !seen.Contains(x.Station)) > 0)
                 sourcesChanged = true;
-        }
-        catch (Exception e) { Log.Warn($"BSMS: scan interrupted: {e.GetType().Name}: {e.Message}"); }
-        finally
-        {
+
             if (sourcesChanged && !Save())
             {
-                // Do not leave newly enabled sources untracked on a save failure.
+                // Do not leave newly enabled sources untracked on save failure.
                 foreach (var id in justEnabled)
                 {
                     try { Stations.SetOutputSource(id, on: false); }
                     catch (Exception e) { Warn(id, "share-rollback", e.Message); }
                 }
+                return;
             }
-            _scanning = false;
+
+            foreach (var (id, b, p) in targets)
+            {
+                if (_stopping || WorldId() != world || !_configOk) return;
+                await Service(id, b, p, world);
+            }
         }
+        catch (Exception e) { Log.Warn($"BSMS: scan interrupted: {e.GetType().Name}: {e.Message}"); }
+        finally { _scanning = false; }
     }
 
     private async Task Service(EntityId id, BaseId @base, BasePolicy p, string world)
