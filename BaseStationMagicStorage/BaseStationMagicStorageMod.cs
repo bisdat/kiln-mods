@@ -569,14 +569,15 @@ public sealed class BaseStationMagicStorageMod : Mod
         bool complete = true;
         try
         {
-            var count = 0;
+            var serviceCount = 0;
             foreach (var b in Bases.All)
             {
                 if (_stopping || WorldId() != world) { complete = false; return; }
                 var p = Policy(b, world);
                 foreach (var id in Stations.InBase(b.Id))
                 {
-                    if (++count > MaxStationsPerScan) { complete = false; break; }
+                    // Ownership/revocation must cover EVERY opted-in station.
+                    // The 128-station bound applies only to expensive automation.
                     if (_stopping || WorldId() != world) { complete = false; return; }
                     var s = Stations.Read(id);
                     if (s is null) continue;
@@ -588,10 +589,10 @@ public sealed class BaseStationMagicStorageMod : Mod
                     }
                     catch (Exception e) { Warn(id, "share", $"{e.GetType().Name}: {e.Message}"); }
                     if (_configOk && p is { Enabled: true } && Eligible(s, p) &&
-                        ((p.AutoCollect && _stationTypes.Value.CollectOutputs) || p.AutoFill))
+                        ((p.AutoCollect && _stationTypes.Value.CollectOutputs) || p.AutoFill) &&
+                        ++serviceCount <= MaxStationsPerScan)
                         await Service(id, b.Id, p, world);
                 }
-                if (!complete) break;
             }
             if (complete && _settings.SharedSources.RemoveAll(x => x.World == world && !seen.Contains(x.Station)) > 0)
                 sourcesChanged = true;
