@@ -22,7 +22,7 @@ An Enshrouded mod built with the Kiln SDK and .NET 10. Runs on the authoritative
 
 ## Health and mana regeneration — default changes in v0.2.3
 
-Both additional-regeneration sliders use **0–500 points/s**. Their default is now **0**: this means *no bonus* on top of normal Enshrouded regeneration, not a request to suppress native regeneration. The corresponding Fast Health Regen and Fast Mana Regen switches remain enabled by default; with a zero bonus the mod does not query or write health/mana through these features. Values above zero add a fixed rate while below maximum (health also requires a living, injured character).
+Both additional-regeneration sliders use **0–100 points/s**. Their default is now **0**: this means *no bonus* on top of normal Enshrouded regeneration, not a request to suppress native regeneration. The corresponding Fast Health Regen and Fast Mana Regen switches remain enabled by default; with a zero bonus the mod does not query or write health/mana through these features. Values above zero add a fixed rate while below maximum (health also requires a living, injured character).
 
 For players who want the former boosted settings, choose **25 HP/s** and **35 mana/s**, respectively. The mod does not change Enshrouded's built-in recovery formulas or expose a native health/mana recovery multiplier.
 
