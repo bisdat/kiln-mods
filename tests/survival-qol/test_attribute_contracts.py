@@ -102,7 +102,7 @@ class SurvivalAttributeContracts(unittest.TestCase):
         # only our *additional* HP and mana grants. Both remain opt-in sliders.
         self.assertIn("public int HealthRegenPerSecond { get; set; } = 0;", CONFIG)
         self.assertIn("public int ManaRegenPerSecond { get; set; } = 0;", CONFIG)
-        self.assertEqual(CONFIG.count("[Range(0, 500)]"), 2)
+        self.assertEqual(CONFIG.count("[Range(0, 100)]"), 2)
         self.assertIn("public bool FastHealthRegen { get; set; } = true;", CONFIG)
         self.assertIn("public bool FastManaRegen { get; set; } = true;", CONFIG)
         self.assertIn(
