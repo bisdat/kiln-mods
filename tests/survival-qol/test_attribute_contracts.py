@@ -97,8 +97,30 @@ class SurvivalAttributeContracts(unittest.TestCase):
         self.assertIn("(long)(current - previous) * (multiplier - 1)", STAMINA)
         self.assertIn("Math.Min(maximum - current, extra)", STAMINA)
 
-    def test_stamina_slider_build_has_distinct_library_version(self):
-        self.assertIn("<Version>0.2.2</Version>", PROJECT)
+    def test_health_and_mana_bonus_rates_default_to_unmodified_game(self):
+        # The zero defaults are not native regeneration rates: they disable
+        # only our *additional* HP and mana grants. Both remain opt-in sliders.
+        self.assertIn("public int HealthRegenPerSecond { get; set; } = 0;", CONFIG)
+        self.assertIn("public int ManaRegenPerSecond { get; set; } = 0;", CONFIG)
+        self.assertEqual(CONFIG.count("[Range(0, 500)]"), 2)
+        self.assertIn("public bool FastHealthRegen { get; set; } = true;", CONFIG)
+        self.assertIn("public bool FastManaRegen { get; set; } = true;", CONFIG)
+        self.assertIn(
+            "if (options.FastHealthRegen && options.HealthRegenPerSecond > 0 && Combat.Available)",
+            MOD,
+        )
+        self.assertIn(
+            "if (options.FastManaRegen && options.ManaRegenPerSecond > 0)",
+            MOD,
+        )
+        self.assertIn("else state.HealthRemainder = 0;", MOD)
+        self.assertIn("else state.ManaRemainder = 0;", MOD)
+        # Positive slider values must still add points to resources.
+        self.assertIn("Combat.Heal(player.Entity, requested)", MOD)
+        self.assertIn("Abilities.Attributes.Add(player.Entity, AbilityResource.Mana, requested)", MOD)
+
+    def test_health_and_mana_default_change_has_distinct_library_version(self):
+        self.assertIn("<Version>0.2.3</Version>", PROJECT)
 
     def test_pinned_sdk_includes_attribute_api(self):
         self.assertIn("Kiln.Sdk/0.2.0-dev.local.20261110.62101", PROJECT)
