@@ -7,7 +7,7 @@ namespace Bisdat.BaseStationMagicStorage;
 
 /// <summary>
 /// Base-local, opt-in automation of FactoryStations via the game's own
-/// Magic Chest fill and output collection transactions (Kiln API 0.2.6).
+/// Magic Chest fill, native output sharing and named-chest collection (Kiln API 0.2.9).
 /// </summary>
 public sealed class BaseStationMagicStorageMod : Mod
 {
@@ -24,6 +24,14 @@ public sealed class BaseStationMagicStorageMod : Mod
     private sealed class Settings
     {
         public List<BasePolicy> Bases { get; set; } = [];
+        // Remember which opt-ins BSMS owns, even over save/reload.
+        public List<SharedSource> SharedSources { get; set; } = [];
+    }
+
+    private sealed class SharedSource
+    {
+        public string World { get; set; } = "";
+        public string Station { get; set; } = "";
     }
 
     private sealed class BasePolicy
@@ -132,15 +140,15 @@ public sealed class BaseStationMagicStorageMod : Mod
             usage: "status|bases|list|sinks|stock|plan [n]|station on|off|all on|off|enable [n]|disable|target n|fill on|off|collect on|off|exclude|include",
             description: "Opt-in Magic Chest automation of base production stations.");
         Context.Tick.Pre += OnTick;
-        Log.Info("Base Station Magic Storage v0.1.3 loaded: 26 station-type switches in Kiln Configs; automation OFF until bstation enable; " +
-                 "FactoryStations only, base-local Magic Chests only.");
+        Log.Info("Base Station Magic Storage v0.1.4 loaded: 26 station-type switches plus ShareOutputs / CollectOutputs in Kiln Configs; " +
+                 "sharing OFF and collection ON by default; per-base automation OFF until bstation enable.");
     }
 
     private void OnStationConfigChanged(ConfigChangedEvent change)
     {
         Log.Info($"BSMS: station-type switches updated in Kiln Configs: {string.Join(", ", change.Changed)}");
-        // The typed configuration is live; no station IDs, positions or caches
-        // are involved. An already in-flight native transaction may finish.
+        // Reconcile sharing and collection at the next five-second scan.
+        // Kiln validates native payments on the server at transaction time.
     }
 
     public override void OnUnload()
@@ -160,7 +168,10 @@ public sealed class BaseStationMagicStorageMod : Mod
                 ? JsonSerializer.Deserialize<Settings>(File.ReadAllText(_settingsFile), Json)
                     ?? throw new InvalidDataException("Empty settings file.")
                 : new Settings();
-            if (_settings.Bases is null || _settings.Bases.Count > 64 ||
+            if (_settings.SharedSources is null || _settings.SharedSources.Count > 4096 ||
+                _settings.SharedSources.Any(x => x is null || string.IsNullOrWhiteSpace(x.World) ||
+                    x.World.Length > 128 || string.IsNullOrWhiteSpace(x.Station) || x.Station.Length > 256) ||
+                _settings.Bases is null || _settings.Bases.Count > 64 ||
                 _settings.Bases.Any(p => p.World.Length is < 1 or > 128 ||
                     !Guid.TryParse(p.Altar, out _) || p.TargetCrafts is < 1 or > MaxTarget ||
                     p.Excluded is null || p.Excluded.Count > 256 ||
@@ -263,6 +274,50 @@ public sealed class BaseStationMagicStorageMod : Mod
         };
     }
 
+    private bool Eligible(StationInfo s, BasePolicy? p) =>
+        p is { Enabled: true } && StationTypeEnabled(s) &&
+        !p.Excluded.Contains(Key(s), StringComparer.Ordinal) &&
+        (p.AllStations || p.Included.Contains(Key(s), StringComparer.Ordinal));
+
+    // Do not opt out a station owned by another mod: only touch registrations
+    // that BSMS recorded for its own world/station identity.
+    private bool SyncOutputSource(EntityId id, StationInfo s, string world, bool wanted,
+        List<EntityId> justEnabled)
+    {
+        var key = Key(s);
+        var ours = _settings.SharedSources.FirstOrDefault(x => x.World == world && x.Station == key);
+        if (!Capabilities.Is(Stations.OutputSourcesCapability))
+        {
+            if (wanted) Warn(id, "share", "stations.output_sources unavailable; sharing is off.");
+            return false;
+        }
+
+        var active = Stations.IsOutputSource(id);
+        if (!wanted)
+        {
+            if (ours is null) return false;
+            if (active) Stations.SetOutputSource(id, on: false);
+            _settings.SharedSources.Remove(ours);
+            return true;
+        }
+        if (ours is not null)
+        {
+            // Reapply if an opt-in was session-only and not restored on reload.
+            if (!active) Stations.SetOutputSource(id);
+            return false;
+        }
+        if (active)
+        {
+            // An unrelated mod already opted this station in.
+            return false;
+        }
+        bool persisted = Stations.SetOutputSource(id);
+        _settings.SharedSources.Add(new SharedSource { World = world, Station = key });
+        justEnabled.Add(id);
+        if (!persisted) Warn(id, "share", "Kiln could not persist this opt-in; BSMS will reapply on the next session.");
+        return true;
+    }
+
     private static EntityId Requester(CommandContext c)
     {
         var player = c.Source.Player;
@@ -308,18 +363,22 @@ public sealed class BaseStationMagicStorageMod : Mod
             if (verb == "status")
             {
                 var world = WorldId();
-                Say($"v0.1.3 config={(_configOk ? "OK" : "INVALID/OFF")}, " +
+                Say($"v0.1.4 config={(_configOk ? "OK" : "INVALID/OFF")}, " +
                     $"world={world ?? "none"}, stations={Stations.Available}, bases={Bases.Available}, " +
                     $"scanned={Stations.Scanned}, read={Capabilities.Is(Stations.ReadCapability)}, " +
                     $"fill={Capabilities.Is(Stations.FillCapability)}, items.move={Capabilities.Is("items.move")}, " +
                     $"items.names={Items.ContainerNamesAvailable}, " +
+                    $"share={_stationTypes.Value.ShareOutputs}, collect={_stationTypes.Value.CollectOutputs}, " +
+                    $"outputSources={Capabilities.Is(Stations.OutputSourcesCapability)}, " +
+                    $"craftSources={Capabilities.Is(Stations.CraftSourcesCapability)}, " +
+                    $"craftUi={Capabilities.Is(Stations.CraftUiCapability)}, " +
                     $"enabled bases here={_settings.Bases.Count(p => p.World == world && p.Enabled)}. " +
                     "All bases are disabled by default.");
                 return;
             }
             if (!_configOk) throw new CommandException("Invalid settings: automation disabled; restore the settings file.");
             if (!Stations.Available || !Bases.Available || !Capabilities.Is(Stations.ReadCapability))
-                throw new CommandException("Requires Kiln dev.29.14 / SDK API 0.2.6 and an active server world.");
+                throw new CommandException("Requires Kiln dev.29.17 / SDK API 0.2.9 and an active server world.");
             var w = WorldId() ?? throw new CommandException("Enter a saved world.");
             if (verb == "bases")
             {
@@ -328,7 +387,8 @@ public sealed class BaseStationMagicStorageMod : Mod
                     var p = Policy(b, w);
                     Say($"{b.Id}: stations={b.StationCount}, Magic stock={b.StorageCount}, " +
                         $"enabled={p?.Enabled == true}, all={p?.AllStations == true}, selected={p?.Included.Count ?? 0}, " +
-                        $"target={p?.TargetCrafts}, collect={p?.AutoCollect}; " +
+                        $"target={p?.TargetCrafts}, fill={p?.AutoFill}, baseCollect={p?.AutoCollect}, " +
+                        $"share={_stationTypes.Value.ShareOutputs}, collect={_stationTypes.Value.CollectOutputs}; " +
                         $"altars={string.Join(",", b.Altars.Select(a => a.Id))}");
                 }
                 return;
@@ -385,7 +445,7 @@ public sealed class BaseStationMagicStorageMod : Mod
                         $"outputs={s.Outputs.Count}, stopped={s.StoppedByPlayer}, " +
                         $"excluded={existing?.Excluded.Contains(Key(s), StringComparer.Ordinal) == true}, " +
                         $"opted-in={existing?.Included.Contains(Key(s), StringComparer.Ordinal) == true}, " +
-                        $"type-enabled={StationTypeEnabled(s)}");
+                        $"type-enabled={StationTypeEnabled(s)}, output-source={Stations.IsOutputSource(id)}");
                 }
                 if (home.StationCount > 64) Say("Only first 64 stations shown.");
                 return;
@@ -397,7 +457,8 @@ public sealed class BaseStationMagicStorageMod : Mod
                 var s = id.IsNone ? null : Stations.Read(id);
                 if (s is null || s.Base != home.Id) throw new CommandException("No production station within 12 metres in this base.");
                 var target = c.Count > 1 ? Crafts(c.Args[1]) : existing?.TargetCrafts ?? 3;
-                var plan = Stations.Plan(id, new FillOptions { Crafts = target, Mode = FillMode.UpTo, Water = true });
+                var plan = Stations.Plan(id, new FillOptions { Crafts = target, Mode = FillMode.UpTo,
+                    Water = true, UseStationOutputs = _stationTypes.Value.ShareOutputs });
                 Say($"{id} {s.Template}: plan target={target}, {plan.Status}, " +
                     $"affordable={plan.CraftsAffordable}, planned={plan.CraftsPlanned}, " +
                     $"short={plan.LimitedBy} {plan.ShortItem}, station-water={plan.WaterHave}, base-water={plan.WaterStock}. " +
