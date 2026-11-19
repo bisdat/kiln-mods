@@ -19,7 +19,7 @@ class ReleaseApprovalTests(unittest.TestCase):
         # current is new but the older approval and gameplay signoff must
         # remain unchanged. Never hard-code the current production version.
         for value in (current, approved, verified):
-            self.assertRegex(value, r"^\\d+\\.\\d+\\.\\d+$")
+            self.assertRegex(value, r"^\d+\.\d+\.\d+$")
         version = lambda v: tuple(map(int, v.split(".")))
         self.assertLessEqual(version(approved), version(current))
         self.assertLessEqual(version(verified), version(current))
