@@ -151,7 +151,7 @@ public sealed class SurvivalQoLMod : Mod
 
             if (seconds <= 0.0) continue;
 
-            if (options.FastHealthRegen && Combat.Available)
+            if (options.FastHealthRegen && options.HealthRegenPerSecond > 0 && Combat.Available)
             {
                 var health = Combat.GetHealth(player.Entity);
                 if (health is { Dead: false } current && current.Current > 0 && current.Current < current.Max)
@@ -169,7 +169,7 @@ public sealed class SurvivalQoLMod : Mod
             }
             else state.HealthRemainder = 0;
 
-            if (options.FastManaRegen)
+            if (options.FastManaRegen && options.ManaRegenPerSecond > 0)
             {
                 int? mana = Abilities.Attributes.Get(player.Entity, AbilityResource.Mana);
                 int? max = Abilities.Attributes.Max(player.Entity, AbilityResource.Mana);

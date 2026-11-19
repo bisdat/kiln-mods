@@ -2,25 +2,33 @@
 
 An Enshrouded mod built with the Kiln SDK and .NET 10. Runs on the authoritative server world, including Kiln-hosted single-player; no client-side installation is required for hosted server logic.
 
-**Current candidate: v0.2.2 — new stamina recovery multiplier, awaiting in-game acceptance.** The prior **v0.2.1** release and its oxygen/frost multipliers were confirmed in-game and accepted, including the game clock counting down more slowly.
+**Current candidate: v0.2.3 — health and mana bonus regeneration now default to zero (normal game).** The previous v0.2.2 release introduced the stamina multiplier, and v0.2.1 introduced the accepted oxygen/frost multipliers.
 
 ## Features
 
 | Option | Implementation | Default |
 | --- | --- | --- |
 | Infinite Stamina | Kiln Rules `MinStamina = 1`, `UnlimitedGliding` | On |
-| **Stamina Regen Multiplier (NEW)** | `StaminaRegenMultiplier` 1×–10× | **1× (normal game)** |
+| Stamina Regen Multiplier | `StaminaRegenMultiplier` 1×–10× | **1× (normal game)** |
 | Infinite Mana | Kiln Rules `MinMana = 1` | On |
 | Underwater Breath Multiplier | `UnderwaterBreathMultiplier` 1×–10× | 10× |
 | Frost Resistance Multiplier | `FrostResistanceMultiplier` 1×–10× | 10× |
-| Fast Health Regen | `Combat.Heal` while injured | On, +25 points/s |
-| Fast Mana Regen | `Abilities.Attributes.Add` | On, +35 points/s |
+| Fast Health Regen / Health Regen Per Second | Optional `Combat.Heal` bonus while injured | On, **0 extra HP/s** (normal game) |
+| Fast Mana Regen / Mana Regen Per Second | Optional `Abilities.Attributes.Add` bonus | On, **0 extra mana/s** (normal game) |
 | No Fall Damage | Cancel player `EntityFallEvent` | On |
 | Infinite Weapon Durability | Temporarily disable equipment durability globally | On |
 
 `BodyHeat` provides frost protection, **not** the Shroud timer.
 
-## Stamina regeneration — new in v0.2.2
+## Health and mana regeneration — default changes in v0.2.3
+
+Both additional-regeneration sliders use **0–100 points/s**. Their default is now **0**: this means *no bonus* on top of normal Enshrouded regeneration, not a request to suppress native regeneration. The corresponding Fast Health Regen and Fast Mana Regen switches remain enabled by default; with a zero bonus the mod does not query or write health/mana through these features. Values above zero add a fixed rate while below maximum (health also requires a living, injured character).
+
+For players who want the former boosted settings, choose **25 HP/s** and **35 mana/s**, respectively. The mod does not change Enshrouded's built-in recovery formulas or expose a native health/mana recovery multiplier.
+
+**Existing installations:** Kiln preserves stored configuration values on upgrade. If your active profile already has `healthRegenPerSecond: 25` or `manaRegenPerSecond: 35`, those will remain in effect after installing v0.2.3. Set each slider to **0** in the Kiln Configs UI (or edit the active profile's `survival-qol.json`) to select the normal-game baseline. No automatic reset or migration overwrites previously saved preferences.
+
+## Stamina regeneration — introduced in v0.2.2
 
 The Kiln configuration adds **Stamina Regen Multiplier**, a `[Range(1, 10)]` integer slider, default **1×**. It is **independent of Infinite Stamina**:
 
@@ -44,13 +52,13 @@ The legacy oxygen/frost `Double...` and `Infinite...` toggles were removed in v0
 
 ## Installation and testing
 
-1. Build or obtain **`survival-qol-0.2.2.zip`** from the [Package Survival QoL GitHub Action](../.github/workflows/build.yml). The package must be installed into Kiln Library and **version 0.2.2 selected in the active profile**. Reactivate/apply the profile and restart Enshrouded. For legacy drop-in installs only, unpack into `kiln/mods/`.
-2. In Kiln Configs verify the new **Stamina Regen Multiplier** is 1–10, initially 1, and that the **Infinite Stamina** toggle remains available.
+1. Build or obtain **`survival-qol-0.2.3.zip`** from the [Package Survival QoL GitHub Action](../.github/workflows/build.yml). The package must be installed into Kiln Library and **version 0.2.3 selected in the active profile**. Reactivate/apply the profile and restart Enshrouded. For legacy drop-in installs only, unpack into `kiln/mods/`.
+2. In Kiln Configs, set **Health Regen Per Second** and **Mana Regen Per Second** to 0 (particularly when upgrading a profile previously set to 25/35); also verify **Stamina Regen Multiplier** remains 1–10, initially 1, independently of the **Infinite Stamina** toggle.
 3. Disable **Infinite Stamina**, spend stamina, and compare natural recovery at **1×, 2×, 5× and 10×** with the same character and equipment. At 1× recovery and its delay should remain vanilla; at 10× recovery should be substantially faster while the game's recharge delay remains.
 4. Re-enable **Infinite Stamina** and check it still keeps stamina full regardless of the multiplier. Change the slider during play and reconnect to ensure no stale bonus is applied.
-5. Check oxygen/frost multipliers, stamina spending, health/mana regen, fall protection and durability for regressions; report any failures with the active config values and `kiln/logs/kiln.log`.
+5. With both health/mana bonuses at 0, verify the game regenerates normally with your existing equipment and effects; raise each bonus to 25/35 to verify it still adds healing/mana, then return to 0. Check oxygen/frost, fall protection and durability for regressions; report any failures with active config values and `kiln/logs/kiln.log`.
 
-Kiln's active profile can pin an older mod even after a new ZIP is imported. `kiln/state/mods.json` identifies the version actually loaded. In profiles with `dropins: false`, copying into `kiln/mods/` alone does not activate it. **Do not tag/release stable v0.2.2 before in-game acceptance.**
+Kiln's active profile can pin an older mod even after a new ZIP is imported. `kiln/state/mods.json` identifies the version actually loaded. In profiles with `dropins: false`, copying into `kiln/mods/` alone does not activate it. **Do not tag/release stable v0.2.3 before in-game acceptance.**
 
 ## Building and verification
 
