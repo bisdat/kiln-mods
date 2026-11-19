@@ -544,15 +544,12 @@ public sealed class BaseStationMagicStorageMod : Mod
 
     private void OnTick(in TickInfo tick)
     {
-        if (_stopping || !_configOk || _scanning || !_settings.Bases.Any(p => p.Enabled)) return;
+        if (_stopping || _scanning ||
+            (!_settings.Bases.Any(p => p.Enabled) && _settings.SharedSources.Count == 0)) return;
         _elapsed += Math.Clamp(tick.WallDelta.TotalSeconds, 0, 1);
         if (_elapsed < ScanSeconds) return;
         _elapsed = 0;
-        if (!Stations.Available || !Bases.Available || !Capabilities.Is(Stations.ReadCapability) ||
-            !Capabilities.Is(Stations.FillCapability) || !Capabilities.Is("items.move")) return;
-        // Kiln's Scanned flag is set by its first station enumeration (or an
-        // active station-event watcher). Merely waiting for Scanned would leave
-        // automation permanently idle after a fresh game start.
+        if (!Stations.Available || !Bases.Available || !Capabilities.Is(Stations.ReadCapability)) return;
         _ = Stations.All();
         if (!Stations.Scanned) return;
         if (WorldId() is { } world) _ = Scan(world);
@@ -562,28 +559,51 @@ public sealed class BaseStationMagicStorageMod : Mod
     {
         if (_scanning) return;
         _scanning = true;
+        var justEnabled = new List<EntityId>();
+        bool sourcesChanged = false;
+        var seen = new HashSet<string>(StringComparer.Ordinal);
+        bool complete = true;
         try
         {
             var count = 0;
             foreach (var b in Bases.All)
             {
-                if (_stopping || WorldId() != world) return;
+                if (_stopping || WorldId() != world) { complete = false; return; }
                 var p = Policy(b, world);
-                if (p is not { Enabled: true }) continue;
                 foreach (var id in Stations.InBase(b.Id))
                 {
-                    if (++count > MaxStationsPerScan) return;
-                    if (_stopping || WorldId() != world || !p.Enabled) return;
-                    await Service(id, b.Id, p, world);
+                    if (++count > MaxStationsPerScan) { complete = false; break; }
+                    if (_stopping || WorldId() != world) { complete = false; return; }
+                    var s = Stations.Read(id);
+                    if (s is null) continue;
+                    seen.Add(Key(s));
+                    var wantShare = _configOk && _stationTypes.Value.ShareOutputs && Eligible(s, p);
+                    try
+                    {
+                        if (SyncOutputSource(id, s, world, wantShare, justEnabled)) sourcesChanged = true;
+                    }
+                    catch (Exception e) { Warn(id, "share", $"{e.GetType().Name}: {e.Message}"); }
+                    if (_configOk && p is { Enabled: true } && Eligible(s, p) &&
+                        ((p.AutoCollect && _stationTypes.Value.CollectOutputs) || p.AutoFill))
+                        await Service(id, b.Id, p, world);
                 }
+                if (!complete) break;
             }
+            if (complete && _settings.SharedSources.RemoveAll(x => x.World == world && !seen.Contains(x.Station)) > 0)
+                sourcesChanged = true;
         }
-        catch (Exception e)
-        {
-            Log.Warn($"BSMS: scan interrupted: {e.GetType().Name}: {e.Message}");
-        }
+        catch (Exception e) { Log.Warn($"BSMS: scan interrupted: {e.GetType().Name}: {e.Message}"); }
         finally
         {
+            if (sourcesChanged && !Save())
+            {
+                // Do not leave newly enabled sources untracked on a save failure.
+                foreach (var id in justEnabled)
+                {
+                    try { Stations.SetOutputSource(id, on: false); }
+                    catch (Exception e) { Warn(id, "share-rollback", e.Message); }
+                }
+            }
             _scanning = false;
         }
     }
