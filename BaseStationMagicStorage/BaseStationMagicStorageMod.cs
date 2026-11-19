@@ -141,7 +141,7 @@ public sealed class BaseStationMagicStorageMod : Mod
             description: "Opt-in Magic Chest automation of base production stations.");
         Context.Tick.Pre += OnTick;
         Log.Info("Base Station Magic Storage v0.1.4 loaded: 26 station-type switches plus ShareOutputs / CollectOutputs in Kiln Configs; " +
-                 "sharing OFF and collection ON by default; per-base automation OFF until bstation enable.");
+                 "sharing ON and collection OFF by default; per-base automation OFF until bstation enable.");
     }
 
     private void OnStationConfigChanged(ConfigChangedEvent change)
@@ -372,6 +372,7 @@ public sealed class BaseStationMagicStorageMod : Mod
                     $"outputSources={Capabilities.Is(Stations.OutputSourcesCapability)}, " +
                     $"craftSources={Capabilities.Is(Stations.CraftSourcesCapability)}, " +
                     $"craftUi={Capabilities.Is(Stations.CraftUiCapability)}, " +
+                    $"owned sources here={_settings.SharedSources.Count(x => x.World == world)}, " +
                     $"enabled bases here={_settings.Bases.Count(p => p.World == world && p.Enabled)}. " +
                     "All bases are disabled by default.");
                 return;
@@ -442,7 +443,7 @@ public sealed class BaseStationMagicStorageMod : Mod
                     if (s is null) continue;
                     Say($"{id}: {s.Template ?? $"workshop 0x{s.Workshop:x8}"} " +
                         $"state={s.State}, recipe=0x{s.SelectedRecipe:x8}, loaded={s.CraftsLoaded}, " +
-                        $"outputs={s.Outputs.Count}, stopped={s.StoppedByPlayer}, " +
+                        $"outputs={s.Outputs.Count} stacks ({s.Outputs.Sum(x => x.Count)} items), stopped={s.StoppedByPlayer}, " +
                         $"excluded={existing?.Excluded.Contains(Key(s), StringComparer.Ordinal) == true}, " +
                         $"opted-in={existing?.Included.Contains(Key(s), StringComparer.Ordinal) == true}, " +
                         $"type-enabled={StationTypeEnabled(s)}, output-source={Stations.IsOutputSource(id)}");
@@ -462,9 +463,12 @@ public sealed class BaseStationMagicStorageMod : Mod
                 Say($"{id} {s.Template}: plan target={target}, {plan.Status}, " +
                     $"affordable={plan.CraftsAffordable}, planned={plan.CraftsPlanned}, " +
                     $"short={plan.LimitedBy} {plan.ShortItem}, station-water={plan.WaterHave}, base-water={plan.WaterStock}. " +
+                    $"shareMode={_stationTypes.Value.ShareOutputs}, sourcesAvailable={Capabilities.Is(Stations.OutputSourcesCapability)}. " +
                     "READ ONLY: no inventory changes.");
                 foreach (var i in plan.Inputs.Take(12))
-                    Say($"  item {i.Item}: per craft={i.PerCraft}, station={i.Have}, Magic stock={i.Stock}");
+                    Say($"  item {i.Item}: per craft={i.PerCraft}, station={i.Have}, Magic stock={i.Stock}, shared station outputs={i.Outputs}");
+                Say("Note: native station Fill button can remain disabled even when shared outputs cover the recipe. " +
+                    "This read-only plan checks the mod API, not the vanilla button.");
                 return;
             }
 
