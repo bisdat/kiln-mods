@@ -1,15 +1,28 @@
-# Base Station Magic Storage — v0.1.3 station-type controls
+# Base Station Magic Storage — v0.1.4 output modes (test candidate)
 
-Standalone Kiln mod for all supported autonomous production stations (FactoryStation: charcoal kilns, smelters, looms, grinders and seed beds) inside a Flame Altar base. Requires Kiln **0.2.0-dev.29.14 / mod API 0.2.6**. v0.1.3 adds 26 global station-type checkboxes to Kiln's Mods > Base Station Magic Storage configuration menu; functionality, updated names and ON/OFF behaviour passed in-game acceptance on 17 November 2026. Prior v0.1.2 remains the last earlier stable version.
+Standalone Kiln mod for production stations (FactoryStation: charcoal kilns, smelters, looms, grinders, seed beds and others) within a Flame Altar base. This candidate requires Kiln **0.2.0-dev.29.17 / mod API 0.2.9** (upstream [issue #68](https://github.com/frostdev-ops/kiln/issues/68)). It retains the 26 station-type switches accepted in-game in v0.1.3.
+
+## Output modes: Kiln Insert menu
+
+Open **Insert → Mods → Configs → Base Station Magic Storage**. There are **two independent checkboxes**, above the 26 station-type checkboxes:
+
+- **Share outputs** (`ShareOutputs`, default **OFF**): finished products remain *in the producing station* and become available to same-base player crafting and `Stations.Fill`. Upstream Kiln only lends eligible finished outputs, not inputs, leftovers, or products that are also inputs. Requires `stations.output_sources` for the opt-in; `stations.craft_sources` and `stations.craft_ui` govern server player crafting and Kiln-client menu counts. The existing base enablement, individual/all-stations selection, exclusions and station-type switches still apply.
+- **Collect outputs** (`CollectOutputs`, default **ON**): retains v0.1.3 automatic transfer to explicitly named, deposit-enabled Magic Chests beginning with `crafting output`. Also respects the existing per-base `bstation collect on|off` policy.
+
+Both can be ON independently. **With both ON, the collector may empty the station's shared output into its named chest during the next scan.** For output to remain in producing stations, enable **Share outputs** and disable **Collect outputs**, then click **Apply**. Existing saved BSMS settings continue collecting by default: sharing is not silently enabled on upgrade.
+
+Sharing is base-local, not cross-base. It works even when BSMS automatic filling is OFF and needs no output chest. The original station-screen Fill button can remain greyed out even if shared outputs cover ingredients; mod-driven `Stations.Fill` can use the outputs. Clients without Kiln retain vanilla crafting counts. Creative Mode can disable player-crafting capability; check `bstation status`.
+
+BSMS records which output-source opt-ins it owns by world and stable station identity, so switching sharing, a station type or its base policy OFF revokes BSMS-owned sources on the next five-second scan, without switching off another mod's registrations. Native craft payment is revalidated on the server. **This candidate requires in-game acceptance; compilation does not establish that the crafting menu works on a hosted or joined client.**
 
 ## Behaviour
 
-**Default OFF.** At a base you explicitly enable, every 5 seconds the mod:
+**Default OFF.** At a base you explicitly enable, every 5 seconds the mod follows the two output-mode switches:
 - Tops up the station's **currently selected** recipe to 3 complete crafts (configurable 1–20) through the game's Stations.Fill transaction. Inputs come **only from this base's Magic Chests**, not the player backpack. Water uses the base's water sources.
-- Moves finished outputs through native Stations.Collect into **explicitly marked, deposit-enabled Magic Chests** named **crafting output**, optionally followed by any suffix. Matching ignores case and whitespace anywhere in the name. Those chests are then part of the base's normal crafting stock, making charcoal and other outputs immediately available to other production stations and to the blacksmith's native base-stock crafting. It leaves leftovers, inputs and ordinary chests alone.
+- When **Collect outputs** is enabled, moves finished outputs through native Stations.Collect into **explicitly marked, deposit-enabled Magic Chests** named **crafting output**, optionally followed by any suffix. Matching ignores case and whitespace anywhere in the name. Those chests are then part of the base's normal crafting stock, making charcoal and other outputs immediately available to other production stations and to the blacksmith's native base-stock crafting. It leaves leftovers, inputs and ordinary chests alone.
 - **No output destination is selected automatically.** If there is no suitably named Magic Chest, or its name cannot be read reliably, finished products stay safely in the producing station. This prevents accidental deposits into Endless Chests named **Empty**, which are deliberately cleared by that mod.
 - Does not change recipe, select options, start/stop states or user decisions. Stopped, stop-pending and no-recipe stations are not auto-filled.
-- **26 type-level checkboxes:** each switch controls **every instance** of a station type in every base. Turning **Oven** OFF disables BSMS fill and collection at all ovens: cooked food stays at the ovens, with ordinary manual crafting unchanged. Turning it ON resumes the base's chosen automation. All default ON to preserve v0.1.2 behaviour. Existing base opt-in and legacy exclusion policies remain authoritative. Each scan is serialized (up to 128 stations) and repeated errors are throttled.
+- **26 type-level checkboxes:** each switch controls **every instance** of a station type in every base, including which stations can share outputs. Turning **Oven** OFF disables BSMS fill and collection at all ovens: cooked food stays at the ovens, with ordinary manual crafting unchanged. Turning it ON resumes the base's chosen automation. All default ON to preserve v0.1.2 behaviour. Existing base opt-in and legacy exclusion policies remain authoritative. Each scan is serialized (up to 128 stations) and repeated errors are throttled.
 - Fails closed when two configured altar policies merge into one base, or when its settings file is invalid.
 
 **This is base-local, not cross-base.** The API works on a station's own Flame Altar base. Even when Building Tools shows chests from another base, that is not part of Kiln.Bases stock.
@@ -129,6 +142,6 @@ This is separate from the 26 global switches in Kiln Configs. A file is only wri
 
 The candidate workflow builds with checksum-verified official Kiln v0.2.0-dev.29.14 SDK via `scripts/build-compat.sh BaseStationMagicStorage`. The PR builds the installable `base-station-magic-storage-0.1.3` artifact; after acceptance and merge to `main`, the release workflow publishes tag `base-station-magic-storage-v0.1.3` with the installable ZIP and SDK provenance.
 
-Acceptance confirmed in-game: 26 type-level checkboxes operate correctly, including ON/OFF, and the corrected station labels are displayed. With `fill=False`, automation continues to collect finished goods from types enabled for BSMS. No per-instance station selection or JSON editing is needed.
+Acceptance confirmed in-game: 26 type-level checkboxes operate correctly, including ON/OFF, and the corrected station labels are displayed. With `fill=False`, output sharing or collection continues according to the two global checkboxes. No per-instance station selection or JSON editing is needed.
 
 Tracking: [draft PR #52](https://github.com/bisdat/kiln-mods/pull/52), [original issue #50](https://github.com/bisdat/kiln-mods/issues/50), and [official Kiln Stations/Bases API](https://github.com/frostdev-ops/kiln/blob/main/docs/kiln/services/stations.md).
