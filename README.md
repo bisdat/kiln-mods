@@ -8,7 +8,7 @@ Enshrouded mods using the [Kiln SDK](https://github.com/frostdev-ops/kiln), main
 
 Implements infinite stamina, infinite mana, fast health regeneration, fast mana regeneration, no fall damage and disabled equipment durability loss using Kiln's supported services.
 
-**Survival QoL v0.2.2 test candidate:** Adds a **1×–10× Fast Stamina Regen** slider, default 1× (normal recovery), independently of the existing **Infinite Stamina** toggle. The multiplier takes effect only with Infinite Stamina disabled and scales observed native recovery; it does not artificially regenerate stamina during the game's recovery delay. In-game acceptance is pending. The earlier **v0.2.1 oxygen/frost sliders are accepted and released**; their countdowns slow down rather than starting longer. See the [mod guide](SurvivalQoL/README.md).
+**Survival QoL v0.2.3 candidate:** Health and Mana Regen Per Second now default to **0 additional points/s (normal game)**, while optional bonus rates remain selectable from 0–500 points/s. Existing active-profile values are preserved; set previously saved 25/35 values to 0 manually to adopt the new baseline. **v0.2.2** introduced the independent 1×–10× stamina recovery slider (1× = native recovery), and **v0.2.1** introduced the accepted oxygen/frost duration multipliers. See the [mod guide](SurvivalQoL/README.md).
 
 Build with `bash scripts/build.sh` (requires git, .NET 10 and internet access), or use **Actions → Package Survival QoL** to download the `survival-qol-package` artifact from a successful run. Pushing a matching version tag (e.g. `v0.2.2`) also attaches the ready-to-install ZIP to a GitHub Release. Configuration is hot-reloadable.
 
