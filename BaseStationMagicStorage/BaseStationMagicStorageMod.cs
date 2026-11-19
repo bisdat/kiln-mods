@@ -613,10 +613,8 @@ public sealed class BaseStationMagicStorageMod : Mod
         try
         {
             var s = Stations.Read(id);
-            if (s is null || s.Base != @base || !StationTypeEnabled(s) ||
-                p.Excluded.Contains(Key(s), StringComparer.Ordinal) ||
-                (!p.AllStations && !p.Included.Contains(Key(s), StringComparer.Ordinal))) return;
-            if (p.AutoCollect && s.Outputs.Count > 0)
+            if (s is null || s.Base != @base || !Eligible(s, p)) return;
+            if (_stationTypes.Value.CollectOutputs && p.AutoCollect && s.Outputs.Count > 0)
             {
                 if (!Items.ContainerNamesAvailable)
                     Warn(id, "collect", "items.names unavailable; output remains safely at station.");
@@ -632,7 +630,8 @@ public sealed class BaseStationMagicStorageMod : Mod
                             foreach (var chest in sinks)
                             {
                                 if (_stopping || !_configOk || WorldId() != world || !p.Enabled || !p.AutoCollect ||
-                                    Stations.Read(id) is not { } current || !StationTypeEnabled(current))
+                                    !_stationTypes.Value.CollectOutputs ||
+                                    Stations.Read(id) is not { } current || !Eligible(current, p))
                                     return;
                                 // A renamed, moved or deposit-disabled chest must never
                                 // receive anything after the previous snapshot.
@@ -648,9 +647,9 @@ public sealed class BaseStationMagicStorageMod : Mod
                     }
                 }
             }
-            if (_stopping || WorldId() != world || !p.Enabled || !p.AutoFill) return;
+            if (_stopping || !_configOk || WorldId() != world || !p.Enabled || !p.AutoFill) return;
             s = Stations.Read(id); // refresh after async collection
-            if (s is null || s.Base != @base || !StationTypeEnabled(s) || s.SelectedRecipe == 0 ||
+            if (s is null || s.Base != @base || !Eligible(s, p) || s.SelectedRecipe == 0 ||
                 s.StoppedByPlayer || s.StopPending || s.State == StationState.Stopped ||
                 s.CraftsLoaded >= p.TargetCrafts) return;
 
@@ -659,13 +658,15 @@ public sealed class BaseStationMagicStorageMod : Mod
                 Crafts = p.TargetCrafts,
                 Mode = FillMode.UpTo,
                 Water = true,
-                // Player is intentionally absent: only native base Magic Chest stock.
+                UseStationOutputs = _stationTypes.Value.ShareOutputs &&
+                    Capabilities.Is(Stations.OutputSourcesCapability),
+                // Player is intentionally absent: no backpack sourcing.
             };
             var plan = Stations.Plan(id, options);
             if (!plan.Ok || plan.CraftsPlanned <= 0) return;
             var check = Stations.Read(id);
             if (check is null || check.Base != @base || check.SelectedRecipe != s.SelectedRecipe ||
-                check.StoppedByPlayer || check.StopPending || !StationTypeEnabled(check)) return;
+                check.StoppedByPlayer || check.StopPending || !Eligible(check, p)) return;
 
             var fill = await Stations.Fill(id, options);
             Report(id, "fill", fill);
