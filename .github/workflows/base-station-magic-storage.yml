@@ -32,8 +32,8 @@ jobs:
     name: Compile and package accepted mod
     runs-on: ubuntu-24.04
     env:
-      KILN_RELEASE_TAG: v0.2.0-dev.29.14
-      KILN_SDK_VERSION: 0.2.0-dev.29.14
+      KILN_RELEASE_TAG: v0.2.0-dev.29.17
+      KILN_SDK_VERSION: 0.2.0-dev.29.17
       GITHUB_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@v4
@@ -45,19 +45,19 @@ jobs:
       - name: Check official release SDK and compile mod
         run: bash scripts/build-compat.sh BaseStationMagicStorage
       - name: Verify package
-        run: test -s bin/Release/base-station-magic-storage-0.1.3.zip
+        run: test -s bin/Release/base-station-magic-storage-0.1.4.zip
       - name: Upload installable package and SDK provenance
         uses: actions/upload-artifact@v4
         with:
-          name: base-station-magic-storage-0.1.3
+          name: base-station-magic-storage-0.1.4
           path: |
-            bin/Release/base-station-magic-storage-0.1.3.zip
+            bin/Release/base-station-magic-storage-0.1.4.zip
             bin/Release/kiln-sdk-provenance.json
           if-no-files-found: error
           retention-days: 90
 
   release:
-    name: Publish Base Station Magic Storage v0.1.3
+    name: Publish Base Station Magic Storage v0.1.4
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: package
     runs-on: ubuntu-24.04
@@ -66,43 +66,42 @@ jobs:
     steps:
       - uses: actions/download-artifact@v4
         with:
-          name: base-station-magic-storage-0.1.3
+          name: base-station-magic-storage-0.1.4
           path: dist
       - name: Validate installable package and SDK provenance
         shell: bash
         run: |
-          test -s dist/base-station-magic-storage-0.1.3.zip
+          test -s dist/base-station-magic-storage-0.1.4.zip
           test -s dist/kiln-sdk-provenance.json
           python3 - <<'PY'
           import json
           data = json.load(open("dist/kiln-sdk-provenance.json", encoding="utf-8"))
           assert data["mod"] == "BaseStationMagicStorage"
-          assert data["tag"] == "v0.2.0-dev.29.14"
-          assert data["version"] == "0.2.0-dev.29.14"
+          assert data["tag"] == "v0.2.0-dev.29.17"
+          assert data["version"] == "0.2.0-dev.29.17"
           assert data["mod_source_sha"] == "${{ github.sha }}"
-          print("Verified BSMS v0.1.3 build provenance")
+          print("Verified BSMS v0.1.4 build provenance")
           PY
       - name: Create version tag and publish accepted GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: base-station-magic-storage-v0.1.3
+          tag_name: base-station-magic-storage-v0.1.4
           target_commitish: ${{ github.sha }}
-          name: Base Station Magic Storage v0.1.3
+          name: Base Station Magic Storage v0.1.4
           prerelease: false
           draft: false
           fail_on_unmatched_files: true
           generate_release_notes: true
           body: |
-            Base Station Magic Storage v0.1.3 — accepted in-game on Enshrouded/Kiln v0.2.0-dev.29.14 (SDK API 0.2.6).
+            Base Station Magic Storage v0.1.4 — two independently configurable output modes, Kiln dev.29.17 / mod API 0.2.9.
 
-            - NEW: Exactly 26 station-type ON/OFF checkboxes in Kiln Mods -> Configs -> Base Station Magic Storage, like Survival QoL. Each switch applies to every instance of the same production-station type, across all Flame Altar bases.
-            - When a type is OFF, BSMS neither fills ingredients nor collects finished products from any station of that type. Example: disable Oven to keep cooked food in every oven. Other enabled types continue normal output collection. All type switches default ON.
-            - Player-facing station names corrected: Seafood Grill, Spinning Machine, Seedbed, Mill, Grinding Stones, Beehive, Infusion Altar, Cooking Station, Coffee Brewery and Coffee Drum Roaster. Internal station-template mappings are unchanged.
-            - Preserves prior ON/OFF selections for renamed config keys through safe migration; old keys are only read when the new key has no saved value. Configuration changes apply live through Kiln's Apply button.
-            - Continues to collect products automatically into named, deposit-enabled same-base Magic Chests labeled crafting output, case-insensitive with whitespace anywhere and any suffix; old BSMS Output names no longer match.
-            - Base opt-in, per-base fill/collect settings, manual recipe selection and all existing storage safety gates remain unchanged. Use bstation fill off for manual ingredient loading with automatic finished-product collection.
-            - No batch logic, recipe changes, player backpack sourcing, cross-base stock, or custom game UI patches.
-            - Requires Kiln v0.2.0-dev.29.14 / mod API 0.2.6 with stations and items-name capabilities. Keep output Magic Chests unbound from Endless Chests.
+            - NEW: ShareOutputs checkbox (default OFF) lends finished station outputs to same-base station fills and player crafting via Kiln #68, without first transferring them to Magic Chests.
+            - CollectOutputs checkbox (default ON) retains v0.1.3 collection into dedicated Magic Chests named crafting output. Both checkboxes appear in Insert -> Mods -> Configs -> Base Station Magic Storage.
+            - Existing 26 per-type checkboxes and base opt-ins/exclusions continue controlling eligibility. Sharing registration is tracked and revoked when disabled.
+            - If both output modes are ON, the timed collector may move output before crafting draws it directly. For in-place sharing, enable ShareOutputs and disable CollectOutputs.
+            - Server transaction safety, queued-input/leftover exclusions, same-base limits and permission rules are supplied by the upstream Kiln API.
+            - Workbench crafting menus require a Kiln client; the native station-screen Fill button may remain disabled where only outputs could supply it, while mod-driven Stations.Fill works.
+            - In-game acceptance pending; CI validates the official SDK, contracts, package and provenance.
           files: |
-            dist/base-station-magic-storage-0.1.3.zip
+            dist/base-station-magic-storage-0.1.4.zip
             dist/kiln-sdk-provenance.json
