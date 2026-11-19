@@ -61,7 +61,6 @@ class Contracts(unittest.TestCase):
     def test_exactly_26_type_toggles(self):
         import re
         declared = re.findall(r"public bool (\w+) \{ get; set; \} = true;", CONFIG)
-        declared = [n for n in declared if n != "CollectOutputs"]
         self.assertEqual(len(declared), 26)
         self.assertEqual(len(set(declared)), 26)
         templates = re.findall(r'"(T\w+_Factory)"\s*=>\s*enabled\.(\w+)', SRC)
@@ -93,8 +92,8 @@ class Contracts(unittest.TestCase):
                 self.assertIn('("' + old[:1].lower() + old[1:] + '", "' + new[:1].lower() + new[1:] + '")', SRC)
 
     def test_output_modes(self):
-        self.assertIn("public bool ShareOutputs { get; set; } = false;", CONFIG)
-        self.assertIn("public bool CollectOutputs { get; set; } = true;", CONFIG)
+        self.assertIn("public bool ShareOutputs { get; set; } = true;", CONFIG)
+        self.assertIn("public bool CollectOutputs { get; set; } = false;", CONFIG)
         self.assertIn("Stations.SetOutputSource(id)", SRC)
         self.assertIn("Stations.SetOutputSource(id, on: false)", SRC)
         self.assertIn("Stations.IsOutputSource(id)", SRC)
@@ -109,13 +108,14 @@ class Contracts(unittest.TestCase):
         self.assertIn("Eligible(s, p)", SRC)
         self.assertIn("if (sourcesChanged && !Save())", SRC)
         self.assertIn("Share outputs", README)
+        self.assertIn("shared station outputs={i.Outputs}", SRC)
         self.assertIn("Collect outputs", README)
 
     def test_sdk(self):
         self.assertIn("Kiln.Sdk/0.2.0-dev.29.17", PROJ)
         self.assertIn("<Version>0.1.4</Version>", PROJ)
         self.assertIn("<KilnSide>server</KilnSide>", PROJ)
-        self.assertIn("**Default OFF.**", README)
+        self.assertIn("**Base automation default OFF.**", README)
         self.assertIn("not cross-base", README)
         self.assertIn("FactoryStation", README)
         self.assertIn("crafting output", README)
