@@ -1,6 +1,8 @@
 # Building Tools for Kiln
 
-**Kiln adapter 1.0.1 · upstream Building Tools 0.33.2 · native client-side mod**
+**Kiln adapter 1.0.2 · upstream Building Tools 0.34.0 · native client-side mod**
+
+The current 1.0.2 package is an **automatically CI-verified prerelease**, not gameplay-verified. The last in-game acceptance remains upstream 0.33.2 / adapter 1.0.1.
 
 [Releases](https://github.com/bisdat/kiln-mods/releases) |
 [Original Building Tools](https://github.com/AleksanderWojtal-CC/Enshrouded-BuildingTools) |
@@ -20,7 +22,7 @@ a rewrite of Building Tools or a new crafting implementation**.
 and [`tests/`](tests/) checks the package.
 The original game's C++ implementation is **not copied or forked** into
 this repository: its source is the upstream developer's
-[`src/` directory at v0.31.2](https://github.com/AleksanderWojtal-CC/Enshrouded-BuildingTools/tree/v0.33.2/src).
+[`src/` directory](https://github.com/AleksanderWojtal-CC/Enshrouded-BuildingTools/tree/main/src).
 
 Nexus releases are generated from the upstream
 [GitHub release process](https://github.com/AleksanderWojtal-CC/Enshrouded-BuildingTools/blob/main/docs/NEXUS.md).
@@ -49,7 +51,7 @@ some functionality after an update. Always inspect the runtime log.
 ## Install and upgrade
 
 1. Exit Enshrouded. Back up your saves before installing or updating mods.
-2. Download **building-tools-kiln-1.0.1.zip** from the matching GitHub
+2. Download the **version-matched** `building-tools-kiln-X.Y.Z.zip` from the matching GitHub
    Release. The GitHub Actions artifact contains an outer ZIP; when using
    an Actions artifact, extract the **inner** install ZIP.
 3. Extract the install ZIP into the Enshrouded **game root**, alongside
@@ -120,8 +122,7 @@ Version and source pin: [release.json](release.json).
 
 The packaging script:
 
-- downloads nothing itself; the build workflow fetches only the
-  **official upstream v0.33.2 release ZIP and published checksum**;
+- downloads nothing itself; CI fetches only the **latest official stable upstream release ZIP and published checksum**;
 - requires both that checksum and the separately **repository-pinned
   SHA256** of the exact upstream archive;
 - checks the PE x86-64 DLL, MIT licence, allowed archive members
@@ -138,14 +139,16 @@ Run safety tests without game binaries using:
 
 The workflow verifies the original official DLL equals the repackaged
 DLL, checks deterministic ZIP output and publishes an installable Actions
-artifact. **After the production PR is merged into main**, the successful
-main-branch workflow creates **building-tools-kiln-v1.0.1** (only if
-not already present) and publishes a permanent, namespaced GitHub
-Release with the ZIP and SHA256. The release job is idempotent and does
-not replace existing release assets. A matching manually pushed tag
-also triggers this same publication path.
-Version changes require explicit upstream pin updates and new tests;
-the wrapper **never silently upgrades Building Tools**.
+artifact. **The daily upstream watcher now performs an end-to-end automated build:**
+it fetches the latest official stable version, validates its checksum,
+increments the wrapper's patch version, runs the tests and deterministic build,
+then commits the pinned version and publishes a GitHub **prerelease** with ZIP
+and SHA256. No individual owner approval is required for a prerelease.
+Previously published releases are immutable. The packaging workflow for pull
+requests remains independent and never publishes. GitHub Actions does not
+run Enshrouded, so the automatically published version is explicitly marked
+**gameplay untested** until a real in-game acceptance test is performed.
+See [UPSTREAM.md](UPSTREAM.md) for the complete automation and recovery policy.
 
 **Licence and credits:** original software copyright © 2026
 Aleksander Wojtal, MIT licence. The original licence and README are
