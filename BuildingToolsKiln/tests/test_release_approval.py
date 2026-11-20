@@ -83,7 +83,7 @@ class AutomaticReleaseTests(unittest.TestCase):
     def test_generic_package_workflow_only_validates(self):
         p = PACKAGE_WORKFLOW.read_text()
         self.assertIn("Packaging and upstream-update regression tests", p)
-        self.assertIn("Verify", p)
+        self.assertIn("Validate DLL, licence, native manifest and reproducible bytes", p)
         self.assertNotIn("release_permitted", p)
         self.assertNotIn("gh release create", p)
         self.assertNotIn("\n  release:\n", p)
