@@ -14,6 +14,7 @@ public sealed class SurvivalQoLMod : Mod
     private readonly Dictionary<uint, Recovery> _recovery = new();
     private readonly WorldSettingOverride _durability = new("enableDurability", false);
     private bool _attributesUnavailableWarned;
+    private int _staffCastAppliedMultiplier = -1;
 
     private sealed class Recovery
     {
@@ -51,6 +52,17 @@ public sealed class SurvivalQoLMod : Mod
         _config.Changed += OnConfigChanged;
         Context.Tick.Pre += OnPre;
 
+        // The game's staff spells use spell ammunition data. Re-apply on each
+        // content generation, including data-pack reloads and hot-loads.
+        if (Content.Available)
+            Content.OnReady(_ =>
+            {
+                _staffCastAppliedMultiplier = -1;
+                ApplyStaffCastingSpeed();
+            });
+        else
+            Log.Warn("Kiln.Content unavailable: staff casting-speed slider cannot modify spell charge times.");
+
         if (Rules.Available)
             UpdateRules();
         else
@@ -63,7 +75,64 @@ public sealed class SurvivalQoLMod : Mod
     {
         if (Rules.Available) UpdateRules();
         ApplySettings();
+        ApplyStaffCastingSpeed();
         _recovery.Clear();
+    }
+
+    /// <summary>
+    /// Prototype: change the spell item's Charge Time config, not the staff's
+    /// damage or a wand's attack sequence. Original() is the game's baseline,
+    /// so moving a slider never compounds previous scaling.
+    ///
+    /// 0x579b2657 is identified as Charge Time in Kiln's spell research;
+    /// whether Enshrouded uses it for actual charging (rather than only
+    /// tooltip display) needs an in-game test. Do not retime projectile/VFX
+    /// sequence events until the complete cast path has been measured.
+    /// </summary>
+    private void ApplyStaffCastingSpeed()
+    {
+        if (!Content.Available || !Content.GameDataAvailable || !Content.Ready) return;
+
+        int multiplier = Math.Clamp(_config.Value.StaffCastingSpeedMultiplier, 1, 10);
+        if (_staffCastAppliedMultiplier == multiplier) return;
+
+        int eligible = 0, changed = 0, errors = 0;
+        foreach (var item in Content.ItemData)
+        {
+            // Staff spells are represented by Ammo_*_Spell_* items. Wands
+            // use their own attack sequences, which we deliberately exclude.
+            if (!StaffChargeScale.IsSpellAmmunition(item.Name)) continue;
+            try
+            {
+                var charge = item.Config(StaffChargeScale.ChargeTimeConfigId);
+                if (!charge.Exists) continue;
+                double original = charge.Original().AsDouble;
+                if (!double.IsFinite(original) || original <= 0.0) continue;
+
+                eligible++;
+                if (multiplier == 1)
+                {
+                    // Reset only our own layer, preserving other mods' edits.
+                    if (charge.Reset()) changed++;
+                }
+                else
+                {
+                    charge.Set(StaffChargeScale.ScaledSeconds(original, multiplier));
+                    changed++;
+                }
+            }
+            catch (Exception ex)
+            {
+                errors++;
+                Log.Warn($"Staff casting-speed: {item.Name}: {ex.Message}");
+            }
+        }
+
+        // A failed update must not be reported as a completed application.
+        _staffCastAppliedMultiplier = eligible > 0 && errors == 0 ? multiplier : -1;
+        if (eligible == 0)
+            Log.Warn("Staff casting-speed: no suitable spell-ammunition Charge Time fields were found; no effect applied.");
+        Log.Info($"Staff casting-speed charge-time prototype: {multiplier}x, {eligible} eligible spells, {changed} fields updated/reset, {errors} errors.");
     }
 
     private void UpdateRules()
