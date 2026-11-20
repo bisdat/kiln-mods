@@ -141,7 +141,7 @@ public sealed class BaseStationMagicStorageMod : Mod
             description: "Opt-in Magic Chest automation of base production stations.");
         Context.Tick.Pre += OnTick;
         Log.Info("Base Station Magic Storage v0.1.4 loaded: 26 station-type switches plus ShareOutputs / CollectOutputs in Kiln Configs; " +
-                 "sharing ON and collection OFF by default; per-base automation OFF until bstation enable.");
+                 "unconfigured bases share eligible finished outputs by default; automatic fill and collection remain OFF.");
     }
 
     private void OnStationConfigChanged(ConfigChangedEvent change)
@@ -210,22 +210,46 @@ public sealed class BaseStationMagicStorageMod : Mod
 
     // The base id can change when altar zones merge; the altar's own id persists.
     // An ambiguous merge of two configured bases fails closed.
-    private BasePolicy? Policy(BaseInfo b, string world)
-    {
-        var candidates = _settings.Bases.Where(p => p.World == world &&
+    private BasePolicy[] MatchingPolicies(BaseInfo b, string world) =>
+        _settings.Bases.Where(p => p.World == world &&
             b.Altars.Any(a => string.Equals(a.Id.ToString(), p.Altar, StringComparison.OrdinalIgnoreCase)))
             .Take(2).ToArray();
-        return candidates.Length == 1 ? candidates[0] : null;
+
+    // Opt-in is the *default* for an unconfigured base in a new world.
+    // A synthetic policy is deliberately NOT written: explicit 'bstation disable',
+    // per-station exclusions and any existing saved policy always take precedence.
+    // Automatic fill/collection remain off unless enabled deliberately.
+    private BasePolicy? Policy(BaseInfo b, string world)
+    {
+        var candidates = MatchingPolicies(b, world);
+        if (candidates.Length == 1) return candidates[0];
+        if (candidates.Length > 1 || b.Altars.Count == 0 || !_configOk ||
+            !_stationTypes.Value.ShareOutputs) return null;
+        return NewSharingPolicy(b, world);
     }
+
+    private static BasePolicy NewSharingPolicy(BaseInfo b, string world) => new()
+    {
+        World = world,
+        Altar = b.Altars[0].Id.ToString(),
+        Enabled = true,
+        AllStations = true,
+        AutoFill = false,
+        AutoCollect = false,
+    };
 
     private BasePolicy AddOrGetPolicy(BaseInfo b, string world)
     {
-        if (Policy(b, world) is { } existing) return existing;
+        var matches = MatchingPolicies(b, world);
+        if (matches.Length == 1) return matches[0];
+        if (matches.Length > 1) throw new CommandException("Multiple policies match this merged base; resolve its settings first.");
         if (b.Altars.Count == 0) throw new CommandException("No persistent Flame Altar ID.");
-        if (_settings.Bases.Any(p => p.World == world &&
-            b.Altars.Any(a => string.Equals(a.Id.ToString(), p.Altar, StringComparison.OrdinalIgnoreCase))))
-            throw new CommandException("Multiple policies match this merged base; resolve its settings first.");
-        var added = new BasePolicy { World = world, Altar = b.Altars[0].Id.ToString() };
+        // An admin command persists a real policy, including an explicit disable.
+        // Existing stored policies are never silently migrated from OFF to ON.
+        var added = _stationTypes.Value.ShareOutputs
+            ? NewSharingPolicy(b, world)
+            : new BasePolicy { World = world, Altar = b.Altars[0].Id.ToString(),
+                AutoFill = false, AutoCollect = false };
         _settings.Bases.Add(added);
         return added;
     }
@@ -373,8 +397,8 @@ public sealed class BaseStationMagicStorageMod : Mod
                     $"craftSources={Capabilities.Is(Stations.CraftSourcesCapability)}, " +
                     $"craftUi={Capabilities.Is(Stations.CraftUiCapability)}, " +
                     $"owned sources here={_settings.SharedSources.Count(x => x.World == world)}, " +
-                    $"enabled bases here={_settings.Bases.Count(p => p.World == world && p.Enabled)}. " +
-                    "All bases are disabled by default.");
+                    $"enabled bases here={(world is null || !_configOk || !Bases.Available ? 0 : Bases.All.Count(b => Policy(b, world)?.Enabled == true))}. " +
+                    "Unconfigured bases share finished outputs by default; fill/collect OFF.");
                 return;
             }
             if (!_configOk) throw new CommandException("Invalid settings: automation disabled; restore the settings file.");
@@ -445,7 +469,7 @@ public sealed class BaseStationMagicStorageMod : Mod
                         $"state={s.State}, recipe=0x{s.SelectedRecipe:x8}, loaded={s.CraftsLoaded}, " +
                         $"outputs={s.Outputs.Count} stacks ({s.Outputs.Sum(x => x.Count)} items), stopped={s.StoppedByPlayer}, " +
                         $"excluded={existing?.Excluded.Contains(Key(s), StringComparer.Ordinal) == true}, " +
-                        $"opted-in={existing?.Included.Contains(Key(s), StringComparer.Ordinal) == true}, " +
+                        $"opted-in={Eligible(s, existing)}, " +
                         $"type-enabled={StationTypeEnabled(s)}, output-source={Stations.IsOutputSource(id)}");
                 }
                 if (home.StationCount > 64) Say("Only first 64 stations shown.");
@@ -549,7 +573,8 @@ public sealed class BaseStationMagicStorageMod : Mod
     private void OnTick(in TickInfo tick)
     {
         if (_stopping || _scanning ||
-            (!_settings.Bases.Any(p => p.Enabled) && _settings.SharedSources.Count == 0)) return;
+            (!_stationTypes.Value.ShareOutputs && !_settings.Bases.Any(p => p.Enabled) &&
+             _settings.SharedSources.Count == 0)) return;
         _elapsed += Math.Clamp(tick.WallDelta.TotalSeconds, 0, 1);
         if (_elapsed < ScanSeconds) return;
         _elapsed = 0;
