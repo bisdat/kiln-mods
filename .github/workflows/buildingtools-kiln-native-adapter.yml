@@ -16,6 +16,8 @@ permissions:
 jobs:
   package:
     runs-on: ubuntu-24.04
+    outputs:
+      release_permitted: ${{ steps.release_gate.outputs.permitted }}
     steps:
       - uses: actions/checkout@v4
       - name: Packaging and upstream-update regression tests
@@ -35,6 +37,12 @@ jobs:
           print("upstream="+p["upstream_version"])
           print("checksum="+p["upstream_sha256"])
           PY
+      - name: Evaluate release permission (informational, never authorises a new version)
+        id: release_gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 BuildingToolsKiln/release_permission.py >> "$GITHUB_OUTPUT"
       - name: Find checksum asset for the exact pinned upstream release
         id: upstream_assets
         env:
@@ -119,7 +127,7 @@ jobs:
           if-no-files-found: error
 
   release:
-    if: startsWith(github.ref, 'refs/tags/building-tools-kiln-v') || github.ref == 'refs/heads/main'
+    if: (startsWith(github.ref, 'refs/tags/building-tools-kiln-v') || github.ref == 'refs/heads/main') && needs.package.outputs.release_permitted == 'true'
     needs: package
     runs-on: ubuntu-24.04
     permissions:

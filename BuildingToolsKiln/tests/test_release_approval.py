@@ -52,6 +52,61 @@ class ReleaseApprovalTests(unittest.TestCase):
         self.assertNotEqual(candidate["upstream_version"], candidate["gameplay_verified_upstream_version"])
         self.assertNotEqual(candidate["upstream_version"], candidate["release_approved_upstream_version"])
 
+    def test_release_permission_cases(self):
+        import importlib.util
+
+        helper = PROFILE.with_name("release_permission.py")
+        spec = importlib.util.spec_from_file_location("building_tools_release_permission", helper)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+
+        # Future upstream releases must not inherit an earlier owner's approval.
+        pin = dict(json.loads(PROFILE.read_text()))
+        pin.update(
+            upstream_version="99.0.0",
+            gameplay_verified_upstream_version="98.0.0",
+            release_approved_upstream_version="98.0.0",
+            release_approval_note="Owner approved only upstream v98.0.0.",
+        )
+        self.assertEqual(
+            module.release_eligibility(pin),
+            (False, "awaiting_gameplay_verification_or_version_specific_approval"),
+        )
+
+        # An unverified upstream version requires both an exact-version owner
+        # approval AND a meaningful release note; then only prerelease is allowed.
+        pin["release_approved_upstream_version"] = "99.0.0"
+        pin["release_approval_note"] = "  "
+        self.assertFalse(module.release_eligibility(pin)[0])
+        pin["release_approval_note"] = "Owner explicitly approved 99.0.0 for prerelease."
+        self.assertEqual(
+            module.release_eligibility(pin), (True, "owner_approved_unverified")
+        )
+
+        # Gameplay verification of exactly this upstream version allows release.
+        pin["gameplay_verified_upstream_version"] = "99.0.0"
+        pin["release_approved_upstream_version"] = "98.0.0"
+        pin["release_approval_note"] = ""
+        self.assertEqual(module.release_eligibility(pin), (True, "gameplay_verified"))
+
+    def test_unapproved_release_is_skipped_without_failing_packaging(self):
+        content = WORKFLOW.read_text()
+        self.assertIn(
+            "release_permitted: ${{ steps.release_gate.outputs.permitted }}", content
+        )
+        self.assertIn(
+            "python3 BuildingToolsKiln/release_permission.py >> \"$GITHUB_OUTPUT\"",
+            content,
+        )
+        self.assertIn(
+            "needs.package.outputs.release_permitted == 'true'", content
+        )
+        # An eligible job still independently checks the release approval.
+        self.assertIn(
+            'assert verified or manual, "New upstream version requires gameplay',
+            content,
+        )
+
     def test_unverified_release_requires_prerelease_warning(self):
         content = WORKFLOW.read_text()
         self.assertIn('p.get("release_approved_upstream_version")==p["upstream_version"]', content)
