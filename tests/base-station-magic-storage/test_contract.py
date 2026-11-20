@@ -17,7 +17,7 @@ class Contracts(unittest.TestCase):
         self.assertIn('case "all":', SRC)
         self.assertIn("public bool AllStations { get; set; }", SRC)
         self.assertIn("public List<string> Included { get; set; } = [];", SRC)
-        self.assertIn("!p.AllStations && !p.Included.Contains", SRC)
+        self.assertIn("p.AllStations || p.Included.Contains", SRC)
         self.assertIn("CommandPermission.Admin", SRC)
         self.assertIn("Items.ContainerNamesAvailable", SRC)
         self.assertIn("OutputName(Items.ContainerName(chest))", SRC)
@@ -30,8 +30,8 @@ class Contracts(unittest.TestCase):
         self.assertIn("Bases.Storage(@base, deposit: true)", SRC)
         self.assertIn("Config.Register<BSMSStationConfig>()", SRC)
         self.assertIn("StationTypeEnabled(s)", SRC)
-        self.assertIn("StationTypeEnabled(current)", SRC)
-        self.assertIn("StationTypeEnabled(check)", SRC)
+        self.assertIn("Eligible(current, p)", SRC)
+        self.assertIn("Eligible(check, p)", SRC)
         self.assertIn("type-enabled={StationTypeEnabled(s)}", SRC)
     def test_only_supported_native_actions(self):
         for name in ("Stations.Plan(id, options)", "Stations.Fill(id, options)", "Stations.Collect(id, chest, item)", "Player is intentionally absent"):
@@ -61,6 +61,7 @@ class Contracts(unittest.TestCase):
     def test_exactly_26_type_toggles(self):
         import re
         declared = re.findall(r"public bool (\w+) \{ get; set; \} = true;", CONFIG)
+        declared = [n for n in declared if n != "ShareOutputs"]
         self.assertEqual(len(declared), 26)
         self.assertEqual(len(set(declared)), 26)
         templates = re.findall(r'"(T\w+_Factory)"\s*=>\s*enabled\.(\w+)', SRC)
@@ -91,11 +92,57 @@ class Contracts(unittest.TestCase):
                 self.assertNotIn('public bool ' + old + ' { get; set; } = true;', CONFIG)
                 self.assertIn('("' + old[:1].lower() + old[1:] + '", "' + new[:1].lower() + new[1:] + '")', SRC)
 
+    def test_output_sharing_is_global_not_base_opt_in(self):
+        # A fresh world has no BasePolicy records. That must not block
+        # registration of every globally enabled station type.
+        self.assertIn(
+            "var wantShare = _configOk && _stationTypes.Value.ShareOutputs && StationTypeEnabled(s);",
+            SRC,
+        )
+        self.assertNotIn(
+            "var wantShare = _configOk && _stationTypes.Value.ShareOutputs && Eligible(s, p);",
+            SRC,
+        )
+        self.assertIn("SyncOutputSource(id, s, world, wantShare, justEnabled)", SRC)
+        self.assertNotIn("NewSharingPolicy", SRC)
+        self.assertIn("public bool AutoFill { get; set; } // default OFF", SRC)
+        self.assertIn("public bool AutoCollect { get; set; } // default OFF", SRC)
+        self.assertIn("public bool Enabled { get; set; } // default OFF", SRC)
+        self.assertIn("public bool ShareOutputs { get; set; } = true;", CONFIG)
+        self.assertIn("public bool CollectOutputs { get; set; } = false;", CONFIG)
+        self.assertIn("sharing ignores legacy base policies", SRC)
+        # Source scanning must run with zero saved base policies.
+        self.assertIn("!_stationTypes.Value.ShareOutputs && !_settings.Bases.Any(p => p.Enabled)", SRC)
+        self.assertNotIn("if (_stopping || _scanning ||\n            (!_settings.Bases.Any", SRC)
+        # Legacy automation checks are still separate and explicit.
+        self.assertIn("private bool Eligible(StationInfo s, BasePolicy? p)", SRC)
+        self.assertIn("p is { Enabled: true } && StationTypeEnabled(s)", SRC)
+
+    def test_output_modes(self):
+        self.assertIn("public bool ShareOutputs { get; set; } = true;", CONFIG)
+        self.assertIn("public bool CollectOutputs { get; set; } = false;", CONFIG)
+        self.assertIn("Stations.SetOutputSource(id)", SRC)
+        self.assertIn("Stations.SetOutputSource(id, on: false)", SRC)
+        self.assertIn("Stations.IsOutputSource(id)", SRC)
+        self.assertIn("Stations.OutputSourcesCapability", SRC)
+        self.assertIn("Stations.CraftSourcesCapability", SRC)
+        self.assertIn("Stations.CraftUiCapability", SRC)
+        self.assertIn("public List<SharedSource> SharedSources { get; set; } = [];", SRC)
+        self.assertIn("if (ours is null) return false;", SRC)
+        self.assertIn("bool persisted = Stations.SetOutputSource(id);", SRC)
+        self.assertIn("if (_stationTypes.Value.CollectOutputs && p.AutoCollect", SRC)
+        self.assertIn("UseStationOutputs = _stationTypes.Value.ShareOutputs", SRC)
+        self.assertIn("Eligible(s, p)", SRC)
+        self.assertIn("if (sourcesChanged && !Save())", SRC)
+        self.assertIn("Share outputs", README)
+        self.assertIn("shared station outputs={i.Outputs}", SRC)
+        self.assertIn("Collect outputs", README)
+
     def test_sdk(self):
-        self.assertIn("Kiln.Sdk/0.2.0-dev.29.14", PROJ)
-        self.assertIn("<Version>0.1.3</Version>", PROJ)
+        self.assertIn("Kiln.Sdk/0.2.0-dev.29.17", PROJ)
+        self.assertIn("<Version>0.1.4</Version>", PROJ)
         self.assertIn("<KilnSide>server</KilnSide>", PROJ)
-        self.assertIn("**Default OFF.**", README)
+        self.assertIn("**Base automation default OFF.**", README)
         self.assertIn("not cross-base", README)
         self.assertIn("FactoryStation", README)
         self.assertIn("crafting output", README)

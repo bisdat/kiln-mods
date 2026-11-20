@@ -7,84 +7,92 @@ namespace Bisdat.BaseStationMagicStorage;
 /// 26 global production-station TYPE switches, shown as checkboxes in the
 /// in-game Kiln Mods -> Base Station Magic Storage configuration (like Survival QoL).
 /// All instances of the same type share one switch, across every Flame Altar base.
+/// Type switches govern in-place output sharing by default, and optional automation.
 /// </summary>
 public sealed class BSMSStationConfig
 {
-    [Comment("Alchemy Station: allow BSMS to fill ingredients (if base auto-fill is enabled) and collect finished goods (if base auto-collection is enabled).")]
+    // Requested defaults: finished products stay at the station and are shared directly.
+    [Comment("Share outputs: allow finished products to be crafted from directly while they remain in their producing station. Same-base only, no queued inputs.")]
+    public bool ShareOutputs { get; set; } = true;
+
+    [Comment("Collect outputs: automatically move finished products to explicitly named crafting output Magic Chests, as in v0.1.3. Disable to keep products in their producing stations.")]
+    public bool CollectOutputs { get; set; } = false;
+
+    [Comment("Alchemy Station: share finished outputs and permit optional auto-fill/collection when separately enabled.")]
     public bool AlchemyStation { get; set; } = true;
 
-    [Comment("Kiln: allow BSMS to fill ingredients (if base auto-fill is enabled) and collect finished goods (if base auto-collection is enabled).")]
+    [Comment("Kiln: share finished outputs and permit optional auto-fill/collection when separately enabled.")]
     public bool Kiln { get; set; } = true;
 
-    [Comment("Spinning Machine: allow BSMS to fill ingredients (if base auto-fill is enabled) and collect finished goods (if base auto-collection is enabled).")]
+    [Comment("Spinning Machine: share finished outputs and permit optional auto-fill/collection when separately enabled.")]
     public bool SpinningMachine { get; set; } = true;
 
-    [Comment("Blast Furnace: allow BSMS to fill ingredients (if base auto-fill is enabled) and collect finished goods (if base auto-collection is enabled).")]
+    [Comment("Blast Furnace: share finished outputs and permit optional auto-fill/collection when separately enabled.")]
     public bool BlastFurnace { get; set; } = true;
 
-    [Comment("Coffee Brewery: allow BSMS to fill ingredients (if base auto-fill is enabled) and collect finished goods (if base auto-collection is enabled).")]
+    [Comment("Coffee Brewery: share finished outputs and permit optional auto-fill/collection when separately enabled.")]
     public bool CoffeeBrewery { get; set; } = true;
 
-    [Comment("Seedbed: allow BSMS to fill ingredients (if base auto-fill is enabled) and collect finished goods (if base auto-collection is enabled).")]
+    [Comment("Seedbed: share finished outputs and permit optional auto-fill/collection when separately enabled.")]
     public bool Seedbed { get; set; } = true;
 
-    [Comment("Mill: allow BSMS to fill ingredients (if base auto-fill is enabled) and collect finished goods (if base auto-collection is enabled).")]
+    [Comment("Mill: share finished outputs and permit optional auto-fill/collection when separately enabled.")]
     public bool Mill { get; set; } = true;
 
-    [Comment("Drying Rack: allow BSMS to fill ingredients (if base auto-fill is enabled) and collect finished goods (if base auto-collection is enabled).")]
+    [Comment("Drying Rack: share finished outputs and permit optional auto-fill/collection when separately enabled.")]
     public bool DryingRack { get; set; } = true;
 
-    [Comment("Forge: allow BSMS to fill ingredients (if base auto-fill is enabled) and collect finished goods (if base auto-collection is enabled).")]
+    [Comment("Forge: share finished outputs and permit optional auto-fill/collection when separately enabled.")]
     public bool Forge { get; set; } = true;
 
-    [Comment("Oven: allow BSMS to fill ingredients (if base auto-fill is enabled) and collect finished goods (if base auto-collection is enabled).")]
+    [Comment("Oven: share finished outputs and permit optional auto-fill/collection when separately enabled.")]
     public bool Oven { get; set; } = true;
 
-    [Comment("Smelter: allow BSMS to fill ingredients (if base auto-fill is enabled) and collect finished goods (if base auto-collection is enabled).")]
+    [Comment("Smelter: share finished outputs and permit optional auto-fill/collection when separately enabled.")]
     public bool Smelter { get; set; } = true;
 
-    [Comment("Table Saw: allow BSMS to fill ingredients (if base auto-fill is enabled) and collect finished goods (if base auto-collection is enabled).")]
+    [Comment("Table Saw: share finished outputs and permit optional auto-fill/collection when separately enabled.")]
     public bool TableSaw { get; set; } = true;
 
-    [Comment("Grinding Stones: allow BSMS to fill ingredients (if base auto-fill is enabled) and collect finished goods (if base auto-collection is enabled).")]
+    [Comment("Grinding Stones: share finished outputs and permit optional auto-fill/collection when separately enabled.")]
     public bool GrindingStones { get; set; } = true;
 
-    [Comment("Spinning Wheel: allow BSMS to fill ingredients (if base auto-fill is enabled) and collect finished goods (if base auto-collection is enabled).")]
+    [Comment("Spinning Wheel: share finished outputs and permit optional auto-fill/collection when separately enabled.")]
     public bool SpinningWheel { get; set; } = true;
 
-    [Comment("Loom: allow BSMS to fill ingredients (if base auto-fill is enabled) and collect finished goods (if base auto-collection is enabled).")]
+    [Comment("Loom: share finished outputs and permit optional auto-fill/collection when separately enabled.")]
     public bool Loom { get; set; } = true;
 
-    [Comment("Hand Spindle: allow BSMS to fill ingredients (if base auto-fill is enabled) and collect finished goods (if base auto-collection is enabled).")]
+    [Comment("Hand Spindle: share finished outputs and permit optional auto-fill/collection when separately enabled.")]
     public bool HandSpindle { get; set; } = true;
 
-    [Comment("Beehive: allow BSMS to fill ingredients (if base auto-fill is enabled) and collect finished goods (if base auto-collection is enabled).")]
+    [Comment("Beehive: share finished outputs and permit optional auto-fill/collection when separately enabled.")]
     public bool Beehive { get; set; } = true;
 
-    [Comment("Laboratory: allow BSMS to fill ingredients (if base auto-fill is enabled) and collect finished goods (if base auto-collection is enabled).")]
+    [Comment("Laboratory: share finished outputs and permit optional auto-fill/collection when separately enabled.")]
     public bool Laboratory { get; set; } = true;
 
-    [Comment("Infusion Altar: allow BSMS to fill ingredients (if base auto-fill is enabled) and collect finished goods (if base auto-collection is enabled).")]
+    [Comment("Infusion Altar: share finished outputs and permit optional auto-fill/collection when separately enabled.")]
     public bool InfusionAltar { get; set; } = true;
 
-    [Comment("Cooking Station: allow BSMS to fill ingredients (if base auto-fill is enabled) and collect finished goods (if base auto-collection is enabled).")]
+    [Comment("Cooking Station: share finished outputs and permit optional auto-fill/collection when separately enabled.")]
     public bool CookingStation { get; set; } = true;
 
-    [Comment("Coloring Station: allow BSMS to fill ingredients (if base auto-fill is enabled) and collect finished goods (if base auto-collection is enabled).")]
+    [Comment("Coloring Station: share finished outputs and permit optional auto-fill/collection when separately enabled.")]
     public bool ColoringStation { get; set; } = true;
 
-    [Comment("Coffee Drum Roaster: allow BSMS to fill ingredients (if base auto-fill is enabled) and collect finished goods (if base auto-collection is enabled).")]
+    [Comment("Coffee Drum Roaster: share finished outputs and permit optional auto-fill/collection when separately enabled.")]
     public bool CoffeeDrumRoaster { get; set; } = true;
 
-    [Comment("Ectoplasm Press: allow BSMS to fill ingredients (if base auto-fill is enabled) and collect finished goods (if base auto-collection is enabled).")]
+    [Comment("Ectoplasm Press: share finished outputs and permit optional auto-fill/collection when separately enabled.")]
     public bool EctoplasmPress { get; set; } = true;
 
-    [Comment("Charcoal Kiln: allow BSMS to fill ingredients (if base auto-fill is enabled) and collect finished goods (if base auto-collection is enabled).")]
+    [Comment("Charcoal Kiln: share finished outputs and permit optional auto-fill/collection when separately enabled.")]
     public bool CharcoalKiln { get; set; } = true;
 
-    [Comment("Tanning Station: allow BSMS to fill ingredients (if base auto-fill is enabled) and collect finished goods (if base auto-collection is enabled).")]
+    [Comment("Tanning Station: share finished outputs and permit optional auto-fill/collection when separately enabled.")]
     public bool TanningStation { get; set; } = true;
 
-    [Comment("Seafood Grill: allow BSMS to fill ingredients (if base auto-fill is enabled) and collect finished goods (if base auto-collection is enabled).")]
+    [Comment("Seafood Grill: share finished outputs and permit optional auto-fill/collection when separately enabled.")]
     public bool SeafoodGrill { get; set; } = true;
 }
