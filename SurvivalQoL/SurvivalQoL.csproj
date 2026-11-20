@@ -1,14 +1,14 @@
-<Project Sdk="Kiln.Sdk/0.2.0-dev.local.20261110.62101">
+<Project Sdk="Kiln.Sdk/0.2.0-dev.29.21">
   <PropertyGroup>
     <KilnModId>survival-qol</KilnModId>
     <KilnModName>Survival QoL</KilnModName>
-    <Version>0.2.3</Version>
+    <Version>0.2.4</Version>
     <Authors>bisdat</Authors>
-    <Description>Configurable survival QoL with 1x-10x stamina regeneration, underwater breath and frost resistance using Kiln services.</Description>
+    <Description>Configurable survival QoL including experimental staff-spell charge-time scaling and 1x-10x resource multipliers.</Description>
     <PackageProjectUrl>https://github.com/bisdat/kiln-mods</PackageProjectUrl>
     <KilnSide>server</KilnSide>
     <KilnClients>none</KilnClients>
-    <KilnServices>Rules;Combat;Abilities;Players;Settings</KilnServices>
+    <KilnServices>Rules;Combat;Abilities;Players;Settings;Content</KilnServices>
     <KilnGameIds>None</KilnGameIds>
   </PropertyGroup>
 </Project>
