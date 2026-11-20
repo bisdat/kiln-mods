@@ -45,6 +45,7 @@ class AutomaticReleaseTests(unittest.TestCase):
 
     def test_watcher_performs_full_build_and_prerelease_in_same_run(self):
         w = WATCHER.read_text()
+        self.assertIn("github.ref == 'refs/heads/main'", w)
         self.assertIn("concurrency:", w)
         self.assertIn("cancel-in-progress: false", w)
         self.assertIn("contents: write", w)
