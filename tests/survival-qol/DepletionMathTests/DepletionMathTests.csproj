@@ -8,5 +8,6 @@
   <ItemGroup>
     <Compile Include="../../../SurvivalQoL/DepletionMath.cs" Link="DepletionMath.cs" />
     <Compile Include="../../../SurvivalQoL/StaminaRegenScale.cs" Link="StaminaRegenScale.cs" />
+    <Compile Include="../../../SurvivalQoL/StaffChargeScale.cs" Link="StaffChargeScale.cs" />
   </ItemGroup>
 </Project>
