@@ -28,6 +28,10 @@ BSMS records which output-source opt-ins it owns by world and stable station ide
 
 Finished outputs become available as in-place crafting sources automatically, without `bstation enable`, `bstation all on`, or a saved base policy. The upstream Kiln API continues to enforce same-base membership, authorisation and transaction safety. Existing global checkbox values remain authoritative. Existing per-base saved policies affect only the separately optional fill/collection automation, never sharing.
 
+## Future: use station outputs in place (research)
+
+BSMS currently moves completed products into an explicitly named Magic Chest. A proposed alternative would leave outputs at the producer while allowing downstream native crafting and manual remote withdrawal. This is **not implemented**; Kiln currently exposes station output totals as read-only, not as a native crafting source. See [virtual station outputs research](docs/virtual-station-outputs.md), [BSMS #57](https://github.com/bisdat/kiln-mods/issues/57) and [upstream Kiln API request #68](https://github.com/frostdev-ops/kiln/issues/68). Current behaviour and settings are unchanged.
+
 ## Behaviour
 
 **Base automation default OFF.** In-place sharing is ON across all bases automatically. Auto-fill and auto-collection remain OFF until deliberately enabled for a base. Once you enable optional automation, the mod can:
