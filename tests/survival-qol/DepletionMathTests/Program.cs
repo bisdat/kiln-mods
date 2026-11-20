@@ -77,5 +77,25 @@ stamina.Sample(0, int.MaxValue, 10);
 Check(stamina.Extra(int.MaxValue - 100, int.MaxValue, 10) == 100,
     "large natural gains use safe arithmetic and clamp at maximum");
 
-Console.WriteLine("All stamina regeneration and depletion tests passed.");
+// Staff spells use spell ammunition. Wands are deliberately excluded.
+Check(StaffChargeScale.IsSpellAmmunition("Ammo_T1_Spell_Fire_Ball_lvl10"),
+    "Fireball spell ammunition is eligible for charge scaling");
+Check(StaffChargeScale.IsSpellAmmunition("Ammo_T6_Spell_Ice_Bolt"),
+    "Ice spell ammunition is eligible for charge scaling");
+Check(!StaffChargeScale.IsSpellAmmunition("Weapon_T5_1H_Wand_01_Ice"),
+    "wand attack sequences are excluded");
+Check(!StaffChargeScale.IsSpellAmmunition("Ammo_Arrow_T1_Flint"),
+    "non-spell ammunition is excluded");
+Check(StaffChargeScale.ChargeTimeConfigId == "0x579b2657",
+    "staff-spell Charge Time config uses the researched identifier");
+for (int factor = 1; factor <= 10; factor++)
+{
+    double result = StaffChargeScale.ScaledSeconds(2.5, factor);
+    Check(Math.Abs(result - (2.5 / factor)) < 0.0000001,
+        $"staff charge-time multiplier {factor}x is calculated from vanilla");
+}
+Check(StaffChargeScale.ScaledSeconds(2.5, 1) == 2.5,
+    "1x charge time is the original unmodified time");
+
+Console.WriteLine("All stamina regeneration, depletion and charge-time arithmetic tests passed.");
 

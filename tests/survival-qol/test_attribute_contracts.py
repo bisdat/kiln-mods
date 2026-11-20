@@ -21,7 +21,7 @@ class SurvivalAttributeContracts(unittest.TestCase):
         for name in ("UnderwaterBreathMultiplier", "FrostResistanceMultiplier"):
             self.assertIn(f"public int {name} {{ get; set; }} = 10;", CONFIG)
             self.assertIn("options." + name, MOD)
-        self.assertEqual(CONFIG.count("[Range(1, 10)]"), 3)
+        self.assertEqual(CONFIG.count("[Range(1, 10)]"), 4)
         for obsolete in (
             "DoubleUnderwaterBreath",
             "DoubleFrostResistance",
@@ -120,13 +120,13 @@ class SurvivalAttributeContracts(unittest.TestCase):
         self.assertIn("Abilities.Attributes.Add(player.Entity, AbilityResource.Mana, requested)", MOD)
 
     def test_health_and_mana_default_change_has_distinct_library_version(self):
-        self.assertIn("<Version>0.2.3</Version>", PROJECT)
+        self.assertIn("<Version>0.2.4</Version>", PROJECT)
 
-    def test_pinned_sdk_includes_attribute_api(self):
-        self.assertIn("Kiln.Sdk/0.2.0-dev.local.20261110.62101", PROJECT)
-        self.assertIn('default_sdk_version="0.2.0-dev.local.20261110.62101"', BUILD)
+    def test_pinned_sdk_includes_attribute_and_gamedata_apis(self):
+        self.assertIn("Kiln.Sdk/0.2.0-dev.29.21", PROJECT)
+        self.assertIn('default_sdk_version="0.2.0-dev.29.21"', BUILD)
         self.assertIn(
-            'default_kiln_sha="346a3ae5de436db1ba64bbbf0a27f4b8d0ed5be5"',
+            'default_kiln_sha="b1c5b3a0cd77017c9d6baafb2394c7968efc24ef"',
             BUILD,
         )
 

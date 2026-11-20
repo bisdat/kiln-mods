@@ -2,7 +2,7 @@
 
 An Enshrouded mod built with the Kiln SDK and .NET 10. Runs on the authoritative server world, including Kiln-hosted single-player; no client-side installation is required for hosted server logic.
 
-**Current candidate: v0.2.3 — health and mana bonus regeneration now default to zero (normal game).** The previous v0.2.2 release introduced the stamina multiplier, and v0.2.1 introduced the accepted oxygen/frost multipliers.
+**Current test candidate: v0.2.4 — experimental staff-spell charge-time slider. NOT yet verified in-game.** v0.2.3 set the default health and mana bonus regeneration to zero (normal game); v0.2.2 introduced stamina regeneration and v0.2.1 introduced oxygen/frost multipliers.
 
 ## Features
 
@@ -10,6 +10,7 @@ An Enshrouded mod built with the Kiln SDK and .NET 10. Runs on the authoritative
 | --- | --- | --- |
 | Infinite Stamina | Kiln Rules `MinStamina = 1`, `UnlimitedGliding` | On |
 | Stamina Regen Multiplier | `StaminaRegenMultiplier` 1×–10× | **1× (normal game)** |
+| Staff Casting Speed Multiplier (experimental) | `StaffCastingSpeedMultiplier` 1×–10×; changes spell ammo Charge Time config | **1× (normal game)** |
 | Infinite Mana | Kiln Rules `MinMana = 1` | On |
 | Underwater Breath Multiplier | `UnderwaterBreathMultiplier` 1×–10× | 10× |
 | Frost Resistance Multiplier | `FrostResistanceMultiplier` 1×–10× | 10× |
@@ -19,6 +20,22 @@ An Enshrouded mod built with the Kiln SDK and .NET 10. Runs on the authoritative
 | Infinite Weapon Durability | Temporarily disable equipment durability globally | On |
 
 `BodyHeat` provides frost protection, **not** the Shroud timer.
+
+## Staff casting-speed experiment — v0.2.4
+
+The new **Staff Casting Speed Multiplier** slider ranges from **1× to 10×**, defaults to **1×**, and is independent of Infinite Mana or mana regeneration. It uses Kiln's `Content.ItemData` / `kiln.gamedata` API to identify spell-ammunition entries named `Ammo_*_Spell_*` with the existing `Charge Time` config id `0x579b2657`. The source data for Fireball I contains a 2.5-second charge time. For 2× the proposed value is 1.25 s; for 5× it is 0.5 s; for 10× it is 0.25 s.
+
+**This is a research prototype, not a proven cast-speed feature.** The Kiln developers have identified the `Charge Time` config in spell items, but its precise engine runtime reader is not yet confirmed. It may alter the tooltip without reducing the actual held-input or repeat-cast delay. Staff spells also have timed actor sequences (including animation, release events, loop/keep-alive and action windows). We deliberately **do not** retime those events without measured evidence; otherwise the casting animation, mana payment, projectile spawn and cancel windows can become inconsistent. Wand attacks are not modified.
+
+The multiplier always uses the **original** charge time and does not compound edits when the setting changes. Returning to **1×** removes this mod's own content layer. Kiln automatically reverts its layer on unload. All changes are session-only and need the Kiln `Content` game-data service, available in dev.29.21. The mod warns when no matching spells are found; the existing QoL features continue working.
+
+**Required in-game acceptance (do not merge/tag before PASS):**
+
+1. In the active profile install `survival-qol-0.2.4.zip` and verify that version is loaded. At **1×**, compare Fireball or Ice Bolt charge and repeated-cast timing with the mod disabled.
+2. Try **2×**, **5×**, and **10×** with the same staff, character, spell and equipment. Measure *time held until the spell is ready*, *release-to-projectile timing*, and *time until a second cast is possible*. Verify speed improves rather than merely the tooltip.
+3. Test a different spell (including an Eternal spell if available), then a wand. Wands must behave exactly as before. Repeat with/without Quick Charge if available.
+4. Change from **10× back to 1×** without restarting, check the full original delay and charges return, then unload/reload the mod and repeat.
+5. Check that mana charges, visuals, animation, ability cancellations, and other QoL sliders still work. Collect `kiln/logs/kiln.log` (search `Staff casting-speed`) and note any spell whose observed timing did not change.
 
 ## Health and mana regeneration — default changes in v0.2.3
 
@@ -52,13 +69,13 @@ The legacy oxygen/frost `Double...` and `Infinite...` toggles were removed in v0
 
 ## Installation and testing
 
-1. Build or obtain **`survival-qol-0.2.3.zip`** from the [Package Survival QoL GitHub Action](../.github/workflows/build.yml). The package must be installed into Kiln Library and **version 0.2.3 selected in the active profile**. Reactivate/apply the profile and restart Enshrouded. For legacy drop-in installs only, unpack into `kiln/mods/`.
+1. Build or obtain **`survival-qol-0.2.4.zip`** from the [Package Survival QoL GitHub Action](../.github/workflows/build.yml). The package must be installed into Kiln Library and **version 0.2.4 selected in the active profile**. Reactivate/apply the profile and restart Enshrouded. For legacy drop-in installs only, unpack into `kiln/mods/`.
 2. In Kiln Configs, set **Health Regen Per Second** and **Mana Regen Per Second** to 0 (particularly when upgrading a profile previously set to 25/35); also verify **Stamina Regen Multiplier** remains 1–10, initially 1, independently of the **Infinite Stamina** toggle.
 3. Disable **Infinite Stamina**, spend stamina, and compare natural recovery at **1×, 2×, 5× and 10×** with the same character and equipment. At 1× recovery and its delay should remain vanilla; at 10× recovery should be substantially faster while the game's recharge delay remains.
 4. Re-enable **Infinite Stamina** and check it still keeps stamina full regardless of the multiplier. Change the slider during play and reconnect to ensure no stale bonus is applied.
 5. With both health/mana bonuses at 0, verify the game regenerates normally with your existing equipment and effects; raise each bonus to 25/35 to verify it still adds healing/mana, then return to 0. Check oxygen/frost, fall protection and durability for regressions; report any failures with active config values and `kiln/logs/kiln.log`.
 
-Kiln's active profile can pin an older mod even after a new ZIP is imported. `kiln/state/mods.json` identifies the version actually loaded. In profiles with `dropins: false`, copying into `kiln/mods/` alone does not activate it. **Do not tag/release stable v0.2.3 before in-game acceptance.**
+Kiln's active profile can pin an older mod even after a new ZIP is imported. `kiln/state/mods.json` identifies the version actually loaded. In profiles with `dropins: false`, copying into `kiln/mods/` alone does not activate it. **Do not tag/release v0.2.4 before staff-casting gameplay acceptance.**
 
 ## Building and verification
 
@@ -70,4 +87,4 @@ dotnet run --project tests/survival-qol/DepletionMathTests/DepletionMathTests.cs
 bash scripts/build.sh
 ```
 
-The pinned build uses Kiln dev.21-capable SDK source `346a3ae5de436db1ba64bbbf0a27f4b8d0ed5be5` and local SDK package `0.2.0-dev.local.20261110.62101`. The separate [follow-latest-Kiln compatibility workflow](../.github/workflows/kiln-latest.yml) validates against a checksum-verified published Kiln development SDK. CI arithmetic and compilation success cannot substitute for an actual Enshrouded gameplay test.
+The pinned build now uses official Kiln dev.29.21 release source `b1c5b3a0cd77017c9d6baafb2394c7968efc24ef` and SDK package `0.2.0-dev.29.21` (needed for `kiln.gamedata`). The separate [follow-latest-Kiln compatibility workflow](../.github/workflows/kiln-latest.yml) validates against a checksum-verified published Kiln development SDK. CI arithmetic and compilation success cannot substitute for an actual Enshrouded gameplay test.

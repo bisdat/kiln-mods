@@ -7,8 +7,8 @@ mod="${1:-SurvivalQoL}"
 case "$mod" in
   SurvivalQoL)
     mod_id="survival-qol"
-    default_sdk_version="0.2.0-dev.local.20261110.62101"
-    default_kiln_sha="346a3ae5de436db1ba64bbbf0a27f4b8d0ed5be5" # includes dev.21 attribute API
+    default_sdk_version="0.2.0-dev.29.21"
+    default_kiln_sha="b1c5b3a0cd77017c9d6baafb2394c7968efc24ef" # official dev.29.21 release; includes kiln.gamedata
     ;;
   EndlessChests)
     mod_id="endless-chests-kiln"
