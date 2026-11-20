@@ -26,14 +26,15 @@ runs daily, on manual dispatch, and after relevant changes to `main`.
    verify licence, translations, native manifest, safe archive paths,
    official and pinned checksums, and reproducibility. Generate the install
    ZIP and its SHA256. **No game is launched by GitHub Actions.**
-5. Only after passing those checks, fast-forward the new upstream pin to
-   `main` (if changed), create a namespaced immutable version tag and
-   publish an **automated prerelease** with the install ZIP and SHA256.
-   A concurrent move of `main` aborts the publish; the run must be retried
-   against the new HEAD. An existing release is never overwritten.
-6. The GitHub Actions bot's own commits and tag pushes do not launch new
-   downstream workflows. The watcher therefore performs package, tag and
-   prerelease publication **within one workflow run**.
+5. Only after passing those checks, persist the pin on an append-only
+   `automation/building-tools-release-pins` branch, create a namespaced
+   immutable version tag and publish an **automated prerelease** with the
+   install ZIP and SHA256. The protected `main` branch is never pushed to
+   by the bot. Each build merges current `main` into the automation branch
+   first. A concurrent move of `main` aborts publication; a later run retries.
+6. The bot's automation-branch commits and tag pushes do not launch new
+   downstream workflows. The watcher therefore performs package, pin, tag
+   and prerelease publication **within one workflow run**.
 
 `BuildingToolsKiln/package.py` validates the archive and builds the
 wrapper. `propose_update.py` maintains version/checksum pinning.
@@ -66,12 +67,15 @@ established from CI alone. Back up saves before testing a prerelease.
 - **Missing/mismatched official checksum, invalid ZIP/DLL/licence, bad test
   or nonreproducible output:** fail without modifying `main` or publishing.
 - **Competing `main` update:** fail before tagging. A later run retries.
-- **GitHub bot lacks permission to push `main`/tags:** fail rather than
-  publishing a package without its pinned source commit. Fix repository
-  workflow permissions; do not bypass integrity checks.
-- **Publication fails after a successful pin commit/tag:** next run sees the
-  unchanged pin but missing release and retries the same version, without
-  overwriting tags or previously published assets.
+- **Protected `main`:** never bypass it. The source pin lives in the
+  automation branch and immutable release tag, not in an unreviewed commit
+  to `main`. Subsequent main changes are merged into the automation branch.
+- **GitHub bot lacks permission to push the automation branch/tags:** fail
+  rather than publishing a package without its pinned source commit. Fix
+  repository workflow permissions; do not bypass integrity checks.
+- **Publication fails after an automation-branch pin commit/tag:** the next
+  run sees the unchanged pin but missing release and retries the same
+  version, without overwriting tags or previously published assets.
 - **Already published:** leave the immutable release and assets unchanged.
 
 No gameplay mod is installed on the user's computer by these workflows.
