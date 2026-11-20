@@ -14,7 +14,7 @@ permissions:
   contents: write
 
 # A single writer prevents two scheduled/manual runs assigning the same
-# adapter version. The bot's own main/tag pushes do NOT trigger more workflows.
+# adapter version. The bot's automation-branch/tag pushes do NOT trigger more workflows.
 concurrency:
   group: building-tools-automated-prerelease
   cancel-in-progress: false
@@ -28,6 +28,23 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Restore durable automated pin branch (main stays protected)
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          BRANCH="automation/building-tools-release-pins"
+          # GitHub's protected main branch is never modified by this workflow.
+          # The automation branch is append-only: each release keeps its
+          # upstream pin, and includes the latest source from main.
+          if git ls-remote --exit-code --heads origin "refs/heads/$BRANCH" >/dev/null; then
+            git fetch origin "refs/heads/$BRANCH:refs/remotes/origin/$BRANCH"
+            git switch --create auto-building-tools "refs/remotes/origin/$BRANCH"
+            git merge --no-edit refs/remotes/origin/main
+          else
+            git switch --create auto-building-tools "$GITHUB_SHA"
+          fi
       - name: Find latest stable upstream release and wait for official assets
         id: latest
         env:
@@ -155,7 +172,7 @@ jobs:
           if-no-files-found: error
           retention-days: 30
 
-      - name: Fast-forward the reviewed upstream pin, tag and publish prerelease
+      - name: Record version on automation branch, tag and publish prerelease
         if: steps.candidate.outputs.publish == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
@@ -166,20 +183,22 @@ jobs:
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          # A changed upstream pin is committed only after all tests/build checks pass.
-          # Fail closed if someone else moved main while this run was building.
+          # Never bypass the protected main branch. If it changed during this
+          # run, abort and retry later with the newly reviewed source.
           REMOTE_SHA="$(git ls-remote origin refs/heads/main | cut -f1)"
           test "$REMOTE_SHA" = "$GITHUB_SHA" || {
-            echo "::error::main changed while packaging; retry on the current main"
+            echo "::error::main changed while packaging; retry using the current main"
             exit 1
           }
           if ! git diff --quiet -- BuildingToolsKiln/release.json; then
             git add BuildingToolsKiln/release.json
             git commit -m "ci(building-tools): pin official upstream $UPSTREAM for adapter $ADAPTER"
-            git push origin HEAD:refs/heads/main
           fi
-          # A Github Actions bot push does not trigger the usual workflow.
-          # Therefore this same run performs the tag AND release publication.
+          # The append-only automation branch is the durable upstream pin.
+          # A normal push is non-force, rejecting unexpected concurrent changes.
+          git push origin HEAD:refs/heads/automation/building-tools-release-pins
+          # A GitHub Actions bot push does not trigger downstream workflows;
+          # this run performs version pin, build, tag and release itself.
           TARGET_SHA="$(git rev-parse HEAD)"
           git fetch --tags origin
           if git rev-parse -q --verify "refs/tags/$TAG" >/dev/null; then
