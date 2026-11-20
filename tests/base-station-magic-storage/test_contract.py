@@ -92,6 +92,32 @@ class Contracts(unittest.TestCase):
                 self.assertNotIn('public bool ' + old + ' { get; set; } = true;', CONFIG)
                 self.assertIn('("' + old[:1].lower() + old[1:] + '", "' + new[:1].lower() + new[1:] + '")', SRC)
 
+    def test_output_sharing_is_global_not_base_opt_in(self):
+        # A fresh world has no BasePolicy records. That must not block
+        # registration of every globally enabled station type.
+        self.assertIn(
+            "var wantShare = _configOk && _stationTypes.Value.ShareOutputs && StationTypeEnabled(s);",
+            SRC,
+        )
+        self.assertNotIn(
+            "var wantShare = _configOk && _stationTypes.Value.ShareOutputs && Eligible(s, p);",
+            SRC,
+        )
+        self.assertIn("SyncOutputSource(id, s, world, wantShare, justEnabled)", SRC)
+        self.assertNotIn("NewSharingPolicy", SRC)
+        self.assertIn("public bool AutoFill { get; set; } // default OFF", SRC)
+        self.assertIn("public bool AutoCollect { get; set; } // default OFF", SRC)
+        self.assertIn("public bool Enabled { get; set; } // default OFF", SRC)
+        self.assertIn("public bool ShareOutputs { get; set; } = true;", CONFIG)
+        self.assertIn("public bool CollectOutputs { get; set; } = false;", CONFIG)
+        self.assertIn("sharing ignores legacy base policies", SRC)
+        # Source scanning must run with zero saved base policies.
+        self.assertIn("!_stationTypes.Value.ShareOutputs && !_settings.Bases.Any(p => p.Enabled)", SRC)
+        self.assertNotIn("if (_stopping || _scanning ||\n            (!_settings.Bases.Any", SRC)
+        # Legacy automation checks are still separate and explicit.
+        self.assertIn("private bool Eligible(StationInfo s, BasePolicy? p)", SRC)
+        self.assertIn("p is { Enabled: true } && StationTypeEnabled(s)", SRC)
+
     def test_output_modes(self):
         self.assertIn("public bool ShareOutputs { get; set; } = true;", CONFIG)
         self.assertIn("public bool CollectOutputs { get; set; } = false;", CONFIG)
