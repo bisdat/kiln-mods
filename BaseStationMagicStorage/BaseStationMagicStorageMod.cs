@@ -39,10 +39,10 @@ public sealed class BaseStationMagicStorageMod : Mod
         public string World { get; set; } = "";
         public string Altar { get; set; } = "";
         public bool Enabled { get; set; } // default OFF
-        public bool AutoFill { get; set; } = true;
-        public bool AutoCollect { get; set; } = true;
-        // A base may contain dozens of stations: opt in individually until
-        // an admin explicitly enables all station types for that base.
+        public bool AutoFill { get; set; } // default OFF: automation is opt-in
+        public bool AutoCollect { get; set; } // default OFF: no unsolicited transfers
+        // Legacy per-base selection is for OPTIONAL automation only.
+        // Output sharing is governed by ShareOutputs and the global type switches.
         public bool AllStations { get; set; } // default OFF
         public List<string> Included { get; set; } = [];
         public int TargetCrafts { get; set; } = 3;
@@ -140,8 +140,8 @@ public sealed class BaseStationMagicStorageMod : Mod
             usage: "status|bases|list|sinks|stock|plan [n]|station on|off|all on|off|enable [n]|disable|target n|fill on|off|collect on|off|exclude|include",
             description: "Opt-in Magic Chest automation of base production stations.");
         Context.Tick.Pre += OnTick;
-        Log.Info("Base Station Magic Storage v0.1.4 loaded: 26 station-type switches plus ShareOutputs / CollectOutputs in Kiln Configs; " +
-                 "unconfigured bases share eligible finished outputs by default; automatic fill and collection remain OFF.");
+        Log.Info("Base Station Magic Storage v0.1.4 loaded: all 26 supported station types share finished outputs by default " +
+                 "in every base; sharing ignores legacy base policies. Auto-fill and auto-collection remain OFF by default.");
     }
 
     private void OnStationConfigChanged(ConfigChangedEvent change)
@@ -215,41 +215,22 @@ public sealed class BaseStationMagicStorageMod : Mod
             b.Altars.Any(a => string.Equals(a.Id.ToString(), p.Altar, StringComparison.OrdinalIgnoreCase)))
             .Take(2).ToArray();
 
-    // Opt-in is the *default* for an unconfigured base in a new world.
-    // A synthetic policy is deliberately NOT written: explicit 'bstation disable',
-    // per-station exclusions and any existing saved policy always take precedence.
-    // Automatic fill/collection remain off unless enabled deliberately.
+    // The legacy policy is relevant ONLY to optional automatic fill/collection.
+    // It never gates output-source registration. No policy is created for sharing.
     private BasePolicy? Policy(BaseInfo b, string world)
     {
         var candidates = MatchingPolicies(b, world);
-        if (candidates.Length == 1) return candidates[0];
-        if (candidates.Length > 1 || b.Altars.Count == 0 || !_configOk ||
-            !_stationTypes.Value.ShareOutputs) return null;
-        return NewSharingPolicy(b, world);
+        return candidates.Length == 1 ? candidates[0] : null;
     }
-
-    private static BasePolicy NewSharingPolicy(BaseInfo b, string world) => new()
-    {
-        World = world,
-        Altar = b.Altars[0].Id.ToString(),
-        Enabled = true,
-        AllStations = true,
-        AutoFill = false,
-        AutoCollect = false,
-    };
 
     private BasePolicy AddOrGetPolicy(BaseInfo b, string world)
     {
         var matches = MatchingPolicies(b, world);
         if (matches.Length == 1) return matches[0];
-        if (matches.Length > 1) throw new CommandException("Multiple policies match this merged base; resolve its settings first.");
+        if (matches.Length > 1)
+            throw new CommandException("Multiple policies match this merged base; resolve its settings first.");
         if (b.Altars.Count == 0) throw new CommandException("No persistent Flame Altar ID.");
-        // An admin command persists a real policy, including an explicit disable.
-        // Existing stored policies are never silently migrated from OFF to ON.
-        var added = _stationTypes.Value.ShareOutputs
-            ? NewSharingPolicy(b, world)
-            : new BasePolicy { World = world, Altar = b.Altars[0].Id.ToString(),
-                AutoFill = false, AutoCollect = false };
+        var added = new BasePolicy { World = world, Altar = b.Altars[0].Id.ToString() };
         _settings.Bases.Add(added);
         return added;
     }
@@ -397,8 +378,8 @@ public sealed class BaseStationMagicStorageMod : Mod
                     $"craftSources={Capabilities.Is(Stations.CraftSourcesCapability)}, " +
                     $"craftUi={Capabilities.Is(Stations.CraftUiCapability)}, " +
                     $"owned sources here={_settings.SharedSources.Count(x => x.World == world)}, " +
-                    $"enabled bases here={(world is null || !_configOk || !Bases.Available ? 0 : Bases.All.Count(b => Policy(b, world)?.Enabled == true))}. " +
-                    "Unconfigured bases share finished outputs by default; fill/collect OFF.");
+                    $"automation-enabled bases here={_settings.Bases.Count(p => p.World == world && p.Enabled)}. " +
+                    "Output sharing is global (no per-base opt-in); auto-fill/collect require explicit enablement.");
                 return;
             }
             if (!_configOk) throw new CommandException("Invalid settings: automation disabled; restore the settings file.");
@@ -607,7 +588,9 @@ public sealed class BaseStationMagicStorageMod : Mod
                     var s = Stations.Read(id);
                     if (s is null) continue;
                     seen.Add(Key(s));
-                    var wantShare = _configOk && _stationTypes.Value.ShareOutputs && Eligible(s, p);
+                    // Sharing is global across bases and supported station types.
+                    // A disabled/absent legacy base policy must NEVER block output registration.
+                    var wantShare = _configOk && _stationTypes.Value.ShareOutputs && StationTypeEnabled(s);
                     try
                     {
                         if (SyncOutputSource(id, s, world, wantShare, justEnabled)) sourcesChanged = true;
