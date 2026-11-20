@@ -13,6 +13,10 @@ public sealed class SurvivalQoLConfig
     [Range(1, 10)]
     public int StaminaRegenMultiplier { get; set; } = 1;
 
+    [Comment("Staff spell charge-time multiplier: 1x = normal game; 2x-10x shortens spell charge time. Experimental: actual casting speed needs an in-game test.")]
+    [Range(1, 10)]
+    public int StaffCastingSpeedMultiplier { get; set; } = 1;
+
     [Comment("Keep player mana at 100% via Kiln.Rules.")]
     public bool InfiniteMana { get; set; } = true;
 
