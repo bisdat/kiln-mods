@@ -4,7 +4,5 @@
   "upstream_sha256": "6a27fe8523757afd6d752b6c386d1ceb868dcb104debd74bba60f5be3c0548dd",
   "tested_client_sha256": "5d9ef2f140b8ed49e30dbee655841b89d08baec20f799a1817e171a18a850c77",
   "gameplay_verified_upstream_version": "0.33.2",
-  "release_approved_upstream_version": "0.33.2",
-  "release_approval_note": "Owner explicitly requested merge/release on 2026-11-17 and subsequently confirmed in-game PASS for 0.33.2 on 2026-11-17; detailed conservation checks not separately reported.",
   "gameplay_acceptance_note": "2026-11-17: user reported Building Tools 0.33.2 / Kiln adapter 1.0.1 tested and working in game. Detailed ingredient debit and save/reload conservation checks were not separately described."
 }
