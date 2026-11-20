@@ -1,8 +1,13 @@
 # Building Tools for Kiln
 
-**Kiln adapter 1.0.2 · upstream Building Tools 0.34.0 · native client-side mod**
+**Native client-side adapter for official Enshrouded Building Tools.**
 
-The current 1.0.2 package is an **automatically CI-verified prerelease**, not gameplay-verified. The last in-game acceptance remains upstream 0.33.2 / adapter 1.0.1.
+The newest wrapper is published as a **CI-verified, gameplay-untested prerelease**;
+see [GitHub Releases](https://github.com/bisdat/kiln-mods/releases) for its
+current adapter and upstream versions. The last separately gameplay-verified
+upstream release is **0.33.2** (adapter **1.0.1**). Automated version pins
+are recorded on the `automation/building-tools-release-pins` branch while
+`main` remains protected.
 
 [Releases](https://github.com/bisdat/kiln-mods/releases) |
 [Original Building Tools](https://github.com/AleksanderWojtal-CC/Enshrouded-BuildingTools) |
