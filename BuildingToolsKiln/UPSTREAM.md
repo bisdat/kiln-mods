@@ -1,95 +1,87 @@
-# Upstream updates: Nexus → GitHub → Kiln
+# Automated Building Tools upstream updates
 
-**Our source is in this directory; the original game's C++ source is not.**
-The [upstream developer](https://github.com/AleksanderWojtal-CC/Enshrouded-BuildingTools)
-maintains the original Building Tools source. Their
-[Nexus publishing notes](https://github.com/AleksanderWojtal-CC/Enshrouded-BuildingTools/blob/main/docs/NEXUS.md)
-confirm that new Nexus versions are built and uploaded from the official
-GitHub release process.
+Building Tools for Kiln is an **unchanged binary wrapper** for upstream
+[Enshrouded Building Tools](https://github.com/AleksanderWojtal-CC/Enshrouded-BuildingTools).
+The original author owns the C++ sources and DLL. Our packaging neither recompiles
+nor patches that DLL, and never replaces Kiln's game-root `dinput8.dll`.
 
-We do **not** maintain a fork or modify their native DLL. Therefore there
-are no upstream C++ commits to merge into this wrapper. An update means
-repackaging a newer **official GitHub release** using its published ZIP
-and SHA256, retaining the licence and keeping Kiln's loader intact.
+## What runs automatically
 
-## Project files
+The [upstream watcher](../.github/workflows/buildingtools-upstream-watch.yml)
+runs daily, on manual dispatch, and after relevant changes to `main`.
 
-- [package.py](package.py): Kiln adapter source (copies upstream DLL
-  byte-for-byte, generates a native.json manifest and retains translations).
-- [release.json](release.json): upstream version, asset SHA256, adapter
-  version, last known working game build and **gameplay acceptance gate**.
-- [propose_update.py](propose_update.py): propose the next upstream binary.
-- [tests/](tests/): packaging and version proposal regression tests.
-- [CI](../.github/workflows/buildingtools-kiln-native-adapter.yml):
-  verifies official checksum, packages and signs the release with SHA256.
-- [Upstream watcher](../.github/workflows/buildingtools-upstream-watch.yml):
-  checks the upstream release automatically each day or on demand.
+1. Look up the latest **stable official GitHub release** and ensure its ZIP and
+   published checksum asset have appeared. When the upload is incomplete the
+   watcher reports the condition and retries at the next run, rather than
+   publishing an incomplete package.
+2. Download only that version's official archive and checksum; verify the
+   actual ZIP against the author's SHA256 (legacy per-archive and SHA256SUMS
+   formats). If a pinned version's bytes change, **fail closed**.
+3. If a newer version is available, increment the Kiln adapter patch version
+   and update `BuildingToolsKiln/release.json`. Preserve the previous
+   gameplay-verified version, notes and tested game-client checksum verbatim.
+   An already-pinned version with no published release (e.g. 0.34.0 / 1.0.2
+   at the start of this workflow) is also eligible for packaging.
+4. Run the entire regression suite, package the original DLL byte-for-byte,
+   verify licence, translations, native manifest, safe archive paths,
+   official and pinned checksums, and reproducibility. Generate the install
+   ZIP and its SHA256. **No game is launched by GitHub Actions.**
+5. Only after passing those checks, fast-forward the new upstream pin to
+   `main` (if changed), create a namespaced immutable version tag and
+   publish an **automated prerelease** with the install ZIP and SHA256.
+   A concurrent move of `main` aborts the publish; the run must be retried
+   against the new HEAD. An existing release is never overwritten.
+6. The GitHub Actions bot's own commits and tag pushes do not launch new
+   downstream workflows. The watcher therefore performs package, tag and
+   prerelease publication **within one workflow run**.
 
-## Controlled update process
+`BuildingToolsKiln/package.py` validates the archive and builds the
+wrapper. `propose_update.py` maintains version/checksum pinning.
+The separate [package workflow](../.github/workflows/buildingtools-kiln-native-adapter.yml)
+continues compiling and testing PRs, but never independently publishes releases.
 
-1. The upstream author publishes an official GitHub release (normally
-   followed by a Nexus upload). GitHub can publish the release page
-   **before** the downloadable ZIP and checksum have been uploaded.
-   Older releases provide an individual `.zip.sha256` asset; newer releases
-   provide `SHA256SUMS` for multiple assets. The watcher accepts either
-   published format and checks the checksum against the exact ordinary ZIP.
-   An incomplete upload produces a **warning** and retries on the next
-   daily run; this is **not** a failure of Kiln or of the adapter.
-2. Only once the official ZIP and a published checksum asset are fully
-   uploaded does the watcher download the ZIP, validate the matching
-   SHA256 from the individual checksum or multi-file `SHA256SUMS`,
-   and propose a new version in release.json via a **draft pull request**.
-   The packaging workflow independently verifies the same official checksum
-   and the repository's reviewed archive SHA256 pin.
-   It increments the Kiln adapter patch version without copying any source.
-3. CI builds a candidate Kiln ZIP from the actual upstream binary, verifies
-   its bytes and licence, tests archive safety, and checks reproducibility.
-4. Test the candidate in a disposable Enshrouded world under Kiln.
-   Confirm the menu, Magic Chests at another base, recipe craftability and
-   actual remote ingredient consumption.
-5. Once the new upstream version has passed in-game, update the field
-   `gameplay_verified_upstream_version` in the draft PR's
-   `release.json` to exactly match `upstream_version`.
-   If the game's own executable was updated, verify and update
-   `tested_client_sha256` as well.
-6. Mark the PR ready, review and merge. The packaging workflow publishes
-   the corresponding namespaced `building-tools-kiln-vX.Y.Z` release,
-   with the install ZIP and checksum. No existing `BuildingTools.ini`
-   settings are packaged or overwritten.
+## Release status and gameplay testing
 
-**Safety gate:** Production publication normally requires
-`gameplay_verified_upstream_version` to equal `upstream_version`.
-If the repository owner **explicitly requests release of an unverified
-version**, a separate version-specific `release_approved_upstream_version`
-and `release_approval_note` may be recorded. In that case the release is
-automatically marked **prerelease**, with its missing gameplay verification
-disclosed in the release notes. This approval is NOT gameplay verification
-and must never advance `gameplay_verified_upstream_version`.
-New upstream versions do not inherit either approval. The scheduled update
-checker can never silently merge, install, tag or publish a new upstream DLL.
+**No version-specific owner approval is required for an automated prerelease.**
+Every new upstream binary is published with a visible
+**"CI VERIFIED — GAMEPLAY UNTESTED"** warning. This is a build result,
+not approval of changes to game inventory or crafting logic.
 
-If GitHub repository settings prevent Actions from opening draft PRs,
-the workflow attempts to create an issue with the proposed branch link
-and the same acceptance instructions.
+The `gameplay_verified_upstream_version`, `tested_client_sha256`, and
+`gameplay_acceptance_note` fields record actual gameplay evidence.
+They are **not** advanced by automation. After a new prerelease is tested
+in a disposable Enshrouded world, record the test against that exact
+upstream version separately. Do not promote a prerelease to stable
+without evidence of real-game acceptance.
 
-## Manual trigger
+Recommended in-game checks: Kiln native loader reports the adapter loaded;
+Building Tools menus work; Magic Chests at another Flame Altar are visible;
+a craft consumes remote materials exactly once; save/reload preserves the
+balances; logs contain no unsupported game signatures. These cannot be
+established from CI alone. Back up saves before testing a prerelease.
 
-Go to [Actions → Check Building Tools upstream updates](https://github.com/bisdat/kiln-mods/actions/workflows/buildingtools-upstream-watch.yml),
-then select **Run workflow**. When the upstream release is unchanged, the
-action reports that no update is needed.
+## Failure and recovery
 
-For a manual pin update from a reviewed release, use:
+- **No uploaded assets yet:** retry on the next scheduled run, no release.
+- **Missing/mismatched official checksum, invalid ZIP/DLL/licence, bad test
+  or nonreproducible output:** fail without modifying `main` or publishing.
+- **Competing `main` update:** fail before tagging. A later run retries.
+- **GitHub bot lacks permission to push `main`/tags:** fail rather than
+  publishing a package without its pinned source commit. Fix repository
+  workflow permissions; do not bypass integrity checks.
+- **Publication fails after a successful pin commit/tag:** next run sees the
+  unchanged pin but missing release and retries the same version, without
+  overwriting tags or previously published assets.
+- **Already published:** leave the immutable release and assets unchanged.
 
-```bash
-python3 BuildingToolsKiln/propose_update.py \
-  --upstream-version 0.31.3 \
-  --sha256 <sha256-of-official-upstream-release-zip>
-```
+No gameplay mod is installed on the user's computer by these workflows.
 
-Then open a PR, run the packaging workflow and complete the in-game acceptance
-before changing the gameplay verification gate.
+## Manual action
 
-If you want to **edit the original C++ mod**, rather than simply keep
-the unmodified wrapper updated, you would need a separate GitHub fork of
-the developer's repository. That is a different project with ongoing source
-merge obligations; this wrapper deliberately avoids that burden.
+To request an immediate check rather than the daily schedule, open
+[Check and publish Building Tools for Kiln](https://github.com/bisdat/kiln-mods/actions/workflows/buildingtools-upstream-watch.yml)
+and choose **Run workflow**.
+
+The watcher chooses the latest official stable upstream release. It does not
+follow untagged developer builds, arbitrary Nexus uploads or unknown binaries.
+Editing the original C++ code would be a separate fork of the upstream project.
