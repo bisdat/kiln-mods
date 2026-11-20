@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Propose a newer upstream release. No install, no automatic release.
+"""Pin a newer official upstream release for a CI-verified prerelease.
 
 The original C++ code belongs to the Building Tools author and the
 Kiln adapter repackages official release DLLs byte-for-byte.
@@ -41,7 +41,7 @@ def propose(pin: dict, upstream_version: str, sha256: str) -> dict | None:
     candidate["upstream_version"] = ".".join(map(str, incoming))
     candidate["upstream_sha256"] = digest
     # Gameplay verification is deliberately NOT forwarded to a new binary.
-    # The release workflow must block until in-game testing is confirmed.
+    # Automatic CI publication is an *untested prerelease*, never gameplay acceptance.
     return candidate
 
 
@@ -61,7 +61,7 @@ def main() -> None:
         print("CURRENT: no newer upstream version")
         return
     args.profile.write_text(json.dumps(candidate, indent=2) + "\n", encoding="utf-8")
-    print("DRAFT: upstream " + candidate["upstream_version"] +
+    print("CANDIDATE: upstream " + candidate["upstream_version"] +
           ", Kiln adapter " + candidate["adapter_version"] +
           "; original gameplay verification retained, not transferred.")
 
