@@ -47,6 +47,23 @@ class CompatibilityWorkflowContracts(unittest.TestCase):
         self.assertIn("tests/base-station-magic-storage", s)
         self.assertIn("all four mod builds and contract tests passed", s)
 
+    def test_sdk_watcher_is_not_an_hourly_every_source_rebuild(self):
+        # The mod-specific CI workflows already build normal mod changes.
+        # This watcher only needs new SDKs, infrastructure PRs and manual force.
+        s = self.source
+        triggers = s.split("\npermissions:", 1)[0]
+        self.assertIn("cron: '17 5 * * *'", triggers)
+        self.assertNotIn("cron: '17,47 * * * *'", triggers)
+        for project in ("SurvivalQoL", "EndlessChests", "NoClipToggle",
+                        "BaseStationMagicStorage"):
+            self.assertNotIn(f"'\\{project}/**'", triggers)
+        self.assertIn("key: kiln-sdk-verified-${{ steps.release.outputs.version }}", s)
+        self.assertIn("key: kiln-sdk-verified-${{ needs.check.outputs.release_version }}", s)
+        self.assertNotIn("key: kiln-release-verified-", s)
+        self.assertIn("needs.check.outputs.build == 'true'", s)
+        self.assertIn("github.event_name != 'pull_request'", s)
+        self.assertIn("force", s)
+
     def test_packaging_and_release_include_canonical_json(self):
         s = self.source
         filename = "endless-chests.catalogue.json"
