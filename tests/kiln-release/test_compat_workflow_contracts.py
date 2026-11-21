@@ -37,8 +37,12 @@ class CompatibilityWorkflowContracts(unittest.TestCase):
         self.assertIn("python3 scripts/test-chest-case.py", s)
         self.assertNotIn("validate-endless-ini.py", s)
         self.assertNotIn("test-endless-item-ids.py", s)
+        # Helper-script changes trigger Endless Chests' own CI. The SDK
+        # watcher must not run an unrelated four-mod build for those edits.
+        self.assertIn("'scripts/**'", self.normal)
+        trigger_scope = s.split("\npermissions:", 1)[0]
         for name in ("validate-endless-*.py", "test-endless-*.py", "test-chest-*.py"):
-            self.assertIn(f"'scripts/{name}'", s)
+            self.assertNotIn(f"'scripts/{name}'", trigger_scope)
 
     def test_four_mod_compatibility_matrix(self):
         s = self.source
