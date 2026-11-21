@@ -88,12 +88,42 @@ class KilnDevReleaseTests(unittest.TestCase):
         ])
         self.assertEqual(found["version"], "0.2.0-dev.21")
 
-    def test_newest_release_missing_required_sdk_fails_closed(self):
+    def test_launcher_only_release_is_skipped_without_failure(self):
+        # Upstream dev.29.23 was launcher-only (save editor), with no
+        # Kiln.Api/Kiln.Sdk NuGet. The game-side SDK stayed at dev.29.22.
+        sdk = release("29.22", "2026-11-20T17:32:29Z")
+        launcher = release("29.23", "2026-11-20T20:18:53Z",
+                           assets=[{"name": "SHA256SUMS"},
+                                   {"name": "kiln-launcher_0.2.0-dev.29.23_amd64.deb"}])
+        found = resolver.select_release([sdk, launcher])
+        self.assertEqual(found["tag"], "v0.2.0-dev.29.22")
+
+    def test_newer_complete_sdk_is_selected_over_launcher_only(self):
+        sdk_old = release("29.22", "2026-11-20T17:32:29Z")
+        launcher = release("29.23", "2026-11-20T20:18:53Z",
+                           assets=[{"name": "SHA256SUMS"}])
+        sdk_new = release("30.1", "2026-11-21T02:37:33Z")
+        self.assertEqual(resolver.select_release([sdk_old, launcher, sdk_new])["tag"],
+                         "v0.2.0-dev.30.1")
+
+    def test_partial_sdk_release_still_fails_closed(self):
         with self.assertRaisesRegex(ValueError, "missing assets"):
             resolver.select_release([
                 release(20, "2026-11-09T06:27:11Z"),
-                release(21, assets=[{"name": "SHA256SUMS"}]),
+                release(21, assets=[{"name": "SHA256SUMS"},
+                                    {"name": "Kiln.Api.0.2.0-dev.21.nupkg"}]),
             ])
+
+    def test_explicit_request_for_launcher_only_patch_fails(self):
+        launcher = release("29.23", "2026-11-20T20:18:53Z",
+                           assets=[{"name": "SHA256SUMS"}])
+        with self.assertRaisesRegex(ValueError, "missing assets"):
+            resolver.select_release([launcher], "v0.2.0-dev.29.23")
+
+    def test_no_sdk_release_available_fails(self):
+        launcher = release("29.23", assets=[{"name": "SHA256SUMS"}])
+        with self.assertRaisesRegex(ValueError, "No published Kiln dev SDK"):
+            resolver.select_release([launcher])
 
     def test_wrong_target_sha_fails_closed(self):
         with self.assertRaisesRegex(ValueError, "immutable"):
