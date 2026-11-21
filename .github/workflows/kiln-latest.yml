@@ -27,6 +27,7 @@ on:
         description: Rebuild all four mods even if this SDK release already passed
         type: boolean
         default: false
+
 permissions:
   contents: read
 
