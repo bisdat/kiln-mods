@@ -56,7 +56,7 @@ class CompatibilityWorkflowContracts(unittest.TestCase):
         self.assertNotIn("cron: '17,47 * * * *'", triggers)
         for project in ("SurvivalQoL", "EndlessChests", "NoClipToggle",
                         "BaseStationMagicStorage"):
-            self.assertNotIn(f"'\\{project}/**'", triggers)
+            self.assertNotIn(f"'{project}/**'", triggers)
         self.assertIn("key: kiln-sdk-verified-${{ steps.release.outputs.version }}", s)
         self.assertIn("key: kiln-sdk-verified-${{ needs.check.outputs.release_version }}", s)
         self.assertNotIn("key: kiln-release-verified-", s)
