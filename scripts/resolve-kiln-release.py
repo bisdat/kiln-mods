@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
-"""Resolve only a published, complete Kiln development release.
+"""Resolve the newest published Kiln development release *with an SDK*.
 
-No fallback to an old version and no moving-branch SDK selection.
+Launcher/runtime-only patches intentionally ship without SDK packages and
+must not break mod CI. A partial SDK release still fails closed, as do pinned
+requests for a non-SDK release. Never use a moving branch or stale pinned SDK.
 The build independently verifies the tag commit and official asset checksums.
 """
 from __future__ import annotations
@@ -35,13 +37,30 @@ def select_release(releases: list[dict], requested_tag: str | None = None) -> di
         candidates = [r for r in candidates if r["tag_name"] == requested_tag]
     if not candidates:
         raise ValueError("No verified published Kiln dev release (no older fallback)")
+    if not requested_tag:
+        # A launcher-only patch can have a newer publication date but cannot
+        # change the mod API. Consider it outside our SDK release stream.
+        # Only releases advertising at least one *matching-version* SDK
+        # package qualify. A partial SDK upload is not silently skipped:
+        # the required-assets check below fails closed instead.
+        sdk_candidates = []
+        for candidate in candidates:
+            version = TAG.fullmatch(candidate["tag_name"]).group("version")
+            names = {a.get("name") for a in candidate.get("assets", [])
+                     if isinstance(a, dict)}
+            if (f"Kiln.Sdk.{version}.nupkg" in names
+                    or f"Kiln.Api.{version}.nupkg" in names):
+                sdk_candidates.append(candidate)
+        if not sdk_candidates:
+            raise ValueError("No published Kiln dev SDK release with matching SDK assets")
+        candidates = sdk_candidates
     r = max(candidates, key=lambda x: (x["published_at"], x["tag_name"]))
     v = TAG.fullmatch(r["tag_name"]).group("version")
     assets = {a.get("name") for a in r.get("assets", []) if isinstance(a, dict)}
     required = {f"Kiln.Sdk.{v}.nupkg", f"Kiln.Api.{v}.nupkg", "SHA256SUMS"}
     missing = required - assets
     if missing:
-        raise ValueError(f"Newest Kiln release {r['tag_name']} is missing assets: {sorted(missing)}")
+        raise ValueError(f"Selected Kiln SDK release {r['tag_name']} is missing assets: {sorted(missing)}")
     target = r.get("target_commitish")
     if not isinstance(target, str) or not SHA.fullmatch(target):
         raise ValueError("Release target_commitish is not an immutable 40-digit SHA")
@@ -87,10 +106,10 @@ def main() -> int:
         release = select_release(get_releases(), os.getenv("KILN_RELEASE_TAG") or None)
         save(args.root.resolve(), release)
     except (ValueError, KeyError, OSError, HTTPError, URLError) as exc:
-        print(f"Kiln release verification FAILED (no stale fallback): {exc}", file=sys.stderr)
+        print(f"Kiln SDK release verification FAILED: {exc}", file=sys.stderr)
         return 1
     print(
-        f"Kiln official release: {release['tag']} on {release['published_at']} "
+        f"Kiln official SDK release: {release['tag']} on {release['published_at']} "
         f"target={release['release_target']} url={release['release_url']}"
     )
     return 0

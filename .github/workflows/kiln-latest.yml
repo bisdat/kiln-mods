@@ -1,7 +1,8 @@
 name: Follow latest Kiln development release
 
-# Compatibility builds track official published Kiln development releases.
-# CrossBaseStorage was archived: only active, shipped mods are built.
+# One daily SDK-compatibility check; per-mod workflows handle ordinary source
+# changes. Runtime/launcher-only upstream patches have no SDK to test.
+# Full four-mod builds run on a new SDK, compatible tooling PRs, or manual force.
 on:
   push:
     branches: [main]
@@ -10,40 +11,20 @@ on:
       - 'scripts/resolve-kiln-release.py'
       - 'scripts/build-compat.sh'
       - 'scripts/build-compat.py'
-      - 'scripts/validate-endless-*.py'
-      - 'scripts/test-endless-*.py'
-      - 'scripts/test-chest-*.py'
-      - 'scripts/data/endless-chests-*.json'
       - 'tests/kiln-release/**'
-      - 'SurvivalQoL/**'
-      - 'tests/survival-qol/**'
-      - 'EndlessChests/**'
-      - 'NoClipToggle/**'
-      - 'tests/noclip-toggle/**'
-      - 'BaseStationMagicStorage/**'
-      - 'tests/base-station-magic-storage/**'
   pull_request:
     paths:
       - '.github/workflows/kiln-latest.yml'
       - 'scripts/resolve-kiln-release.py'
       - 'scripts/build-compat.sh'
       - 'scripts/build-compat.py'
-      - 'scripts/validate-endless-*.py'
-      - 'scripts/test-endless-*.py'
-      - 'scripts/test-chest-*.py'
-      - 'scripts/data/endless-chests-*.json'
       - 'tests/kiln-release/**'
-      - 'tests/survival-qol/**'
-      - 'NoClipToggle/**'
-      - 'tests/noclip-toggle/**'
-      - 'BaseStationMagicStorage/**'
-      - 'tests/base-station-magic-storage/**'
   schedule:
-    - cron: '17,47 * * * *'
+    - cron: '17 5 * * *'
   workflow_dispatch:
     inputs:
       force:
-        description: Rebuild even if this release and source revision already passed
+        description: Rebuild all four mods even if this SDK release already passed
         type: boolean
         default: false
 
@@ -56,7 +37,7 @@ concurrency:
 
 jobs:
   check:
-    name: Verify official Kiln release and active source
+    name: Verify newest Kiln SDK and active source
     runs-on: ubuntu-24.04
     outputs:
       source_sha: ${{ steps.source.outputs.sha }}
@@ -84,21 +65,21 @@ jobs:
           bash -n scripts/build-compat.sh
           python3 -m py_compile scripts/build-compat.py
 
-      - name: Resolve newest complete published Kiln dev release
+      - name: Resolve newest published Kiln SDK release
         id: release
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: python3 scripts/resolve-kiln-release.py
 
-      - name: Find prior successful build for exact release + mod source
+      - name: Find prior successful build for this SDK release
         id: cache
         uses: actions/cache/restore@v4
         with:
           path: .kiln-release-success.txt
-          key: kiln-release-verified-${{ steps.release.outputs.version }}-r${{ steps.source.outputs.short }}
+          key: kiln-sdk-verified-${{ steps.release.outputs.version }}
           lookup-only: true
 
-      - name: Build on PR, new published release, changed source, or force
+      - name: Build on compatibility PR, new SDK, or force
         id: gate
         env:
           CACHE_HIT: ${{ steps.cache.outputs.cache-hit }}
@@ -108,7 +89,7 @@ jobs:
             echo 'build=true' >> "$GITHUB_OUTPUT"
           else
             echo 'build=false' >> "$GITHUB_OUTPUT"
-            echo 'Exact published release and source revision already built, tested and published.'
+            echo 'This Kiln SDK release already passed the four-mod compatibility build.'
           fi
 
   package:
@@ -307,14 +288,14 @@ jobs:
             These are development compatibility prereleases, **not stable mod version upgrades or in-game acceptance**. Install manually through Kiln Library and back up saves before testing.
 
   mark-success:
-    name: Record completed Kiln release compatibility only after publication
+    name: Cache verified Kiln SDK compatibility after publication
     needs: [check, package, publish]
     if: github.event_name != 'pull_request' && needs.check.outputs.build == 'true' && needs.check.outputs.cache_hit != 'true' && needs.package.result == 'success' && needs.publish.result == 'success'
     runs-on: ubuntu-24.04
     steps:
-      - name: Save exact verified release + source revision
+      - name: Save verified SDK and source provenance
         run: echo "${{ needs.check.outputs.release_tag }} ${{ needs.check.outputs.source_sha }}" > .kiln-release-success.txt
       - uses: actions/cache/save@v4
         with:
           path: .kiln-release-success.txt
-          key: kiln-release-verified-${{ needs.check.outputs.release_version }}-r${{ needs.check.outputs.source_short }}
+          key: kiln-sdk-verified-${{ needs.check.outputs.release_version }}
