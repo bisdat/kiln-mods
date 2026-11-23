@@ -84,23 +84,25 @@ class SafetyTests(unittest.TestCase):
         self.assertNotIn("material 91",CODE)
         self.assertIn("!voxel.IsAir", CORE)
         self.assertIn("BaseScanCore.IsRubble", CORE)
+        self.assertIn("IncludeRubble", CORE)
+        self.assertIn("BaseScanCore.IsRubble(voxel.Material) && (options & IncludeRubble) != 0", CORE)
         self.assertIn("IncludeMud", CORE)
         self.assertIn("IncludeMycelium", CORE)
         self.assertNotIn("surface",CORE.lower())
         self.assertNotIn("Build.BlockAt(",CODE)
         self.assertNotIn("Build.FindWall(",CODE)
 
-    def test_backup_and_saved_ledger_always_precede_any_write(self):
+    def test_world_data_journal_always_precedes_any_write_no_save_requested(self):
         journal=CODE.index("WorldData.Set(journalKey, journal);")
-        backup=CODE.index("await Saves.Backup(name)")
-        checked=CODE.index("backupCompleted = true")
+        history=CODE.index("WorldData.Set(HistoryKeyFor(plan.Altar), history);")
         edit=CODE.index("Build.WriteIfUnchanged(chunk.Box, desired, expected, options, mask)")
-        self.assertLess(journal,backup)
-        self.assertLess(backup,checked)
-        self.assertLess(checked,edit)
-        self.assertIn("WorldData.Remove(journalKey)",CODE)
-        self.assertIn("backup.DataBundles == 0", CODE)
-        self.assertIn("if (!backupCompleted)",CODE)
+        self.assertLess(journal,edit)
+        self.assertLess(history,edit)
+        self.assertIn("WorldData.Contains(journalKey)",CODE)
+        self.assertIn("journal.Phase = journal.Removed > 0",CODE)
+        for forbidden in ("await Saves.Backup(", "Saves.Request(", "Saves.RestoreOnNextStart(", "Saves.Restore("):
+            self.assertNotIn(forbidden,CODE)
+        self.assertNotIn("backupCompleted",CODE)
 
     def test_rollback_journal_key_is_individual_to_altar(self):
         self.assertIn("LedgerKeyFor(PlayerBase altar)", CODE)
