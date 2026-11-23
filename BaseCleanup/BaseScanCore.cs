@@ -15,7 +15,10 @@ internal static class BaseScanCore
     internal static readonly byte[] PlaceableRubble = [8, 64, 66, 69, 74, 81, 87, 102, 107];
     internal static readonly byte[] WorldRubble = [23, 36, 43, 44, 61, 62, 92];
     internal static readonly byte[] MineableMycelium = [14, 33, 65, 72];
-    internal const byte UnderwaterMud = 91;
+    // Experimentally identified in creek/ditch puddle material probe.
+    // Removes voxel TERRAIN, not merely its visible surface effect.
+    // Underwater Mud (91) is deliberately NOT included in this test.
+    internal const byte MudTerrain = 37;
 
     internal static bool IsRubble(int material) =>
         Array.IndexOf(PlaceableRubble, (byte)material) >= 0 ||
