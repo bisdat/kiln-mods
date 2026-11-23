@@ -352,6 +352,12 @@ public sealed partial class BaseCleanupMod : Mod
     private void ReceiveProgress(ScanProgress p)
     {
         Volatile.Write(ref _viewProgress, p);
+        // The client displays ONLY the controls for the current step.
+        // Partial or failed surveys never unlock Prepare.
+        if (p.State == 2)
+            Volatile.Write(ref _uiStage, 1); // options / prepare
+        else if (p.State is 0 or 1 or 3 or 4 or 5)
+            Volatile.Write(ref _uiStage, 0); // scan
         if (p.State is 2 or 3 or 4 or 5)
             Hud.Toast(p.Message, p.State is 2 ? ToastKind.Success : ToastKind.Warning);
     }
@@ -364,45 +370,76 @@ public sealed partial class BaseCleanupMod : Mod
 
     private void Draw(UiDraw ui)
     {
+        var stage = Volatile.Read(ref _uiStage);
         var progress = Volatile.Read(ref _viewProgress);
         var report = Volatile.Read(ref _viewReport);
-        ui.TextWrapped("STAGE 1 - Survey only. No changes to rubble, mud, structures, vegetation or decay.");
-        ui.Separator();
-        if (ui.Button("Scan current Flame Altar")) Client.Post(() => Request(1));
-        ui.SameLine();
-        if (ui.Button("Cancel scan")) Client.Post(() => Request(2));
-        ui.SameLine();
-        if (ui.Button("Refresh report")) Client.Post(() => Request(3));
-        ui.Separator();
-        if (progress is { } p)
+        var cleanup = Volatile.Read(ref _viewCleanup);
+
+        if (stage == 0)
         {
-            ui.TextWrapped(p.Message);
-            if (p.Total > 0)
-                ui.Progress((float)(p.Visited / (double)p.Total), $"{p.Visited:N0} / {p.Total:N0} cells");
-        }
-        DrawCleanup(ui);
-        if (report is null)
-        {
-            ui.TextDisabled("No completed Stage 1 survey to display.");
+            ui.Separator("1 / 5 - Scan (read-only)");
+            ui.TextWrapped("Start with a complete survey of the current Flame Altar. " +
+                "This step does not modify the world and can be repeated.");
+            if (ui.Button("1. Scan current Flame Altar"))
+            {
+                Volatile.Write(ref _viewReport, null);
+                Client.Post(() => Request(1));
+            }
+            ui.SameLine();
+            if (ui.Button("Cancel scan")) Client.Post(() => Request(2));
+            if (progress is { } scan)
+            {
+                ui.TextWrapped(scan.Message);
+                if (scan.Total > 0)
+                    ui.Progress((float)(scan.Visited / (double)scan.Total),
+                        $"{scan.Visited:N0} / {scan.Total:N0} voxels");
+            }
+            // A prior cleanup can remain recoverable across restarts, even
+            // before the new survey. Only offer its own explicitly labelled
+            // recovery, never an unprepared REMOVE button.
+            if (cleanup is { Backup.Length: > 0 } &&
+                cleanup.Phase is "complete" or "partial")
+            {
+                ui.Separator("Previous operation still available");
+                ui.TextWrapped(cleanup.Message);
+                if (ui.Button("Review previous operation's Undo"))
+                    Volatile.Write(ref _uiStage, 5);
+            }
             return;
         }
-        ui.TextWrapped(report.Area);
-        ui.Text($"Read: {report.ReadCells:N0} / {report.TotalCells:N0}; unreadable: {report.UnreadableCells:N0}");
-        ui.Text($"Rubble: {report.Rubble:N0} cells; mineable mycelium: {report.Mycelium:N0}; test mud (37): {report.Mud:N0}");
-        ui.Text($"Building blocks: {report.Buildings:N0}; air: {report.AirCells:N0}; partial-fill: {report.PartialCells:N0}");
-        ui.TextDisabled("Stage 1 inventories materials; optional cosmetic decay is counted during Stage 2 planning.");
-        ui.Separator("Voxel materials (non-empty cells only)");
-        if (ui.BeginChild("base-cleanup-materials", 0, 210 * ui.Scale))
+
+        if (stage == 1)
         {
-            if (ui.BeginTable("materials", "ID", "Filled voxels", "Volume m3"))
+            ui.Separator("2 / 5 - Choose cleanup options");
+            if (report is null || report.UnreadableCells != 0)
             {
-                for (var i = 0; i < 256; i++)
-                    if (report.Counts[i] > 0)
-                        ui.Row(i.ToString(), report.Counts[i].ToString("N0"), report.CubicMetres(i).ToString("F2"));
-                ui.EndTable();
+                ui.TextWrapped("A complete Stage 1 scan is required. Scan again.");
+                if (ui.Button("Return to Scan")) Volatile.Write(ref _uiStage, 0);
+                return;
             }
+            ui.TextWrapped(report.Area);
+            ui.Text($"Survey: {report.ReadCells:N0}/{report.TotalCells:N0} cells; unreadable {report.UnreadableCells:N0}");
+            ui.Text($"Rubble: {report.Rubble:N0}; mud material 37: {report.Mud:N0}; mycelium: {report.Mycelium:N0}");
+            ui.TextDisabled("Survey counts are current at scan time; Prepare will re-read and check every selected voxel.");
+            DrawCleanup(ui);
+            ui.Separator("Survey material inventory (optional detail)");
+            if (ui.BeginChild("base-cleanup-materials", 0, 170 * ui.Scale))
+            {
+                if (ui.BeginTable("materials", "ID", "Voxels", "Volume m3"))
+                {
+                    for (var i = 0; i < 256; i++)
+                        if (report.Counts[i] > 0)
+                            ui.Row(i.ToString(), report.Counts[i].ToString("N0"), report.CubicMetres(i).ToString("F2"));
+                    ui.EndTable();
+                }
+            }
+            ui.EndChild();
+            return;
         }
-        ui.EndChild();
+
+        // Planning, confirmation, active writes, and per-operation Undo are
+        // sequential, mutually exclusive panels.
+        DrawCleanup(ui);
     }
 
     [Command("basescan", Description = "Start a read-only survey of the altar you stand in", Permission = CommandPermission.Admin)]
