@@ -82,7 +82,8 @@ class SafetyTests(unittest.TestCase):
         self.assertIn("IncludeMud", CORE)
         self.assertIn("IncludeMycelium", CORE)
         self.assertNotIn("surface",CORE.lower())
-        self.assertNotIn("support",CORE.lower())
+        self.assertNotIn("Build.BlockAt(",CODE)
+        self.assertNotIn("Build.FindWall(",CODE)
 
     def test_backup_and_saved_ledger_always_precede_any_write(self):
         journal=CODE.index("WorldData.Set(LedgerKey, journal);")
