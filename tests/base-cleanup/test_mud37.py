@@ -20,13 +20,14 @@ MUD=37
 INCLUDE_MUD=1
 INCLUDE_MYCO=2
 INCLUDE_DECAY=4
+INCLUDE_RUBBLE=8
 
 def target(raw,options):
     m=raw & 255
     fill=raw>>8
     if m>=128:
         return bool(options & INCLUDE_DECAY) and bool(raw & 0x8000)
-    return bool(fill) and (m in RUBBLE or
+    return bool(fill) and ((m in RUBBLE and bool(options & INCLUDE_RUBBLE)) or
                           m==MUD and bool(options & INCLUDE_MUD) or
                           m in MYCELIUM and bool(options & INCLUDE_MYCO))
 
@@ -57,13 +58,15 @@ class Mud37Tests(unittest.TestCase):
         self.assertIn("BuildFlags.InBases | BuildFlags.RespectZones",STAGE)
 
     def test_existing_terrain_mycelium_rubble_and_weather_target_unchanged(self):
-        self.assertTrue(target(0xff17,0))
+        self.assertFalse(target(0xff17,0))
+        self.assertTrue(target(0xff17,INCLUDE_RUBBLE))
         self.assertTrue(target(0xff0e,INCLUDE_MYCO))
         self.assertFalse(target(0xff0e,INCLUDE_MUD))
         self.assertTrue(target(0xf78a,INCLUDE_DECAY))
         self.assertFalse(target(0x778a,INCLUDE_DECAY))
         self.assertTrue(target(0xff25,INCLUDE_MUD|INCLUDE_MYCO|INCLUDE_DECAY))
         self.assertFalse(target(0xff5b,INCLUDE_MUD|INCLUDE_MYCO|INCLUDE_DECAY))
+        self.assertIn("_includeRubble = true",STAGE)
         self.assertIn("_includeMud = true",STAGE)
         self.assertIn("_includeDecay = true",STAGE)
         self.assertIn('KeyBindings.Register(Binding, "Shift+ScrollLock"',MOD)
@@ -75,7 +78,7 @@ class Mud37Tests(unittest.TestCase):
         self.assertIn('CurrentLedgerPrefix = "cleanup-rollback-v3-"',STAGE)
         self.assertIn("PreviousLedgerKeyFor(PlayerBase altar)",STAGE)
         self.assertIn("WorldData.Set(journalKey, journal)",STAGE)
-        self.assertIn("WorldData.Remove(journalKey)",STAGE)
+        self.assertIn("WorldData.Set(HistoryKeyFor(plan.Altar), history)",STAGE)
         self.assertNotIn("WorldData.Set(PreviousLedgerKeyFor",STAGE)
         self.assertNotIn("WorldData.Remove(PreviousLedgerKeyFor",STAGE)
         self.assertNotIn("WorldData.Set(LedgerKeyFor(",STAGE)
@@ -122,11 +125,13 @@ class Mud37Tests(unittest.TestCase):
         self.assertIn("WorldData.Set(journalKey, journal)",STAGE)
         self.assertNotIn("WorldData.Set(PreviousLedgerKeyFor",STAGE)
 
-    def test_backup_before_write_and_undo_only_on_air(self):
+    def test_journal_before_write_no_world_backup_and_undo_only_on_air(self):
         self.assertLess(STAGE.index("WorldData.Set(journalKey, journal)"),
-                        STAGE.index("await Saves.Backup(name)"))
-        self.assertLess(STAGE.index("backupCompleted = true"),
                         STAGE.index("Build.WriteIfUnchanged(chunk.Box, desired, expected, options, mask)"))
+        self.assertLess(STAGE.index("WorldData.Set(HistoryKeyFor(plan.Altar), history)"),
+                        STAGE.index("Build.WriteIfUnchanged(chunk.Box, desired, expected, options, mask)"))
+        self.assertNotIn("await Saves.Backup(",STAGE)
+        self.assertNotIn("Saves.Request(",STAGE)
         self.assertIn("CleanupCore.EditedValue(cell.Raw)",STAGE)
         self.assertIn("expected[cell.Index].Raw != CleanupCore.EditedValue(cell.Raw).Raw",STAGE)
         self.assertIn("desired[cell.Index] = new Voxel(cell.Raw)",STAGE)
@@ -134,9 +139,9 @@ class Mud37Tests(unittest.TestCase):
         self.assertIn('ConfirmUndo = "UNDO"',STAGE)
 
     def test_test_package_is_separate_version_not_release(self):
-        self.assertIn("<Version>0.3.4</Version>",PROJ)
-        self.assertIn("base-cleanup-0.3.4.zip",FLOW)
-        self.assertIn("base-cleanup-staged-0.3.4-test",FLOW)
+        self.assertIn("<Version>0.3.5</Version>",PROJ)
+        self.assertIn("base-cleanup-0.3.5.zip",FLOW)
+        self.assertIn("base-cleanup-selective-0.3.5-test",FLOW)
         self.assertIn("github.event_name == 'push'",FLOW)
         self.assertIn("github.ref == 'refs/heads/main'",FLOW)
         self.assertIn("  pull_request:",FLOW)
