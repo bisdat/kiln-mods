@@ -35,13 +35,13 @@ jobs:
         run: dotnet build BaseVisualProbe/BaseVisualProbe.csproj -c Release --no-restore -t:KilnPack
       - name: Check installable ZIP
         run: |
-          test -s bin/Release/base-visual-probe-0.1.0.zip
-          unzip -t bin/Release/base-visual-probe-0.1.0.zip
-          unzip -l bin/Release/base-visual-probe-0.1.0.zip
+          test -s bin/Release/base-visual-probe-0.1.1.zip
+          unzip -t bin/Release/base-visual-probe-0.1.1.zip
+          unzip -l bin/Release/base-visual-probe-0.1.1.zip
       - name: Upload experimental artifact only
         uses: actions/upload-artifact@v4
         with:
-          name: base-visual-probe-0.1.0-readonly
-          path: bin/Release/base-visual-probe-0.1.0.zip
+          name: base-visual-probe-0.1.1-readonly
+          path: bin/Release/base-visual-probe-0.1.1.zip
           if-no-files-found: error
           retention-days: 45
