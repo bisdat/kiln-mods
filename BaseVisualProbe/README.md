@@ -33,6 +33,12 @@ designed to verify those changes before any cleanup implementation.
 - Compare: re-read the SAME fixed cube after the user has operated the game's
   own building tools. Log flags added/removed, material differences and up to
   24 exact sample cell coordinates with raw before/after values.
+- Track the game's own **BuildEvent** for Overgrowth / Decay Tool operations:
+  logs operation kind (4–5 overgrowth, 6–7 decay), Done/Refused outcome,
+  impact point, and whether it falls inside the captured cube.
+  The compare summary includes counts since baseline and the state of
+  the gameplay build hook. An accepted tool action is distinct from a
+  verified change in voxel metadata.
 - Cancel: stop a current read-only operation. Snapshots automatically expire
   on world switch, shutdown or mod unload.
 
@@ -53,7 +59,10 @@ The probe never writes world state or stores the snapshot in save files.
    **Compare same cube**. The cube stays fixed at the capture location.
 6. Capture again before using the **Decay Tool** on a wall; compare again.
 7. Ideally repeat on a roof, since the roof pathway is not confirmed.
-8. Upload a Kiln support report ZIP, and state whether each comparison was
+8. If zero voxels change, check the new TOOL-SUMMARY in kiln.log for
+   accepted/denied tool actions and whether their impact hit the cube.
+   No tool events can be caused by a not-yet-active event hook.
+9. Upload a Kiln support report ZIP, and state whether each comparison was
    Overgrowth or Decay and whether you used a wall or roof.
 
 ### Admin chat / console commands
