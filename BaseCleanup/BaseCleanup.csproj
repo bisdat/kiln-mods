@@ -1,0 +1,15 @@
+<Project Sdk="Kiln.Sdk/0.2.0-dev.30.6">
+  <PropertyGroup>
+    <KilnModId>base-cleanup</KilnModId>
+    <KilnModName>Base Cleanup - Scanner and Confirmed Removal</KilnModName>
+    <Version>0.2.0</Version>
+    <Authors>bisdat</Authors>
+    <Description>Flame Altar survey and explicitly confirmed rubble/mud removal, backed up with persistent voxel undo.</Description>
+    <PackageProjectUrl>https://github.com/bisdat/kiln-mods</PackageProjectUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <KilnSide>both</KilnSide>
+    <KilnClients>none</KilnClients>
+    <KilnServices>Build;World;Client;Ui;Network;Chat;Permissions</KilnServices>
+    <KilnGameIds>None</KilnGameIds>
+  </PropertyGroup>
+</Project>
