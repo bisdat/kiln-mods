@@ -34,7 +34,8 @@ class Stage1Tests(unittest.TestCase):
         self.assertEqual(myc, {14,33,65,72})
         self.assertEqual(len(place|world|myc),20)
         self.assertFalse((place|world)&myc)
-        self.assertIn("UnderwaterMud = 91",CORE)
+        self.assertIn("MudTerrain = 37",CORE)
+        self.assertNotIn("UnderwaterMud = 91",CORE)
 
     def test_cell_centres_match_zone_boundaries(self):
         self.assertEqual(bounds(80,80),(0,320))
