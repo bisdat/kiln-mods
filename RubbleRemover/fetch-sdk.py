@@ -25,7 +25,7 @@ def main() -> None:
     names = [f"Kiln.Sdk.{VERSION}.nupkg", f"Kiln.Api.{VERSION}.nupkg"]
     DEST.mkdir(parents=True, exist_ok=True)
     for name in names:
-        match = re.search(rf"^([0-9a-fA-F]{{64}})\\s+\\*?{re.escape(name)}$", sums, re.MULTILINE)
+        match = re.search(rf"^([0-9a-fA-F]{{64}})\s+\*?{re.escape(name)}$", sums, re.MULTILINE)
         if not match:
             raise ValueError(f"No official SHA-256 for {name}")
         data = download(name)

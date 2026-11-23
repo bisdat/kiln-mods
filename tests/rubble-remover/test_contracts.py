@@ -13,9 +13,9 @@ WORKFLOW = (ROOT / ".github" / "workflows" / "rubble-remover.yml").read_text()
 
 class RubbleRemoverContracts(unittest.TestCase):
     def test_removal_allowlist_is_terrain_only(self):
-        match = re.search(r"RemovableTerrain\\s*=\\s*\\[(.*?)\\];", SOURCE, re.S)
+        match = re.search(r"RemovableTerrain\s*=\s*\[(.*?)\];", SOURCE, re.S)
         self.assertIsNotNone(match)
-        cells = [int(x) for x in re.findall(r"\\d+", match.group(1))]
+        cells = [int(x) for x in re.findall(r"\d+", match.group(1))]
         self.assertEqual(len(cells), len(set(cells)))
         self.assertTrue(all(1 <= cell <= 127 for cell in cells))
         self.assertEqual(len(cells), 20)
