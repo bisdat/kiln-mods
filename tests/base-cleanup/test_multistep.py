@@ -17,7 +17,7 @@ class OperationHistory:
         self.next_seq=1
         self.history={}
         self.legacy={"v2":dict(phase="complete",planned=88057,removed=88057,restored=0,conflicted=0),
-                     "v3":dict(phase="undone",planned=199135,removed=199135,restored=199135,conflicted=0)}
+                     "v3":dict(phase="undone",planned=199135,removed=199135,restored=199135,conflicted=199135)}
         self.scanned=False
         self.prepared=False
 
@@ -63,6 +63,8 @@ class MultiStepSafety(unittest.TestCase):
         self.assertEqual(h.history[2]["restored"],111073)
         self.assertEqual(h.legacy["v2"]["removed"],88057)
         self.assertEqual(h.legacy["v3"]["restored"],199135)
+        self.assertEqual(h.legacy["v3"]["conflicted"],199135)
+        self.assertIn("old.Restored >= old.Removed;",CODE)
 
     def test_model_incremental_ops_are_undoable_latest_first(self):
         h=OperationHistory()
