@@ -1,4 +1,4 @@
-name: Test Base Cleanup v0.3.0 optional decay (candidate only)
+name: Test Base Cleanup v0.3.1 optional decay (candidate only)
 
 on:
   pull_request:
@@ -14,7 +14,7 @@ permissions:
 
 jobs:
   build:
-    name: Validate and package Base Cleanup v0.3.0 candidate
+    name: Validate and package Base Cleanup v0.3.1 candidate
     runs-on: ubuntu-24.04
     steps:
       - name: Check out test branch
@@ -35,14 +35,14 @@ jobs:
         run: dotnet build BaseCleanup/BaseCleanup.csproj -c Release --no-restore -t:KilnPack
       - name: Verify installable archive
         run: |
-          test -s bin/Release/base-cleanup-0.3.0.zip
-          unzip -t bin/Release/base-cleanup-0.3.0.zip
-          unzip -l bin/Release/base-cleanup-0.3.0.zip
+          test -s bin/Release/base-cleanup-0.3.1.zip
+          unzip -t bin/Release/base-cleanup-0.3.1.zip
+          unzip -l bin/Release/base-cleanup-0.3.1.zip
       - name: Upload verified installable Base Cleanup ZIP
         uses: actions/upload-artifact@v4
         with:
-          name: base-cleanup-decay-0.3.0-test
-          path: bin/Release/base-cleanup-0.3.0.zip
+          name: base-cleanup-decay-0.3.1-test
+          path: bin/Release/base-cleanup-0.3.1.zip
           if-no-files-found: error
           retention-days: 90
 
