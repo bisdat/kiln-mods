@@ -1,4 +1,4 @@
-name: Test Base Cleanup v0.3.5 independent options, no saves, journal purge
+name: Test Base Cleanup v0.3.6 pre-REMOVE world backups and retention
 
 on:
   pull_request:
@@ -21,7 +21,7 @@ permissions:
 
 jobs:
   build:
-    name: Validate and package Base Cleanup v0.3.5 candidate
+    name: Validate and package Base Cleanup v0.3.6 pre-REMOVE backup candidate
     runs-on: ubuntu-24.04
     steps:
       - name: Check out test branch
@@ -30,7 +30,7 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.0.x'
-      - name: Validate scanner, cleanup and decay safety invariants
+      - name: Validate scanner, cleanup, backup retention and decay safety invariants
         run: python3 -m unittest discover -s tests/base-cleanup -p 'test_*.py' -v
       - name: Fetch checksum-verified official Kiln dev.30.6 SDK
         run: python3 BaseCleanup/fetch-sdk.py
@@ -42,20 +42,20 @@ jobs:
         run: dotnet build BaseCleanup/BaseCleanup.csproj -c Release --no-restore -t:KilnPack
       - name: Verify installable archive
         run: |
-          test -s bin/Release/base-cleanup-0.3.5.zip
-          unzip -t bin/Release/base-cleanup-0.3.5.zip
-          unzip -l bin/Release/base-cleanup-0.3.5.zip
+          test -s bin/Release/base-cleanup-0.3.6.zip
+          unzip -t bin/Release/base-cleanup-0.3.6.zip
+          unzip -l bin/Release/base-cleanup-0.3.6.zip
       - name: Upload verified installable Base Cleanup ZIP
         uses: actions/upload-artifact@v4
         with:
-          name: base-cleanup-selective-0.3.5-test
-          path: bin/Release/base-cleanup-0.3.5.zip
+          name: base-cleanup-precommit-backups-0.3.6-test
+          path: bin/Release/base-cleanup-0.3.6.zip
           if-no-files-found: error
           retention-days: 90
 
 
   release:
-    name: Tag and publish accepted Base Cleanup v0.3.5
+    name: Tag and publish accepted Base Cleanup v0.3.6 (main only)
     # PR builds never publish. Only the exact tested main commit may be tagged.
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: build
@@ -63,7 +63,7 @@ jobs:
     permissions:
       contents: write
     concurrency:
-      group: base-cleanup-v0.3.5-release
+      group: base-cleanup-v0.3.6-release
       cancel-in-progress: false
     steps:
       - name: Checkout exact accepted main commit
@@ -73,14 +73,14 @@ jobs:
       - name: Download artifact from this verified workflow run
         uses: actions/download-artifact@v4
         with:
-          name: base-cleanup-selective-0.3.5-test
+          name: base-cleanup-precommit-backups-0.3.6-test
           path: dist
       - name: Verify release version and installable ZIP
         run: |
-          grep -Fq '<Version>0.3.5</Version>' BaseCleanup/BaseCleanup.csproj
-          test -s dist/base-cleanup-0.3.5.zip
-          unzip -t dist/base-cleanup-0.3.5.zip
-          sha256sum dist/base-cleanup-0.3.5.zip
+          grep -Fq '<Version>0.3.6</Version>' BaseCleanup/BaseCleanup.csproj
+          test -s dist/base-cleanup-0.3.6.zip
+          unzip -t dist/base-cleanup-0.3.6.zip
+          sha256sum dist/base-cleanup-0.3.6.zip
       - name: Create annotated tag if absent, refuse conflicting tag
         env:
           GH_TOKEN: ${{ github.token }}
@@ -88,7 +88,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          tag='base-cleanup-v0.3.5'
+          tag='base-cleanup-v0.3.6'
           # Do not force-push or retag a published release.
           if git rev-parse --verify "refs/tags/$tag" >/dev/null 2>&1; then
             existing="$(git rev-list -n 1 "$tag")"
@@ -100,7 +100,7 @@ jobs:
           else
             git config user.name 'github-actions[bot]'
             git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-            git tag -a "$tag" "$GITHUB_SHA" -m 'Base Cleanup v0.3.5 — selective cleanup without world backups'
+            git tag -a "$tag" "$GITHUB_SHA" -m 'Base Cleanup v0.3.6 — verified pre-REMOVE backups, ten per world'
             git push origin "refs/tags/$tag"
           fi
       - name: Publish verified package if release absent
@@ -110,16 +110,17 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          tag='base-cleanup-v0.3.5'
+          tag='base-cleanup-v0.3.6'
           if gh release view "$tag" >/dev/null 2>&1; then
             echo "Release already exists; never overwrite assets."
             exit 0
           fi
           cat > release-notes.md <<'NOTES'
-          ## Base Cleanup v0.3.5
+          ## Base Cleanup v0.3.6
 
-          Selective Flame Altar cleanup, without forced whole-world
-          saves, backups, or restores.
+          Selective Flame Altar cleanup with a verified timestamped
+          full-world backup before each REMOVE; retains the newest ten
+          Base Cleanup backups per world. No restore UI.
 
           - Stage 1: read-only Scan.
           - Stage 2: toggle rubble, creek/ditch mud (terrain material 37),
@@ -128,10 +129,17 @@ jobs:
           - Stage 3: Prepare read-only plan and inspect candidate counts.
           - Stage 4: explicitly confirm REMOVE.
           - Stage 5: UNDO the latest separately journalled operation; repeat.
-          - Every REMOVE registers a distinct WorldData Undo journal before
-            editing. Kiln persists the edits and journal in the next ordinary
-            game save. **Base Cleanup does NOT call Saves.Backup or
-            Saves.Request or request any restore.**
+          - Every REMOVE registers a distinct WorldData Undo journal and
+            index, then awaits and verifies Saves.Backup before editing.
+            Kiln stores a complete matching world/sidecar generation under
+            kiln/backups/<UTC stamp>-bisdat-base-cleanup/.
+          - After each successful backup, retain the newest 10 for that
+            world; only older matching Base Cleanup backups are pruned.
+            Other worlds, mods, legacy backups and staged restores are safe.
+          - Backups are NOT restored through Base Cleanup's UI; selective
+            per-operation UNDO remains available.
+          - No post-REMOVE save is forced; the game's next normal save
+            persists terrain changes and their matching Undo journal.
           - Old per-world v0.2/v0.3.2/v0.3.3 journals remain readable.
           - New admin in-game chat commands: `/baseclean journals` to preview,
             then `/baseclean journals delete DELETE_ALL_JOURNALS` within
@@ -147,13 +155,13 @@ jobs:
           on a copied world. Overgrowth/ivy editing remains excluded.
           Cosmetic decay repairs only weathering bit 0x8000.
 
-          Install attached **base-cleanup-0.3.5.zip** in Kiln.
+          Install attached **base-cleanup-0.3.6.zip** in Kiln.
           Built against the pinned Kiln dev.30.6 SDK.
-          Verify the new no-save behavior and chat purge in-game before
-          trusting this version on an important world.
+          Verify pre-REMOVE backup creation, 11-operation retention,
+          selective Undo and chat purge on a disposable world first.
           NOTES
-          gh release create "$tag" dist/base-cleanup-0.3.5.zip \
+          gh release create "$tag" dist/base-cleanup-0.3.6.zip \
             --verify-tag --target "$GITHUB_SHA" \
-            --title 'Base Cleanup v0.3.5' \
+            --title 'Base Cleanup v0.3.6' \
             --notes-file release-notes.md
           gh release view "$tag" --json url,assets --jq '{url: .url, assets: [.assets[].name]}'
