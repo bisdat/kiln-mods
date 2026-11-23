@@ -1,146 +1,119 @@
-# Base Cleanup v0.3.2 — short Kiln display name
+# Base Cleanup v0.3.3 — material-37 mud experiment
 
-Standalone Kiln mod for Enshrouded, developed in bisdat/kiln-mods only.
-**Draft PR test candidate, not a published release.** Stable v0.2.0 is unchanged.
+**Experimental PR test candidate only. NOT merged or released.**
+The stable release is [Base Cleanup v0.3.2](https://github.com/bisdat/kiln-mods/releases/tag/base-cleanup-v0.3.2).
+This experimental package has the same Kiln mod ID (`base-cleanup`) and
+display name **Base Cleanup**. Install it INSTEAD of the released package.
 
-The Kiln mod list now shows **Base Cleanup**, not the longer description.
-The internal mod ID remains `base-cleanup`; no save or settings migration is necessary.
-This patch changes metadata only (and the version string); cleanup behavior
-remains identical to the accepted v0.3.1 release.
+## What changed
 
-## What's new
+The **Include creek/ditch mud (material 37) — TEST** checkbox replaces
+the previous **Include underwater mud (material 91)** option in Stage 2.
+The same `IncludeMud` switch, default ON, now selects only **terrain material
+37** for mud removal. Material 91 is excluded. The Stage 1 inventory and
+Stage 2 prepared-plan mud counts use the new ID 37.
 
-An explicit **Repair cosmetic decay (ON by default)** checkbox has been
-added to the existing Stage 2 Base Cleanup UI. It is an additional target
-in the existing **read-only plan → type REMOVE → mandatory world backup →
-guarded cleanup → persistent selective UNDO** workflow. It does NOT
-automatically edit anything when the mod loads or the toggle is checked.
+Read-only floor probes in the user's existing Flame Altar found:
+- Visibly muddy/puddled ground: terrain material **37**, including a
+  partially filled top and several fully filled subsurface voxel layers.
+- Road: material **21**; grass: material **1**.
+- Underwater Mud, material **91**, absent from the prior complete altar scan.
 
-Cosmetic decay only targets **building voxels (material IDs 128–255)**
-whose high paint byte has its weathering flag (bit 7) set. The edit clears
-**0x8000** from the exact original 16-bit voxel value; it preserves the
-material ID, overgrowth bits 4–6, low paint/tint bits 0–3, and geometry.
+**IMPORTANT:** Stage 2 replaces all selected material-37 terrain voxels
+throughout the **entire 3-D Flame Altar** with AIR, including buried voxels.
+It does NOT just remove a puddle texture or preserve floor geometry.
+This can **excavate a creek bed, ditch, or floor**, potentially creating
+large holes or changing water-related visuals. The aim is to test the
+user's hypothesis that physical digging is required to remove all mud
+from water-feature sites, not to assume the outcome.
 
-The real in-game diagnostic probe demonstrated, for material 138:
-- `0x978A → 0x178A` (clear weathering, preserve low paint).
-- `0xF78A → 0x778A` (clear weathering, preserve overgrowth level 7).
+## Unchanged safety and controls
 
-The probe also found normal-looking walls with growth level 7.
-**Do not indiscriminately clear 0x7000.** Overgrowth/ivy removal is NOT
-implemented by this candidate. It does not restore missing physical walls,
-repair missing roofs, remove vegetation entities or recreate props.
+- Stage 1: non-destructive census of the complete 3-D Flame Altar.
+- Stage 2: rubble always included (materials 8, 64, 66, 69, 74,
+  81, 87, 102, 107, 23, 36, 43, 44, 61, 62, 92), with optional
+  material-37 mud, optional mycelium (14, 33, 65, 72), and cosmetic
+  weathering repair. All three options are ON by default and may be
+  independently disabled.
+- Cosmetic decay repair touches **only weathering bit 0x8000** on building
+  voxels; material and other paint metadata stay unchanged.
+- Existing UI hotkey **Shift+ScrollLock** and Kiln display name
+  **Base Cleanup** remain unchanged.
+- **Read-only Prepare** provides per-category counts. Changing options
+  after preparing invalidates confirmation; prepare a new plan instead.
+- **REMOVE** confirmation is required. The mod saves a complete,
+  compressed original-voxel Undo journal and verifies a full-world
+  backup before ANY write. If backup fails, NO voxels are edited.
+- `Build.WriteIfUnchanged` compare-writes only exact preplanned values,
+  under the player/base authorization and protection checks.
+- **UNDO** restores original material/fill only where each edited
+  voxel is STILL in the mod's expected post-cleanup state (air for terrain
+  removal, or cleared weather bit for cosmetic decay); conflicting
+  player edits are left untouched.
+- Overgrowth/ivy removal, props, and custom surface material substitution
+  remain excluded.
 
-## Existing Base Cleanup features retained
+## Journal compatibility — essential for the existing world
 
-- Stage 1 survey of ALL voxels inside the exact 3-D Flame Altar zone,
-  including buried/floating cells, with unreadable tiles reported.
-- Stage 2 always targets rubble material IDs
-  8, 64, 66, 69, 74, 81, 87, 102, 107, 23, 36, 43, 44, 61, 62, 92.
-  This remains a full-volume terrain removal, WITHOUT surface/support
-  filtering; existing rubble is always included in the plan.
-- Optional underwater mud (material 91), ON by default.
-- Optional mineable mycelium (14, 33, 65, 72), ON by default.
-- **Optional cosmetic building decay, ON by default.**
-- Client/server checks, progress/cancel, actor authorization, world and
-  altar identity checks and a 10-minute plan expiry.
-- Exact per-cell original voxel values in an altar-specific compressed
-  WorldData journal, saved BEFORE the complete world backup.
-- Backup must confirm matching world ID and mod-data bundles before any
-  modification. Failure means zero writes.
-- `Build.WriteIfUnchanged` uses the exact original raw voxel value as
-  the expected state; conflicting cells are skipped. Failed/partial edits
-  retain the recovery journal.
-- Selective Undo only writes where the present value equals the exact
-  expected post-cleanup state: **air for terrain removal**, or the
-  original building value with its weathering bit cleared for decay.
-  Any other player/building changes are NEVER overwritten.
+Previously published journal keys are NEVER overwritten:
+- `cleanup-rollback-v1-...`: Base Cleanup v0.2.
+- `cleanup-rollback-v2-...`: v0.3.1/v0.3.2.
+- `cleanup-rollback-v3-...`: **this v0.3.3 test only**.
 
-## Compatibility with existing v0.2.0 journals
+The same stable Flame Altar geometry hash is used across all generations.
+The test permits another cleanup in the same altar after the previously
+recorded cleanup was **fully undone** (restored >= removed with zero
+conflicts). If an older cleanup still has unresolved edits, preparation
+is refused: use Undo to resolve them first. Undo prefers an **outstanding**
+journal in newest-to-oldest order, retaining older recovery access.
 
-The v0.2.0 per-altar recovery journal remains at its original
-`cleanup-rollback-v1-...` world-data key. The v0.3.2 candidate writes
-a separate `cleanup-rollback-v2-...` key and **never overwrites v0.2
-journal content**.
+A completed v0.3.3 test journal is never overwritten by another test
+in the same altar, even if fully undone. The backups and old recovery
+data remain available.
 
-If an old cleanup has been fully undone (`phase=undone`, at least one
-edit committed, total restored >= total committed, zero conflicts),
-v0.3.2 permits a new plan in the same altar while preserving the old
-record. Otherwise the old outstanding journal **blocks new cleanup**
-until its recovery is resolved. Undo prefers the new journal if one
-exists and otherwise still supports the old format.
+## In-game test — use a copied save
 
-v0.3.2 also refuses a second cleanup in an altar while a new journal
-exists, even if it has been undone: the first v0.3 journal cannot be
-silently discarded or replaced. The backup remains available.
+1. Download the `base-cleanup-mud37-0.3.3-test` Actions artifact from
+   the experimental PR's GREEN build; extract the installable
+   `base-cleanup-0.3.3.zip` and install it via Kiln. This replaces
+   0.3.2; don't install two versions of the same mod ID.
+2. Start inside the same Flame Altar where the probe observed the puddle.
+   Open Base Cleanup with **Shift+ScrollLock**.
+3. Verify the checkbox reads **Include creek/ditch mud (material 37) — TEST**.
+   Untick **mineable mycelium** and **cosmetic decay** if you want to
+   minimise unrelated work. Rubble remains included by design.
+4. Click **Prepare removal plan (read-only)** and inspect all planned
+   **rubble, mud, mycelium, decay** counts BEFORE committing. The mud
+   number now means **all material-37 voxels**, not visible puddles;
+   do not commit if it is unexpectedly large.
+5. If counts are acceptable on your **copied save**, enter **REMOVE**
+   and confirm. Check the backup succeeded; check what happened to the
+   visually muddy area (including any new holes or lost ground), and
+   whether other material-37 areas were affected.
+6. Enter **UNDO** and verify all changed terrain and appearance bits
+   are restored (zero unexpected conflicts). Do not dig, build, or
+   change the tested area between cleanup and Undo.
+7. Upload the Kiln support report and, ideally, before/after screenshots.
 
-## Install and test on a copied world
+The same result can be tested through the existing admin commands:
+`/baseclean prepare`, `/baseclean confirm REMOVE`,
+`/baseclean undo UNDO`, `/baseclean status`,
+`/baseclean cancel`. `/baseclean preparenodecay` can opt out of
+cosmetic decay, but still includes rubble, mud 37, and mycelium.
 
-1. Download the test artifact from this PR's successful
-   **Test Base Cleanup v0.3.2 optional decay** GitHub Actions run:
-   `base-cleanup-decay-0.3.2-test`. Extract its inner
-   `base-cleanup-0.3.2.zip` and install through Kiln Launcher.
-   This **replaces v0.2.0** for the test (the ID is unchanged).
-2. Keep a separate copy of the save before the test. Use a Flame Altar
-   with visible weathering. The current in-game evidence was captured on
-   Kiln dev.30.6; this candidate is compiled against that SDK.
-3. Press **Shift+ScrollLock** to open the Base Cleanup panel. Kiln explicitly
-   supports this chord. If you previously remapped this binding, the saved
-   choice takes precedence: use **Insert → Keys** (Base Cleanup) or edit the
-   profile's `keybinds.json` to change it. On some keyboard/Proton setups the
-   physical key press still needs checking in-game.
-4. The cosmetic decay checkbox is initially **ON**, but can be unticked.
-   Mud and mycelium retain their own toggles.
-5. Click **Prepare removal plan**. The server scans the complete altar
-   and reports **cosmetic decay** count separately from rubble, mud and
-   mycelium. Planning itself makes NO world edits.
-6. Review ALL candidate counts. **Rubble is still included** by design.
-   If you change any checkbox after planning, the commit will be
-   refused; prepare again to take a new snapshot of selected options.
-7. Type **REMOVE** and select Confirm. A full-world backup and complete
-   undo journal MUST succeed before the first terrain or building edit.
-8. Check that visibly decayed surfaces become clean, that ivy/overgrowth
-   and other building colours remain unchanged, and that rubble (if
-   present) is removed.
-9. Type **UNDO** and select Undo previous cleanup. Confirm that both
-   removed terrain and repaired building weathering are restored.
-   Save/restart and re-check journal availability if possible.
-10. Upload a Kiln support report and ideally before/after screenshots.
-    No merge or release until in-game acceptance.
+On a HOSTED Enshrouded world, a **full-world backup** cannot be
+automatically restored by the mod; manual replacement of the matching
+game and Kiln mod-data generations with the game closed is required.
+Selective Undo is in-game, but can only restore still-unchanged cells.
+Keep an independent save copy before this destructive test.
 
-### Admin console commands
+## Build and PR policy
 
-- `/basescan`, `/basescan status`, `/basescan cancel`,
-  `/basescan report`, `/basescan materials [page]` — Stage 1.
-- `/baseclean prepare` — default plan now includes rubble, mud, mycelium
-  **and cosmetic decay**; the operation is still read-only until confirmed.
-- `/baseclean preparedecay` — explicit decay-including synonym retained
-  from v0.3.0 for compatibility.
-- `/baseclean preparenodecay` — explicitly exclude cosmetic decay while
-  keeping rubble, mud and mycelium.
-- `/baseclean confirm REMOVE` — backup and commit the exact
-  options of the server-side prepared plan.
-- `/baseclean undo UNDO` — conflict-safe selective rollback.
-- `/baseclean status`, `/baseclean cancel`.
+The project targets the checksum-pinned Kiln dev.30.6 SDK with .NET 10.
+From the repository root: `bash build-stage1.sh`.
+Output: `bin/Release/base-cleanup-0.3.3.zip`.
 
-## Backup caveats
-
-On a HOSTED Enshrouded world, Kiln cannot automatically restore an
-entire world snapshot with `Saves.RestoreOnNextStart`; that requires
-manual replacement of the matching world and Kiln mod-data generations
-while the game is closed. The in-game selective Undo is different: it
-restores ONLY unchanged cells in the saved journal. Avoid editing the
-affected building surfaces between cleanup and Undo for exact recovery.
-
-An air cell created by an unrelated action cannot always be
-distinguished from air created by this mod; this is an existing
-limitation of the original Stage 2 journal.
-
-## Build
-
-From repo root with .NET 10, run `bash build-stage1.sh`.
-The script uses SHA256-verified official Kiln dev.30.6 SDK assets,
-runs all offline Python regression suites, builds and packs
-`bin/Release/base-cleanup-0.3.2.zip`.
-
-The PR workflow is intentionally test-only: **no automatic publication,
-no merge, no upstream Kiln change**. Green CI is not an in-game PASS.
+The GitHub PR workflow validates scanner/cleanup/decay/mud37 regression
+suites, builds the mod, and packages an installable ZIP. **PR runs do
+not publish releases.** This mod must not be merged or released until
+the user reports an in-game PASS.
