@@ -554,9 +554,10 @@ public sealed partial class BaseVisualProbeMod : Mod
         {
             ui.Separator("Entire Flame Altar - building appearance");
             ui.Text($"Read: {census.Total:N0}; building voxels: {census.Buildings:N0}; zero paint: {census.ZeroPaint:N0}");
-            ui.Text($"Overgrowth flags: {census.Growth:N0}; weathering flags: {census.Weather:N0}; both: {census.Both:N0}");
+            ui.Text($"Nonzero growth-field bits (NOT ivy count): {census.Growth:N0}; weathering: {census.Weather:N0}; both: {census.Both:N0}");
             ui.Text($"Other paint/tint: {census.OtherPaint:N0} (these bits are NOT cleanup targets)");
-            ui.Text("Overgrowth bit levels: " + string.Join(", ",
+            ui.TextDisabled("Level 7 was observed on ALL air-adjacent clean-wall voxels; not a cleanup target.");
+            ui.Text("Growth-field bit levels: " + string.Join(", ",
                 Enumerable.Range(0, 8).Select(i => $"{i}={census.Levels[i]:N0}")));
         }
         if (Volatile.Read(ref _diffView) is { } d)
