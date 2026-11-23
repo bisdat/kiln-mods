@@ -75,6 +75,20 @@ public sealed partial class BaseCleanupMod
         old.Phase == "undone" && old.Removed > 0 &&
         old.Restored >= old.Removed && old.Conflicted == 0;
 
+    // A *successful* earlier cleanup is also safe to retain without undoing:
+    // the new experiment has a SEPARATE journal key, so no earlier original
+    // voxel record can be overwritten. We must not force the user to undo
+    // legitimately accepted rubble/decay merely to run a new mud test.
+    //
+    // "complete" alone is not sufficient: a partially committed cleanup,
+    // any skipped/conflicted write, or a partially executed Undo must still
+    // block subsequent operations until its recovery is resolved.
+    private static bool SettledPreviousJournal(CleanupLedger previous) =>
+        FullyUndone(previous) ||
+        (previous.Phase == "complete" &&
+         previous.Planned > 0 && previous.Removed == previous.Planned &&
+         previous.Restored == 0 && previous.Conflicted == 0);
+
     private static bool TryGetJournal(PlayerBase altar, out CleanupLedger journal)
     {
         // Always offer an outstanding rollback before an already-completed
@@ -236,7 +250,7 @@ public sealed partial class BaseCleanupMod
             return true;
         }
         if (WorldData.TryGet<CleanupLedger>(PreviousLedgerKeyFor(altar), out var previous) &&
-            !string.IsNullOrEmpty(previous.Packed) && !FullyUndone(previous))
+            !string.IsNullOrEmpty(previous.Packed) && !SettledPreviousJournal(previous))
         {
             message = $"Prior v0.3 cleanup needs recovery ({previous.Phase}; " +
                       $"edited {previous.Removed}, restored {previous.Restored}, " +
@@ -244,7 +258,7 @@ public sealed partial class BaseCleanupMod
             return true;
         }
         if (WorldData.TryGet<CleanupLedger>(LedgerKeyFor(altar), out var legacy) &&
-            !string.IsNullOrEmpty(legacy.Packed) && !FullyUndone(legacy))
+            !string.IsNullOrEmpty(legacy.Packed) && !SettledPreviousJournal(legacy))
         {
             message = $"Older v0.2 cleanup needs recovery ({legacy.Phase}; " +
                       $"edited {legacy.Removed}, restored {legacy.Restored}, " +
