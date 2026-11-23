@@ -1,4 +1,4 @@
-name: Test Base Cleanup v0.3.4 material37 staged workflow (release after merge only)
+name: Test Base Cleanup v0.3.5 material37 staged workflow (release after merge only)
 
 on:
   pull_request:
@@ -21,7 +21,7 @@ permissions:
 
 jobs:
   build:
-    name: Validate and package Base Cleanup v0.3.4 candidate
+    name: Validate and package Base Cleanup v0.3.5 candidate
     runs-on: ubuntu-24.04
     steps:
       - name: Check out test branch
@@ -42,20 +42,20 @@ jobs:
         run: dotnet build BaseCleanup/BaseCleanup.csproj -c Release --no-restore -t:KilnPack
       - name: Verify installable archive
         run: |
-          test -s bin/Release/base-cleanup-0.3.4.zip
-          unzip -t bin/Release/base-cleanup-0.3.4.zip
-          unzip -l bin/Release/base-cleanup-0.3.4.zip
+          test -s bin/Release/base-cleanup-0.3.5.zip
+          unzip -t bin/Release/base-cleanup-0.3.5.zip
+          unzip -l bin/Release/base-cleanup-0.3.5.zip
       - name: Upload verified installable Base Cleanup ZIP
         uses: actions/upload-artifact@v4
         with:
-          name: base-cleanup-staged-0.3.4-test
-          path: bin/Release/base-cleanup-0.3.4.zip
+          name: base-cleanup-selective-0.3.5-test
+          path: bin/Release/base-cleanup-0.3.5.zip
           if-no-files-found: error
           retention-days: 90
 
 
   release:
-    name: Tag and publish accepted Base Cleanup v0.3.4
+    name: Tag and publish accepted Base Cleanup v0.3.5
     # PR builds never publish. Only the exact tested main commit may be tagged.
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: build
@@ -63,7 +63,7 @@ jobs:
     permissions:
       contents: write
     concurrency:
-      group: base-cleanup-v0.3.4-release
+      group: base-cleanup-v0.3.5-release
       cancel-in-progress: false
     steps:
       - name: Checkout exact accepted main commit
@@ -73,14 +73,14 @@ jobs:
       - name: Download artifact from this verified workflow run
         uses: actions/download-artifact@v4
         with:
-          name: base-cleanup-staged-0.3.4-test
+          name: base-cleanup-selective-0.3.5-test
           path: dist
       - name: Verify release version and installable ZIP
         run: |
-          grep -Fq '<Version>0.3.4</Version>' BaseCleanup/BaseCleanup.csproj
-          test -s dist/base-cleanup-0.3.4.zip
-          unzip -t dist/base-cleanup-0.3.4.zip
-          sha256sum dist/base-cleanup-0.3.4.zip
+          grep -Fq '<Version>0.3.5</Version>' BaseCleanup/BaseCleanup.csproj
+          test -s dist/base-cleanup-0.3.5.zip
+          unzip -t dist/base-cleanup-0.3.5.zip
+          sha256sum dist/base-cleanup-0.3.5.zip
       - name: Create annotated tag if absent, refuse conflicting tag
         env:
           GH_TOKEN: ${{ github.token }}
@@ -88,7 +88,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          tag='base-cleanup-v0.3.4'
+          tag='base-cleanup-v0.3.5'
           # Do not force-push or retag a published release.
           if git rev-parse --verify "refs/tags/$tag" >/dev/null 2>&1; then
             existing="$(git rev-list -n 1 "$tag")"
@@ -100,7 +100,7 @@ jobs:
           else
             git config user.name 'github-actions[bot]'
             git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-            git tag -a "$tag" "$GITHUB_SHA" -m 'Base Cleanup v0.3.4 — terrain cell 37 test'
+            git tag -a "$tag" "$GITHUB_SHA" -m 'Base Cleanup v0.3.5 — terrain cell 37 test'
             git push origin "refs/tags/$tag"
           fi
       - name: Publish verified package if release absent
@@ -110,13 +110,13 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          tag='base-cleanup-v0.3.4'
+          tag='base-cleanup-v0.3.5'
           if gh release view "$tag" >/dev/null 2>&1; then
             echo "Release already exists; never overwrite assets."
             exit 0
           fi
           cat > release-notes.md <<'NOTES'
-          ## Base Cleanup v0.3.4
+          ## Base Cleanup v0.3.5
 
           Staged, recoverable Flame Altar cleanup. The UI now progresses
           through Scan → choose options → prepare → REMOVE → UNDO.
@@ -140,14 +140,14 @@ jobs:
           - Window hotkey: Shift+ScrollLock (already verified in-game).
           - Guarded compare-and-write preserves unrelated user changes.
           - Saved v0.2.0, v0.3.2 and v0.3.3 recovery journals remain intact.
-            New operations use a separate indexed v0.3.4 journal series,
+            New operations use a separate indexed v0.3.5 journal series,
             capped at 32 per altar to prevent accidental journal overwrites.
           - The earlier v0.3.3 material-37 in-game test changed 199,135
             voxels and restored all 199,135 with zero conflicts. This
-            validates the terrain cleanup, **not** the new v0.3.4 UI.
-            v0.3.4 requires its own in-game acceptance before release.
+            validates the terrain cleanup, **not** the new v0.3.5 UI.
+            v0.3.5 requires its own in-game acceptance before release.
 
-          Install attached **base-cleanup-0.3.4.zip** through Kiln Launcher.
+          Install attached **base-cleanup-0.3.5.zip** through Kiln Launcher.
           Built against Kiln dev.30.6; a compatible runtime is required.
 
           **Safety:** Keep a separate save copy before bulk terrain edits.
@@ -156,8 +156,8 @@ jobs:
           Selective Undo only restores voxels still in the expected edited
           state and does not override new player/world edits.
           NOTES
-          gh release create "$tag" dist/base-cleanup-0.3.4.zip \
+          gh release create "$tag" dist/base-cleanup-0.3.5.zip \
             --verify-tag --target "$GITHUB_SHA" \
-            --title 'Base Cleanup v0.3.4' \
+            --title 'Base Cleanup v0.3.5' \
             --notes-file release-notes.md
           gh release view "$tag" --json url,assets --jq '{url: .url, assets: [.assets[].name]}'
