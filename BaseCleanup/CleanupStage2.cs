@@ -130,7 +130,7 @@ public sealed partial class BaseCleanupMod
         switch (operation)
         {
             case 1: BeginPreparation(player, options); break;
-            case 2: BeginCleanup(player); break;
+            case 2: BeginCleanup(player, options); break;
             case 3: BeginUndo(player); break;
             case 4: CancelCleanup(player); break;
             case 5: CleanupPublish(player, CleanupCurrentStatus(player)); break;
@@ -344,7 +344,7 @@ public sealed partial class BaseCleanupMod
     private bool StopRequested(CleanupPlan plan) =>
         _cleanupCancel || plan.CancelRequested || plan.Generation != _cleanupEpoch;
 
-    private void BeginCleanup(EntityId player)
+    private void BeginCleanup(EntityId player, byte selectedOptions)
     {
         if (_cleanupBusy || _running is not null)
         {
@@ -356,6 +356,13 @@ public sealed partial class BaseCleanupMod
             p.Hits == 0 || p.Hits > 4_000_000)
         {
             CleanupPublish(player, new("failed", "No unexpired, nonempty plan for this player. Prepare again.", 0, 0, 0, 0, 0, ""));
+            return;
+        }
+        if (selectedOptions != p.Options)
+        {
+            CleanupPublish(player, new("failed",
+                "The cleanup options changed after planning. Prepare a new plan before confirming.",
+                0, 0, 0, 0, 0, ""));
             return;
         }
         if (!SafeServices(out var reason) || !SameZone(p) ||
@@ -654,7 +661,7 @@ public sealed partial class BaseCleanupMod
             if (_cleanupConfirm == ConfirmRemove)
             {
                 _cleanupConfirm = "";
-                Client.Post(() => CleanupRequestLocal(2));
+                Client.Post(() => CleanupRequestLocal(2, flags));
             }
             else Hud.Toast("Type REMOVE exactly before confirming.", ToastKind.Warning);
         }
@@ -729,8 +736,10 @@ public sealed partial class BaseCleanupMod
     {
         if (confirmation != ConfirmRemove) throw new CommandException("type /baseclean confirm REMOVE");
         if (c.Source.Player.IsNone) throw new CommandException("run as a player in the world");
-        BeginCleanup(c.Source.Player);
-        c.Reply("Confirmation requested; backup must complete before removal starts.");
+        // The console has no UI checkboxes. Confirm exactly the reviewed
+        // server-side plan, never silently enable any options.
+        BeginCleanup(c.Source.Player, _preparedCleanup?.Options ?? 0);
+        c.Reply("Confirmation requested; backup must complete before cleanup starts.");
     }
 
     [Command("baseclean undo", Description = "Restore unchanged cleanup air voxels (requires UNDO)",
