@@ -1,6 +1,6 @@
-# Base Visual Metadata Probe v0.1.0 — experimental, READ ONLY
+# Base Visual Metadata Probe v0.1.1 — experimental, READ ONLY
 
-Standalone Kiln mod in bisdat/kiln-mods. It does not modify the released Base Cleanup v0.2.0.
+Standalone Kiln mod in bisdat/kiln-mods. It does not modify the released Base Cleanup v0.3.2.
 
 **THIS MOD NEVER CLEANS, CHANGES, WRITES OR REMOVES VOXELS OR PROPS.**
 Only read-only survey, before/after comparison and logging are implemented.
@@ -21,6 +21,69 @@ classifies all material IDs 128–255 as buildings, even with zero paint.
 The source establishes a representation, not necessarily the exact result of
 using the game's Overgrowth and Decay Tools in all cases. This experiment is
 designed to verify those changes before any cleanup implementation.
+
+## NEW — dry floor versus puddle experiment (23 Nov 2026)
+
+This experiment addresses a user-observed remaining puddle/mud patch inside
+a Flame Altar **after Base Cleanup v0.3.2**. The main mod removes only
+`Underwater Mud` terrain material **91**, and the earlier full-altar
+survey found zero instances of that material. This probe does NOT
+assume the visible patch is material 91, ordinary mud, or a prop.
+
+**The fastest test is TWO small, READ-ONLY captures.**
+
+1. Replace the previous diagnostic mod `base-visual-probe` with
+   `base-visual-probe-0.1.1.zip`. Keep Base Cleanup v0.3.2 installed;
+   this is a different mod ID and does not modify Base Cleanup.
+2. Enter the Flame Altar where the unexplained puddle remains.
+   Open the probe with **Shift+F11**, not Ctrl (Ctrl is evade in-game).
+   The default key is remappable via Kiln **Insert → Keys**. A previously
+   saved binding may override the new default.
+3. Stand **ON the middle of a visible puddle**, not beside it. Click
+   **A. Sample PUDDLE floor**. Wait for the `floor-complete` result.
+4. Move a few metres onto visibly **DRY floor** on the **same level**,
+   ideally the same floor building material, and click
+   **B. Sample DRY floor**. Wait for the `floor-complete` result.
+5. Upload Kiln's **Support report** ZIP. Ideally attach one screenshot
+   of each site, or identify which puddle from your earlier screenshot
+   you sampled. **No full altar census and no digging are needed.**
+
+Each button reads at most **686 voxels**: a 7×7 cell footprint around
+the requesting player's position, including 11 layers below and 2
+above. The actual read is clipped to the selected Flame Altar and is
+never more than 1,024 cells. The host calculates the position; clients
+cannot supply coordinates or a destructive operation. If a tile fails
+to load, the sample fails rather than treating unreadable cells as air.
+
+Per sample, the probe logs:
+- The player's world position, voxel cell and exact bounded scan box;
+- Total terrain cells (IDs 1–127, fill greater than zero), building
+  cells (IDs 128–255, even zero paint), empty cells and partial terrain;
+- For each 7×7 horizontal column, the **highest occupied voxel at or
+  below the player's voxel Y**; terrain-versus-building material
+  histograms and exact raw 16-bit material/fill values;
+- A vertical list of **every voxel in the centre column** and
+  individual 3×3 centre-footprint floor cells with coordinates
+  relative to the player (to check for a differently coloured thin
+  surface layer);
+- A matched PUDDLE/DRY comparison when both samples belong to the
+  same world and altar, with separate material counts.
+
+**Interpretation limits:** "highest occupied" is a voxel heuristic;
+the player's world position is not guaranteed to equal foot height.
+Rendered puddle decals, water effects, and scene props may appear
+with identical underlying voxel bytes. Identical raw values do NOT
+prove a decal; different materials are NOT automatically safe for
+bulk removal. We must examine the results before selecting any new
+cleanup target.
+
+Optional admin commands:
+- `/vprobe floorwet` — capture the puddle position.
+- `/vprobe floordry` — capture the dry reference.
+
+The commands and UI use the same host-authoritative read-only path.
+This is **an experimental build on draft PR #71**, not a release,
+and there are no upstream Kiln changes.
 
 ## Operations
 
@@ -52,6 +115,7 @@ designed to verify those changes before any cleanup implementation.
   does NOT prove that ivy is rendered. A and B results are logged and
   compared only when they belong to the same world and Flame Altar.
   **No full-altar rescan is needed for these samples.**
+- Local floor / puddle material A/B samples: see NEW test above.
 - Cancel: stop a current read-only operation. Snapshots automatically expire
   on world switch, shutdown or mod unload.
 
@@ -59,11 +123,11 @@ The probe never writes world state or stores the snapshot in save files.
 
 ## Test procedure
 
-1. Install the PR's test artifact named base-visual-probe-0.1.0-readonly.
-   Extract the inner base-visual-probe-0.1.0.zip and install via Kiln Launcher.
+1. Install the PR's test artifact named base-visual-probe-0.1.1-readonly.
+   Extract the inner base-visual-probe-0.1.1.zip and install via Kiln Launcher.
    It has a separate mod ID and can run alongside Base Cleanup v0.2.0.
 2. Stand in an existing Flame Altar containing weathered or ivy-covered walls.
-   Press **Ctrl+Shift+F11** (remappable via Insert > Keys).
+   Press **Shift+F11** (remappable via Insert > Keys).
 3. **NEW: To investigate the unexpectedly large growth-level-7 count,
    skip the full-altar census.** Stand right next to a visually clean
    building wall (within ~1 metre), click **A. Sample CLEAN wall**.
@@ -96,7 +160,7 @@ The probe never writes world state or stores the snapshot in save files.
 - /vprobe report
 - /vprobe cancel
 
-**Local samples use the UI buttons** (Ctrl+Shift+F11): A. Sample CLEAN
+**Local samples use the UI buttons** (Shift+F11): A. Sample CLEAN
 wall and B. Sample OVERGROWN wall. You may also use the read-only
 commands /vprobe spotclean and /vprobe spotivy where player chat is
 available. These samples don't overwrite the separate 12m baseline for
@@ -177,5 +241,5 @@ From the repo root:
     bash build-visual-probe.sh
 
 The separate GitHub Actions PR workflow packages
-bin/Release/base-visual-probe-0.1.0.zip as a TEMPORARY TEST ARTIFACT.
+bin/Release/base-visual-probe-0.1.1.zip as a TEMPORARY TEST ARTIFACT.
 No release or push-to-main job, no merge, and no upstream changes.
