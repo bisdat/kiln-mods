@@ -2,9 +2,9 @@
   <PropertyGroup>
     <KilnModId>base-visual-probe</KilnModId>
     <KilnModName>Base Visual Metadata Probe (READ ONLY)</KilnModName>
-    <Version>0.1.0</Version>
+    <Version>0.1.1</Version>
     <Authors>bisdat</Authors>
-    <Description>Read-only experimental overgrowth/weathered building-voxel metadata survey and paired game-tool comparison.</Description>
+    <Description>Read-only experiment: compare puddle and dry floor materials, building appearance and native overgrowth/decay tools.</Description>
     <PackageProjectUrl>https://github.com/bisdat/kiln-mods</PackageProjectUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <KilnSide>both</KilnSide>
