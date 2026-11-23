@@ -123,13 +123,13 @@ class VisualProbeTests(unittest.TestCase):
         self.assertIn("Capabilities.Is(\"gameplay.build_hooks\")",MOD)
         self.assertIn("Gameplay</KilnServices>",CSPROJ)
         self.assertIn("Context.Scheduler.Post(() => Dispatch(p, operation, true))",MOD)
-        self.assertIn('"Ctrl+Shift+F11"',MOD)
+        self.assertIn('"Shift+F11"',MOD)
         self.assertIn("No network request accepts coordinates",MOD)
 
     def test_packaging_is_separate_without_release(self):
         self.assertIn("<KilnModId>base-visual-probe</KilnModId>",CSPROJ)
         self.assertIn("0.2.0-dev.30.6",CSPROJ)
-        self.assertIn("base-visual-probe-0.1.0.zip",FLOW)
+        self.assertIn("base-visual-probe-0.1.1.zip",FLOW)
         self.assertIn("pull_request:",FLOW)
         self.assertNotIn("  push:",FLOW)
         self.assertNotIn("softprops/action-gh-release",FLOW)
