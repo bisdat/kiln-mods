@@ -204,7 +204,7 @@ public sealed partial class BaseVisualProbeMod
             $"unclassified boundary {report.BorderUnknown:N0}");
         ui.Text($"Level 7: {report.Growth7Exposed:N0} exposed / {report.Growth7All:N0} all; " +
             $"level 1 exposed {report.Growth1Exposed:N0}");
-        if (ui.BeginChild(label == "Clean reference A" ? "spot-clean-raw" : "spot-ivy-raw", 76 * ui.Scale, 0))
+        if (ui.BeginChild(label == "Clean reference A" ? "spot-clean-raw" : "spot-ivy-raw", 0, 84 * ui.Scale))
         {
             foreach (var t in report.TopRaw.Take(4)) ui.Text(t);
         }
