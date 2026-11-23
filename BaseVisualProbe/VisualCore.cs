@@ -114,6 +114,7 @@ internal sealed class VisualSnapshot(
     internal readonly CellBox Box = box;
     internal readonly Dictionary<CellPos, Voxel> Cells = new();
     internal DateTime CapturedUtc;
+    internal EntityId Player;
 }
 
 internal sealed class VisualChangeCounts
