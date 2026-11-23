@@ -157,7 +157,7 @@ public sealed partial class BaseCleanupMod
     private static CleanupStatus PlanStatus(CleanupPlan p, string phase, string message) =>
         new(phase, message, p.Read, p.Total,
             BaseScanCore.PlaceableRubble.Sum(x => p.Materials[x]) + BaseScanCore.WorldRubble.Sum(x => p.Materials[x]),
-            p.Materials[BaseScanCore.UnderwaterMud],
+            p.Materials[BaseScanCore.MudTerrain],
             BaseScanCore.MineableMycelium.Sum(x => p.Materials[x]), "") { Decay = p.DecayHits };
 
     private void CleanupPublish(EntityId recipient, CleanupStatus message)
@@ -642,7 +642,7 @@ public sealed partial class BaseCleanupMod
             "including buried rubble (no support/surface filter). " +
             "Optional decay only clears the weathering bit of building blocks: " +
             "it preserves overgrowth state, material, geometry and other paint.");
-        ui.Checkbox("Include underwater mud (material 91)", ref _includeMud);
+        ui.Checkbox("Include creek/ditch mud (material 37) — TEST", ref _includeMud);
         ui.Checkbox("Include mineable mycelium", ref _includeMycelium);
         ui.Checkbox("Repair cosmetic decay (ON by default)", ref _includeDecay);
         ui.TextDisabled("Ivy/overgrowth cleanup is excluded. Level 7 also appears on clean walls.");
