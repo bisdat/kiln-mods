@@ -35,11 +35,12 @@ public sealed record CleanupStatus(string Phase, string Message, long Done, long
 }
 
 /// <summary>
-/// Stage 2 runs only on the authoritative server. A confirmed plan is
-/// snapshotted in WorldData BEFORE Saves.Backup (which saves that journal).
-/// Only after the backup succeeds are cells compare-and-written to air.
-/// Undo reads the saved journal after any restart and compare-writes the
-/// original raw voxel back if and only if the world still contains air.
+/// Stage 2 runs only on the authoritative server. Original voxel values
+/// and the operation index are staged in the current world's Kiln WorldData
+/// before guarded cell writes. No explicit world save, backup or restore is
+/// requested: records and edits persist together at the game's normal save.
+/// Undo reads each journal after any restart and compare-writes originals
+/// only where the expected post-cleanup voxel still exists.
 /// </summary>
 public sealed partial class BaseCleanupMod
 {
@@ -50,7 +51,7 @@ public sealed partial class BaseCleanupMod
     // record from any released version is overwritten.
     private const string CurrentLedgerPrefix = "cleanup-rollback-v3-";
     // v0.3.4: distinct key for EACH confirmed REMOVE, preserving every
-    // previous snapshot and backup. Newest operation must be undone first.
+    // previous recovery record. Newest operation must be undone first.
     private const string HistoryPrefix = "cleanup-rollback-v4-index-";
     private const string OperationPrefix = "cleanup-rollback-v4-";
     private const int MaxHistory = 32; // Fail closed; never discard recovery records.
@@ -286,7 +287,6 @@ public sealed partial class BaseCleanupMod
             case "prepared":
                 Volatile.Write(ref _uiStage, 3);
                 break;
-            case "backup":
             case "applying":
             case "undoing":
                 Volatile.Write(ref _uiStage, 4);
@@ -869,7 +869,7 @@ public sealed partial class BaseCleanupMod
                 "REMOVE, then use its separate Undo journal.");
             ui.TextWrapped("MUD-37 TEST: the mud choice digs ALL matching terrain in this " +
                 "3-D Flame Altar, including buried cells. It may create deep holes. " +
-                "Review the plan on a copied save.");
+                "Review the plan on a copied world.");
             ui.Checkbox("Include rubble (entire 3-D altar)", ref _includeRubble);
             ui.Checkbox("Include creek/ditch mud (material 37) — TEST", ref _includeMud);
             ui.Checkbox("Include mineable mycelium", ref _includeMycelium);
@@ -960,7 +960,8 @@ public sealed partial class BaseCleanupMod
                 ui.TextWrapped("Operation journal: " + status.Backup);
             ui.TextWrapped("Each REMOVE has its own saved Undo journal. " +
                 "Undo restores only voxels still in this operation's edited state. " +
-                "Later operations must be undone before earlier ones.");
+                "Later operations must be undone before earlier ones. " +
+                "To restore categories individually, remove one category per operation.");
             ui.InputText("Type UNDO to restore", ref _undoConfirm, 20);
             if (ui.Button("5. UNDO latest eligible operation"))
             {
