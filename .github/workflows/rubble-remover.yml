@@ -37,13 +37,13 @@ jobs:
       - name: Build installable Kiln ZIP
         run: dotnet build RubbleRemover/RubbleRemover.csproj -c Release --no-restore -t:KilnPack
       - name: Check archive exists
-        run: test -s bin/Release/rubble-remover-0.1.3.zip
+        run: test -s bin/Release/rubble-remover-0.1.4.zip
       - name: Verify baked brush world tables in installable ZIP
-        run: python3 tests/rubble-remover/verify-package.py bin/Release/rubble-remover-0.1.3.zip
+        run: python3 tests/rubble-remover/verify-package.py bin/Release/rubble-remover-0.1.4.zip
       - name: Upload test candidate (not a release)
         uses: actions/upload-artifact@v4
         with:
-          name: rubble-remover-0.1.3
-          path: bin/Release/rubble-remover-0.1.3.zip
+          name: rubble-remover-0.1.4
+          path: bin/Release/rubble-remover-0.1.4.zip
           if-no-files-found: error
           retention-days: 90

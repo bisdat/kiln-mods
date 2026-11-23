@@ -1,4 +1,4 @@
-# Rubble Remover (Kiln) — v0.1.3 test candidate
+# Rubble Remover (Kiln) — v0.1.4 test candidate
 
 A craftable, removal-only building tool for Enshrouded. **Requires Kiln
 0.2.0-dev.30.6 or newer on the host and any joined client.** Built against
@@ -22,10 +22,12 @@ the official Kiln SDK 0.2.0-dev.30.6. This is **not yet accepted in game**.
   the game's building-action undo are retained. There is no background
   scanning, broad terrain dig, pointer patching or EML-R dependency.
 
-v0.1.0 failed to load due to a mismatched Carpenter menu group (corrected to Workbench in v0.1.1). v0.1.1 and v0.1.2 both reported `output item rubble-remover.rubble-remover not found`. v0.1.2 baked the three brushes, but the **Kiln dev.30.6 native world-table loader skips documents whose only section is `toolBrushShapes` or `toolMaterialPools`**. v0.1.3 adds a **harmless empty `blueprints` section** to the generated `blocks.tables.json`; this recognised section makes the loader process the baked brush descriptors. This is a temporary shim for the upstream loader defect. It adds no blueprints or other content. CI verifies the final ZIP contains the shim and brushes.
+v0.1.0 failed to load due to a mismatched Carpenter menu group (corrected to Workbench in v0.1.1). v0.1.1 and v0.1.2 both reported `output item rubble-remover.rubble-remover not found`. v0.1.2 baked the three brushes, but the **Kiln dev.30.6 native world-table loader skips documents whose only section is `toolBrushShapes` or `toolMaterialPools`**. v0.1.4 adds a **harmless empty `blueprints` section** to the generated `blocks.tables.json`; this recognised section makes the loader process the baked brush descriptors. This is a temporary shim for the upstream loader defect. It adds no blueprints or other content. CI verifies the final ZIP contains the shim and brushes.
+
+**In-game result for v0.1.3:** The tool can now be crafted and activated, but **none of its three brushes appears**. This is still a FAIL for the core function. The brushes are declared and their content is baked, but Kiln's client-side `tools.brush_families` adapter controls whether the game's building menu can enumerate them. v0.1.4 adds diagnostic logging for the client capabilities and the presence/brush tags of all three items, without changing any removal action or attempting an unsafe fallback. This is a diagnostic candidate, **not a claimed brush fix**.
 
 This intentionally omits the reference mod's rubble **placement** mode.
-The starting 0.1.3 implementation focuses only on the requested removal
+The starting 0.1.4 implementation focuses only on the requested removal
 tool. Until a custom icon is created it inherits Kiln's Overgrowth starter
 icon/model, but is a separate named item with its own brush identities.
 
@@ -36,7 +38,7 @@ icon/model, but is a separate named item with its own brush identities.
    available to all clients in a multiplayer session (this is a
    `clients=mod` mod, not a server-only mod).
 3. In GitHub Actions, open **Package Rubble Remover**, download the
-   `rubble-remover-0.1.3` artifact and extract its inner ZIP.
+   `rubble-remover-0.1.4` artifact and extract its inner ZIP.
 4. Install that inner ZIP using the Kiln launcher/profile mod installer.
    Do not install the reference EML-R DLL/Lua package or copy its
    `mods/` directory alongside this one.
@@ -49,6 +51,15 @@ The mod's item and recipe identities are Kiln-derived, **not the legacy
 EML-R GUIDs**. Do not expect existing items crafted with the reference
 mod to be carried across. This mod does not replace the vanilla Overgrowth
 or Decay Tool.
+
+## Missing-brush diagnosis (v0.1.4)
+
+1. Fully restart the game with v0.1.4 and activate the Rubble Remover.
+2. In the game chat, run `/rbrushstatus`. Its capability answers may be from the server rather than the client.
+3. Read `kiln/logs/kiln.log` for `Rubble Remover content ready:` and `Rubble Remover capability changed:` lines. In `kiln/state/capabilities.json` of the game client, inspect `tools.brush_families`, `tools.identity`, and `tools.actions.remove`.
+4. If `tools.brush_families` is unavailable, no mod-side configuration safely re-enables the native adapter. If the brush items are present and the capability available but no menu choices appear, the actual in-game frame/tag matching needs an upstream native fix.
+
+**Do not test terrain removal if the brush picker is empty.** The mod deliberately has no fallback using unrestricted `Build.Dig`.
 
 ## In-game acceptance (test save only)
 

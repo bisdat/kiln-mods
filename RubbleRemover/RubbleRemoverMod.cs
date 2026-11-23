@@ -21,6 +21,77 @@ public sealed class RubbleRemoverMod : Mod
         14, 33, 65, 72,
     ];
 
+    // These are CLIENT-SIDE presentation gates, independent of crafting and
+    // boot table registration. Do not remove/rewrite terrain on a failed gate.
+    private static readonly string[] BrushCapabilities =
+    [
+        "tools.brush_families", "tools.identity", "tools.actions.remove",
+        "tools.material_picker", "tools.build_area",
+    ];
+
+    private static void ReportCapabilities(string stage)
+    {
+        foreach (var name in BrushCapabilities)
+            Log.Info($"Rubble Remover {stage}: {Capabilities.Why(name)}");
+    }
+
+    // The brush picker may be installed after the mod's first OnLoad. Capture
+    // later transitions, including failures, without polling every frame.
+    [Subscribe]
+    private void OnCapabilityChanged(CapabilityChangedEvent e)
+    {
+        foreach (var name in BrushCapabilities)
+            if (e.Name == name)
+            {
+                Log.Info($"Rubble Remover capability changed: {Capabilities.Why(name)}");
+                break;
+            }
+    }
+
+    // Run on the game client as well as the host. The actual brush selection
+    // UI is client-only; a server-only /rbrushstatus can misreport its status.
+    private static void ReportPublishedItems()
+    {
+        foreach (var name in new[]
+        {
+            "rubble-remover.rubble-remover",
+            "rubble-remover.small",
+            "rubble-remover.medium",
+            "rubble-remover.large",
+        })
+        {
+            var present = Content.Items.Get(name) is not null;
+            string tag = "unavailable";
+            if (Capabilities.Is("kiln.gamedata"))
+            {
+                try
+                {
+                    tag = Content.ItemData.Get(name)?.GetJson("tags[0].tag")?.ToJsonString() ?? "missing";
+                }
+                catch (Exception e)
+                {
+                    tag = "unreadable: " + e.Message;
+                }
+            }
+            Log.Info($"Rubble Remover content ready: {name}: item={(present ? "present" : "MISSING")}, brush-tag={tag}");
+        }
+        ReportCapabilities("content ready");
+    }
+
+    [Command("rbrushstatus", Description = "inspect Rubble Remover brush item and native capability status")]
+    private void BrushStatus(CommandContext c)
+    {
+        c.Reply("Rubble Remover 0.1.4 — inspect the CLIENT's kiln/state/capabilities.json for tools.brush_families");
+        c.Reply("The three brush sizes are defined as separate item types: small (0.5m), medium (1.5m), large (2.5m).");
+        foreach (var name in BrushCapabilities)
+            c.Reply(Capabilities.Why(name));
+        if (Blocks.Find("rubble-remover") is TableBlockHandle<BuildingToolBlock> h)
+            c.Reply($"BuildingToolBlock: {h.Status}, identity {h.Guid}");
+        if (Blocks.Report().TryGetValue(Context.Info.Id, out var report))
+            foreach (var error in report.Errors)
+                c.Reply("Block error: " + error);
+    }
+
     public override void OnLoad()
     {
         var small = Blocks.Define("small", new TerrainBrushBlock
@@ -89,6 +160,9 @@ public sealed class RubbleRemoverMod : Mod
             Of = recipe.Name,
         });
 
-        Log.Info("Rubble Remover 0.1.3: terrain-only removal tool and Workbench recipe declared.");
+        Log.Info($"Rubble Remover 0.1.4: Workbench recipe declared; brush table status={tool.Status}, root={tool.Guid}.");
+        ReportCapabilities("OnLoad");
+        if (Content.Available)
+            Content.OnReady(_ => ReportPublishedItems());
     }
 }

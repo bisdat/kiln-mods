@@ -49,6 +49,17 @@ class RubbleRemoverContracts(unittest.TestCase):
         self.assertIn("Output = tool", SOURCE)
         self.assertIn("TrackCrafted = true", SOURCE)
 
+    def test_missing_brush_diagnostics_are_read_only(self):
+        self.assertIn('[Command("rbrushstatus"', SOURCE)
+        self.assertIn('"tools.brush_families"', SOURCE)
+        self.assertIn('"tools.identity"', SOURCE)
+        self.assertIn('"tools.actions.remove"', SOURCE)
+        self.assertIn('Content.Items.Get(name)', SOURCE)
+        self.assertIn('GetJson("tags[0].tag")', SOURCE)
+        self.assertIn('Content.OnReady', SOURCE)
+        self.assertNotIn('Content.Items.Get(name)?.Set(', SOURCE)
+        self.assertNotIn('Build.Dig(', SOURCE.split('public override void OnLoad()')[0])
+
     def test_client_parity_and_pinned_sdk(self):
         self.assertIn('Kiln.Sdk/0.2.0-dev.30.6', PROJECT)
         self.assertIn("<KilnSide>both</KilnSide>", PROJECT)

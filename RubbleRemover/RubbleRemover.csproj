@@ -2,7 +2,7 @@
   <PropertyGroup>
     <KilnModId>rubble-remover</KilnModId>
     <KilnModName>Rubble Remover</KilnModName>
-    <Version>0.1.3</Version>
+    <Version>0.1.4</Version>
     <Authors>bisdat</Authors>
     <Description>Craft a safe, terrain-only rubble and mineable-mycelium remover with three brushes.</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
