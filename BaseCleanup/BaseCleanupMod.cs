@@ -123,7 +123,7 @@ public sealed partial class BaseCleanupMod : Mod
                 CleanupRequestLocal(5);
             }, "Open Base Cleanup preview", "Base Cleanup");
         }
-        Log.Info("Base Cleanup v0.3.5 TEST loaded: Stage 1 survey; Stage 2 backup-first terrain cleanup plus opt-in weathering repair, persistent undo.");
+        Log.Info("Base Cleanup v0.3.5 TEST loaded: Stage 1 survey; Stage 2 selectable terrain cleanup with WorldData-only Undo; no world backup or save requests.");
     }
 
     private void Request(byte op)
