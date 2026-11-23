@@ -100,7 +100,7 @@ class LocalSamples(unittest.TestCase):
         self.assertIn("Level7Exposed",PROBE) if "Level7Exposed" in PROBE else self.assertIn("Growth7Exposed",PROBE)
         self.assertIn('case 6:',MOD)
         self.assertIn('case 7:',MOD)
-        self.assertIn('Network.Channel(Channel, "2"',MOD)
+        self.assertIn('Network.Channel(Channel, "3"',MOD)
         self.assertIn(".Register<VisualSurfaceReport>",MOD)
         self.assertIn("DrawSurfaceSpot(ui);",MOD)
         self.assertIn("ResetSurfaceSpot();",MOD)
