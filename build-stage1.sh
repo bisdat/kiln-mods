@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# v0.3.4 scanner plus backup-first removal candidate with terrain mud ID 37.
+# v0.3.5 scanner plus backup-first removal candidate with terrain mud ID 37.
 set -euo pipefail
 cd -- "$(dirname -- "$0")"
 if ! command -v dotnet >/dev/null 2>&1; then
@@ -11,5 +11,5 @@ python3 BaseCleanup/fetch-sdk.py
 dotnet restore BaseCleanup/BaseCleanup.csproj --configfile NuGet.Config
 dotnet build BaseCleanup/BaseCleanup.csproj -c Release --no-restore
 dotnet build BaseCleanup/BaseCleanup.csproj -c Release --no-restore -t:KilnPack
-test -s bin/Release/base-cleanup-0.3.4.zip
-printf 'Built bin/Release/base-cleanup-0.3.4.zip\n'
+test -s bin/Release/base-cleanup-0.3.5.zip
+printf 'Built bin/Release/base-cleanup-0.3.5.zip\n'
