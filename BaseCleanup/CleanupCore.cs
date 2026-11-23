@@ -13,9 +13,10 @@ internal static class CleanupCore
 {
     internal const byte IncludeMud = 1;
     internal const byte IncludeMycelium = 2;
-    // Opt-in only: this flag is never enabled by the old console command.
     internal const byte IncludeDecay = 4;
-    internal const byte AllowedOptions = IncludeMud | IncludeMycelium | IncludeDecay;
+    internal const byte IncludeRubble = 8;
+    // Every category is an opt-in bit, allowing distinct operations/Undo.
+    internal const byte AllowedOptions = IncludeMud | IncludeMycelium | IncludeDecay | IncludeRubble;
 
     // EMF/Kiln building paint high byte: bit 7 = weathering; bits 4..6
     // represent growth state and MUST NOT be modified by decay repair.
@@ -37,8 +38,8 @@ internal static class CleanupCore
     internal static bool Target(Voxel voxel, byte options) =>
         DecayTarget(voxel, options) ||
         (!voxel.IsAir &&
-         (BaseScanCore.IsRubble(voxel.Material)
-          || (voxel.Material == BaseScanCore.UnderwaterMud && (options & IncludeMud) != 0)
+         ((BaseScanCore.IsRubble(voxel.Material) && (options & IncludeRubble) != 0)
+          || (voxel.Material == BaseScanCore.MudTerrain && (options & IncludeMud) != 0)
           || (BaseScanCore.IsMycelium(voxel.Material) && (options & IncludeMycelium) != 0)));
 
     internal static string Encode(IReadOnlyList<CleanupChunk> chunks)
@@ -113,10 +114,19 @@ internal sealed class CleanupChunk(CellBox box)
     internal List<CleanupCell> Cells { get; } = [];
 }
 
-// WorldData serializes public properties. There is only one active ledger per
-// world: a new cleanup is refused until a previous rollback is dealt with.
+// Each REMOVE gets a separate persistent journal key. The index retains
+// the operation order; Undo works newest-first so overlapping operations are
+// never restored out of order. WorldData serializes public properties.
+public sealed class CleanupHistory
+{
+    public int NextSequence { get; set; } = 1;
+    public List<int> Sequences { get; set; } = new();
+}
+
 public sealed class CleanupLedger
 {
+    public int OperationNumber { get; set; } // 0 for legacy journals
+    public byte Options { get; set; }
     public string WorldId { get; set; } = "";
     public string BackupName { get; set; } = "";
     public string Phase { get; set; } = "prepared";
@@ -166,6 +176,7 @@ internal static class CleanupSafety
 
     internal static CleanupLedger Ledger(CleanupPlan plan, string backupName) => new()
     {
+        Options = plan.Options,
         WorldId = plan.WorldId,
         BackupName = backupName,
         Phase = "prepared",

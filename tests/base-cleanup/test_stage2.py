@@ -72,37 +72,44 @@ class SafetyTests(unittest.TestCase):
         mycelium={14,33,65,72}
         for material, fill, include_mud, include_mycelium in (
             (23,255,False,False),(43,110,False,False),(66,255,False,False),
-            (91,220,True,False),(14,120,False,True)):
-            target=(material in rubble or (material==91 and include_mud) or
+            (37,220,True,False),(14,120,False,True)):
+            target=(material in rubble or (material==37 and include_mud) or
                     (material in mycelium and include_mycelium)) and fill!=0
             self.assertTrue(target)
         self.assertNotIn(138,rubble)
+        self.assertIn("MudTerrain = 37", SCANNER)
+        self.assertIn("voxel.Material == BaseScanCore.MudTerrain",CORE)
+        self.assertIn("Include creek/ditch mud (material 37) — TEST",CODE)
+        self.assertNotIn("UnderwaterMud",SCANNER+CODE+SCAN)
+        self.assertNotIn("material 91",CODE)
         self.assertIn("!voxel.IsAir", CORE)
         self.assertIn("BaseScanCore.IsRubble", CORE)
+        self.assertIn("IncludeRubble", CORE)
+        self.assertIn("BaseScanCore.IsRubble(voxel.Material) && (options & IncludeRubble) != 0", CORE)
         self.assertIn("IncludeMud", CORE)
         self.assertIn("IncludeMycelium", CORE)
         self.assertNotIn("surface",CORE.lower())
         self.assertNotIn("Build.BlockAt(",CODE)
         self.assertNotIn("Build.FindWall(",CODE)
 
-    def test_backup_and_saved_ledger_always_precede_any_write(self):
-        journal=CODE.index("WorldData.Set(CurrentLedgerKeyFor(plan.Altar), journal);")
-        backup=CODE.index("await Saves.Backup(name)")
-        checked=CODE.index("backupCompleted = true")
+    def test_world_data_journal_always_precedes_any_write_no_save_requested(self):
+        journal=CODE.index("WorldData.Set(journalKey, journal);")
+        history=CODE.index("WorldData.Set(HistoryKeyFor(plan.Altar), history);")
         edit=CODE.index("Build.WriteIfUnchanged(chunk.Box, desired, expected, options, mask)")
-        self.assertLess(journal,backup)
-        self.assertLess(backup,checked)
-        self.assertLess(checked,edit)
-        self.assertIn("WorldData.Remove(CurrentLedgerKeyFor(plan.Altar))",CODE)
-        self.assertIn("backup.DataBundles == 0", CODE)
-        self.assertIn("if (!backupCompleted)",CODE)
+        self.assertLess(journal,edit)
+        self.assertLess(history,edit)
+        self.assertIn("WorldData.Contains(journalKey)",CODE)
+        self.assertIn("journal.Phase = journal.Removed > 0",CODE)
+        for forbidden in ("await Saves.Backup(", "Saves.Request(", "Saves.RestoreOnNextStart(", "Saves.Restore("):
+            self.assertNotIn(forbidden,CODE)
+        self.assertNotIn("backupCompleted",CODE)
 
     def test_rollback_journal_key_is_individual_to_altar(self):
         self.assertIn("LedgerKeyFor(PlayerBase altar)", CODE)
         self.assertIn("SHA256.HashData", CODE)
         self.assertIn("HasOutstandingLedger(p.Altar, out reason)", CODE)
         self.assertIn("WorldData.TryGet<CleanupLedger>(LedgerKeyFor(altar)", CODE)
-        self.assertIn("WorldData.Set(CurrentLedgerKeyFor(plan.Altar), journal)", CODE)
+        self.assertIn("WorldData.Set(journalKey, journal)", CODE)
 
     def test_two_step_explicit_confirmation_and_server_authority(self):
         self.assertIn('ConfirmRemove = "REMOVE"',CODE)
