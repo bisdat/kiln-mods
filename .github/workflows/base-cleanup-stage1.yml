@@ -1,0 +1,47 @@
+name: Package Base Cleanup Stage 1 (test candidate)
+
+on:
+  pull_request:
+    paths:
+      - 'BaseCleanup/**'
+      - 'tests/base-cleanup/**'
+      - 'build-stage1.sh'
+      - '.github/workflows/base-cleanup-stage1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Validate and package read-only Base Cleanup scanner
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out test branch
+        uses: actions/checkout@v4
+      - name: Install .NET 10 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Validate scan logic and read-only contract
+        run: python3 -m unittest discover -s tests/base-cleanup -p 'test_*.py' -v
+      - name: Fetch checksum-verified official Kiln dev.30.6 SDK
+        run: python3 BaseCleanup/fetch-sdk.py
+      - name: Restore Kiln dependencies
+        run: dotnet restore BaseCleanup/BaseCleanup.csproj --configfile NuGet.Config
+      - name: Compile scanner
+        run: dotnet build BaseCleanup/BaseCleanup.csproj -c Release --no-restore
+      - name: KilnPack installable ZIP
+        run: dotnet build BaseCleanup/BaseCleanup.csproj -c Release --no-restore -t:KilnPack
+      - name: Verify installable archive
+        run: |
+          test -s bin/Release/base-cleanup-0.1.0.zip
+          unzip -t bin/Release/base-cleanup-0.1.0.zip
+          unzip -l bin/Release/base-cleanup-0.1.0.zip
+      - name: Upload test candidate only (no release)
+        uses: actions/upload-artifact@v4
+        with:
+          name: base-cleanup-stage1-0.1.0
+          path: bin/Release/base-cleanup-0.1.0.zip
+          if-no-files-found: error
+          retention-days: 90
