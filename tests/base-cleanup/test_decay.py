@@ -1,4 +1,4 @@
-"""Optional cosmetic decay v0.3.2 policy and journal compatibility tests.
+"""Optional cosmetic decay v0.3.3 policy and journal compatibility tests.
 
 Pure/offline tests model before/after raw values and require safety
 invariants in source. They are not a substitute for in-game confirmation.
@@ -105,14 +105,17 @@ class DecayTests(unittest.TestCase):
 
     def test_older_v02_undo_journals_not_overwritten_and_still_readable(self):
         self.assertIn('LedgerPrefix = "cleanup-rollback-v1-"', CODE)
-        self.assertIn('CurrentLedgerPrefix = "cleanup-rollback-v2-"', CODE)
+        self.assertIn('PreviousLedgerPrefix = "cleanup-rollback-v2-"', CODE)
+        self.assertIn('CurrentLedgerPrefix = "cleanup-rollback-v3-"', CODE)
         self.assertIn("CurrentLedgerPrefix + LedgerKeyFor(altar)[LedgerPrefix.Length..]", CODE)
+        self.assertIn("PreviousLedgerPrefix + LedgerKeyFor(altar)[LedgerPrefix.Length..]", CODE)
+        self.assertIn("WorldData.TryGet<CleanupLedger>(PreviousLedgerKeyFor(altar)", CODE)
         self.assertIn("FullyUndone(CleanupLedger old)", CODE)
         self.assertIn('old.Phase == "undone" && old.Removed > 0', CODE)
         self.assertIn("old.Restored >= old.Removed && old.Conflicted == 0", CODE)
         self.assertIn("!FullyUndone(legacy)", CODE)
         self.assertIn("TryGetJournal(altar, out var journal)", CODE)
-        self.assertIn("WorldData.TryGet<CleanupLedger>(LedgerKeyFor(altar), out var previous)", CODE)
+        self.assertIn("WorldData.TryGet<CleanupLedger>(LedgerKeyFor(altar), out var legacy)", CODE)
         self.assertIn("CleanupCore.Decode(journal.Packed)", CODE)
         self.assertIn("DecayPlanned", CORE)
         self.assertIn("Decode(string encoded)", CORE)
@@ -136,7 +139,7 @@ class DecayTests(unittest.TestCase):
         self.assertIn("Ivy/overgrowth cleanup is excluded", CODE)
 
     def test_v03_package_and_network(self):
-        self.assertIn("<Version>0.3.2</Version>", PROJECT)
+        self.assertIn("<Version>0.3.3</Version>", PROJECT)
         self.assertIn("<KilnModName>Base Cleanup</KilnModName>", PROJECT)
         self.assertNotIn("Base Cleanup - Confirmed Cleanup and Optional Decay", PROJECT)
         self.assertIn('Network.Channel(Channel, "3"', MOD)
