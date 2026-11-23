@@ -54,10 +54,13 @@ class RubbleRemoverContracts(unittest.TestCase):
         self.assertIn("<KilnSide>both</KilnSide>", PROJECT)
         self.assertIn("<KilnClients>mod</KilnClients>", PROJECT)
         self.assertIn("<KilnServices>Blocks;Tools</KilnServices>", PROJECT)
+        # Regression: without this the tool remains pending and the recipe has no output.
+        self.assertIn("<KilnBakeWorldTables>true</KilnBakeWorldTables>", PROJECT)
 
     def test_ci_does_not_publish_unaccepted_release(self):
         self.assertIn("RubbleRemover/fetch-sdk.py", WORKFLOW)
         self.assertIn("KilnPack", WORKFLOW)
+        self.assertIn("verify-package.py", WORKFLOW)
         self.assertIn("actions/upload-artifact@v4", WORKFLOW)
         self.assertNotIn("action-gh-release", WORKFLOW)
         self.assertNotIn("refs/tags/", WORKFLOW)
