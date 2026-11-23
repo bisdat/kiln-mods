@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
@@ -37,8 +38,8 @@ public sealed record CleanupStatus(string Phase, string Message, long Done, long
 /// <summary>
 /// Stage 2 runs only on the authoritative server. Original voxel values
 /// and the operation index are staged in the current world's Kiln WorldData
-/// before guarded cell writes. No explicit world save, backup or restore is
-/// requested: records and edits persist together at the game's normal save.
+/// before a verified, timestamped Kiln whole-world backup. Only then are
+/// guarded voxel edits allowed. Each world retains its latest ten backups.
 /// Undo reads each journal after any restart and compare-writes originals
 /// only where the expected post-cleanup voxel still exists.
 /// </summary>
@@ -287,6 +288,7 @@ public sealed partial class BaseCleanupMod
             case "prepared":
                 Volatile.Write(ref _uiStage, 3);
                 break;
+            case "backup":
             case "applying":
             case "undoing":
                 Volatile.Write(ref _uiStage, 4);
@@ -576,9 +578,9 @@ public sealed partial class BaseCleanupMod
         CleanupLedger? journal = null;
         CleanupHistory? history = null;
         string? journalKey = null;
-        // WorldData is saved in the SAME generation as the game's next
-        // ordinary world save. Never call Saves.Backup, Saves.Request or
-        // restore APIs: those operate on all players' bases.
+        // The pre-REMOVE full-world backup saves a consistent world file and
+        // matching Kiln WorldData generation. It must finish, be verified and
+        // pass retention BEFORE any voxel write. No restore UI is provided.
         try
         {
             history = ReadHistory(plan.Altar);
@@ -591,21 +593,29 @@ public sealed partial class BaseCleanupMod
             var name = "journal-op" + sequence.ToString("D6", CultureInfo.InvariantCulture);
             journal = CleanupSafety.Ledger(plan, name);
             journal.OperationNumber = sequence;
-            // Record original voxels and index in per-world Kiln WorldData
-            // BEFORE any write. The game's normal saves persist these along
-            // with terrain in the same matching generation. No save is forced.
+            // Stage the original voxel journal and operation index BEFORE
+            // the backup, so its saved world and mod data are consistent.
             WorldData.Set(journalKey, journal);
             history.NextSequence++;
             history.Sequences.Add(sequence);
             WorldData.Set(HistoryKeyFor(plan.Altar), history);
             if (StopRequested(plan) || !SameZone(plan))
-                throw new OperationCanceledException("cancelled or altar changed before editing");
+                throw new OperationCanceledException("cancelled or altar changed before backup");
+            CleanupPublish(plan.Player, PlanStatus(plan, "backup",
+                "Saving a timestamped full-world backup before REMOVE. No voxels have changed."));
+            var backup = await Saves.Backup(CleanupBackups.Label);
+            CleanupBackups.Verify(backup, plan.WorldId);
+            var pruned = CleanupBackups.Prune(backup);
+            if (StopRequested(plan) || !SameZone(plan))
+                throw new OperationCanceledException("cancelled or altar changed after backup; no voxels changed");
+            journal.BackupName = Path.GetFileName(backup.Directory);
             journal.Phase = "applying";
+            Log.Info($"base-cleanup: world backup {journal.BackupName} verified; " +
+                $"rotated {pruned} old backup(s), keeping at most {CleanupBackups.KeepPerWorld} for this world");
             CleanupPublish(plan.Player, new("applying",
-                $"Undo journal {name} registered in Kiln WorldData; applying selected cleanup " +
-                $"({plan.DecayHits:N0} weathered building voxels). " +
-                "No world save, restore or backup is requested by this mod.",
-                0, plan.Hits, 0, 0, 0, name));
+                $"World backup {journal.BackupName} verified; applying selected cleanup " +
+                $"({plan.DecayHits:N0} weathered building voxels).",
+                0, plan.Hits, 0, 0, 0, journal.BackupName));
 
             var completed = 0L;
             var conflicts = 0L;
@@ -671,9 +681,9 @@ public sealed partial class BaseCleanupMod
             CleanupPublish(plan.Player, new(journal.Phase,
                 $"{(StopRequested(plan) ? "Stopped" : "Finished")}: edited {journal.Removed:N0} voxels " +
                 $"(decay planned {plan.DecayHits:N0}); skipped {conflicts:N0}. " +
-                $"Journal {journal.BackupName}. Type UNDO to restore only unchanged cells.",
+                $"Backup {journal.BackupName}. Type UNDO to restore only unchanged cells.",
                 completed, plan.Hits, 0, 0, 0, journal.BackupName));
-            Log.Info($"base-cleanup: removal {journal.Phase}; removed={journal.Removed}, conflicts={conflicts}, journal={journal.BackupName}");
+            Log.Info($"base-cleanup: removal {journal.Phase}; removed={journal.Removed}, conflicts={conflicts}, backup={journal.BackupName}");
         }
         catch (Exception ex)
         {
@@ -688,7 +698,7 @@ public sealed partial class BaseCleanupMod
             if (plan.Generation == _cleanupEpoch)
                 CleanupPublish(plan.Player, PlanStatus(plan, "failed",
                     (journal?.Removed > 0 ? "Cleanup interrupted; journal supports UNDO. " :
-                        "NO VOXELS CHANGED. ") + ex.Message));
+                        "NO VOXELS CHANGED (backup or pre-commit validation failed). ") + ex.Message));
         }
         finally
         {
