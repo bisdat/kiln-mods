@@ -58,7 +58,7 @@ public sealed record ScanReport(string Area, long TotalCells, long ReadCells, lo
 
     public long Rubble => Sum(BaseScanCore.PlaceableRubble) + Sum(BaseScanCore.WorldRubble);
     public long Mycelium => Sum(BaseScanCore.MineableMycelium);
-    public long Mud => Counts[BaseScanCore.UnderwaterMud];
+    public long Mud => Counts[BaseScanCore.MudTerrain];
     public long Buildings => Counts.Skip(128).Sum();
     public long Terrain => Counts.Skip(1).Take(127).Sum();
     public double CubicMetres(int material) => FillSums[material] / 255.0 * CellSize * CellSize * CellSize;
@@ -120,7 +120,7 @@ public sealed partial class BaseCleanupMod : Mod
                 CleanupRequestLocal(5);
             }, "Open Base Cleanup preview", "Base Cleanup");
         }
-        Log.Info("Base Cleanup v0.3.2 loaded: Stage 1 survey; Stage 2 backup-first terrain cleanup plus opt-in weathering repair, persistent undo.");
+        Log.Info("Base Cleanup v0.3.3 TEST loaded: Stage 1 survey; Stage 2 backup-first terrain cleanup plus opt-in weathering repair, persistent undo.");
     }
 
     private void Request(byte op)
@@ -273,7 +273,7 @@ public sealed partial class BaseCleanupMod : Mod
                 v.AirCells, v.PartialCells, (long[])v.Count.Clone(), (long[])v.FillSum.Clone(), job.CellSize);
             _latest = report;
             Log.Info($"Base Cleanup Stage 1 report: {label}, read={v.ReadCells}, unreadable={job.Unreadable}, " +
-                     $"rubble={report.Rubble}, mycelium={report.Mycelium}, mud(91)={report.Mud}, " +
+                     $"rubble={report.Rubble}, mycelium={report.Mycelium}, mud(37)={report.Mud}, " +
                      $"buildings={report.Buildings}; no terrain was changed.");
             for (var i = 0; i < 256; i++)
                 if (report.Counts[i] != 0)
@@ -372,7 +372,7 @@ public sealed partial class BaseCleanupMod : Mod
         }
         ui.TextWrapped(report.Area);
         ui.Text($"Read: {report.ReadCells:N0} / {report.TotalCells:N0}; unreadable: {report.UnreadableCells:N0}");
-        ui.Text($"Rubble: {report.Rubble:N0} cells; mineable mycelium: {report.Mycelium:N0}; underwater mud: {report.Mud:N0}");
+        ui.Text($"Rubble: {report.Rubble:N0} cells; mineable mycelium: {report.Mycelium:N0}; test mud (37): {report.Mud:N0}");
         ui.Text($"Building blocks: {report.Buildings:N0}; air: {report.AirCells:N0}; partial-fill: {report.PartialCells:N0}");
         ui.TextDisabled("Stage 1 inventories materials; optional cosmetic decay is counted during Stage 2 planning.");
         ui.Separator("Voxel materials (non-empty cells only)");
@@ -418,7 +418,7 @@ public sealed partial class BaseCleanupMod : Mod
         if (_latest is not { } r) { c.Reply("No completed/partial survey available."); return; }
         c.Reply(r.Area);
         c.Reply($"Read {r.ReadCells:N0}/{r.TotalCells:N0}, unreadable {r.UnreadableCells:N0}; air {r.AirCells:N0}; partial fills {r.PartialCells:N0}");
-        c.Reply($"Rubble {r.Rubble:N0}; mycelium {r.Mycelium:N0}; underwater mud (91) {r.Mud:N0}; building voxels {r.Buildings:N0}");
+        c.Reply($"Rubble {r.Rubble:N0}; mycelium {r.Mycelium:N0}; test creek mud (37) {r.Mud:N0}; building voxels {r.Buildings:N0}");
         c.Reply("Overgrowth and cosmetic decay: not counted by Stage 1. Stage 2 has opt-in decay planning.");
         c.Reply("Use /basescan materials [page] for the exact material histogram.");
     }
