@@ -1,4 +1,4 @@
-# Rubble Remover (Kiln) — v0.1.2 test candidate
+# Rubble Remover (Kiln) — v0.1.3 test candidate
 
 A craftable, removal-only building tool for Enshrouded. **Requires Kiln
 0.2.0-dev.30.6 or newer on the host and any joined client.** Built against
@@ -22,10 +22,10 @@ the official Kiln SDK 0.2.0-dev.30.6. This is **not yet accepted in game**.
   the game's building-action undo are retained. There is no background
   scanning, broad terrain dig, pointer patching or EML-R dependency.
 
-The 0.1.0 test build failed because it paired an invalid Carpenter menu group with a different workshop. The 0.1.1 build loaded but did not publish the tool item, so the Workbench recipe reported `output item ... not found`. The fix in 0.1.2 enables `KilnBakeWorldTables=true`, baking all three `toolBrushShapes` descriptors into the installable mod's `blocks.tables.json` before the game reads its tables. CI checks the ZIP contains these shapes.
+v0.1.0 failed to load due to a mismatched Carpenter menu group (corrected to Workbench in v0.1.1). v0.1.1 and v0.1.2 both reported `output item rubble-remover.rubble-remover not found`. v0.1.2 baked the three brushes, but the **Kiln dev.30.6 native world-table loader skips documents whose only section is `toolBrushShapes` or `toolMaterialPools`**. v0.1.3 adds a **harmless empty `blueprints` section** to the generated `blocks.tables.json`; this recognised section makes the loader process the baked brush descriptors. This is a temporary shim for the upstream loader defect. It adds no blueprints or other content. CI verifies the final ZIP contains the shim and brushes.
 
 This intentionally omits the reference mod's rubble **placement** mode.
-The starting 0.1.2 implementation focuses only on the requested removal
+The starting 0.1.3 implementation focuses only on the requested removal
 tool. Until a custom icon is created it inherits Kiln's Overgrowth starter
 icon/model, but is a separate named item with its own brush identities.
 
@@ -36,7 +36,7 @@ icon/model, but is a separate named item with its own brush identities.
    available to all clients in a multiplayer session (this is a
    `clients=mod` mod, not a server-only mod).
 3. In GitHub Actions, open **Package Rubble Remover**, download the
-   `rubble-remover-0.1.2` artifact and extract its inner ZIP.
+   `rubble-remover-0.1.3` artifact and extract its inner ZIP.
 4. Install that inner ZIP using the Kiln launcher/profile mod installer.
    Do not install the reference EML-R DLL/Lua package or copy its
    `mods/` directory alongside this one.
@@ -76,9 +76,11 @@ action, UI presentation, crafting or multiplayer compatibility.
 
 Dedicated CI downloads the official Kiln 0.2.0-dev.30.6 SDK packages and
 verifies their SHA-256 values against the official release's SHA256SUMS
-before compiling and packaging the mod. CI opens the resulting ZIP and
-requires a correctly shaped `blocks.tables.json` with three radii; a
-successfully compiled DLL alone is not enough. It only uploads a CI candidate
+before compiling and packaging the mod. The project post-processes the
+SDK-baked `blocks.tables.json` with `patch-worldtables.py` for Kiln dev.30.6's
+native loader. Python 3 is needed when building locally. CI opens the
+resulting ZIP and requires three radii plus the loader compatibility section;
+a successfully compiled DLL alone is not enough. It only uploads a CI candidate
 artifact — it does not publish a stable release or tag on merge.
 
 Reference: the user-supplied **Rubble Tool 1.0** EML-R ZIP (22 Nov 2026)

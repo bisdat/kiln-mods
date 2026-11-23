@@ -30,6 +30,10 @@ def main() -> int:
         # blocks.tables.json: the owning mod comes from the containing package.
         if tables.get("format") != 1 or "comment" not in tables:
             raise AssertionError("Not a Kiln-generated world-table document")
+        # Kiln dev.30.6 read_mod drops documents with only toolBrushShapes.
+        # Empty blueprints is a recognised, harmless entry gate.
+        if tables.get("blueprints") != {}:
+            raise AssertionError("Missing empty blueprints loader-compatibility gate")
         shapes = tables.get("toolBrushShapes")
         if not isinstance(shapes, dict) or set(shapes) != set(EXPECTED_RADII):
             raise AssertionError(f"Expected three baked brush shapes; found {shapes!r}")
@@ -39,6 +43,7 @@ def main() -> int:
                 raise AssertionError(f"{name} brush is wrong: {item!r}")
         print(f"PASS: {path.name}: baked world tables contain three tool brushes")
         print("       " + tables_path)
+        print("       Includes empty-blueprints loader shim for Kiln dev.30.6")
         print("       This verifies packaging, NOT runtime publication or in-game functionality")
     return 0
 

@@ -89,6 +89,6 @@ public sealed class RubbleRemoverMod : Mod
             Of = recipe.Name,
         });
 
-        Log.Info("Rubble Remover 0.1.2: terrain-only removal tool and Workbench recipe declared.");
+        Log.Info("Rubble Remover 0.1.3: terrain-only removal tool and Workbench recipe declared.");
     }
 }

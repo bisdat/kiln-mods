@@ -56,6 +56,8 @@ class RubbleRemoverContracts(unittest.TestCase):
         self.assertIn("<KilnServices>Blocks;Tools</KilnServices>", PROJECT)
         # Regression: without this the tool remains pending and the recipe has no output.
         self.assertIn("<KilnBakeWorldTables>true</KilnBakeWorldTables>", PROJECT)
+        self.assertIn("RubbleRemoverWorldTablesCompat", PROJECT)
+        self.assertIn("patch-worldtables.py", PROJECT)
 
     def test_ci_does_not_publish_unaccepted_release(self):
         self.assertIn("RubbleRemover/fetch-sdk.py", WORKFLOW)

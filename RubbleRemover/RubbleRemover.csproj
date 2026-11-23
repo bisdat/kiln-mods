@@ -2,7 +2,7 @@
   <PropertyGroup>
     <KilnModId>rubble-remover</KilnModId>
     <KilnModName>Rubble Remover</KilnModName>
-    <Version>0.1.2</Version>
+    <Version>0.1.3</Version>
     <Authors>bisdat</Authors>
     <Description>Craft a safe, terrain-only rubble and mineable-mycelium remover with three brushes.</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
@@ -15,4 +15,15 @@
     <KilnBakeWorldTables>true</KilnBakeWorldTables>
     <KilnGameIds>None</KilnGameIds>
   </PropertyGroup>
+  <!-- Native Kiln dev.30.6 read_mod skips toolBrushShapes-only documents.
+       A harmless empty blueprints section makes the loader read the baked
+       brush definitions. Remove this compatibility shim after upstream fix. -->
+  <PropertyGroup>
+    <_RubblePython Condition="'$(OS)' == 'Windows_NT'">py -3</_RubblePython>
+    <_RubblePython Condition="'$(OS)' != 'Windows_NT'">python3</_RubblePython>
+  </PropertyGroup>
+  <Target Name="RubbleRemoverWorldTablesCompat" AfterTargets="KilnBake"
+          Condition="'$(DesignTimeBuild)' != 'true' and '$(KilnBake)' == 'true'">
+    <Exec Command="$(_RubblePython) &quot;$(MSBuildProjectDirectory)/patch-worldtables.py&quot; &quot;$(TargetDir)blocks.tables.json&quot;" />
+  </Target>
 </Project>
