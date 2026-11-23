@@ -1,4 +1,4 @@
-name: Test Base Cleanup v0.3.3 material 37 (release after merge only)
+name: Test Base Cleanup v0.3.4 material37 staged workflow (release after merge only)
 
 on:
   pull_request:
@@ -21,7 +21,7 @@ permissions:
 
 jobs:
   build:
-    name: Validate and package Base Cleanup v0.3.3 candidate
+    name: Validate and package Base Cleanup v0.3.4 candidate
     runs-on: ubuntu-24.04
     steps:
       - name: Check out test branch
@@ -42,20 +42,20 @@ jobs:
         run: dotnet build BaseCleanup/BaseCleanup.csproj -c Release --no-restore -t:KilnPack
       - name: Verify installable archive
         run: |
-          test -s bin/Release/base-cleanup-0.3.3.zip
-          unzip -t bin/Release/base-cleanup-0.3.3.zip
-          unzip -l bin/Release/base-cleanup-0.3.3.zip
+          test -s bin/Release/base-cleanup-0.3.4.zip
+          unzip -t bin/Release/base-cleanup-0.3.4.zip
+          unzip -l bin/Release/base-cleanup-0.3.4.zip
       - name: Upload verified installable Base Cleanup ZIP
         uses: actions/upload-artifact@v4
         with:
-          name: base-cleanup-mud37-0.3.3-test
-          path: bin/Release/base-cleanup-0.3.3.zip
+          name: base-cleanup-staged-0.3.4-test
+          path: bin/Release/base-cleanup-0.3.4.zip
           if-no-files-found: error
           retention-days: 90
 
 
   release:
-    name: Tag and publish accepted Base Cleanup v0.3.3
+    name: Tag and publish accepted Base Cleanup v0.3.4
     # PR builds never publish. Only the exact tested main commit may be tagged.
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: build
@@ -63,7 +63,7 @@ jobs:
     permissions:
       contents: write
     concurrency:
-      group: base-cleanup-v0.3.3-release
+      group: base-cleanup-v0.3.4-release
       cancel-in-progress: false
     steps:
       - name: Checkout exact accepted main commit
@@ -73,14 +73,14 @@ jobs:
       - name: Download artifact from this verified workflow run
         uses: actions/download-artifact@v4
         with:
-          name: base-cleanup-mud37-0.3.3-test
+          name: base-cleanup-staged-0.3.4-test
           path: dist
       - name: Verify release version and installable ZIP
         run: |
-          grep -Fq '<Version>0.3.3</Version>' BaseCleanup/BaseCleanup.csproj
-          test -s dist/base-cleanup-0.3.3.zip
-          unzip -t dist/base-cleanup-0.3.3.zip
-          sha256sum dist/base-cleanup-0.3.3.zip
+          grep -Fq '<Version>0.3.4</Version>' BaseCleanup/BaseCleanup.csproj
+          test -s dist/base-cleanup-0.3.4.zip
+          unzip -t dist/base-cleanup-0.3.4.zip
+          sha256sum dist/base-cleanup-0.3.4.zip
       - name: Create annotated tag if absent, refuse conflicting tag
         env:
           GH_TOKEN: ${{ github.token }}
@@ -88,7 +88,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          tag='base-cleanup-v0.3.3'
+          tag='base-cleanup-v0.3.4'
           # Do not force-push or retag a published release.
           if git rev-parse --verify "refs/tags/$tag" >/dev/null 2>&1; then
             existing="$(git rev-list -n 1 "$tag")"
@@ -100,7 +100,7 @@ jobs:
           else
             git config user.name 'github-actions[bot]'
             git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-            git tag -a "$tag" "$GITHUB_SHA" -m 'Base Cleanup v0.3.3 — terrain cell 37 test'
+            git tag -a "$tag" "$GITHUB_SHA" -m 'Base Cleanup v0.3.4 — terrain cell 37 test'
             git push origin "refs/tags/$tag"
           fi
       - name: Publish verified package if release absent
@@ -110,13 +110,13 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          tag='base-cleanup-v0.3.3'
+          tag='base-cleanup-v0.3.4'
           if gh release view "$tag" >/dev/null 2>&1; then
             echo "Release already exists; never overwrite assets."
             exit 0
           fi
           cat > release-notes.md <<'NOTES'
-          ## Base Cleanup v0.3.3
+          ## Base Cleanup v0.3.4
 
           This experimental patch switches the optional mud-removal target
           from material 91 to **terrain material 37**, identified by a read-only
@@ -141,7 +141,7 @@ jobs:
             39,879 rubble); selective Undo restored 88,062 with zero conflicts.
           - Preserves earlier v0.2.0 recovery journals.
 
-          Install attached **base-cleanup-0.3.3.zip** in Kiln.
+          Install attached **base-cleanup-0.3.4.zip** in Kiln.
           Built against Kiln dev.30.6; a compatible runtime is required.
 
           **Safety:** Take a separate save copy before making world edits.
@@ -149,8 +149,8 @@ jobs:
           On hosted Steam/Proton games, complete world-backup restore is manual
           with the game closed; selective Undo is available in-game.
           NOTES
-          gh release create "$tag" dist/base-cleanup-0.3.3.zip \
+          gh release create "$tag" dist/base-cleanup-0.3.4.zip \
             --verify-tag --target "$GITHUB_SHA" \
-            --title 'Base Cleanup v0.3.3' \
+            --title 'Base Cleanup v0.3.4' \
             --notes-file release-notes.md
           gh release view "$tag" --json url,assets --jq '{url: .url, assets: [.assets[].name]}'
