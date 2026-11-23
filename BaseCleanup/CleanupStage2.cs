@@ -352,6 +352,16 @@ public sealed partial class BaseCleanupMod
             CleanupPublish(player, new("failed", "Stand inside the Flame Altar to prepare its cleanup.", 0, 0, 0, 0, 0, ""));
             return;
         }
+        if (_latest is null || _latest.UnreadableCells != 0 ||
+            _lastSurveyWorldId != Saves.WorldId || _lastSurveyAltar is not { } surveyed ||
+            surveyed.Altar != altar.Altar || surveyed.Center != altar.Center ||
+            surveyed.Half != altar.Half)
+        {
+            CleanupPublish(player, new("failed",
+                "Step 1 required: complete a fresh, readable survey in this Flame Altar before selecting cleanup options.",
+                0, 0, 0, 0, 0, ""));
+            return;
+        }
         if (HasOutstandingLedger(altar, out reason))
         {
             CleanupPublish(player, new("failed", reason, 0, 0, 0, 0, 0, ""));
@@ -579,6 +589,11 @@ public sealed partial class BaseCleanupMod
             }
 
             journal.Phase = StopRequested(plan) || conflicts > 0 ? "partial" : "complete";
+            // A new REMOVE requires a new Stage 1 survey, even if a previous
+            // cleanup was fully undone. No stale scan/plan can be reused.
+            _latest = null;
+            _lastSurveyWorldId = null;
+            _lastSurveyAltar = null;
             CleanupPublish(plan.Player, new(journal.Phase,
                 $"{(StopRequested(plan) ? "Stopped" : "Finished")}: edited {journal.Removed:N0} voxels " +
                 $"(decay planned {plan.DecayHits:N0}); skipped {conflicts:N0}. " +
