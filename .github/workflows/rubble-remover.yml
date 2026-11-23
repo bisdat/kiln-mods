@@ -1,0 +1,47 @@
+name: Package Rubble Remover (test candidate)
+
+on:
+  pull_request:
+    paths:
+      - 'RubbleRemover/**'
+      - 'tests/rubble-remover/**'
+      - '.github/workflows/rubble-remover.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'RubbleRemover/**'
+      - 'tests/rubble-remover/**'
+      - '.github/workflows/rubble-remover.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    name: Validate, compile and package
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Check removal and crafting contracts
+        run: python3 -m unittest discover -s tests/rubble-remover -p 'test_*.py' -v
+      - name: Fetch official checksum-verified Kiln SDK
+        run: python3 RubbleRemover/fetch-sdk.py
+      - name: Restore against verified SDK
+        run: dotnet restore RubbleRemover/RubbleRemover.csproj --configfile NuGet.Config
+      - name: Compile mod
+        run: dotnet build RubbleRemover/RubbleRemover.csproj -c Release --no-restore
+      - name: Build installable Kiln ZIP
+        run: dotnet build RubbleRemover/RubbleRemover.csproj -c Release --no-restore -t:KilnPack
+      - name: Check archive exists
+        run: test -s bin/Release/rubble-remover-0.1.0.zip
+      - name: Upload test candidate (not a release)
+        uses: actions/upload-artifact@v4
+        with:
+          name: rubble-remover-0.1.0
+          path: bin/Release/rubble-remover-0.1.0.zip
+          if-no-files-found: error
+          retention-days: 90

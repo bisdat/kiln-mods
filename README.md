@@ -78,6 +78,12 @@ An independent mod using Kiln API 0.2.6 to auto-fill FactoryStations from **thei
 
 Requires **Kiln 0.2.0-dev.29.15+** on the hosting server and on the client viewing offered gems. The mod itself is installed server-side only. Tests on the precursor v0.3.0 integration passed for native selection, socket/unsocket, exact chest-funded upgrading, insufficient-funds refusal, recycling and withdrawal; the production v1.0.0 removes the test commands. The abandoned temporary gem-lending design remains retired, and historical findings remain in [Gem Forge research](docs/research/GEMFORGE-DIRECT-INTEGRATION.md).
 
+## Rubble Remover — craftable rubble and mycelium clearing tool (test candidate)
+
+[Install/test guide](RubbleRemover/README.md) | [Candidate build workflow](.github/workflows/rubble-remover.yml)
+
+A standalone Kiln-native v0.1.0 tool, crafted at the Carpenter for **20 Rubble + 20 Mycelium + 1 Wood Log**. Three sphere brushes remove rubble and thick mineable mycelium, never ordinary terrain or building voxels. Uses Kiln's supported terrain-only native action policy; no EML-R, DLL patching or unrestricted `Build.Dig`. Removal-only, no rubble placement in v0.1.0. Requires **Kiln dev.30.6+ on host and clients**, and is **awaiting in-game acceptance**. Unlike the supplied GPL reference, the implementation is independently written under MIT.
+
 ## Licence
 
 Original code, scripts and documentation in this repository are available under

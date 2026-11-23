@@ -1,0 +1,15 @@
+<Project Sdk="Kiln.Sdk/0.2.0-dev.30.6">
+  <PropertyGroup>
+    <KilnModId>rubble-remover</KilnModId>
+    <KilnModName>Rubble Remover</KilnModName>
+    <Version>0.1.0</Version>
+    <Authors>bisdat</Authors>
+    <Description>Craft a safe, terrain-only rubble and mineable-mycelium remover with three brushes.</Description>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/bisdat/kiln-mods</PackageProjectUrl>
+    <KilnSide>both</KilnSide>
+    <KilnClients>mod</KilnClients>
+    <KilnServices>Blocks;Tools</KilnServices>
+    <KilnGameIds>None</KilnGameIds>
+  </PropertyGroup>
+</Project>
