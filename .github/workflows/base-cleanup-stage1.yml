@@ -1,4 +1,4 @@
-name: Package and release Base Cleanup v0.2.0
+name: Test and publish accepted Base Cleanup v0.3.1
 
 on:
   pull_request:
@@ -21,7 +21,7 @@ permissions:
 
 jobs:
   build:
-    name: Validate and package Base Cleanup Stage 2 candidate
+    name: Validate and package Base Cleanup v0.3.1 candidate
     runs-on: ubuntu-24.04
     steps:
       - name: Check out test branch
@@ -30,95 +30,119 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.0.x'
-      - name: Validate scanner and Stage 2 safety invariants
+      - name: Validate scanner, cleanup and decay safety invariants
         run: python3 -m unittest discover -s tests/base-cleanup -p 'test_*.py' -v
       - name: Fetch checksum-verified official Kiln dev.30.6 SDK
         run: python3 BaseCleanup/fetch-sdk.py
       - name: Restore Kiln dependencies
         run: dotnet restore BaseCleanup/BaseCleanup.csproj --configfile NuGet.Config
-      - name: Compile scanner
+      - name: Compile Base Cleanup candidate
         run: dotnet build BaseCleanup/BaseCleanup.csproj -c Release --no-restore
       - name: KilnPack installable ZIP
         run: dotnet build BaseCleanup/BaseCleanup.csproj -c Release --no-restore -t:KilnPack
       - name: Verify installable archive
         run: |
-          test -s bin/Release/base-cleanup-0.2.0.zip
-          unzip -t bin/Release/base-cleanup-0.2.0.zip
-          unzip -l bin/Release/base-cleanup-0.2.0.zip
+          test -s bin/Release/base-cleanup-0.3.1.zip
+          unzip -t bin/Release/base-cleanup-0.3.1.zip
+          unzip -l bin/Release/base-cleanup-0.3.1.zip
       - name: Upload verified installable Base Cleanup ZIP
         uses: actions/upload-artifact@v4
         with:
-          name: base-cleanup-stage2-0.2.0
-          path: bin/Release/base-cleanup-0.2.0.zip
+          name: base-cleanup-decay-0.3.1-test
+          path: bin/Release/base-cleanup-0.3.1.zip
           if-no-files-found: error
           retention-days: 90
 
+
   release:
-    name: Publish accepted Base Cleanup v0.2.0
+    name: Tag and publish accepted Base Cleanup v0.3.1
+    # PR builds never publish. Only the exact tested main commit may be tagged.
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: build
     runs-on: ubuntu-24.04
     permissions:
       contents: write
+    concurrency:
+      group: base-cleanup-v0.3.1-release
+      cancel-in-progress: false
     steps:
-      - name: Check if this immutable version has already been released
-        id: existing
+      - name: Checkout exact accepted main commit
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Download artifact from this verified workflow run
+        uses: actions/download-artifact@v4
+        with:
+          name: base-cleanup-decay-0.3.1-test
+          path: dist
+      - name: Verify release version and installable ZIP
+        run: |
+          grep -Fq '<Version>0.3.1</Version>' BaseCleanup/BaseCleanup.csproj
+          test -s dist/base-cleanup-0.3.1.zip
+          unzip -t dist/base-cleanup-0.3.1.zip
+          sha256sum dist/base-cleanup-0.3.1.zip
+      - name: Create annotated tag if absent, refuse conflicting tag
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
         shell: bash
         run: |
-          if gh release view base-cleanup-v0.2.0 >/dev/null 2>&1; then
-            echo 'publish=false' >> "$GITHUB_OUTPUT"
-            echo 'Base Cleanup v0.2.0 already exists; no republish.'
+          set -euo pipefail
+          tag='base-cleanup-v0.3.1'
+          # Do not force-push or retag a published release.
+          if git rev-parse --verify "refs/tags/$tag" >/dev/null 2>&1; then
+            existing="$(git rev-list -n 1 "$tag")"
+            if [ "$existing" != "$GITHUB_SHA" ]; then
+              echo "::error::Tag $tag exists at $existing, expected $GITHUB_SHA"
+              exit 1
+            fi
+            echo "Tag already points to accepted commit."
           else
-            echo 'publish=true' >> "$GITHUB_OUTPUT"
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git tag -a "$tag" "$GITHUB_SHA" -m 'Base Cleanup v0.3.1 — decay on by default'
+            git push origin "refs/tags/$tag"
           fi
-      - name: Retrieve previously verified package
-        if: steps.existing.outputs.publish == 'true'
-        uses: actions/download-artifact@v4
-        with:
-          name: base-cleanup-stage2-0.2.0
-          path: dist
-      - name: Verify release ZIP
-        if: steps.existing.outputs.publish == 'true'
+      - name: Publish verified package if release absent
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        shell: bash
         run: |
-          test -s dist/base-cleanup-0.2.0.zip
-          unzip -t dist/base-cleanup-0.2.0.zip
-      - name: Publish v0.2.0 release and installable ZIP
-        if: steps.existing.outputs.publish == 'true'
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: base-cleanup-v0.2.0
-          target_commitish: ${{ github.sha }}
-          name: Base Cleanup v0.2.0 — Flame Altar Cleanup and Undo
-          draft: false
-          prerelease: false
-          fail_on_unmatched_files: true
-          generate_release_notes: true
-          body: |
-            ## Base Cleanup v0.2.0
-            In-game accepted on a hosted Enshrouded world with Kiln dev.30.6.
+          set -euo pipefail
+          tag='base-cleanup-v0.3.1'
+          if gh release view "$tag" >/dev/null 2>&1; then
+            echo "Release already exists; never overwrite assets."
+            exit 0
+          fi
+          cat > release-notes.md <<'NOTES'
+          ## Base Cleanup v0.3.1
 
-            - Stage 1: full 3-D Flame Altar read-only survey, with material inventory.
-            - Stage 2: read-only plan, explicit REMOVE confirmation, and world backup
-              before any voxel removal.
-            - Removes rubble voxels anywhere within the altar, including buried
-              material, with no surface or structural-support checks.
-            - Optional mud and mineable mycelium removal.
-            - Persistent, per-altar voxel journal and selective UNDO.
-            - Test outcome: 39,879 rubble voxels removed and all 39,879 restored;
-              zero conflicts. Same-session restore tested; restart persistence
-              remains a separate test.
+          Accepted in-game on Enshrouded with Kiln dev.30.6.
 
-            Install the attached base-cleanup-0.2.0.zip via Kiln.
-            Requires a compatible Kiln runtime (built against dev.30.6).
-            Make a copy of your save before destructive actions.
+          - Stage 1: read-only, full 3-D Flame Altar building/terrain inventory.
+          - Stage 2: confirmed rubble removal, optional underwater mud and mycelium.
+          - Cosmetic decay repair **ON by default**, with a toggle to disable it.
+          - Decay repair clears only the building weathering flag, preserving
+            materials, ivy/overgrowth, tint and geometry. Ivy removal is excluded.
+          - Default hotkey: **Shift+ScrollLock** (tested in-game), replacing
+            Ctrl+Shift+F10 to avoid the Ctrl evade key.
+          - Mandatory full-world backup, persistent per-altar undo journal,
+            guarded compare-and-write and selective UNDO.
+          - Accepted in-game: **88,062 voxels cleaned** (48,183 decay and
+            39,879 rubble); selective Undo restored 88,062 with zero conflicts.
+          - Preserves earlier v0.2.0 recovery journals.
 
-            **Not yet implemented:** surface overgrowth entity removal and
-            cosmetic decay repair.
+          Install attached **base-cleanup-0.3.1.zip** in Kiln.
+          Built against Kiln dev.30.6; a compatible runtime is required.
 
-            Hosted Steam/Proton worlds cannot be automatically restored from
-            Kiln's full-world backup; full restore must be performed manually
-            with the game closed. In-game selective Undo remains supported.
-          files: dist/base-cleanup-0.2.0.zip
+          **Safety:** Take a separate save copy before making world edits.
+          Preview is read-only and commit requires explicit REMOVE confirmation.
+          On hosted Steam/Proton games, complete world-backup restore is manual
+          with the game closed; selective Undo is available in-game.
+          NOTES
+          gh release create "$tag" dist/base-cleanup-0.3.1.zip \
+            --verify-tag --target "$GITHUB_SHA" \
+            --title 'Base Cleanup v0.3.1 — Cosmetic Decay and Confirmed Removal' \
+            --notes-file release-notes.md
+          gh release view "$tag" --json url,assets --jq '{url: .url, assets: [.assets[].name]}'

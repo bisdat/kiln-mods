@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Stage 2 scanner plus backup-first removal candidate. Run from bisdat/kiln-mods root.
+# v0.3.1 scanner plus backup-first rubble cleanup and optional decay repair candidate.
 set -euo pipefail
 cd -- "$(dirname -- "$0")"
 if ! command -v dotnet >/dev/null 2>&1; then
@@ -11,5 +11,5 @@ python3 BaseCleanup/fetch-sdk.py
 dotnet restore BaseCleanup/BaseCleanup.csproj --configfile NuGet.Config
 dotnet build BaseCleanup/BaseCleanup.csproj -c Release --no-restore
 dotnet build BaseCleanup/BaseCleanup.csproj -c Release --no-restore -t:KilnPack
-test -s bin/Release/base-cleanup-0.2.0.zip
-printf 'Built bin/Release/base-cleanup-0.2.0.zip\n'
+test -s bin/Release/base-cleanup-0.3.1.zip
+printf 'Built bin/Release/base-cleanup-0.3.1.zip\n'
