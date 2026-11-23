@@ -32,7 +32,7 @@ public sealed record CleanupStatus(string Phase, string Message, long Done, long
             r.Int64(), r.Int64(), r.Int64(), r.Int64(), r.Int64(), r.String(160) ?? "");
         return status with { Decay = r.Int64() };
     }
-
+}
 
 /// <summary>
 /// Stage 2 runs only on the authoritative server. A confirmed plan is
