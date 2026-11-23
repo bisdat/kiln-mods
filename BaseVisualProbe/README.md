@@ -106,6 +106,57 @@ In-world UI and joined clients use the authoritative host, requiring admin
 permission. Exact per-cell examples are in kiln.log rather than on a
 separate downloadable file.
 
+## Evidence: CLEAN versus ivy-covered wall in user game (23 Nov 2026)
+
+The user installed the updated read-only probe and labelled two local
+wall samples in the **same world / Flame Altar 1026**. Captures are
+approximately 5-metre cubes of 1,331 cells each. They are different
+locations, not before/after states of the same surface.
+
+| Classified local building cells | Visually clean wall | Visibly overgrown wall |
+|---|---:|---:|
+| All building voxels | 597 | 782 |
+| Zero-paint building voxels | 8 | 262 |
+| Air-adjacent building voxels | 194 | 98 |
+| Air-adjacent growth-field level 7 | **194 / 194 (100%)** | **9 / 98 (9.2%)** |
+| Air-adjacent growth-field level 1 | 0 | **56 / 98 (57.1%)** |
+| Air-adjacent growth-field level 0 | 0 | 33 |
+| Air-adjacent weathered | 0 | 31 |
+| Boundary-unknown / enclosed | 233 / 170 | 384 / 300 |
+
+Exact **air-adjacent** examples:
+- CLEAN: `0x778A` (material 138; level 7, not weathered, low nibble 7)
+  168 cells; `0x77B4` (material 180, same growth level) 26.
+- OVERGROWN: `0x178A` (material 138; level 1) 31 cells,
+  `0x008A` (level 0, zero paint) 27,
+  `0x978A` (level 1 and weathered) 25,
+  `0x078A` (level 0, low nibble 7) 6,
+  `0xF78A` (level 7 and weathered) 6,
+  `0x778A` (level 7, not weathered) 3.
+
+**Safety conclusion: DO NOT batch-clear `0x70` from every nonzero
+growth-field voxel.** Level 7 appears on **every air-adjacent cell of
+the visibly CLEAN wall**. Consequently the approximately 1.52 million
+level-7 cells from the full altar are not a count of unwanted ivy.
+The existing tool-operation test demonstrated that the game can clear
+growth bits on selected cells, but this is NOT evidence that applying
+that transformation indiscriminately yields appropriate visuals.
+Level 1 correlates with the player's overgrown label here, but does
+not alone prove an automatic ivy classifier valid on all building
+materials. The two samples have different geometry/structural
+composition and should not be used to calibrate a global threshold.
+
+**Next work:** determine game-default values and the semantics of
+materials/paint styles; select known visually clean versus ivy-covered
+regions of the SAME material and similar construction. Until independently
+validated, keep any future whole-base overgrowth cleanup **disabled**.
+Cosmetic weathering (bit 7) should remain a separately selectable
+operation with its own proof and safe undo design.
+
+No edits, backups, merges, releases or upstream changes were made
+by this observational test. The legacy `rubble-remover` in this user
+report still logs 18 content registration errors (not probe faults).
+
 ## Interpretation and next steps
 
 If overgrowth or weathering flags clear with the building MATERIAL UNCHANGED,
