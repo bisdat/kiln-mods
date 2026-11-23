@@ -79,9 +79,9 @@ internal sealed class FloorMaterialProfile
         {
             static int Y(string s)
             {
-                var from = s.IndexOf("y=", StringComparison.Ordinal);
+                var from = s.IndexOf(" y=", StringComparison.Ordinal);
                 if (from < 0) return 0;
-                from += 2;
+                from += 3;
                 var end = s.IndexOf(' ', from);
                 return int.Parse(s.AsSpan(from, end < 0 ? s.Length - from : end - from),
                     System.Globalization.CultureInfo.InvariantCulture);
