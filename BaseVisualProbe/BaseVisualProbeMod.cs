@@ -99,6 +99,44 @@ public sealed class BaseVisualProbeMod : Mod
     private bool _cancel;
     private int _epoch;
 
+    // Counts of the game's own terraforming/appearance actions, not mod edits.
+    // A menu being opened is not proof that a tool applied successfully.
+    private long _decayAttempts, _decayDone, _decayDoneInSample;
+    private long _growthAttempts, _growthDone, _growthDoneInSample;
+    private int _loggedToolActions;
+    private long _sampleDecayStart, _sampleDecaySuccessStart, _sampleDecayInBoxStart;
+    private long _sampleGrowthStart, _sampleGrowthSuccessStart, _sampleGrowthInBoxStart;
+
+    [Subscribe]
+    private void ObserveVanillaTool(BuildEvent e)
+    {
+        if (e.Kind != BuildKind.Terraform || e.TerraformType is < 4 or > 7) return;
+        var decay = e.TerraformType >= 6;
+        var accepted = e.Outcome == BuildOutcome.Done;
+        var snap = _baseline;
+        // Location is the game's impact point, not necessarily every cell
+        // of the brush. Inside=true improves interpretation; false doesn't
+        // prove that no cell of a brush stroke touched the captured cube.
+        var inside = false;
+        if (snap is not null && snap.Player == e.Player && snap.WorldId == Saves.WorldId &&
+            Build.Grid is not null)
+            inside = snap.Box.Contains(Build.CellOf(e.Position));
+        if (decay)
+        {
+            _decayAttempts++;
+            if (accepted) { _decayDone++; if (inside) _decayDoneInSample++; }
+        }
+        else
+        {
+            _growthAttempts++;
+            if (accepted) { _growthDone++; if (inside) _growthDoneInSample++; }
+        }
+        if (_loggedToolActions++ < 40)
+            Log.Info($"base-visual-probe TOOL action={(decay ? "decay" : "overgrowth")} " +
+                $"terraform={e.TerraformType} outcome={e.Outcome} impact={e.Position} " +
+                $"player={e.Player.Value} insideSample={inside}; read-only observer");
+    }
+
     public override void OnLoad()
     {
         _network = Network.Channel(Channel, "1", required: false)
@@ -337,6 +375,13 @@ public sealed class BaseVisualProbeMod : Mod
             if (!SameSession(altar, snap.WorldId, epoch)) throw new OperationCanceledException("capture cancelled");
             if (snap.Cells.Count != snap.Box.Count) throw new InvalidOperationException("incomplete snapshot");
             snap.CapturedUtc = DateTime.UtcNow;
+            snap.Player = player;
+            _sampleDecayStart = _decayAttempts;
+            _sampleDecaySuccessStart = _decayDone;
+            _sampleDecayInBoxStart = _decayDoneInSample;
+            _sampleGrowthStart = _growthAttempts;
+            _sampleGrowthSuccessStart = _growthDone;
+            _sampleGrowthInBoxStart = _growthDoneInSample;
             _baseline = snap;
             Log.Info($"base-visual-probe BASELINE world={snap.WorldId} altar={altar.Altar.Value} " +
                 $"box={snap.Box} cells={snap.Cells.Count} buildings={inv.Buildings}, " +
@@ -344,7 +389,8 @@ public sealed class BaseVisualProbeMod : Mod
             Send(player, new VisualProgress("captured",
                 $"Baseline captured: {snap.Cells.Count:N0} cells ({inv.Buildings:N0} building, " +
                 $"{inv.Overgrown:N0} overgrowth, {inv.Weathered:N0} weather). " +
-                "Use an Overgrowth/Decay Tool on a nearby wall/roof, then Compare.",
+                "Use an Overgrowth/Decay Tool on a nearby wall/roof, then Compare. " +
+                "The probe will also observe accepted/refused native tool operations.",
                 snap.Cells.Count, snap.Box.Count));
         }
         catch (Exception ex)
@@ -408,6 +454,18 @@ public sealed class BaseVisualProbeMod : Mod
                 diffs.GrowthAdded, diffs.GrowthCleared, diffs.GrowthChanged,
                 diffs.WeatherAdded, diffs.WeatherCleared, diffs.TintChanged, diffs.Samples.ToArray());
             _lastDiff = result;
+            var decayAttempts = _decayAttempts - _sampleDecayStart;
+            var decayAccepted = _decayDone - _sampleDecaySuccessStart;
+            var decayInside = _decayDoneInSample - _sampleDecayInBoxStart;
+            var growthAttempts = _growthAttempts - _sampleGrowthStart;
+            var growthAccepted = _growthDone - _sampleGrowthSuccessStart;
+            var growthInside = _growthDoneInSample - _sampleGrowthInBoxStart;
+            var hooks = Capabilities.Is("gameplay.build_hooks");
+            Log.Info($"base-visual-probe TOOL-SUMMARY since baseline: " +
+                $"hooks={hooks}, decay attempts={decayAttempts} done={decayAccepted} " +
+                $"impactInSample={decayInside}, overgrowth attempts={growthAttempts} " +
+                $"done={growthAccepted} impactInSample={growthInside}. " +
+                "A tool event confirms an action, NOT that paint voxels changed.");
             Log.Info($"base-visual-probe DIFF world={snap.WorldId} altar={snap.Altar.Altar.Value} " +
                 $"baseline={snap.CapturedUtc:O} compared={diffs.Compared} changed={diffs.Changed} " +
                 $"materialOrOccupancyChanged={diffs.MaterialChanged} growthAdded={diffs.GrowthAdded} " +
@@ -418,9 +476,9 @@ public sealed class BaseVisualProbeMod : Mod
                 Log.Info("base-visual-probe DIFF-SAMPLE " + sample);
             Send(player, result);
             Send(player, new VisualProgress("compared",
-                $"{diffs.Changed:N0} changed cells ({diffs.GrowthCleared:N0} growth cleared, " +
-                $"{diffs.WeatherCleared:N0} weather cleared, {diffs.MaterialChanged:N0} material/occupancy changes). " +
-                "Log contains exact 16-bit examples. Baseline retained.",
+                $"{diffs.Changed:N0} changed cells; decay tool {decayAccepted}/{decayAttempts} accepted " +
+                $"({decayInside} impact inside cube), growth tool {growthAccepted}/{growthAttempts} accepted. " +
+                $"Hooks reported {(hooks ? "ready" : "unavailable")}. Exact changes in kiln.log.",
                 diffs.Compared, snap.Box.Count));
         }
         catch (Exception ex)
@@ -571,6 +629,9 @@ public sealed class BaseVisualProbeMod : Mod
         _baseline = null;
         _lastDiff = null;
         _lastCensus = null;
+        _decayAttempts = _decayDone = _decayDoneInSample = 0;
+        _growthAttempts = _growthDone = _growthDoneInSample = 0;
+        _loggedToolActions = 0;
         if (Client.Available && Client.IsClient)
             Client.Post(() => { _statusView = null; _censusView = null; _diffView = null; });
     }
