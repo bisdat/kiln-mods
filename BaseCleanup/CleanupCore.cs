@@ -13,15 +13,33 @@ internal static class CleanupCore
 {
     internal const byte IncludeMud = 1;
     internal const byte IncludeMycelium = 2;
-    internal const byte AllowedOptions = IncludeMud | IncludeMycelium;
+    // Opt-in only: this flag is never enabled by the old console command.
+    internal const byte IncludeDecay = 4;
+    internal const byte AllowedOptions = IncludeMud | IncludeMycelium | IncludeDecay;
+
+    // EMF/Kiln building paint high byte: bit 7 = weathering; bits 4..6
+    // represent growth state and MUST NOT be modified by decay repair.
+    internal const ushort WeatherMask = 0x8000;
+    internal static bool DecayTarget(Voxel voxel, byte options) =>
+        (options & IncludeDecay) != 0 &&
+        voxel.Material >= 128 && (voxel.Raw & WeatherMask) != 0;
+
+    // Terrain targets are removed to AIR; only cosmetic building weathering
+    // is cleared. The material byte, 7 other paint bits and geometry remain.
+    // This is also the exact expected post-edit value used for safe Undo.
+    internal static Voxel EditedValue(ushort originalRaw) =>
+        (originalRaw & 0xff) >= 128
+            ? new Voxel((ushort)(originalRaw & ~WeatherMask))
+            : Voxel.Air;
     private const int Magic = 0x32434C42; // BLC2
     private const int MaxChunks = 250_000, MaxCells = 4_000_000;
 
     internal static bool Target(Voxel voxel, byte options) =>
-        !voxel.IsAir &&
-        (BaseScanCore.IsRubble(voxel.Material)
-         || (voxel.Material == BaseScanCore.UnderwaterMud && (options & IncludeMud) != 0)
-         || (BaseScanCore.IsMycelium(voxel.Material) && (options & IncludeMycelium) != 0));
+        DecayTarget(voxel, options) ||
+        (!voxel.IsAir &&
+         (BaseScanCore.IsRubble(voxel.Material)
+          || (voxel.Material == BaseScanCore.UnderwaterMud && (options & IncludeMud) != 0)
+          || (BaseScanCore.IsMycelium(voxel.Material) && (options & IncludeMycelium) != 0)));
 
     internal static string Encode(IReadOnlyList<CleanupChunk> chunks)
     {
@@ -67,7 +85,9 @@ internal static class CleanupCore
             {
                 var index = reader.ReadInt32();
                 var raw = reader.ReadUInt16();
-                if (index < 0 || index >= box.Count || !used.Add(index) || (raw >> 8) == 0)
+                if (index < 0 || index >= box.Count || !used.Add(index) ||
+                    (raw >> 8) == 0 ||
+                    ((raw & 0xff) >= 128 && (raw & WeatherMask) == 0))
                     throw new InvalidDataException("invalid cleanup journal cell");
                 c.Cells.Add(new CleanupCell(index, raw));
             }
@@ -105,6 +125,8 @@ public sealed class CleanupLedger
     public long Removed { get; set; }
     public long Restored { get; set; }
     public long Conflicted { get; set; }
+    // Optional new field; v0.2.0 saved ledgers deserialize with zero.
+    public long DecayPlanned { get; set; }
     public double CellSize { get; set; }
     public double CenterX { get; set; }
     public double CenterY { get; set; }
@@ -127,6 +149,7 @@ internal sealed class CleanupPlan(
     internal long Read;
     internal long Total;
     internal long Hits;
+    internal long DecayHits;
     internal bool CancelRequested;
     internal DateTime PreparedAtUtc;
 }
@@ -148,6 +171,7 @@ internal static class CleanupSafety
         Phase = "prepared",
         Packed = CleanupCore.Encode(plan.Chunks),
         Planned = checked((int)plan.Hits),
+        DecayPlanned = plan.DecayHits,
         CellSize = Build.Grid!.CellSize,
         CenterX = plan.Altar.Center.X, CenterY = plan.Altar.Center.Y, CenterZ = plan.Altar.Center.Z,
         HalfX = plan.Altar.Half.X, HalfY = plan.Altar.Half.Y, HalfZ = plan.Altar.Half.Z,
