@@ -923,10 +923,10 @@ public sealed partial class BaseCleanupMod
             ui.TextWrapped(status.Message);
             ui.Text($"Rubble {status.Rubble:N0} | Mud 37 {status.Mud:N0} | " +
                 $"Mycelium {status.Mycelium:N0} | Decay {status.Decay:N0}");
-            ui.TextWrapped("The prepared plan is valid for 10 minutes. An independent Undo " +
-                "journal will be registered in Kiln WorldData before editing. This mod " +
-                "does NOT request a world save, restore or backup. Records persist with " +
-                "the game's next normal save.");
+            ui.TextWrapped("The prepared plan is valid for 10 minutes. REMOVE first saves " +
+                "a timestamped full-world backup, keeps the 10 newest Base Cleanup backups " +
+                "for this world, and only then edits terrain. A separate Undo journal " +
+                "is retained. No full-world restore button is provided.");
             ui.InputText("Type REMOVE to commit", ref _cleanupConfirm, 20);
             if (ui.Button("4. REMOVE this prepared operation"))
             {
@@ -956,7 +956,7 @@ public sealed partial class BaseCleanupMod
                 ui.Progress((float)(status.Done / (double)status.Total),
                     $"{status.Done:N0} / {status.Total:N0}");
             if (!string.IsNullOrEmpty(status?.Backup))
-                ui.TextWrapped("Journal reference: " + status.Backup);
+                ui.TextWrapped("World backup: " + status.Backup);
             if (ui.Button("Request cancellation"))
                 Client.Post(() => CleanupRequestLocal(4));
             return;
@@ -967,7 +967,7 @@ public sealed partial class BaseCleanupMod
             ui.Separator("5 / 5 - Roll back this operation");
             ui.TextWrapped(status?.Message ?? "Review the latest saved operation before Undo.");
             if (!string.IsNullOrEmpty(status?.Backup))
-                ui.TextWrapped("Operation journal: " + status.Backup);
+                ui.TextWrapped("Operation backup/reference: " + status.Backup);
             ui.TextWrapped("Each REMOVE has its own saved Undo journal. " +
                 "Undo restores only voxels still in this operation's edited state. " +
                 "Later operations must be undone before earlier ones. " +
