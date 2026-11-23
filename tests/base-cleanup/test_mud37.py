@@ -85,7 +85,7 @@ class Mud37Tests(unittest.TestCase):
         self.assertIn("!FullyUndone(v1)",STAGE)
         self.assertIn('old.Phase == "undone"',STAGE)
         self.assertIn("old.Restored >= old.Removed && old.Conflicted == 0",STAGE)
-        self.assertIn("TryGetJournal(altar, out var journal)",STAGE)
+        self.assertIn("TryGetJournal(altar, out journal)",STAGE)
 
     def test_completed_prior_cleanup_is_not_a_blocker_or_overwritten(self):
         # Real report from the user's Flame Altar 1026:
