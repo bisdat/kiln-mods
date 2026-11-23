@@ -1,0 +1,15 @@
+<Project Sdk="Kiln.Sdk/0.2.0-dev.30.6">
+  <PropertyGroup>
+    <KilnModId>base-visual-probe</KilnModId>
+    <KilnModName>Base Visual Metadata Probe (READ ONLY)</KilnModName>
+    <Version>0.1.0</Version>
+    <Authors>bisdat</Authors>
+    <Description>Read-only experimental overgrowth/weathered building-voxel metadata survey and paired game-tool comparison.</Description>
+    <PackageProjectUrl>https://github.com/bisdat/kiln-mods</PackageProjectUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <KilnSide>both</KilnSide>
+    <KilnClients>none</KilnClients>
+    <KilnServices>Build;World;Saves;Client;Ui;Network;Chat;Permissions</KilnServices>
+    <KilnGameIds>None</KilnGameIds>
+  </PropertyGroup>
+</Project>
