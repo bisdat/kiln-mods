@@ -83,6 +83,9 @@ public sealed partial class BaseCleanupMod : Mod
     private ScanReport? _viewReport;
     private ScanJob? _running;
     private ScanReport? _latest;
+    private string? _lastSurveyWorldId;
+    private PlayerBase? _lastSurveyAltar;
+    private int _uiStage; // 0 scan, 1 options, 2 plan, 3 remove, 4 working, 5 undo
     private int _generation;
 
     private sealed class ScanJob(EntityId player, PlayerBase zone, CellBox bounds, double cellSize, int generation)
@@ -169,6 +172,11 @@ public sealed partial class BaseCleanupMod : Mod
 
     private void Start(EntityId player)
     {
+        if (_cleanupBusy)
+        {
+            Publish(player, new ScanProgress("Finish the current cleanup or Undo first.", 0, 0, 5));
+            return;
+        }
         if (_running is { } old)
         {
             Publish(player, new ScanProgress("A survey is already running. Open Preview to see its progress.",
@@ -205,6 +213,9 @@ public sealed partial class BaseCleanupMod : Mod
         var job = new ScanJob(player, zone, bounds, grid.CellSize, _generation);
         _running = job;
         _latest = null;
+        _lastSurveyWorldId = null;
+        _lastSurveyAltar = null;
+        _preparedCleanup = null;
         Publish(player, new ScanProgress($"Scanning altar {zone.Altar.Value}, all {bounds.Count:N0} voxels (read-only).",
             0, bounds.Count, 1));
         _ = RunScan(job); // All exceptions are caught/reported by RunScan.
@@ -272,6 +283,11 @@ public sealed partial class BaseCleanupMod : Mod
             var report = new ScanReport(label, job.Bounds.Count, v.ReadCells, job.Unreadable,
                 v.AirCells, v.PartialCells, (long[])v.Count.Clone(), (long[])v.FillSum.Clone(), job.CellSize);
             _latest = report;
+            if (job.Unreadable == 0)
+            {
+                _lastSurveyWorldId = Saves.WorldId;
+                _lastSurveyAltar = job.Zone;
+            }
             Log.Info($"Base Cleanup Stage 1 report: {label}, read={v.ReadCells}, unreadable={job.Unreadable}, " +
                      $"rubble={report.Rubble}, mycelium={report.Mycelium}, mud(37)={report.Mud}, " +
                      $"buildings={report.Buildings}; no terrain was changed.");
@@ -443,6 +459,8 @@ public sealed partial class BaseCleanupMod : Mod
         if (_running is { } j) j.CancelRequested = true;
         _running = null;
         _latest = null;
+        _lastSurveyWorldId = null;
+        _lastSurveyAltar = null;
         CleanupStopped();
     }
 
