@@ -75,7 +75,7 @@ class Stage1Tests(unittest.TestCase):
         self.assertIn("Context.Scheduler.Post(() => Act(local, op, true))",MOD)
         self.assertIn("Client.Post(() => Request(1))",MOD)
         self.assertIn("Client.Post(() => Request(2))",MOD)
-        self.assertIn('"Ctrl+Shift+F10"',MOD)
+        self.assertIn('"Shift+ScrollLock"',MOD)
 
 if __name__=="__main__":
     unittest.main()
