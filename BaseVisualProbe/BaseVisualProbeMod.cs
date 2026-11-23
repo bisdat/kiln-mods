@@ -139,12 +139,13 @@ public sealed partial class BaseVisualProbeMod : Mod
 
     public override void OnLoad()
     {
-        _network = Network.Channel(Channel, "2", required: false)
+        _network = Network.Channel(Channel, "3", required: false)
             .Register<VisualRequest>(OnRequest, NetDirection.ToServer)
             .Register<VisualProgress>((m, _) => Receive(m), NetDirection.ToClient)
             .Register<VisualCensus>((m, _) => Receive(m), NetDirection.ToClient)
             .Register<VisualDifference>((m, _) => Receive(m), NetDirection.ToClient)
-            .Register<VisualSurfaceReport>((m, _) => Receive(m), NetDirection.ToClient);
+            .Register<VisualSurfaceReport>((m, _) => Receive(m), NetDirection.ToClient)
+            .Register<FloorMaterialReport>((m, _) => Receive(m), NetDirection.ToClient);
 
         if (Client.Available && Client.IsClient && Ui.Available)
         {
@@ -152,13 +153,13 @@ public sealed partial class BaseVisualProbeMod : Mod
             {
                 Width = 740, Height = 780, StartOpen = false,
             });
-            _key = KeyBindings.Register("base-visual-probe.open", "Ctrl+Shift+F11", () =>
+            _key = KeyBindings.Register("base-visual-probe.open", "Shift+F11", () =>
             {
                 _window.Show();
                 Request(4);
             }, "Open read-only overgrowth / decay probe", "Base Visual Probe");
         }
-        Log.Info("base-visual-probe 0.1.0: READ-ONLY metadata census and paired tool experiment; " +
+        Log.Info("base-visual-probe 0.1.1: READ-ONLY material/paint census, floor reference and game-tool experiment; " +
                  "no voxels or props can be changed by this mod.");
     }
 
@@ -205,6 +206,10 @@ public sealed partial class BaseVisualProbeMod : Mod
             case 6:
             case 7:
                 StartSpot(player, operation);
+                break;
+            case 8:
+            case 9:
+                StartFloorSample(player, operation);
                 break;
             default: Send(player, new VisualProgress("failed", "Unknown read-only command.", 0, 0)); break;
         }
@@ -549,6 +554,7 @@ public sealed partial class BaseVisualProbeMod : Mod
                 ui.Progress((float)(status.Read / (double)status.Total),
                     $"{status.Read:N0} / {status.Total:N0}");
         }
+        DrawFloorProbe(ui);
         DrawSurfaceSpot(ui);
         if (Volatile.Read(ref _censusView) is { } census)
         {
@@ -637,6 +643,7 @@ public sealed partial class BaseVisualProbeMod : Mod
         _lastDiff = null;
         _lastCensus = null;
         ResetSurfaceSpot();
+        ResetFloorProbe();
         _decayAttempts = _decayDone = _decayDoneInSample = 0;
         _growthAttempts = _growthDone = _growthDoneInSample = 0;
         _loggedToolActions = 0;
