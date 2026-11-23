@@ -1,14 +1,7 @@
-name: Package and release Base Cleanup v0.2.0
+name: Test Base Cleanup v0.3.0 optional decay (candidate only)
 
 on:
   pull_request:
-    paths:
-      - 'BaseCleanup/**'
-      - 'tests/base-cleanup/**'
-      - 'build-stage1.sh'
-      - '.github/workflows/base-cleanup-stage1.yml'
-  push:
-    branches: [main]
     paths:
       - 'BaseCleanup/**'
       - 'tests/base-cleanup/**'
@@ -21,7 +14,7 @@ permissions:
 
 jobs:
   build:
-    name: Validate and package Base Cleanup Stage 2 candidate
+    name: Validate and package Base Cleanup v0.3.0 candidate
     runs-on: ubuntu-24.04
     steps:
       - name: Check out test branch
@@ -30,95 +23,26 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.0.x'
-      - name: Validate scanner and Stage 2 safety invariants
+      - name: Validate scanner, cleanup and decay safety invariants
         run: python3 -m unittest discover -s tests/base-cleanup -p 'test_*.py' -v
       - name: Fetch checksum-verified official Kiln dev.30.6 SDK
         run: python3 BaseCleanup/fetch-sdk.py
       - name: Restore Kiln dependencies
         run: dotnet restore BaseCleanup/BaseCleanup.csproj --configfile NuGet.Config
-      - name: Compile scanner
+      - name: Compile Base Cleanup candidate
         run: dotnet build BaseCleanup/BaseCleanup.csproj -c Release --no-restore
       - name: KilnPack installable ZIP
         run: dotnet build BaseCleanup/BaseCleanup.csproj -c Release --no-restore -t:KilnPack
       - name: Verify installable archive
         run: |
-          test -s bin/Release/base-cleanup-0.2.0.zip
-          unzip -t bin/Release/base-cleanup-0.2.0.zip
-          unzip -l bin/Release/base-cleanup-0.2.0.zip
+          test -s bin/Release/base-cleanup-0.3.0.zip
+          unzip -t bin/Release/base-cleanup-0.3.0.zip
+          unzip -l bin/Release/base-cleanup-0.3.0.zip
       - name: Upload verified installable Base Cleanup ZIP
         uses: actions/upload-artifact@v4
         with:
-          name: base-cleanup-stage2-0.2.0
-          path: bin/Release/base-cleanup-0.2.0.zip
+          name: base-cleanup-decay-0.3.0-test
+          path: bin/Release/base-cleanup-0.3.0.zip
           if-no-files-found: error
           retention-days: 90
 
-  release:
-    name: Publish accepted Base Cleanup v0.2.0
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    needs: build
-    runs-on: ubuntu-24.04
-    permissions:
-      contents: write
-    steps:
-      - name: Check if this immutable version has already been released
-        id: existing
-        env:
-          GH_TOKEN: ${{ github.token }}
-          GH_REPO: ${{ github.repository }}
-        shell: bash
-        run: |
-          if gh release view base-cleanup-v0.2.0 >/dev/null 2>&1; then
-            echo 'publish=false' >> "$GITHUB_OUTPUT"
-            echo 'Base Cleanup v0.2.0 already exists; no republish.'
-          else
-            echo 'publish=true' >> "$GITHUB_OUTPUT"
-          fi
-      - name: Retrieve previously verified package
-        if: steps.existing.outputs.publish == 'true'
-        uses: actions/download-artifact@v4
-        with:
-          name: base-cleanup-stage2-0.2.0
-          path: dist
-      - name: Verify release ZIP
-        if: steps.existing.outputs.publish == 'true'
-        run: |
-          test -s dist/base-cleanup-0.2.0.zip
-          unzip -t dist/base-cleanup-0.2.0.zip
-      - name: Publish v0.2.0 release and installable ZIP
-        if: steps.existing.outputs.publish == 'true'
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: base-cleanup-v0.2.0
-          target_commitish: ${{ github.sha }}
-          name: Base Cleanup v0.2.0 — Flame Altar Cleanup and Undo
-          draft: false
-          prerelease: false
-          fail_on_unmatched_files: true
-          generate_release_notes: true
-          body: |
-            ## Base Cleanup v0.2.0
-            In-game accepted on a hosted Enshrouded world with Kiln dev.30.6.
-
-            - Stage 1: full 3-D Flame Altar read-only survey, with material inventory.
-            - Stage 2: read-only plan, explicit REMOVE confirmation, and world backup
-              before any voxel removal.
-            - Removes rubble voxels anywhere within the altar, including buried
-              material, with no surface or structural-support checks.
-            - Optional mud and mineable mycelium removal.
-            - Persistent, per-altar voxel journal and selective UNDO.
-            - Test outcome: 39,879 rubble voxels removed and all 39,879 restored;
-              zero conflicts. Same-session restore tested; restart persistence
-              remains a separate test.
-
-            Install the attached base-cleanup-0.2.0.zip via Kiln.
-            Requires a compatible Kiln runtime (built against dev.30.6).
-            Make a copy of your save before destructive actions.
-
-            **Not yet implemented:** surface overgrowth entity removal and
-            cosmetic decay repair.
-
-            Hosted Steam/Proton worlds cannot be automatically restored from
-            Kiln's full-world backup; full restore must be performed manually
-            with the game closed. In-game selective Undo remains supported.
-          files: dist/base-cleanup-0.2.0.zip
