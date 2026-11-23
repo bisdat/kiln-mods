@@ -100,7 +100,7 @@ public sealed partial class BaseCleanupMod : Mod
 
     public override void OnLoad()
     {
-        _net = Network.Channel(Channel, "2", required: false)
+        _net = Network.Channel(Channel, "3", required: false)
             .Register<ScanRequest>(OnRequest, NetDirection.ToServer)
             .Register<ScanProgress>((m, _) => ReceiveProgress(m), NetDirection.ToClient)
             .Register<ScanReport>((m, _) => ReceiveReport(m), NetDirection.ToClient)
@@ -109,7 +109,7 @@ public sealed partial class BaseCleanupMod : Mod
 
         if (Client.Available && Client.IsClient && Ui.Available)
         {
-            _window = Ui.Window("Base Cleanup - Survey and Confirmed Removal", Draw, new UiWindowOptions
+            _window = Ui.Window("Base Cleanup - Survey, Removal and Cosmetic Repair", Draw, new UiWindowOptions
             {
                 Width = 680, Height = 710, StartOpen = false,
             });
@@ -120,7 +120,7 @@ public sealed partial class BaseCleanupMod : Mod
                 CleanupRequestLocal(5);
             }, "Open Base Cleanup preview", "Base Cleanup");
         }
-        Log.Info("Base Cleanup v0.2.0 loaded: Stage 1 survey; Stage 2 backup-first confirmed rubble cleanup with persistent undo.");
+        Log.Info("Base Cleanup v0.3.0 TEST loaded: Stage 1 survey; Stage 2 backup-first terrain cleanup plus opt-in weathering repair, persistent undo.");
     }
 
     private void Request(byte op)
@@ -374,7 +374,7 @@ public sealed partial class BaseCleanupMod : Mod
         ui.Text($"Read: {report.ReadCells:N0} / {report.TotalCells:N0}; unreadable: {report.UnreadableCells:N0}");
         ui.Text($"Rubble: {report.Rubble:N0} cells; mineable mycelium: {report.Mycelium:N0}; underwater mud: {report.Mud:N0}");
         ui.Text($"Building blocks: {report.Buildings:N0}; air: {report.AirCells:N0}; partial-fill: {report.PartialCells:N0}");
-        ui.TextDisabled("Surface overgrowth and cosmetic decay are not detectable by this voxel scan.");
+        ui.TextDisabled("Stage 1 inventories materials; optional cosmetic decay is counted during Stage 2 planning.");
         ui.Separator("Voxel materials (non-empty cells only)");
         if (ui.BeginChild("base-cleanup-materials", 0, 210 * ui.Scale))
         {
@@ -419,7 +419,7 @@ public sealed partial class BaseCleanupMod : Mod
         c.Reply(r.Area);
         c.Reply($"Read {r.ReadCells:N0}/{r.TotalCells:N0}, unreadable {r.UnreadableCells:N0}; air {r.AirCells:N0}; partial fills {r.PartialCells:N0}");
         c.Reply($"Rubble {r.Rubble:N0}; mycelium {r.Mycelium:N0}; underwater mud (91) {r.Mud:N0}; building voxels {r.Buildings:N0}");
-        c.Reply("Overgrowth and cosmetic decay: not counted by the Stage 1 voxel-only survey.");
+        c.Reply("Overgrowth and cosmetic decay: not counted by Stage 1. Stage 2 has opt-in decay planning.");
         c.Reply("Use /basescan materials [page] for the exact material histogram.");
     }
 
