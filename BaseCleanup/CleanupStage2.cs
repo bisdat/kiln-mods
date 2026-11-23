@@ -488,14 +488,28 @@ public sealed partial class BaseCleanupMod
     private async Task ApplyAsync(CleanupPlan plan)
     {
         CleanupLedger? journal = null;
+        CleanupHistory? history = null;
+        string? journalKey = null;
         var backupCompleted = false;
         try
         {
-            var name = "base-cleanup-" + DateTime.UtcNow.ToString("yyyyMMdd-HHmmss");
+            history = ReadHistory(plan.Altar);
+            if (history.Sequences.Count >= MaxHistory)
+                throw new InvalidOperationException("per-altar cleanup history full");
+            var sequence = history.NextSequence;
+            journalKey = OperationKeyFor(plan.Altar, sequence);
+            if (WorldData.Contains(journalKey))
+                throw new InvalidOperationException("cleanup operation key already exists; refusing overwrite");
+            var name = "base-cleanup-" + DateTime.UtcNow.ToString("yyyyMMdd-HHmmss") +
+                "-op" + sequence.ToString("D4", CultureInfo.InvariantCulture);
             journal = CleanupSafety.Ledger(plan, name);
-            // The entire original voxel journal is included in a real
-            // game SAVE before the first write, and in the backup sidecar.
-            WorldData.Set(CurrentLedgerKeyFor(plan.Altar), journal);
+            journal.OperationNumber = sequence;
+            // The FULL original-voxel journal, and permanent operation index,
+            // are serialized in the game save BEFORE any cleanup write.
+            WorldData.Set(journalKey, journal);
+            history.NextSequence++;
+            history.Sequences.Add(sequence);
+            WorldData.Set(HistoryKeyFor(plan.Altar), history);
             CleanupPublish(plan.Player, PlanStatus(plan, "backup",
                 "Saving undo journal and creating a full-world backup BEFORE the first voxel edit."));
             var backup = await Saves.Backup(name);
@@ -580,7 +594,15 @@ public sealed partial class BaseCleanupMod
                 if (!backupCompleted)
                 {
                     // No writes were permitted without a successful backup.
-                    WorldData.Remove(CurrentLedgerKeyFor(plan.Altar));
+                    // Backup did not succeed and there were ZERO voxel edits.
+                    // Roll back only this new operation; older journals stay
+                    // byte-for-byte intact. Never reuse a committed sequence.
+                    if (journalKey is not null) WorldData.Remove(journalKey);
+                    if (history is not null && journal.OperationNumber > 0)
+                    {
+                        history.Sequences.Remove(journal.OperationNumber);
+                        WorldData.Set(HistoryKeyFor(plan.Altar), history);
+                    }
                 }
                 else
                 {
@@ -669,6 +691,13 @@ public sealed partial class BaseCleanupMod
                 var restoreCount = 0;
                 foreach (var cell in chunk.Cells)
                 {
+                    if (expected[cell.Index].Raw == cell.Raw)
+                    {
+                        // Already restored by an earlier partial Undo (or never
+                        // committed due to a guarded conflict). No new change,
+                        // and definitely NOT an Undo conflict.
+                        continue;
+                    }
                     if (expected[cell.Index].Raw != CleanupCore.EditedValue(cell.Raw).Raw)
                     {
                         // Terrain must still be air; cosmetic repair must
@@ -701,7 +730,9 @@ public sealed partial class BaseCleanupMod
             }
             journal.Restored += restored;
             journal.Conflicted = conflicts;
-            journal.Phase = _cleanupCancel || generation != _cleanupEpoch ? "partial" : "undone";
+            journal.Phase = !_cleanupCancel && generation == _cleanupEpoch &&
+                journal.Restored >= journal.Removed && conflicts == 0
+                    ? "undone" : "partial";
             CleanupPublish(player, new(journal.Phase,
                 $"Undo: restored {restored:N0} voxels; skipped {conflicts:N0} changed/already-restored cells. " +
                 $"World backup remains available: {journal.BackupName}.",
