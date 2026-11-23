@@ -86,7 +86,7 @@ class SafetyTests(unittest.TestCase):
         self.assertNotIn("Build.FindWall(",CODE)
 
     def test_backup_and_saved_ledger_always_precede_any_write(self):
-        journal=CODE.index("WorldData.Set(LedgerKeyFor(plan.Altar), journal);")
+        journal=CODE.index("WorldData.Set(CurrentLedgerKeyFor(plan.Altar), journal);")
         backup=CODE.index("await Saves.Backup(name)")
         checked=CODE.index("backupCompleted = true")
         edit=CODE.index("Build.WriteIfUnchanged(chunk.Box, desired, expected, options, mask)")
