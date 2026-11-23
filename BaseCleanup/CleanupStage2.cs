@@ -77,26 +77,30 @@ public sealed partial class BaseCleanupMod
 
     private static bool TryGetJournal(PlayerBase altar, out CleanupLedger journal)
     {
+        // Always offer an outstanding rollback before an already-completed
+        // journal. This preserves access to older v0.2/v0.3.2 recoveries
+        // when a later, fully undone experiment also exists.
+        CleanupLedger? completed = null;
         if (WorldData.TryGet<CleanupLedger>(CurrentLedgerKeyFor(altar), out var current) &&
             !string.IsNullOrEmpty(current.Packed))
         {
-            journal = current;
-            return true;
+            if (!FullyUndone(current)) { journal = current; return true; }
+            completed ??= current;
         }
         if (WorldData.TryGet<CleanupLedger>(PreviousLedgerKeyFor(altar), out var previous) &&
             !string.IsNullOrEmpty(previous.Packed))
         {
-            journal = previous;
-            return true;
+            if (!FullyUndone(previous)) { journal = previous; return true; }
+            completed ??= previous;
         }
         if (WorldData.TryGet<CleanupLedger>(LedgerKeyFor(altar), out var legacy) &&
             !string.IsNullOrEmpty(legacy.Packed))
         {
-            journal = legacy;
-            return true;
+            if (!FullyUndone(legacy)) { journal = legacy; return true; }
+            completed ??= legacy;
         }
-        journal = null!;
-        return false;
+        journal = completed!;
+        return completed is not null;
     }
 
     private const string CleanupPermission = "base-cleanup.command.baseclean";
