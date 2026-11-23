@@ -32,6 +32,8 @@ jobs:
           dotnet-version: '10.0.x'
       - name: Validate scanner, cleanup, backup retention and decay safety invariants
         run: python3 -m unittest discover -s tests/base-cleanup -p 'test_*.py' -v
+      - name: Exercise actual backup rotation implementation against fake Kiln inventory
+        run: dotnet run --project tests/base-cleanup/BackupRetentionHarness.csproj -c Release
       - name: Fetch checksum-verified official Kiln dev.30.6 SDK
         run: python3 BaseCleanup/fetch-sdk.py
       - name: Restore Kiln dependencies
