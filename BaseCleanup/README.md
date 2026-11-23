@@ -1,132 +1,174 @@
-# Base Cleanup v0.3.4 — staged workflow and independent Undo histories
+# Base Cleanup v0.3.5 — selective categories, no forced world saves, journal purge
 
-**Experimental test build — do not merge or tag before in-game acceptance.**
-Released v0.3.2 remains unchanged. This candidate lives on draft PR #74,
-has the same mod ID `base-cleanup`, and displays **Base Cleanup** in Kiln.
+**Draft experimental test candidate only. Not merged or released.**
+The stable GitHub release remains v0.3.2. This version builds on
+the user's successful in-game v0.3.4 staged Scan → Options → Prepare
+→ REMOVE → UNDO workflow and material-37 mud removal.
 
-## Accepted v0.3.3 material-37 finding (23 November 2026)
+Display name: **Base Cleanup**. Mod ID: `base-cleanup`. Hotkey:
+**Shift+ScrollLock** (remappable in Insert → Keys).
 
-The user's Flame Altar 1026 test on Kiln dev.30.6 succeeded:
-- The complete survey read 32,768,000 voxels with zero unreadable.
-- Preparation selected **199,135** voxels, including **48,183**
-  cosmetic-decay repairs and material-37 creek/ditch mud.
-- The complete world backup was verified before any change.
-- REMOVE edited all 199,135 cells, zero conflicts.
-- UNDO restored all 199,135 cells, zero conflicts.
+## Why the journals survive uninstall
 
-The user then tried REMOVE immediately after UNDO; the consumed
-prepared plan correctly refused that direct action. A fresh plan also
-failed because v0.3.3 could never reuse its single fixed journal key,
-even after the previous Undo. The v0.3.4 test fixes both workflow
-problems, rather than merely keeping an unsafe REMOVE button enabled.
+Kiln stores Base Cleanup's journals through `WorldData` (JSON values
+scoped to the `base-cleanup` mod inside a versioned per-world Kiln
+sidecar), not inside the mod ZIP or directory:
 
-## Staged in-game workflow
+`kiln/data/worlds/<world id>/`
 
-Open the **Base Cleanup** panel with **Shift+ScrollLock** (remappable under
-Insert > Keys). Only the controls relevant to the current step appear:
+Kiln intentionally keeps this mod data through a mod's disable,
+reload, and launcher uninstall. `Mod.OnUnload` is also called on
+ordinary game shutdown/reload/disable and therefore **must NOT
+delete journals**: doing that would make logout destroy Undo.
 
-1. **Scan current Flame Altar**. This is a read-only 3-D census and must
-   finish with zero unreadable cells to unlock the next step. Cancel
-   the scan at any time; no voxel changes need undoing.
-2. **Choose options**: rubble always included; optional **mud terrain
-   material 37**, optional mineable mycelium, and optional cosmetic
-   weathering repair are selected independently. All three optional
-   settings default ON. The test warns that material 37 may be several
-   metres thick: selecting it excavates the entire material volume.
-   Back returns to a new read-only scan.
-3. **Prepare selected options**. The server re-reads the entire Flame
-   Altar for precise target counts and original 16-bit raw values.
-   This is read-only and cancellable. Changed options invalidate any
-   previous plan. Plans expire after 10 minutes.
-4. **Review counts and REMOVE**. The UI only shows REMOVE if the server
-   has a valid prepared plan. Type **REMOVE** exactly. The mod saves a
-   new, uniquely keyed, complete original-voxel journal and obtains a
-   verified full-world backup **before any write**. All selected voxels
-   are guarded with `Build.WriteIfUnchanged`. A failed backup means
-   zero edits. Stage 1's scan must be repeated for the next operation.
-5. **UNDO this operation**. Type **UNDO** exactly. It restores only
-   cells still in the expected post-edit state, skipping external edits
-   rather than overwriting them. Successful Undo returns to **Step 1:
-   Scan**, never to another unprepared REMOVE. For a second operation,
-   scan → select → prepare → confirm again.
+**Supported cleanup before uninstall:** On EVERY world where this mod
+was used, launch the game with Base Cleanup installed, enter that
+world and run the two chat commands below; allow the game's next
+normal autosave to persist the deletion, then uninstall the package
+via Kiln Launcher.
 
-From Step 5 you may instead select **Start another operation (fresh
-scan)**, retaining the preceding operation and its separately recoverable
-journal. On game reload, an outstanding recovery is accessible from
-Step 1. Multiple operations can be undone **individually, newest first**
-(LIFO) to protect dependencies. After one Undo, the next previous
-operation becomes available. No two REMOVE operations share a journal.
-The mod stores at most **32 operations per altar**; at that bound it
-refuses to create more, rather than silently destroy an earlier
-recovery record. This cap is intentionally conservative for testing.
+A mod cannot guarantee deletion of historical generations already
+stored in Kiln's shared world-data bundles or old **whole-world**
+backups created by earlier versions. These may still exist after
+purging the current keys, and neither the mod's uninstall nor
+`WorldData.Remove` deletes those files. Do NOT manually delete
+`kiln/data/worlds/` or `kiln/backups/` wholesale: they may
+contain data for other mods/worlds/players. A true uninstall-time
+purge of all retained generations requires Kiln launcher support.
 
-### Existing journals remain readable
+## No forced whole-world backups or saves
 
-- `cleanup-rollback-v1-...` — Base Cleanup v0.2.0
-- `cleanup-rollback-v2-...` — v0.3.1/v0.3.2
-- `cleanup-rollback-v3-...` — the accepted v0.3.3 test
-- `cleanup-rollback-v4-index-...` — new transaction index per altar
-- `cleanup-rollback-v4-...-000001`, `...-000002`, etc. — **individual**
-  backup / Undo journals for v0.3.4 operations.
+**New in v0.3.5:** Base Cleanup no longer calls `Saves.Backup`,
+`Saves.Request`, or any restore API. It does not create a whole-world
+backup or force a world save, avoiding the extra save impact on
+unrelated multiplayer bases.
 
-Earlier records are never overwritten or removed. A prior fully
-completed cleanup, or a completely undone cleanup, does not block a
-new operation. Incomplete, interrupted, partly undone or conflicted
-records **do** block new work until restored/reconciled.
-The index is checked on every operation. Missing, corrupt or
-non-monotonic history refuses new writes. An interrupted Undo is safe
-to retry: it recognises already-restored cells as no-ops, not conflicts.
+Each confirmed REMOVE instead registers its own immutable original-
+voxel Undo journal and separate per-altar history entry with Kiln
+`WorldData` **before editing any voxels**. Kiln's normal game save
+persists the journal and terrain as a matching generation; no special
+save is required by this mod. Until the next ordinary world save,
+the journal and edits may exist only in memory. A crash restores
+the last *consistent* saved generation, as documented by Kiln's
+save-data API. These normal game saves are controlled by Enshrouded,
+not Base Cleanup.
 
-## Material and geometry safety
+`Build.WriteIfUnchanged` and Undo continue to compare exact original
+and expected raw voxels; external edits are never overwritten.
+Full-world backup restore is not a Base Cleanup feature and no longer
+part of its normal procedure. Previously created backup files
+remain under Kiln ownership and are not touched.
 
-Stage 2 still removes rubble material IDs 8, 64, 66, 69, 74, 81, 87,
-102, 107, 23, 36, 43, 44, 61, 62, 92. The mud option now targets
-**terrain cell 37 instead of 91**. Mycelium selects 14, 33, 65, 72.
-All these terrain targets are removed to AIR inside the entire 3-D
-Flame Altar — not a surface decal removal or geometry-preserving
-substitution. The original puddle sample showed thick material-37
-terrain layers. **The mud option can excavate a creek, ditch or floor.**
+## Every cleanup category is selectable
 
-The separate cosmetic decay toggle clears only bit `0x8000` from
-building material 128–255 voxels. It preserves material, geometry,
-the low paint bits and overgrowth flags. Ivy, props and repairs of
-missing buildings remain outside this mod.
+Four independent checkboxes, initially ON to retain prior defaults:
 
-## In-game v0.3.4 acceptance test (copied world required)
+1. **Rubble** — the former always-included category, material IDs
+   8, 64, 66, 69, 74, 81, 87, 102, 107, 23, 36, 43, 44, 61, 62, 92.
+2. **Creek/ditch mud** — terrain material 37. Material 91 is no longer
+   targeted. The 37 material may extend metres deep: removing it
+   excavates terrain, not just a decal. Check counts carefully.
+3. **Mineable mycelium** — terrain 14, 33, 65, 72.
+4. **Cosmetic decay** — building weathering flag `0x8000` only.
+   Building material, tint and overgrowth bits are preserved.
 
-1. Install the GitHub Actions `base-cleanup-staged-0.3.4-test` artifact's
-   inner `base-cleanup-0.3.4.zip`, replacing v0.3.3. Never load two
-   versions with the same Kiln mod ID.
-2. Press **Shift+ScrollLock**. Only **Scan** should initially appear,
-   with a clearly labelled option to recover an older operation if
-   it is still undoable. Scan altar 1026. Check that only options
-   appear when the 32,768,000-voxel read is complete.
-3. Toggle off cosmetic decay/mycelium if you want a mud-centred
-   experiment. **Prepare**; check that REMOVE is hidden while planning.
-   Confirm prepared counts (especially material 37) before REMOVE.
-4. Type **REMOVE**; verify a **new** full-world backup and operation
-   number are reported, and the targeted voxels change as expected.
-5. Type **UNDO**; verify all edited cells are restored with zero
-   conflicts, and the panel returns to **Scan**, not REMOVE.
-6. Repeat **Scan → options → Prepare → REMOVE → UNDO** in the SAME
-   altar and save. This is the key regression: the new operation must
-   have a DIFFERENT backup and journal number.
-7. Optional: complete two operations without undoing the first,
-   then undo them newest first. Verify each is independently restored.
-   Upload Kiln support ZIP and relevant screenshots.
+You may use any nonempty combination, but **Undo is per REMOVE
+operation**. To remove/restore one category independently, select
+that category alone, prepare/commit, and use that operation's UNDO.
+If you choose multiple categories together, the journal groups
+them for one Undo. Later operations must be undone before earlier
+ones (newest first), to avoid overwriting later edits.
 
-**Manual world-backup restore** on hosted Enshrouded still requires
-closing the game and restoring matching world and Kiln mod-data files.
-The in-game selective Undo is safe only where voxels have not been
-modified by another writer.
+A plan with all four categories OFF is refused; the server also
+verifies the exact selected options on commit. Read-only planning
+still expires after 10 minutes. Every new operation requires a fresh
+complete 3-D altar scan with zero unreadable voxels.
 
-## Build
+### Staged UI
 
-Pinned Kiln dev.30.6 SDK, .NET 10:
+1. **Scan** the current Flame Altar (read-only).
+2. Choose the four category checkboxes.
+3. **Prepare** the selected options (read-only), inspect counts.
+4. Type **REMOVE** to commit (separate persistent journal).
+5. Type **UNDO** for selective rollback, or choose a fresh Scan for
+   the next operation. Undo success returns to Scan.
+
+Up to 32 individually journalled REMOVE operations per altar are
+retained; new operations fail closed when this limit is reached,
+rather than silently destroy any recovery history. A completed
+operation can coexist with a later operation; interrupted/partial
+or conflicted operations block new changes until resolved.
+Recovery journals from v0.2, v0.3.2 and v0.3.3 remain readable.
+
+## In-game chat: delete ALL Base Cleanup journals
+
+**WARNING: irreversible.** This deletes all Base Cleanup rollback
+keys in the **CURRENT loaded world**, across ALL its Flame Altars,
+including legacy v1/v2/v3 and new v4 per-operation journals and
+history indexes. It does NOT remove or restore terrain. Afterward
+no Base Cleanup Undo will be possible for those operations.
+
+The commands require admin permission and a loaded world whose Kiln
+mod data exactly matches the game save. Never run them during
+active cleanup, Undo or scanning.
+
+First preview the current-world journal inventory:
+
+```text
+/baseclean journals
+```
+
+The game will reply with the number of matching keys, world ID and
+a warning, and arm a time-limited confirmation for two minutes.
+To permanently delete precisely those keys, type exactly:
+
+```text
+/baseclean journals delete DELETE_ALL_JOURNALS
+```
+
+The server confirms the same player, world, time window and that the
+set of journal keys has not changed. An expired/stale/mismatched
+preview refuses deletion. The command deletes `WorldData` keys
+only; it does not edit any voxels, trigger any game save, request
+a backup, remove other mods' records or touch filesystem paths.
+
+**Wait for the game's next ordinary world autosave** before
+uninstalling the mod, so the deleted keys are absent from the next
+persistent generation. Historical generations / earlier backups
+may still contain old records, as described above. If the mod is
+already uninstalled, reinstall it in the same world to run this
+command; simply deleting the mod ZIP is not a data purge.
+
+## Test v0.3.5 on a COPIED world
+
+1. Install the Actions test package `base-cleanup-0.3.5.zip`
+   extracted from artifact `base-cleanup-selective-0.3.5-test`.
+2. Survey a test Flame Altar. Untick Mud, Mycelium and Decay;
+   confirm **rubble-only** Prepare/REMOVE edits only rubble.
+3. UNDO and verify complete restoration and zero conflicts.
+4. Repeat with **mud-only**, if that volume is acceptable;
+   verify separate operation and independent Undo.
+5. Observe normal gameplay save timing; ensure **no Base Cleanup
+   whole-world backup** is generated. Logout/re-enter, check the
+   independent Undo persists and still restores selected voxels.
+6. After *fully undoing* tests and on a dispensable copied world,
+   run the **two-step chat purge**. Verify the journal count becomes
+   zero, Undo reports no saved journal, and the count stays zero
+   after the next natural save/restart.
+
+Do NOT purge the real world's accepted Undo history just to test
+the command. The purge is destructive and cannot be rolled back
+by Base Cleanup.
+
+## Development
+
+Built with the checksum-pinned official Kiln dev.30.6 SDK and .NET 10.
+From the repository root:
 `bash build-stage1.sh`.
-Artifact: `bin/Release/base-cleanup-0.3.4.zip`.
 
-PR workflow tests scanner, safety, mud37, staged UI, journal history
-and Undo logic; builds with the official pinned SDK and verifies
-the installable KilnPack archive. **No PR build publishes a release.**
-The PR stays draft until in-game acceptance.
+CI runs the existing scanner/cleanup tests and the additional
+independent-category, no-save and two-step-purge tests before
+compilation and KilnPack ZIP verification.
+
+**PR #74 stays draft until user acceptance. No upstream changes,
+merge, tag or release is performed by a PR build.**
