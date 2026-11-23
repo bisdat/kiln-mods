@@ -221,13 +221,27 @@ public sealed partial class BaseCleanupMod
                 active.Read, active.Total, active.Hits, 0, 0, "");
         if (_preparedCleanup is { } p)
             return PlanStatus(p, "prepared", "Plan ready. Inspect the counts and type REMOVE to confirm.");
-        if (Saves.Available && Saves.WorldDataReady && AltarAt(player) is { } here &&
-            TryGetJournal(here, out var l))
-            return new(l.Phase, $"Saved undo journal: {l.Planned:N0} voxels " +
-                $"(decay {l.DecayPlanned:N0}); edited {l.Removed:N0}; restored {l.Restored:N0}; " +
-                $"conflicts {l.Conflicted:N0}. Select UNDO for selective rollback.",
-                l.Removed + l.Restored, l.Planned, 0, 0, 0, l.BackupName) { Decay = l.DecayPlanned };
-        return new("idle", "No cleanup prepared. Stage 1 scan remains available above.", 0, 0, 0, 0, 0, "");
+        if (Saves.Available && Saves.WorldDataReady && AltarAt(player) is { } here)
+        {
+            try
+            {
+                if (TryGetJournal(here, out var l))
+                    return new(l.Phase, $"Saved operation " +
+                        (l.OperationNumber > 0 ? $"#{l.OperationNumber}" : "(legacy)") +
+                        $": {l.Planned:N0} voxels (decay {l.DecayPlanned:N0}); " +
+                        $"edited {l.Removed:N0}; restored {l.Restored:N0}; " +
+                        $"conflicts {l.Conflicted:N0}. Undo is separate for each operation, newest first.",
+                        l.Removed + l.Restored, l.Planned, 0, 0, 0, l.BackupName) { Decay = l.DecayPlanned };
+            }
+            catch (Exception ex)
+            {
+                Log.Warn("base-cleanup journal status unavailable: " + ex);
+                return new("failed", "Saved cleanup history is unreadable; " +
+                    "no operation will be permitted until recovery records are resolved.",
+                    0, 0, 0, 0, 0, "");
+            }
+        }
+        return new("idle", "Step 1: Scan current Flame Altar. No pending Undo operations.", 0, 0, 0, 0, 0, "");
     }
 
     private static CleanupStatus PlanStatus(CleanupPlan p, string phase, string message) =>
@@ -697,9 +711,19 @@ public sealed partial class BaseCleanupMod
                 0, 0, 0, 0, 0, ""));
             return;
         }
-        if (!TryGetJournal(altar, out var journal))
+        CleanupLedger journal;
+        try
         {
-            CleanupPublish(player, new("failed", "No saved cleanup journal for this altar.",
+            if (!TryGetJournal(altar, out journal))
+            {
+                CleanupPublish(player, new("failed", "No remaining operation to undo in this altar.",
+                    0, 0, 0, 0, 0, ""));
+                return;
+            }
+        }
+        catch (Exception ex)
+        {
+            CleanupPublish(player, new("failed", "Cannot load saved Undo history: " + ex.Message,
                 0, 0, 0, 0, 0, ""));
             return;
         }
@@ -956,6 +980,20 @@ public sealed partial class BaseCleanupMod
         _cleanupCancel = true;
         _preparedCleanup = null;
         _activeCleanup = null;
+        _cleanupBusy = false;
+        _lastSurveyWorldId = null;
+        _lastSurveyAltar = null;
+        _latest = null;
+        if (Client.Available && Client.IsClient)
+            Client.Post(() =>
+            {
+                Volatile.Write(ref _uiStage, 0);
+                Volatile.Write(ref _viewReport, null);
+                Volatile.Write(ref _viewProgress, null);
+                Volatile.Write(ref _viewCleanup, null);
+                _cleanupConfirm = "";
+                _undoConfirm = "";
+            });
     }
 
     [Subscribe]
