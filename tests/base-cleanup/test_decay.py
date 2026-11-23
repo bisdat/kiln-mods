@@ -113,7 +113,7 @@ class DecayTests(unittest.TestCase):
         self.assertIn("FullyUndone(CleanupLedger old)", CODE)
         self.assertIn('old.Phase == "undone" && old.Planned > 0', CODE)
         self.assertIn("(old.Removed > 0 || old.OperationNumber > 0)", CODE)
-        self.assertIn("old.Restored >= old.Removed && old.Conflicted == 0", CODE)
+        self.assertIn("old.Restored >= old.Removed;", CODE)
         self.assertIn("!SettledPreviousJournal(legacy)", CODE)
         self.assertIn("TryGetJournal(altar, out journal)", CODE)
         self.assertIn("WorldData.TryGet<CleanupLedger>(LedgerKeyFor(altar), out var v1)", CODE)
