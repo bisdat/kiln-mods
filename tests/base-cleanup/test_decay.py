@@ -111,7 +111,8 @@ class DecayTests(unittest.TestCase):
         self.assertIn("PreviousLedgerPrefix + LedgerKeyFor(altar)[LedgerPrefix.Length..]", CODE)
         self.assertIn("WorldData.TryGet<CleanupLedger>(PreviousLedgerKeyFor(altar)", CODE)
         self.assertIn("FullyUndone(CleanupLedger old)", CODE)
-        self.assertIn('old.Phase == "undone" && old.Removed > 0', CODE)
+        self.assertIn('old.Phase == "undone" && old.Planned > 0', CODE)
+        self.assertIn("(old.Removed > 0 || old.OperationNumber > 0)", CODE)
         self.assertIn("old.Restored >= old.Removed && old.Conflicted == 0", CODE)
         self.assertIn("!SettledPreviousJournal(legacy)", CODE)
         self.assertIn("TryGetJournal(altar, out var journal)", CODE)
@@ -136,7 +137,7 @@ class DecayTests(unittest.TestCase):
         self.assertIn("Decay {status.Decay:N0}", CODE)
         self.assertNotIn("OvergrowthMask", CORE)
         self.assertNotIn("GrowthTarget", CORE)
-        self.assertIn("Ivy/overgrowth cleanup is excluded", CODE)
+        self.assertIn("ivy/overgrowth is excluded", CODE)
 
     def test_v03_package_and_network(self):
         self.assertIn("<Version>0.3.4</Version>", PROJECT)
