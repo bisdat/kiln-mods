@@ -1,80 +1,126 @@
-# Base Cleanup - Stage 1 (read-only survey)
+# Base Cleanup - Stage 2 (experimental v0.2.0)
 
-Experimental Kiln mod for Enshrouded. Version 0.1.0. This is an
-unaccepted test candidate that never edits world blocks or save data.
-Built against the official Kiln 0.2.0-dev.30.6 SDK.
+Kiln mod for Enshrouded, developed only in bisdat/kiln-mods.
+This is a TEST CANDIDATE, not a release or an upstream Kiln change.
 
-## Scope
+## Stage 1 (preserved)
+Press Ctrl+Shift+F10 in a Flame Altar's zone to survey its full
+3D rectangular build volume. Counts filled voxels by material ID,
+including buried and floating voxels; unreadable areas are reported
+separately. No support or surface checks are used.
 
-- Detects the Flame Altar build zone containing the character.
-- Uses the actual 3D rectangular altar boundaries, not a spherical guess.
-  If altar zones overlap, the closest containing altar is scanned, not
-  the union of all overlapping zones.
-- Inventories **every filled voxel**, including buried and suspended
-  materials. No structural support, surface or exposure filters.
-- Separately counts 9 placeable rubble and 7 world-authored rubble
-  materials, 4 mineable mycelium materials, and underwater mud (ID 91).
-- Reports counts and fill-weighted cubic metres for every material ID.
-  Zero-filled cells are air even when the voxel's material byte is set.
-- Streams voxel batches of at most 8,192 cells, with progress and cancel.
-- Unavailable tiles are counted as unreadable, never assumed empty.
-- Surface overgrowth and cosmetic decay are not detected by voxel reads.
+## Stage 2 (new)
+A deliberately confirmed cleanup of terrain material IDs:
 
-## Installation and use
+- Rubble: 8, 64, 66, 69, 74, 81, 87, 102, 107,
+  23, 36, 43, 44, 61, 62, 92.
+- Underwater mud (optional, enabled by default): 91.
+- Mineable mycelium (optional, enabled by default): 14, 33, 65, 72.
 
-Download the artifact from the Package Base Cleanup Stage 1 workflow on
-the draft PR. GitHub wraps an installable Kiln ZIP in a downloadable
-artifact archive; extract the **inner base-cleanup-0.1.0.zip** before
-installing it with the Kiln Launcher. Enable it in your Kiln profile.
+Building blocks (material 128+), other terrain, vegetation entities,
+surface overgrowth, and cosmetic decay are not targeted.
 
-1. Open your hosted or joined world; stand within the altar build zone.
-2. Press Ctrl+Shift+F10 (remappable in Insert > Keys).
-3. Choose **Scan current Flame Altar**.
-4. View survey progress and the exact material inventory. Cancel if desired.
-5. Examine kiln/logs/kiln.log for individual material IDs and volumes.
+From the successful 23 Nov 2026 report on the 160 x 160 x 160 m
+Flame Altar zone (32,768,000 voxels scanned, zero unreadable):
+- Rubble material 23: 38,717 cells.
+- Rubble material 43: 693 cells.
+- Rubble material 66: 469 cells.
+- Mud and mineable mycelium: none detected.
+- Current candidate count: 39,879 if no intervening world changes.
 
-Host single-player uses the authoritative server tick without loopback
-network assumptions. Joined clients with the mod may request a scan
-from an admin account. No request carries a forged player entity.
+Stage 2 rescans; it does not trust the historical material counts.
 
-## Chat / console commands
+## SAFETY: TEST ON A COPIED WORLD
 
-- /basescan : start a new survey where the player stands
-- /basescan status : see progress
-- /basescan cancel : request cancellation
-- /basescan report : summary
-- /basescan materials [page] : materials per 12-row page
+1. Prepare removal plan (read-only): surveys and records exact original
+   voxel values. Unreadable areas abort planning without any change.
+2. Review exact counts and warnings; type REMOVE and confirm while
+   still in the same altar, within 10 minutes of preparation.
+3. Kiln records the entire compressed sparse voxel undo journal in
+   per-world WorldData. Mandatory Saves.Backup saves the world AND
+   the matching Kiln mod data before the first edit.
+   Backup failure means no voxels are modified.
+4. Voxel removal writes air in small batches with
+   Build.WriteIfUnchanged and explicit InBases + RespectZones,
+   plus actor authorization and write verification.
+   Other edits made since planning are skipped.
+5. To undo, type UNDO. The original material and fill values are
+   restored ONLY where the cell is still air. Other non-air
+   player changes are not overwritten. The saved journal persists
+   across ordinary saves and restarts.
+6. The full-world backup remains separately available via Kiln.Saves.
+   A full-world restore resets ALL later world changes, including
+   unrelated gameplay, and applies only after a restart.
 
-Offline hosted worlds may run commands using Kiln's
-kiln/control/console folder, acting as the current local player.
+NOTE: air from our cleanup is indistinguishable from an independently
+edited voxel also set to air later. Do not build or terraform between
+cleanup and undo if you need an exact restoration. Kiln's world and
+mod-data generations must match; an out-of-sync journal refuses undo.
 
-## Building
+Only one active journal per world is allowed in this candidate;
+new cleanup plans are refused while an old journal remains, even
+after undo. That prevents replacing the only recovery record.
+There are NO structural, surface, depth, gravity or support checks.
 
-In a checkout of bisdat/kiln-mods with .NET 10 installed:
+## Installation and controls
+
+1. On PR #69's successful Stage 2 CI workflow, download artifact
+   base-cleanup-stage2-0.2.0. Extract the inner
+   base-cleanup-0.2.0.zip and install using the Kiln Launcher.
+2. Enable the mod in your profile, enter a copied world, stand
+   in your target Flame Altar zone.
+3. Press Ctrl+Shift+F10 (remappable via Insert > Keys).
+4. Prepare removal plan. Review the candidate rubble/mud counts.
+5. Type REMOVE exactly. Confirm backup and removal.
+6. Review visuals and log, save and restart.
+7. For selective rollback, type UNDO and activate Undo previous cleanup.
+
+The UI includes progress and cancellation, with server-side permission
+checks. The server computes all changes; network requests never supply
+a forged player identity.
+
+## Chat / console commands (admin)
+
+Stage 1:
+- /basescan
+- /basescan status | cancel | report
+- /basescan materials [page]
+
+Stage 2:
+- /baseclean prepare
+- /baseclean status
+- /baseclean confirm REMOVE
+- /baseclean cancel
+- /baseclean undo UNDO
+
+Host offline worlds without chat can use kiln/control/console.
+
+## Build and CI
+
+Requires .NET 10 and official Kiln 0.2.0-dev.30.6 SDK. From the
+repository root run:
 
     bash build-stage1.sh
 
-The script verifies the material logic/read-only contract, fetches the
-official SDK assets (SHA256 verified against upstream's SHA256SUMS),
-restores and compiles the mod, and produces:
+This keeps the original entrypoint on existing PR #69 and now runs
+Stage 1 and Stage 2 regression tests, checksum-verifies SDK assets,
+compiles and packages bin/Release/base-cleanup-0.2.0.zip.
 
-    bin/Release/base-cleanup-0.1.0.zip
+CI uploads an installable TEST artifact. No release, tag, merge
+or upstream changes are made.
 
-The PR CI runs the same steps and uploads only a test artifact. It does
-not publish a release or tag, merge or change upstream Kiln.
+## In-game acceptance (copied save)
 
-## In-game acceptance (use a copied save)
+- [ ] Stage 1 remains correct, with no unreadable cells.
+- [ ] Plan reports expected rubble (approximately 39,879 if unchanged).
+- [ ] World remains unchanged before explicit REMOVE confirmation.
+- [ ] Backup and journal demonstrably precede any removal.
+- [ ] Identified rubble disappears, including buried areas.
+- [ ] Unrelated building material and natural terrain remain.
+- [ ] Cancel leaves persistent undo available for committed cells.
+- [ ] Save and restart: cleanup persists and Undo remains available.
+- [ ] Undo restores original material/fill values; verify after restart.
+- [ ] No unhandled errors, hangs or network desync.
 
-- [ ] Mod loads; Ctrl+Shift+F10 opens preview.
-- [ ] Current altar and displayed zone dimensions are correct.
-- [ ] Full scan completes or precisely reports unreadable cells.
-- [ ] Buried rubble, freely floating construction and underground mud
-      are included in counts; air cells are not.
-- [ ] Cancel and re-scan both work, with progress in the panel.
-- [ ] /basescan report and /basescan materials agree with the panel.
-- [ ] Game stays responsive during scanning.
-- [ ] Save/restart confirms zero world modifications.
-- [ ] Multiplayer permissions and host-side read are validated if used.
-
-This is Stage 1 only. Destructive Stage 2 and rollback require separate
-approval. In-game acceptance is not asserted by successful CI.
+A green CI run is not an in-game PASS. Inspect kiln.log, a follow-up
+Stage 1 scan, and before/after screenshots.
