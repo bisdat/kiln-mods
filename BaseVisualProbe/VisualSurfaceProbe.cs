@@ -211,6 +211,28 @@ public sealed partial class BaseVisualProbeMod
         ui.EndChild();
     }
 
+    [Command("vprobe spotclean",
+        Description = "Read-only 5m surface sample near a visibly clean wall",
+        Permission = CommandPermission.Admin)]
+    private void SpotCleanCommand(CommandContext c)
+    {
+        if (c.Source.Player.IsNone)
+            throw new CommandException("run as a player in an active world");
+        StartSpot(c.Source.Player, 6);
+        c.Reply("Requested read-only CLEAN wall sample at current position.");
+    }
+
+    [Command("vprobe spotivy",
+        Description = "Read-only 5m surface sample near a visibly ivy-covered wall",
+        Permission = CommandPermission.Admin)]
+    private void SpotIvyCommand(CommandContext c)
+    {
+        if (c.Source.Player.IsNone)
+            throw new CommandException("run as a player in an active world");
+        StartSpot(c.Source.Player, 7);
+        c.Reply("Requested read-only OVERGROWN wall sample at current position.");
+    }
+
     private void ResetSurfaceSpot()
     {
         _cleanSpot = null; _ivySpot = null;
