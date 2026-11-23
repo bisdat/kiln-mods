@@ -1,7 +1,10 @@
 // SPDX-License-Identifier: MIT
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Kiln;
@@ -34,7 +37,21 @@ public sealed record CleanupStatus(string Phase, string Message, long Done, long
 /// </summary>
 public sealed partial class BaseCleanupMod
 {
-    private const string LedgerKey = "cleanup-rollback-v1";
+    private const string LedgerPrefix = "cleanup-rollback-v1-";
+    // One stable per-altar WorldData key; a second altar cannot overwrite
+    // a previous altar's recovery record. GUIDs derived from ephemeral
+    // entity IDs would be wrong across hosted world restarts.
+    private static string LedgerKeyFor(PlayerBase altar)
+    {
+        var parts = new[] {
+            altar.Center.X, altar.Center.Y, altar.Center.Z,
+            (double)altar.Half.X, (double)altar.Half.Y, (double)altar.Half.Z,
+        };
+        var normalized = string.Join("|", parts.Select(n =>
+            Math.Round(n, 3).ToString("F3", CultureInfo.InvariantCulture)));
+        return LedgerPrefix + Convert.ToHexString(
+            SHA256.HashData(Encoding.UTF8.GetBytes(normalized))).ToLowerInvariant()[..32];
+    }
     private const string CleanupPermission = "base-cleanup.command.baseclean";
     private const string ConfirmRemove = "REMOVE";
     private const string ConfirmUndo = "UNDO";
@@ -81,20 +98,20 @@ public sealed partial class BaseCleanupMod
             case 2: BeginCleanup(player); break;
             case 3: BeginUndo(player); break;
             case 4: CancelCleanup(player); break;
-            case 5: CleanupPublish(player, CleanupCurrentStatus()); break;
+            case 5: CleanupPublish(player, CleanupCurrentStatus(player)); break;
             default: CleanupPublish(player, new("failed", "Unknown cleanup action.", 0, 0, 0, 0, 0, "")); break;
         }
     }
 
-    private CleanupStatus CleanupCurrentStatus()
+    private CleanupStatus CleanupCurrentStatus(EntityId player)
     {
         if (_cleanupBusy && _activeCleanup is { } active)
             return new("working", "Preparing or applying a cleanup; see progress updates.",
                 active.Read, active.Total, active.Hits, 0, 0, "");
         if (_preparedCleanup is { } p)
             return PlanStatus(p, "prepared", "Plan ready. Inspect the counts and type REMOVE to confirm.");
-        if (Saves.Available && Saves.WorldDataReady &&
-            WorldData.TryGet<CleanupLedger>(LedgerKey, out var l) && l.Packed.Length != 0)
+        if (Saves.Available && Saves.WorldDataReady && AltarAt(player) is { } here &&
+            WorldData.TryGet<CleanupLedger>(LedgerKeyFor(here), out var l) && l.Packed.Length != 0)
             return new(l.Phase, $"Saved undo journal: {l.Planned:N0} voxels; removed {l.Removed:N0}; " +
                 $"restored {l.Restored:N0}; conflicts {l.Conflicted:N0}. Select UNDO to restore unchanged air cells.",
                 l.Removed + l.Restored, l.Planned, 0, 0, 0, l.BackupName);
@@ -155,10 +172,10 @@ public sealed partial class BaseCleanupMod
         return true;
     }
 
-    private bool HasOutstandingLedger(out string message)
+    private bool HasOutstandingLedger(PlayerBase altar, out string message)
     {
         message = "";
-        if (WorldData.TryGet<CleanupLedger>(LedgerKey, out var journal) &&
+        if (WorldData.TryGet<CleanupLedger>(LedgerKeyFor(altar), out var journal) &&
             journal.Packed.Length != 0)
         {
             message = $"A cleanup journal already exists ({journal.Phase}; backup {journal.BackupName}). " +
@@ -185,14 +202,14 @@ public sealed partial class BaseCleanupMod
             CleanupPublish(player, new("failed", reason, 0, 0, 0, 0, 0, ""));
             return;
         }
-        if (HasOutstandingLedger(out reason))
-        {
-            CleanupPublish(player, new("failed", reason, 0, 0, 0, 0, 0, ""));
-            return;
-        }
         if (AltarAt(player) is not { } altar || Build.Grid is not { } grid)
         {
             CleanupPublish(player, new("failed", "Stand inside the Flame Altar to prepare its cleanup.", 0, 0, 0, 0, 0, ""));
+            return;
+        }
+        if (HasOutstandingLedger(altar, out reason))
+        {
+            CleanupPublish(player, new("failed", reason, 0, 0, 0, 0, 0, ""));
             return;
         }
         var box = BaseScanCore.ZoneCells(altar, grid);
@@ -300,7 +317,7 @@ public sealed partial class BaseCleanupMod
                 "The altar, world or player location has changed. Prepare again.", 0, 0, 0, 0, 0, ""));
             return;
         }
-        if (HasOutstandingLedger(out reason))
+        if (HasOutstandingLedger(p.Altar, out reason))
         {
             CleanupPublish(player, new("failed", reason, 0, 0, 0, 0, 0, ""));
             return;
@@ -322,12 +339,12 @@ public sealed partial class BaseCleanupMod
             journal = CleanupSafety.Ledger(plan, name);
             // The entire original voxel journal is included in a real
             // game SAVE before the first write, and in the backup sidecar.
-            WorldData.Set(LedgerKey, journal);
+            WorldData.Set(LedgerKeyFor(plan.Altar), journal);
             CleanupPublish(plan.Player, PlanStatus(plan, "backup",
                 "Saving undo journal and creating a full-world backup BEFORE the first voxel edit."));
             var backup = await Saves.Backup(name);
             if (StopRequested(plan)) throw new OperationCanceledException("cancelled during backup");
-            if (backup.WorldId != plan.WorldId || backup.Files == 0)
+            if (backup.WorldId != plan.WorldId || backup.Files < 3 || backup.DataBundles == 0)
                 throw new InvalidOperationException("backup did not confirm matching world data");
             backupCompleted = true;
             journal.BackupName = backup.Name;
@@ -406,7 +423,7 @@ public sealed partial class BaseCleanupMod
                 if (!backupCompleted)
                 {
                     // No writes were permitted without a successful backup.
-                    WorldData.Remove(LedgerKey);
+                    WorldData.Remove(LedgerKeyFor(plan.Altar));
                 }
                 else
                 {
@@ -432,12 +449,22 @@ public sealed partial class BaseCleanupMod
             CleanupPublish(player, new("failed", "Another operation is running.", 0, 0, 0, 0, 0, ""));
             return;
         }
-        if (!SafeServices(out var reason) ||
-            !WorldData.TryGet<CleanupLedger>(LedgerKey, out var journal) ||
+        if (!SafeServices(out var reason))
+        {
+            CleanupPublish(player, new("failed", reason, 0, 0, 0, 0, 0, ""));
+            return;
+        }
+        if (AltarAt(player) is not { } altar)
+        {
+            CleanupPublish(player, new("failed", "Stand inside the altar whose cleanup you want to undo.",
+                0, 0, 0, 0, 0, ""));
+            return;
+        }
+        if (!WorldData.TryGet<CleanupLedger>(LedgerKeyFor(altar), out var journal) ||
             string.IsNullOrEmpty(journal.Packed))
         {
-            CleanupPublish(player, new("failed", reason.Length != 0 ? reason :
-                "No stored cleanup journal for this world.", 0, 0, 0, 0, 0, ""));
+            CleanupPublish(player, new("failed", "No saved cleanup journal for this altar.",
+                0, 0, 0, 0, 0, ""));
             return;
         }
         if (Saves.WorldId != journal.WorldId || Build.Grid is not { } grid ||
@@ -619,7 +646,7 @@ public sealed partial class BaseCleanupMod
     private void CleanupPublishForHost()
     {
         if (Client.IsHosting && Client.HasLocalPlayer)
-            CleanupPublish(Client.LocalPlayer, CleanupCurrentStatus());
+            CleanupPublish(Client.LocalPlayer, CleanupCurrentStatus(Client.LocalPlayer));
     }
 
     [Command("baseclean prepare", Description = "Read-only plan of rubble/mud/mycelium removal inside current Flame Altar",
@@ -655,7 +682,7 @@ public sealed partial class BaseCleanupMod
         Permission = CommandPermission.Admin)]
     private void CleanupStatusCommand(CommandContext c)
     {
-        var s = CleanupCurrentStatus();
+        var s = CleanupCurrentStatus(c.Source.Player);
         c.Reply($"[{s.Phase}] {s.Message}");
         c.Reply($"rubble={s.Rubble} mud={s.Mud} mycelium={s.Mycelium} backup={s.Backup}");
     }
