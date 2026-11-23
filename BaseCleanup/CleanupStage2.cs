@@ -181,6 +181,7 @@ public sealed partial class BaseCleanupMod
     private CleanupStatus? _viewCleanup;
     private string _cleanupConfirm = "";
     private string _undoConfirm = "";
+    private bool _includeRubble = true;
     private bool _includeMud = true;
     private bool _includeMycelium = true;
     private bool _includeDecay = true; // Default ON; remains independently user-toggleable.
@@ -401,7 +402,7 @@ public sealed partial class BaseCleanupMod
 
     private void BeginPreparation(EntityId player, byte options)
     {
-        if ((options & ~CleanupCore.AllowedOptions) != 0)
+        if (options == 0 || (options & ~CleanupCore.AllowedOptions) != 0)
         {
             CleanupPublish(player, new("failed", "Invalid cleanup material options.", 0, 0, 0, 0, 0, ""));
             return;
@@ -865,17 +866,20 @@ public sealed partial class BaseCleanupMod
     {
         var step = Volatile.Read(ref _uiStage);
         var status = Volatile.Read(ref _viewCleanup);
-        var flags = (byte)((_includeMud ? CleanupCore.IncludeMud : 0) |
+        var flags = (byte)((_includeRubble ? CleanupCore.IncludeRubble : 0) |
+                           (_includeMud ? CleanupCore.IncludeMud : 0) |
                            (_includeMycelium ? CleanupCore.IncludeMycelium : 0) |
                            (_includeDecay ? CleanupCore.IncludeDecay : 0));
 
         if (step == 1)
         {
-            ui.TextWrapped("Rubble is always included, even buried rubble. " +
-                "Choose the additional materials to remove in this operation.");
+            ui.TextWrapped("Select cleanup categories for this operation. " +
+                "To roll back one category independently, select only that category, " +
+                "REMOVE, then use its separate Undo journal.");
             ui.TextWrapped("MUD-37 TEST: the mud choice digs ALL matching terrain in this " +
                 "3-D Flame Altar, including buried cells. It may create deep holes. " +
                 "Review the plan on a copied save.");
+            ui.Checkbox("Include rubble (entire 3-D altar)", ref _includeRubble);
             ui.Checkbox("Include creek/ditch mud (material 37) — TEST", ref _includeMud);
             ui.Checkbox("Include mineable mycelium", ref _includeMycelium);
             ui.Checkbox("Repair cosmetic decay (ON by default)", ref _includeDecay);
@@ -1049,7 +1053,7 @@ public sealed partial class BaseCleanupMod
     private void CleanupPrepareNoDecayCommand(CommandContext c)
     {
         if (c.Source.Player.IsNone) throw new CommandException("run as a player in the world");
-        BeginPreparation(c.Source.Player, CleanupCore.IncludeMud | CleanupCore.IncludeMycelium);
+        BeginPreparation(c.Source.Player, CleanupCore.IncludeRubble | CleanupCore.IncludeMud | CleanupCore.IncludeMycelium);
         c.Reply("Preparing plan EXCLUDING decay; inspect /baseclean status before REMOVE.");
     }
 
