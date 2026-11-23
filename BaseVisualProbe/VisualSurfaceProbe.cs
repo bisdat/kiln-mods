@@ -195,6 +195,7 @@ public sealed partial class BaseVisualProbeMod
             ui.Text($"Level 7 among air-adjacent buildings: CLEAN {clean} vs OVERGROWN {ivy}");
             ui.TextDisabled("Only compare within the same altar; check kiln.log for labelled locations and exact raw values.");
         }
+        ui.TextDisabled("IMPORTANT: CLEAN walls can be 100% level 7. Never assume level 7 = visible ivy.");
         ui.TextDisabled("Air-adjacent is a 6-neighbour approximation, NOT a guarantee the surface is visibly overgrown.");
     }
 
