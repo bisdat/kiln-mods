@@ -68,7 +68,7 @@ public sealed record ScanReport(string Area, long TotalCells, long ReadCells, lo
 /// Full-volume read-only survey. No Build.Write, Build.Dig, Build.BreakBox,
 /// placing/removing props, native hooks or world mutations.
 /// </summary>
-public sealed class BaseCleanupMod : Mod
+public sealed partial class BaseCleanupMod : Mod
 {
     private const string Binding = "base-cleanup.preview";
     private const string Channel = "base-cleanup:survey";
@@ -100,24 +100,27 @@ public sealed class BaseCleanupMod : Mod
 
     public override void OnLoad()
     {
-        _net = Network.Channel(Channel, "1", required: false)
+        _net = Network.Channel(Channel, "2", required: false)
             .Register<ScanRequest>(OnRequest, NetDirection.ToServer)
             .Register<ScanProgress>((m, _) => ReceiveProgress(m), NetDirection.ToClient)
-            .Register<ScanReport>((m, _) => ReceiveReport(m), NetDirection.ToClient);
+            .Register<ScanReport>((m, _) => ReceiveReport(m), NetDirection.ToClient)
+            .Register<CleanupRequest>(OnCleanupRequest, NetDirection.ToServer)
+            .Register<CleanupStatus>((m, _) => CleanupReceive(m), NetDirection.ToClient);
 
         if (Client.Available && Client.IsClient && Ui.Available)
         {
-            _window = Ui.Window("Base Cleanup - Read-only Survey", Draw, new UiWindowOptions
+            _window = Ui.Window("Base Cleanup - Survey and Confirmed Removal", Draw, new UiWindowOptions
             {
-                Width = 640, Height = 510, StartOpen = false,
+                Width = 680, Height = 710, StartOpen = false,
             });
             _key = KeyBindings.Register(Binding, "Ctrl+Shift+F10", () =>
             {
                 _window.Show();
-                Request(3); // Status/readout only; never starts destructive work.
+                Request(3); // Opening the panel never removes blocks.
+                CleanupRequestLocal(5);
             }, "Open Base Cleanup preview", "Base Cleanup");
         }
-        Log.Info("Base Cleanup Stage 1 v0.1.0 loaded: strictly read-only full altar volume scanner.");
+        Log.Info("Base Cleanup v0.2.0 loaded: Stage 1 survey; Stage 2 backup-first confirmed rubble cleanup with persistent undo.");
     }
 
     private void Request(byte op)
@@ -361,9 +364,10 @@ public sealed class BaseCleanupMod : Mod
             if (p.Total > 0)
                 ui.Progress((float)(p.Visited / (double)p.Total), $"{p.Visited:N0} / {p.Total:N0} cells");
         }
+        DrawCleanup(ui);
         if (report is null)
         {
-            ui.TextDisabled("No completed survey to display.");
+            ui.TextDisabled("No completed Stage 1 survey to display.");
             return;
         }
         ui.TextWrapped(report.Area);
@@ -439,10 +443,12 @@ public sealed class BaseCleanupMod : Mod
         if (_running is { } j) j.CancelRequested = true;
         _running = null;
         _latest = null;
+        CleanupStopped();
     }
 
     public override void OnUnload()
     {
+        CleanupStopped();
         _generation++;
         if (_running is { } j) j.CancelRequested = true;
         _running = null;
