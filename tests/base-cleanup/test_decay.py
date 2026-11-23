@@ -1,4 +1,4 @@
-"""Optional cosmetic decay v0.3.1 policy and journal compatibility tests.
+"""Optional cosmetic decay v0.3.2 policy and journal compatibility tests.
 
 Pure/offline tests model before/after raw values and require safety
 invariants in source. They are not a substitute for in-game confirmation.
@@ -136,7 +136,9 @@ class DecayTests(unittest.TestCase):
         self.assertIn("Ivy/overgrowth cleanup is excluded", CODE)
 
     def test_v03_package_and_network(self):
-        self.assertIn("<Version>0.3.1</Version>", PROJECT)
+        self.assertIn("<Version>0.3.2</Version>", PROJECT)
+        self.assertIn("<KilnModName>Base Cleanup</KilnModName>", PROJECT)
+        self.assertNotIn("Base Cleanup - Confirmed Cleanup and Optional Decay", PROJECT)
         self.assertIn('Network.Channel(Channel, "3"', MOD)
         self.assertIn('KeyBindings.Register(Binding, "Shift+ScrollLock"', MOD)
         self.assertIn(".String(Backup).Int64(Decay)", CODE)
