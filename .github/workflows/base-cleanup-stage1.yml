@@ -1,4 +1,4 @@
-name: Package Base Cleanup Stage 1 (test candidate)
+name: Package Base Cleanup Stage 2 (test candidate)
 
 on:
   pull_request:
@@ -14,7 +14,7 @@ permissions:
 
 jobs:
   build:
-    name: Validate and package read-only Base Cleanup scanner
+    name: Validate and package Base Cleanup Stage 2 candidate
     runs-on: ubuntu-24.04
     steps:
       - name: Check out test branch
@@ -23,7 +23,7 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.0.x'
-      - name: Validate scan logic and read-only contract
+      - name: Validate scanner and Stage 2 safety invariants
         run: python3 -m unittest discover -s tests/base-cleanup -p 'test_*.py' -v
       - name: Fetch checksum-verified official Kiln dev.30.6 SDK
         run: python3 BaseCleanup/fetch-sdk.py
@@ -35,13 +35,13 @@ jobs:
         run: dotnet build BaseCleanup/BaseCleanup.csproj -c Release --no-restore -t:KilnPack
       - name: Verify installable archive
         run: |
-          test -s bin/Release/base-cleanup-0.1.0.zip
-          unzip -t bin/Release/base-cleanup-0.1.0.zip
-          unzip -l bin/Release/base-cleanup-0.1.0.zip
+          test -s bin/Release/base-cleanup-0.2.0.zip
+          unzip -t bin/Release/base-cleanup-0.2.0.zip
+          unzip -l bin/Release/base-cleanup-0.2.0.zip
       - name: Upload test candidate only (no release)
         uses: actions/upload-artifact@v4
         with:
-          name: base-cleanup-stage1-0.1.0
-          path: bin/Release/base-cleanup-0.1.0.zip
+          name: base-cleanup-stage2-0.2.0
+          path: bin/Release/base-cleanup-0.2.0.zip
           if-no-files-found: error
           retention-days: 90
