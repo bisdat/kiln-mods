@@ -1,4 +1,4 @@
-"""Optional cosmetic decay v0.3.3 policy and journal compatibility tests.
+"""Optional cosmetic decay v0.3.4 policy and journal compatibility tests.
 
 Pure/offline tests model before/after raw values and require safety
 invariants in source. They are not a substitute for in-game confirmation.
@@ -88,7 +88,7 @@ class DecayTests(unittest.TestCase):
         self.assertEqual(undo(0x008a, 0xff17), 0x008a)
 
     def test_backup_and_journal_always_precede_any_write(self):
-        self.assertLess(CODE.index("WorldData.Set(CurrentLedgerKeyFor(plan.Altar), journal);"),
+        self.assertLess(CODE.index("WorldData.Set(journalKey, journal);"),
                         CODE.index("await Saves.Backup(name)"))
         self.assertLess(CODE.index("backupCompleted = true"),
                         CODE.index("Build.WriteIfUnchanged(chunk.Box, desired, expected, options, mask)"))
@@ -99,7 +99,7 @@ class DecayTests(unittest.TestCase):
         self.assertIn("result.Refused || !result.Verified || result.CellsChanged != toWrite", CODE)
         self.assertIn("if (result.Refusal == BuildRefusal.Changed)", CODE)
         self.assertIn("if (!backupCompleted)", CODE)
-        self.assertIn("WorldData.Remove(CurrentLedgerKeyFor(plan.Altar))", CODE)
+        self.assertIn("WorldData.Remove(journalKey)", CODE)
         self.assertIn('ConfirmRemove = "REMOVE"', CODE)
         self.assertIn('ConfirmUndo = "UNDO"', CODE)
 
@@ -139,7 +139,7 @@ class DecayTests(unittest.TestCase):
         self.assertIn("Ivy/overgrowth cleanup is excluded", CODE)
 
     def test_v03_package_and_network(self):
-        self.assertIn("<Version>0.3.3</Version>", PROJECT)
+        self.assertIn("<Version>0.3.4</Version>", PROJECT)
         self.assertIn("<KilnModName>Base Cleanup</KilnModName>", PROJECT)
         self.assertNotIn("Base Cleanup - Confirmed Cleanup and Optional Decay", PROJECT)
         self.assertIn('Network.Channel(Channel, "3"', MOD)
