@@ -48,18 +48,28 @@ Stage 2 rescans; it does not trust the historical material counts.
    restored ONLY where the cell is still air. Other non-air
    player changes are not overwritten. The saved journal persists
    across ordinary saves and restarts.
-6. The full-world backup remains separately available via Kiln.Saves.
+6. The full-world backup remains in Kiln's backup directory.
+   On a DEDICATED server Kiln.Saves can stage a restore for next start.
+   On a HOSTED Enshrouded game (Steam Cloud or local save folder),
+   Kiln explicitly refuses staged restore: restoring the full-world
+   backup must be done MANUALLY with the game closed, taking care
+   to restore the matching Kiln mod-data generation as well.
    A full-world restore resets ALL later world changes, including
-   unrelated gameplay, and applies only after a restart.
+   unrelated gameplay. The normal Undo button does NOT restore
+   unrelated changes.
 
 NOTE: air from our cleanup is indistinguishable from an independently
 edited voxel also set to air later. Do not build or terraform between
 cleanup and undo if you need an exact restoration. Kiln's world and
 mod-data generations must match; an out-of-sync journal refuses undo.
 
-Only one active journal per world is allowed in this candidate;
-new cleanup plans are refused while an old journal remains, even
-after undo. That prevents replacing the only recovery record.
+Each altar zone has its OWN persistent journal, keyed by its stable
+zone geometry. A new cleanup plan for the SAME altar is refused while
+its previous journal exists, even after undo. Other altars in the
+same world can be cleaned independently without replacing the
+original altar's journal. Changing an altar's boundaries may mean
+its old journal needs manual recovery; do not alter the zone during
+cleanup or undo.
 There are NO structural, surface, depth, gravity or support checks.
 
 ## Installation and controls
@@ -114,7 +124,8 @@ or upstream changes are made.
 - [ ] Stage 1 remains correct, with no unreadable cells.
 - [ ] Plan reports expected rubble (approximately 39,879 if unchanged).
 - [ ] World remains unchanged before explicit REMOVE confirmation.
-- [ ] Backup and journal demonstrably precede any removal.
+- [ ] Backup and journal demonstrably precede any removal;
+      backups have a matching world ID and at least one mod-data bundle.
 - [ ] Identified rubble disappears, including buried areas.
 - [ ] Unrelated building material and natural terrain remain.
 - [ ] Cancel leaves persistent undo available for committed cells.
