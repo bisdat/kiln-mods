@@ -84,7 +84,7 @@ class Mud37Tests(unittest.TestCase):
         self.assertIn("if (!FullyUndone(item)) { journal = item; return true; }",STAGE)
         self.assertIn("!FullyUndone(v1)",STAGE)
         self.assertIn('old.Phase == "undone"',STAGE)
-        self.assertIn("old.Restored >= old.Removed && old.Conflicted == 0",STAGE)
+        self.assertIn("old.Restored >= old.Removed;",STAGE)
         self.assertIn("TryGetJournal(altar, out journal)",STAGE)
 
     def test_completed_prior_cleanup_is_not_a_blocker_or_overwritten(self):
@@ -93,20 +93,23 @@ class Mud37Tests(unittest.TestCase):
         # phase complete. A v3 test journal is a distinct recovery record.
         def settled(phase, planned, removed, restored, conflicts):
             fully_undone = (phase=="undone" and removed>0 and
-                           restored>=removed and conflicts==0)
+                           restored>=removed)
             fully_committed = (phase=="complete" and planned>0 and
                                removed==planned and restored==0 and
                                conflicts==0)
             return fully_undone or fully_committed
         self.assertTrue(settled("complete",88057,88057,0,0))
         self.assertTrue(settled("undone",88057,88057,88057,0))
+        # v0.3.3 can record a full second-Undo conflict tally even though
+        # the first Undo already restored every committed voxel.
+        self.assertTrue(settled("undone",199135,199135,199135,199135))
         for previous in (
             ("partial",88057,88057,0,0),
             ("complete",88057,88056,0,0),
             ("complete",88057,88057,0,1),
             ("complete",88057,88057,1,0),
             ("undone",88057,88057,88056,0),
-            ("undone",88057,88057,88057,2),
+            ("undone",88057,88057,88056,2),
             ("complete",0,0,0,0),
         ):
             self.assertFalse(settled(*previous),previous)
