@@ -11,6 +11,6 @@ python3 BaseCleanup/fetch-sdk.py
 dotnet restore BaseVisualProbe/BaseVisualProbe.csproj --configfile NuGet.Config
 dotnet build BaseVisualProbe/BaseVisualProbe.csproj -c Release --no-restore
 dotnet build BaseVisualProbe/BaseVisualProbe.csproj -c Release --no-restore -t:KilnPack
-test -s bin/Release/base-visual-probe-0.1.0.zip
-unzip -t bin/Release/base-visual-probe-0.1.0.zip
-echo 'Built bin/Release/base-visual-probe-0.1.0.zip'
+test -s bin/Release/base-visual-probe-0.1.1.zip
+unzip -t bin/Release/base-visual-probe-0.1.1.zip
+echo 'Built bin/Release/base-visual-probe-0.1.1.zip'
