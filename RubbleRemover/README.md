@@ -1,4 +1,4 @@
-# Rubble Remover (Kiln) — v0.1.0 test candidate
+# Rubble Remover (Kiln) — v0.1.1 test candidate
 
 A craftable, removal-only building tool for Enshrouded. **Requires Kiln
 0.2.0-dev.30.6 or newer on the host and any joined client.** Built against
@@ -6,8 +6,7 @@ the official Kiln SDK 0.2.0-dev.30.6. This is **not yet accepted in game**.
 
 ## What it does
 
-- At the **Carpenter → Tools & Components** (the Carpenter's Essentials tab),
-  craft **Rubble Remover** using **20 Rubble + 20 Mycelium + 1 Wood Log**.
+- At the **Workbench**, craft **Rubble Remover** using **20 Rubble + 20 Mycelium + 1 Wood Log**.
 - Equip the tool, enter building mode and choose **Small** (0.5 m),
   **Medium** (1.5 m) or **Large** (2.5 m) brush.
 - Both primary and secondary building actions **remove** permitted terrain
@@ -23,8 +22,10 @@ the official Kiln SDK 0.2.0-dev.30.6. This is **not yet accepted in game**.
   the game's building-action undo are retained. There is no background
   scanning, broad terrain dig, pointer patching or EML-R dependency.
 
+The 0.1.0 test build failed to load because it mixed the Carpenter's menu tab with a different workshop ID. v0.1.1 explicitly selects the Workbench station and omits the tab override, so Kiln chooses the correct menu category.
+
 This intentionally omits the reference mod's rubble **placement** mode.
-The starting 0.1.0 implementation focuses only on the requested removal
+The starting 0.1.1 implementation focuses only on the requested removal
 tool. Until a custom icon is created it inherits Kiln's Overgrowth starter
 icon/model, but is a separate named item with its own brush identities.
 
@@ -35,7 +36,7 @@ icon/model, but is a separate named item with its own brush identities.
    available to all clients in a multiplayer session (this is a
    `clients=mod` mod, not a server-only mod).
 3. In GitHub Actions, open **Package Rubble Remover**, download the
-   `rubble-remover-0.1.0` artifact and extract its inner ZIP.
+   `rubble-remover-0.1.1` artifact and extract its inner ZIP.
 4. Install that inner ZIP using the Kiln launcher/profile mod installer.
    Do not install the reference EML-R DLL/Lua package or copy its
    `mods/` directory alongside this one.
@@ -51,7 +52,7 @@ or Decay Tool.
 ## In-game acceptance (test save only)
 
 - [ ] Mod loads without errors; no EML-R installed or required.
-- [ ] Recipe appears at the Carpenter; crafting uses exactly 20 Rubble,
+- [ ] Recipe appears at the Workbench; crafting uses exactly 20 Rubble,
       20 Mycelium and 1 Wood Log, yields one Rubble Remover.
 - [ ] Inventory item and three separate brushes appear in building mode.
 - [ ] With each brush and both actions, permitted rubble disappears while

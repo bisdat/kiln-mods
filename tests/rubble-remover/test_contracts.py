@@ -32,13 +32,16 @@ class RubbleRemoverContracts(unittest.TestCase):
         self.assertNotIn("Build.Dig(", SOURCE.split("public override void OnLoad()")[1])
         self.assertNotIn("ToolMaterialPoolBlock", SOURCE)
 
-    def test_carpenter_recipe_and_brushes(self):
+    def test_workbench_recipe_and_brushes(self):
         for name in ("small", "medium", "large"):
             self.assertIn(f'Blocks.Define("{name}"', SOURCE)
         for radius in ("0.5", "1.5", "2.5"):
             self.assertIn(f"Radius = {radius}", SOURCE)
-        self.assertIn("Station = StationKind.Carpenter.Workshop", SOURCE)
-        self.assertIn("MenuGroup = CraftingGroups.Carpenter.Essentials", SOURCE)
+        self.assertIn("Station = StationKind.Workbench.Workshop", SOURCE)
+        # Regression: a Carpenter menu group on another station caused OnLoad to throw.
+        recipe = SOURCE.split('Blocks.Define("craft-rubble-remover"', 1)[1].split('Blocks.Define("rubble-remover-found"', 1)[0]
+        self.assertNotIn("MenuGroup =", recipe)
+        self.assertNotIn("StationKind.Carpenter", SOURCE)
         for item, count in (("Build_TerrainMaterial_T1_Rubble",20),
                             ("Material_T1_FogTerrain_Mycelium",20),
                             ("Material_T1_Wood_Logs",1)):

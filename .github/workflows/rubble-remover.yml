@@ -37,11 +37,11 @@ jobs:
       - name: Build installable Kiln ZIP
         run: dotnet build RubbleRemover/RubbleRemover.csproj -c Release --no-restore -t:KilnPack
       - name: Check archive exists
-        run: test -s bin/Release/rubble-remover-0.1.0.zip
+        run: test -s bin/Release/rubble-remover-0.1.1.zip
       - name: Upload test candidate (not a release)
         uses: actions/upload-artifact@v4
         with:
-          name: rubble-remover-0.1.0
-          path: bin/Release/rubble-remover-0.1.0.zip
+          name: rubble-remover-0.1.1
+          path: bin/Release/rubble-remover-0.1.1.zip
           if-no-files-found: error
           retention-days: 90

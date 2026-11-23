@@ -66,8 +66,9 @@ public sealed class RubbleRemoverMod : Mod
         var recipe = Blocks.Define("craft-rubble-remover", new RecipeBlock
         {
             Output = tool,
-            Station = StationKind.Carpenter.Workshop,
-            MenuGroup = CraftingGroups.Carpenter.Essentials,
+            Station = StationKind.Workbench.Workshop,
+            // Deliberately no MenuGroup: Kiln selects a category in the Workbench's menu.
+            // A tab from another workshop makes RecipeBlock throw during OnLoad.
             TrackCrafted = true,
             Needs = new Dictionary<ItemRef, int>
             {
@@ -88,6 +89,6 @@ public sealed class RubbleRemoverMod : Mod
             Of = recipe.Name,
         });
 
-        Log.Info("Rubble Remover 0.1.0: terrain-only removal tool and Carpenter recipe declared.");
+        Log.Info("Rubble Remover 0.1.1: terrain-only removal tool and Workbench recipe declared.");
     }
 }
