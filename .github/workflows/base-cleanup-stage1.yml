@@ -1,4 +1,4 @@
-name: Test Base Cleanup v0.3.5 material37 staged workflow (release after merge only)
+name: Test Base Cleanup v0.3.5 independent options, no saves, journal purge
 
 on:
   pull_request:
@@ -100,7 +100,7 @@ jobs:
           else
             git config user.name 'github-actions[bot]'
             git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-            git tag -a "$tag" "$GITHUB_SHA" -m 'Base Cleanup v0.3.5 — terrain cell 37 test'
+            git tag -a "$tag" "$GITHUB_SHA" -m 'Base Cleanup v0.3.5 — selective cleanup without world backups'
             git push origin "refs/tags/$tag"
           fi
       - name: Publish verified package if release absent
@@ -118,43 +118,39 @@ jobs:
           cat > release-notes.md <<'NOTES'
           ## Base Cleanup v0.3.5
 
-          Staged, recoverable Flame Altar cleanup. The UI now progresses
-          through Scan → choose options → prepare → REMOVE → UNDO.
-          Each REMOVE requires a fresh complete read-only survey and a
-          reviewed plan, then creates an independent, permanent per-operation
-          Undo journal and verified full-world backup before any voxel edit.
-          Multiple successful operations can be rolled back individually,
-          **newest first**. After Undo, the UI returns to Scan rather than
-          offering an already-consumed REMOVE action.
+          Selective Flame Altar cleanup, without forced whole-world
+          saves, backups, or restores.
 
-          The optional mud target remains **terrain material 37 instead of 91**.
-          IMPORTANT: material 37 may form metres-deep creek/ditch terrain;
-          enabling it excavates ALL matching voxels in the 3-D Flame Altar.
-          It does NOT just erase a surface puddle. Check counts and make
-          a separate save copy before enabling this option.
+          - Stage 1: read-only Scan.
+          - Stage 2: toggle rubble, creek/ditch mud (terrain material 37),
+            mineable mycelium and cosmetic decay independently. All initially
+            enabled to preserve prior defaults; at least one is required.
+          - Stage 3: Prepare read-only plan and inspect candidate counts.
+          - Stage 4: explicitly confirm REMOVE.
+          - Stage 5: UNDO the latest separately journalled operation; repeat.
+          - Every REMOVE registers a distinct WorldData Undo journal before
+            editing. Kiln persists the edits and journal in the next ordinary
+            game save. **Base Cleanup does NOT call Saves.Backup or
+            Saves.Request or request any restore.**
+          - Old per-world v0.2/v0.3.2/v0.3.3 journals remain readable.
+          - New admin in-game chat commands: `/baseclean journals` to preview,
+            then `/baseclean journals delete DELETE_ALL_JOURNALS` within
+            two minutes to permanently delete this mod's current-world
+            journal keys, not terrain. Changes persist at next normal save.
+          - The mod intentionally does NOT purge on ordinary unload,
+            shutdown or disable: doing that would destroy recoverability.
+            Kiln may retain old historical sidecars and backups after a
+            package uninstall; the mod cannot safely remove them.
 
-          - Rubble is always included. Mycelium, material-37 mud, and cosmetic
-            decay repair are independently switchable (default ON).
-          - Cosmetic decay clears only weather bit 0x8000, preserving
-            material, building structure, ivy/overgrowth and other paint.
-          - Window hotkey: Shift+ScrollLock (already verified in-game).
-          - Guarded compare-and-write preserves unrelated user changes.
-          - Saved v0.2.0, v0.3.2 and v0.3.3 recovery journals remain intact.
-            New operations use a separate indexed v0.3.5 journal series,
-            capped at 32 per altar to prevent accidental journal overwrites.
-          - The earlier v0.3.3 material-37 in-game test changed 199,135
-            voxels and restored all 199,135 with zero conflicts. This
-            validates the terrain cleanup, **not** the new v0.3.5 UI.
-            v0.3.5 requires its own in-game acceptance before release.
+          **Warning:** material 37 can be metres-deep terrain, so selecting
+          mud may excavate creek beds or floors; review counts and test
+          on a copied world. Overgrowth/ivy editing remains excluded.
+          Cosmetic decay repairs only weathering bit 0x8000.
 
-          Install attached **base-cleanup-0.3.5.zip** through Kiln Launcher.
-          Built against Kiln dev.30.6; a compatible runtime is required.
-
-          **Safety:** Keep a separate save copy before bulk terrain edits.
-          A full-world restore of a hosted Steam/Proton save must be done
-          manually, game closed, with matching Kiln mod-data generations.
-          Selective Undo only restores voxels still in the expected edited
-          state and does not override new player/world edits.
+          Install attached **base-cleanup-0.3.5.zip** in Kiln.
+          Built against the pinned Kiln dev.30.6 SDK.
+          Verify the new no-save behavior and chat purge in-game before
+          trusting this version on an important world.
           NOTES
           gh release create "$tag" dist/base-cleanup-0.3.5.zip \
             --verify-tag --target "$GITHUB_SHA" \
