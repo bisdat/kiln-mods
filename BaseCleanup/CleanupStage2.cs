@@ -500,7 +500,7 @@ public sealed partial class BaseCleanupMod
             CleanupPublish(plan.Player, PlanStatus(plan, "prepared",
                 $"Plan complete: {plan.Hits:N0} cells (decay repair {plan.DecayHits:N0}) " +
                 $"across {plan.Chunks.Count:N0} batches. No edits yet. " +
-                "Review counts, then type REMOVE to back up and commit."));
+                "Review counts, then type REMOVE to create an isolated Undo journal and apply."));
         }
         catch (Exception ex)
         {
@@ -570,7 +570,9 @@ public sealed partial class BaseCleanupMod
         CleanupLedger? journal = null;
         CleanupHistory? history = null;
         string? journalKey = null;
-        var backupCompleted = false;
+        // WorldData is saved in the SAME generation as the game's next
+        // ordinary world save. Never call Saves.Backup, Saves.Request or
+        // restore APIs: those operate on all players' bases.
         try
         {
             history = ReadHistory(plan.Altar);
@@ -580,29 +582,24 @@ public sealed partial class BaseCleanupMod
             journalKey = OperationKeyFor(plan.Altar, sequence);
             if (WorldData.Contains(journalKey))
                 throw new InvalidOperationException("cleanup operation key already exists; refusing overwrite");
-            var name = "base-cleanup-" + DateTime.UtcNow.ToString("yyyyMMdd-HHmmss") +
-                "-op" + sequence.ToString("D4", CultureInfo.InvariantCulture);
+            var name = "journal-op" + sequence.ToString("D6", CultureInfo.InvariantCulture);
             journal = CleanupSafety.Ledger(plan, name);
             journal.OperationNumber = sequence;
-            // The FULL original-voxel journal, and permanent operation index,
-            // are serialized in the game save BEFORE any cleanup write.
+            // Record original voxels and index in per-world Kiln WorldData
+            // BEFORE any write. The game's normal saves persist these along
+            // with terrain in the same matching generation. No save is forced.
             WorldData.Set(journalKey, journal);
             history.NextSequence++;
             history.Sequences.Add(sequence);
             WorldData.Set(HistoryKeyFor(plan.Altar), history);
-            CleanupPublish(plan.Player, PlanStatus(plan, "backup",
-                "Saving undo journal and creating a full-world backup BEFORE the first voxel edit."));
-            var backup = await Saves.Backup(name);
-            if (StopRequested(plan)) throw new OperationCanceledException("cancelled during backup");
-            if (backup.WorldId != plan.WorldId || backup.Files < 3 || backup.DataBundles == 0)
-                throw new InvalidOperationException("backup did not confirm matching world data");
-            backupCompleted = true;
-            journal.BackupName = backup.Name;
+            if (StopRequested(plan) || !SameZone(plan))
+                throw new OperationCanceledException("cancelled or altar changed before editing");
             journal.Phase = "applying";
             CleanupPublish(plan.Player, new("applying",
-                $"World backup {backup.Name} verified; editing selected terrain and cosmetic decay " +
-                $"({plan.DecayHits:N0} weathered building voxels). Cancel remains available.",
-                0, plan.Hits, 0, 0, 0, backup.Name));
+                $"Undo journal {name} registered in Kiln WorldData; applying selected cleanup " +
+                $"({plan.DecayHits:N0} weathered building voxels). " +
+                "No world save, restore or backup is requested by this mod.",
+                0, plan.Hits, 0, 0, 0, name));
 
             var completed = 0L;
             var conflicts = 0L;
@@ -658,7 +655,8 @@ public sealed partial class BaseCleanupMod
                 await Context.Scheduler.NextTick();
             }
 
-            journal.Phase = StopRequested(plan) || conflicts > 0 ? "partial" : "complete";
+            journal.Phase = journal.Removed == 0 ? "undone" :
+                StopRequested(plan) || conflicts > 0 ? "partial" : "complete";
             // A new REMOVE requires a new Stage 1 survey, even if a previous
             // cleanup was fully undone. No stale scan/plan can be reused.
             _latest = null;
@@ -667,37 +665,24 @@ public sealed partial class BaseCleanupMod
             CleanupPublish(plan.Player, new(journal.Phase,
                 $"{(StopRequested(plan) ? "Stopped" : "Finished")}: edited {journal.Removed:N0} voxels " +
                 $"(decay planned {plan.DecayHits:N0}); skipped {conflicts:N0}. " +
-                $"Backup {journal.BackupName}. Type UNDO to restore only unchanged cells.",
+                $"Journal {journal.BackupName}. Type UNDO to restore only unchanged cells.",
                 completed, plan.Hits, 0, 0, 0, journal.BackupName));
-            Log.Info($"base-cleanup: removal {journal.Phase}; removed={journal.Removed}, conflicts={conflicts}, backup={journal.BackupName}");
+            Log.Info($"base-cleanup: removal {journal.Phase}; removed={journal.Removed}, conflicts={conflicts}, journal={journal.BackupName}");
         }
         catch (Exception ex)
         {
             Log.Warn("base-cleanup: apply stopped: " + ex);
             if (journal is not null)
             {
-                if (!backupCompleted)
-                {
-                    // No writes were permitted without a successful backup.
-                    // Backup did not succeed and there were ZERO voxel edits.
-                    // Roll back only this new operation; older journals stay
-                    // byte-for-byte intact. Never reuse a committed sequence.
-                    if (journalKey is not null) WorldData.Remove(journalKey);
-                    if (history is not null && journal.OperationNumber > 0)
-                    {
-                        history.Sequences.Remove(journal.OperationNumber);
-                        WorldData.Set(HistoryKeyFor(plan.Altar), history);
-                    }
-                }
-                else
-                {
-                    journal.Phase = "partial";
-                }
+                // An already indexed journal is NEVER deleted, including if
+                // application failed. If no voxels were committed, recording
+                // it as undone is safe; otherwise Undo can recover originals.
+                journal.Phase = journal.Removed > 0 ? "partial" : "undone";
             }
             if (plan.Generation == _cleanupEpoch)
                 CleanupPublish(plan.Player, PlanStatus(plan, "failed",
-                    (backupCompleted ? "Cleanup interrupted; saved journal supports UNDO. " :
-                        "Backup failed; NO VOXELS CHANGED. ") + ex.Message));
+                    (journal?.Removed > 0 ? "Cleanup interrupted; journal supports UNDO. " :
+                        "NO VOXELS CHANGED. ") + ex.Message));
         }
         finally
         {
@@ -764,7 +749,7 @@ public sealed partial class BaseCleanupMod
             var chunks = CleanupCore.Decode(journal.Packed);
             if (CleanupCore.Count(chunks) != journal.Planned)
                 throw new InvalidOperationException("cleanup journal count mismatch");
-            CleanupPublish(player, new("undoing", $"Selective undo from backup journal {journal.BackupName}...",
+            CleanupPublish(player, new("undoing", $"Selective Undo from journal {journal.BackupName}...",
                 0, journal.Planned, 0, 0, 0, journal.BackupName));
             var options = new BuildOptions
             {
@@ -830,7 +815,7 @@ public sealed partial class BaseCleanupMod
                     ? "undone" : "partial";
             CleanupPublish(player, new(journal.Phase,
                 $"Undo: restored {restored:N0} voxels; skipped {conflicts:N0} changed/already-restored cells. " +
-                $"World backup remains available: {journal.BackupName}.",
+                $"Original record retained: {journal.BackupName}.",
                 visited, journal.Planned, 0, 0, 0, journal.BackupName));
         }
         catch (Exception ex)
@@ -922,8 +907,10 @@ public sealed partial class BaseCleanupMod
             ui.TextWrapped(status.Message);
             ui.Text($"Rubble {status.Rubble:N0} | Mud 37 {status.Mud:N0} | " +
                 $"Mycelium {status.Mycelium:N0} | Decay {status.Decay:N0}");
-            ui.TextWrapped("The prepared plan is valid for 10 minutes. A complete world " +
-                "backup and new permanent Undo journal are required before any edit.");
+            ui.TextWrapped("The prepared plan is valid for 10 minutes. An independent Undo " +
+                "journal will be registered in Kiln WorldData before editing. This mod " +
+                "does NOT request a world save, restore or backup. Records persist with " +
+                "the game's next normal save.");
             ui.InputText("Type REMOVE to commit", ref _cleanupConfirm, 20);
             if (ui.Button("4. REMOVE this prepared operation"))
             {
@@ -953,7 +940,7 @@ public sealed partial class BaseCleanupMod
                 ui.Progress((float)(status.Done / (double)status.Total),
                     $"{status.Done:N0} / {status.Total:N0}");
             if (!string.IsNullOrEmpty(status?.Backup))
-                ui.TextWrapped("World backup: " + status.Backup);
+                ui.TextWrapped("Journal reference: " + status.Backup);
             if (ui.Button("Request cancellation"))
                 Client.Post(() => CleanupRequestLocal(4));
             return;
@@ -964,7 +951,7 @@ public sealed partial class BaseCleanupMod
             ui.Separator("5 / 5 - Roll back this operation");
             ui.TextWrapped(status?.Message ?? "Review the latest saved operation before Undo.");
             if (!string.IsNullOrEmpty(status?.Backup))
-                ui.TextWrapped("Operation backup: " + status.Backup);
+                ui.TextWrapped("Operation journal: " + status.Backup);
             ui.TextWrapped("Each REMOVE has its own saved Undo journal. " +
                 "Undo restores only voxels still in this operation's edited state. " +
                 "Later operations must be undone before earlier ones.");
