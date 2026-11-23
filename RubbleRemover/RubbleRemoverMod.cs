@@ -29,7 +29,7 @@ public sealed class RubbleRemoverMod : Mod
         "tools.material_picker", "tools.build_area",
     ];
 
-    private static void ReportCapabilities(string stage)
+    private void ReportCapabilities(string stage)
     {
         foreach (var name in BrushCapabilities)
             Log.Info($"Rubble Remover {stage}: {Capabilities.Why(name)}");
@@ -50,7 +50,7 @@ public sealed class RubbleRemoverMod : Mod
 
     // Run on the game client as well as the host. The actual brush selection
     // UI is client-only; a server-only /rbrushstatus can misreport its status.
-    private static void ReportPublishedItems()
+    private void ReportPublishedItems()
     {
         foreach (var name in new[]
         {
@@ -160,7 +160,7 @@ public sealed class RubbleRemoverMod : Mod
             Of = recipe.Name,
         });
 
-        Log.Info($"Rubble Remover 0.1.4: Workbench recipe declared; brush table status={tool.Status}, root={tool.Guid}.");
+        Log.Info($"Rubble Remover 0.1.4: Workbench recipe declared; root={tool.Guid}, brush-blocks=small,medium,large.");
         ReportCapabilities("OnLoad");
         if (Content.Available)
             Content.OnReady(_ => ReportPublishedItems());

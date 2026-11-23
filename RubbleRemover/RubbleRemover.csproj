@@ -9,7 +9,7 @@
     <PackageProjectUrl>https://github.com/bisdat/kiln-mods</PackageProjectUrl>
     <KilnSide>both</KilnSide>
     <KilnClients>mod</KilnClients>
-    <KilnServices>Blocks;Tools</KilnServices>
+    <KilnServices>Blocks;Tools;Content;Chat</KilnServices>
     <!-- Tool brush shape descriptors are world-table declarations read before OnLoad.
          Without baking, the root item stays pending and the Workbench recipe is refused. -->
     <KilnBakeWorldTables>true</KilnBakeWorldTables>

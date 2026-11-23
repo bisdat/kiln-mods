@@ -64,7 +64,7 @@ class RubbleRemoverContracts(unittest.TestCase):
         self.assertIn('Kiln.Sdk/0.2.0-dev.30.6', PROJECT)
         self.assertIn("<KilnSide>both</KilnSide>", PROJECT)
         self.assertIn("<KilnClients>mod</KilnClients>", PROJECT)
-        self.assertIn("<KilnServices>Blocks;Tools</KilnServices>", PROJECT)
+        self.assertIn("<KilnServices>Blocks;Tools;Content;Chat</KilnServices>", PROJECT)
         # Regression: without this the tool remains pending and the recipe has no output.
         self.assertIn("<KilnBakeWorldTables>true</KilnBakeWorldTables>", PROJECT)
         self.assertIn("RubbleRemoverWorldTablesCompat", PROJECT)
