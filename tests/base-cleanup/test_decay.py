@@ -116,7 +116,7 @@ class DecayTests(unittest.TestCase):
         self.assertIn("old.Restored >= old.Removed && old.Conflicted == 0", CODE)
         self.assertIn("!SettledPreviousJournal(legacy)", CODE)
         self.assertIn("TryGetJournal(altar, out journal)", CODE)
-        self.assertIn("WorldData.TryGet<CleanupLedger>(LedgerKeyFor(altar), out var legacy)", CODE)
+        self.assertIn("WorldData.TryGet<CleanupLedger>(LedgerKeyFor(altar), out var v1)", CODE)
         self.assertIn("CleanupCore.Decode(journal.Packed)", CODE)
         self.assertIn("DecayPlanned", CORE)
         self.assertIn("Decode(string encoded)", CORE)
