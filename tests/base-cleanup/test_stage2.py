@@ -109,7 +109,7 @@ class SafetyTests(unittest.TestCase):
         self.assertIn('ConfirmUndo = "UNDO"',CODE)
         self.assertIn("p.Player != player",CODE)
         self.assertIn("p.PreparedAtUtc.AddMinutes(PreviewMinutes) < DateTime.UtcNow",CODE)
-        self.assertIn("HasOutstandingLedger(out reason)",CODE)
+        self.assertIn("HasOutstandingLedger(p.Altar, out reason)",CODE)
         self.assertIn("Permissions.Has(player, CleanupPermission)",CODE)
         self.assertIn('Context.Scheduler.Post(() => CleanupAct(player, operation, options, localHost: true))',CODE)
         self.assertIn("BuildFlags.InBases | BuildFlags.RespectZones",CODE)
