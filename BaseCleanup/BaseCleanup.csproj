@@ -2,7 +2,7 @@
   <PropertyGroup>
     <KilnModId>base-cleanup</KilnModId>
     <KilnModName>Base Cleanup</KilnModName>
-    <Version>0.3.3</Version>
+    <Version>0.3.4</Version>
     <Authors>bisdat</Authors>
     <Description>Flame Altar survey, backup-first terrain cleanup and optional cosmetic decay repair with guarded persistent undo.</Description>
     <PackageProjectUrl>https://github.com/bisdat/kiln-mods</PackageProjectUrl>
