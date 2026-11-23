@@ -9,7 +9,7 @@
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <KilnSide>both</KilnSide>
     <KilnClients>none</KilnClients>
-    <KilnServices>Build;World;Saves;Client;Ui;Network;Chat;Permissions</KilnServices>
+    <KilnServices>Build;World;Saves;Client;Ui;Network;Chat;Permissions;Gameplay</KilnServices>
     <KilnGameIds>None</KilnGameIds>
   </PropertyGroup>
 </Project>
