@@ -118,36 +118,43 @@ jobs:
           cat > release-notes.md <<'NOTES'
           ## Base Cleanup v0.3.4
 
-          This experimental patch switches the optional mud-removal target
-          from material 91 to **terrain material 37**, identified by a read-only
-          puddle probe inside Flame Altar 1026. Material 37 can be several
-          metres deep, so enabling mud removal may EXCAVATE GROUND, not just
-          erase the visible surface. Preview all planned counts first; confirm
-          REMOVE only after a complete world backup is guaranteed. The saved
-          v0.3.2 journal is preserved under its prior key.
+          Staged, recoverable Flame Altar cleanup. The UI now progresses
+          through Scan → choose options → prepare → REMOVE → UNDO.
+          Each REMOVE requires a fresh complete read-only survey and a
+          reviewed plan, then creates an independent, permanent per-operation
+          Undo journal and verified full-world backup before any voxel edit.
+          Multiple successful operations can be rolled back individually,
+          **newest first**. After Undo, the UI returns to Scan rather than
+          offering an already-consumed REMOVE action.
 
-          Accepted in-game on Enshrouded with Kiln dev.30.6.
+          The optional mud target remains **terrain material 37 instead of 91**.
+          IMPORTANT: material 37 may form metres-deep creek/ditch terrain;
+          enabling it excavates ALL matching voxels in the 3-D Flame Altar.
+          It does NOT just erase a surface puddle. Check counts and make
+          a separate save copy before enabling this option.
 
-          - Stage 1: read-only, full 3-D Flame Altar building/terrain inventory.
-          - Stage 2: confirmed rubble removal, optional material-37 creek/ditch mud and mycelium.
-          - Cosmetic decay repair **ON by default**, with a toggle to disable it.
-          - Decay repair clears only the building weathering flag, preserving
-            materials, ivy/overgrowth, tint and geometry. Ivy removal is excluded.
-          - Default hotkey: **Shift+ScrollLock** (tested in-game), replacing
-            Ctrl+Shift+F10 to avoid the Ctrl evade key.
-          - Mandatory full-world backup, persistent per-altar undo journal,
-            guarded compare-and-write and selective UNDO.
-          - Accepted in-game: **88,062 voxels cleaned** (48,183 decay and
-            39,879 rubble); selective Undo restored 88,062 with zero conflicts.
-          - Preserves earlier v0.2.0 recovery journals.
+          - Rubble is always included. Mycelium, material-37 mud, and cosmetic
+            decay repair are independently switchable (default ON).
+          - Cosmetic decay clears only weather bit 0x8000, preserving
+            material, building structure, ivy/overgrowth and other paint.
+          - Window hotkey: Shift+ScrollLock (already verified in-game).
+          - Guarded compare-and-write preserves unrelated user changes.
+          - Saved v0.2.0, v0.3.2 and v0.3.3 recovery journals remain intact.
+            New operations use a separate indexed v0.3.4 journal series,
+            capped at 32 per altar to prevent accidental journal overwrites.
+          - The earlier v0.3.3 material-37 in-game test changed 199,135
+            voxels and restored all 199,135 with zero conflicts. This
+            validates the terrain cleanup, **not** the new v0.3.4 UI.
+            v0.3.4 requires its own in-game acceptance before release.
 
-          Install attached **base-cleanup-0.3.4.zip** in Kiln.
+          Install attached **base-cleanup-0.3.4.zip** through Kiln Launcher.
           Built against Kiln dev.30.6; a compatible runtime is required.
 
-          **Safety:** Take a separate save copy before making world edits.
-          Preview is read-only and commit requires explicit REMOVE confirmation.
-          On hosted Steam/Proton games, complete world-backup restore is manual
-          with the game closed; selective Undo is available in-game.
+          **Safety:** Keep a separate save copy before bulk terrain edits.
+          A full-world restore of a hosted Steam/Proton save must be done
+          manually, game closed, with matching Kiln mod-data generations.
+          Selective Undo only restores voxels still in the expected edited
+          state and does not override new player/world edits.
           NOTES
           gh release create "$tag" dist/base-cleanup-0.3.4.zip \
             --verify-tag --target "$GITHUB_SHA" \
