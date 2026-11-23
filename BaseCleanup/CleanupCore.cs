@@ -114,7 +114,7 @@ internal sealed class CleanupChunk(CellBox box)
     internal List<CleanupCell> Cells { get; } = [];
 }
 
-// Each REMOVE gets a separate immutable backup/journal key. The index retains
+// Each REMOVE gets a separate persistent journal key. The index retains
 // the operation order; Undo works newest-first so overlapping operations are
 // never restored out of order. WorldData serializes public properties.
 public sealed class CleanupHistory
