@@ -76,10 +76,15 @@ public sealed partial class BaseCleanupMod
     private static string CurrentLedgerKeyFor(PlayerBase altar) =>
         CurrentLedgerPrefix + LedgerKeyFor(altar)[LedgerPrefix.Length..];
 
+    // Older builds could label already-restored cells as conflicts if UNDO
+    // was invoked again after a successful rollback. The cumulative conflict
+    // counter is therefore not proof that any edits remain: once the journal
+    // records ALL edited cells restored in phase "undone", it is settled.
+    // Partially restored journals are still blocked regardless of conflicts.
     private static bool FullyUndone(CleanupLedger old) =>
         old.Phase == "undone" && old.Planned > 0 &&
         (old.Removed > 0 || old.OperationNumber > 0) &&
-        old.Restored >= old.Removed && old.Conflicted == 0;
+        old.Restored >= old.Removed;
 
     // A *successful* earlier cleanup is also safe to retain without undoing:
     // the new experiment has a SEPARATE journal key, so no earlier original
