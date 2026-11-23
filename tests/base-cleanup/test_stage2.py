@@ -72,11 +72,16 @@ class SafetyTests(unittest.TestCase):
         mycelium={14,33,65,72}
         for material, fill, include_mud, include_mycelium in (
             (23,255,False,False),(43,110,False,False),(66,255,False,False),
-            (91,220,True,False),(14,120,False,True)):
-            target=(material in rubble or (material==91 and include_mud) or
+            (37,220,True,False),(14,120,False,True)):
+            target=(material in rubble or (material==37 and include_mud) or
                     (material in mycelium and include_mycelium)) and fill!=0
             self.assertTrue(target)
         self.assertNotIn(138,rubble)
+        self.assertIn("MudTerrain = 37", SCANNER)
+        self.assertIn("voxel.Material == BaseScanCore.MudTerrain",CORE)
+        self.assertIn("Include creek/ditch mud (material 37) — TEST",CODE)
+        self.assertNotIn("UnderwaterMud",SCANNER+CODE+SCAN)
+        self.assertNotIn("material 91",CODE)
         self.assertIn("!voxel.IsAir", CORE)
         self.assertIn("BaseScanCore.IsRubble", CORE)
         self.assertIn("IncludeMud", CORE)
