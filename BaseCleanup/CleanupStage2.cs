@@ -49,6 +49,11 @@ public sealed partial class BaseCleanupMod
     // Independent test journal for the material-37 experiment. No recovery
     // record from any released version is overwritten.
     private const string CurrentLedgerPrefix = "cleanup-rollback-v3-";
+    // v0.3.4: distinct key for EACH confirmed REMOVE, preserving every
+    // previous snapshot and backup. Newest operation must be undone first.
+    private const string HistoryPrefix = "cleanup-rollback-v4-index-";
+    private const string OperationPrefix = "cleanup-rollback-v4-";
+    private const int MaxHistory = 32; // Fail closed; never discard recovery records.
     // One stable per-altar WorldData key; a second altar cannot overwrite
     // a previous altar's recovery record. GUIDs derived from ephemeral
     // entity IDs would be wrong across hosted world restarts.
@@ -89,32 +94,72 @@ public sealed partial class BaseCleanupMod
          previous.Planned > 0 && previous.Removed == previous.Planned &&
          previous.Restored == 0 && previous.Conflicted == 0);
 
+    private static string HistoryKeyFor(PlayerBase altar) =>
+        HistoryPrefix + LedgerKeyFor(altar)[LedgerPrefix.Length..];
+
+    private static string OperationKeyFor(PlayerBase altar, int sequence) =>
+        OperationPrefix + LedgerKeyFor(altar)[LedgerPrefix.Length..] +
+        "-" + sequence.ToString("D6", CultureInfo.InvariantCulture);
+
+    private static CleanupHistory ReadHistory(PlayerBase altar)
+    {
+        if (!WorldData.TryGet<CleanupHistory>(HistoryKeyFor(altar), out var history))
+            return new CleanupHistory();
+        if (history is null || history.Sequences is null || history.NextSequence < 1 ||
+            history.NextSequence > 1_000_000 || history.Sequences.Count > MaxHistory)
+            throw new InvalidOperationException("invalid cleanup operation history; no writes permitted");
+        var previous = 0;
+        foreach (var sequence in history.Sequences)
+        {
+            if (sequence <= previous || sequence >= history.NextSequence)
+                throw new InvalidOperationException("invalid or non-monotonic cleanup history; no writes permitted");
+            previous = sequence;
+        }
+        return history;
+    }
+
+    private static IEnumerable<CleanupLedger> ReadOperationJournals(PlayerBase altar)
+    {
+        var history = ReadHistory(altar);
+        for (var i = history.Sequences.Count - 1; i >= 0; i--)
+        {
+            var sequence = history.Sequences[i];
+            if (!WorldData.TryGet<CleanupLedger>(OperationKeyFor(altar, sequence), out var journal) ||
+                journal is null || string.IsNullOrEmpty(journal.Packed) ||
+                journal.OperationNumber != sequence)
+                throw new InvalidOperationException(
+                    $"Cleanup operation #{sequence} is missing/corrupt. Refusing to proceed.");
+            yield return journal;
+        }
+    }
+
     private static bool TryGetJournal(PlayerBase altar, out CleanupLedger journal)
     {
-        // Always offer an outstanding rollback before an already-completed
-        // journal. This preserves access to older v0.2/v0.3.2 recoveries
-        // when a later, fully undone experiment also exists.
-        CleanupLedger? completed = null;
-        if (WorldData.TryGet<CleanupLedger>(CurrentLedgerKeyFor(altar), out var current) &&
-            !string.IsNullOrEmpty(current.Packed))
+        // Latest NOT YET undone operation first. Older journals are never
+        // overwritten; after undoing the latest, the next becomes available.
+        // If a committed operation was followed by another operation, undo
+        // in reverse order to protect dependent voxel states.
+        foreach (var item in ReadOperationJournals(altar))
         {
-            if (!FullyUndone(current)) { journal = current; return true; }
-            completed ??= current;
+            if (!FullyUndone(item)) { journal = item; return true; }
         }
-        if (WorldData.TryGet<CleanupLedger>(PreviousLedgerKeyFor(altar), out var previous) &&
-            !string.IsNullOrEmpty(previous.Packed))
+        if (WorldData.TryGet<CleanupLedger>(CurrentLedgerKeyFor(altar), out var v3) &&
+            !string.IsNullOrEmpty(v3.Packed) && !FullyUndone(v3))
         {
-            if (!FullyUndone(previous)) { journal = previous; return true; }
-            completed ??= previous;
+            journal = v3; return true;
         }
-        if (WorldData.TryGet<CleanupLedger>(LedgerKeyFor(altar), out var legacy) &&
-            !string.IsNullOrEmpty(legacy.Packed))
+        if (WorldData.TryGet<CleanupLedger>(PreviousLedgerKeyFor(altar), out var v2) &&
+            !string.IsNullOrEmpty(v2.Packed) && !FullyUndone(v2))
         {
-            if (!FullyUndone(legacy)) { journal = legacy; return true; }
-            completed ??= legacy;
+            journal = v2; return true;
         }
-        journal = completed!;
-        return completed is not null;
+        if (WorldData.TryGet<CleanupLedger>(LedgerKeyFor(altar), out var v1) &&
+            !string.IsNullOrEmpty(v1.Packed) && !FullyUndone(v1))
+        {
+            journal = v1; return true;
+        }
+        journal = null!;
+        return false;
     }
 
     private const string CleanupPermission = "base-cleanup.command.baseclean";
@@ -242,30 +287,47 @@ public sealed partial class BaseCleanupMod
     private bool HasOutstandingLedger(PlayerBase altar, out string message)
     {
         message = "";
-        if (WorldData.TryGet<CleanupLedger>(CurrentLedgerKeyFor(altar), out var current) &&
-            !string.IsNullOrEmpty(current.Packed))
+        try
         {
-            message = $"The v0.3.3 test journal already exists ({current.Phase}; backup " +
-                      $"{current.BackupName}). Use Undo; the test journal is never overwritten.";
+            var history = ReadHistory(altar);
+            if (history.Sequences.Count >= MaxHistory)
+            {
+                message = $"Cleanup history has reached {MaxHistory} permanent operations. " +
+                    "No journal may be overwritten. Use a new altar/world or arrange archival.";
+                return true;
+            }
+            foreach (var item in ReadOperationJournals(altar))
+            {
+                if (!SettledPreviousJournal(item))
+                {
+                    message = $"Operation #{item.OperationNumber} needs recovery " +
+                        $"({item.Phase}; edited {item.Removed}, restored {item.Restored}, " +
+                        $"conflicts {item.Conflicted}). Use Undo before preparing another.";
+                    return true;
+                }
+            }
+            // The v1/v2/v3 records are immutable, including after Undo.
+            foreach (var key in new[] { CurrentLedgerKeyFor(altar),
+                PreviousLedgerKeyFor(altar), LedgerKeyFor(altar) })
+            {
+                if (WorldData.TryGet<CleanupLedger>(key, out var legacy) &&
+                    !string.IsNullOrEmpty(legacy.Packed) &&
+                    !SettledPreviousJournal(legacy))
+                {
+                    message = $"An earlier cleanup needs recovery ({legacy.Phase}; " +
+                        $"edited {legacy.Removed}, restored {legacy.Restored}, " +
+                        $"conflicts {legacy.Conflicted}). Undo before preparing another.";
+                    return true;
+                }
+            }
+            return false;
+        }
+        catch (Exception ex)
+        {
+            Log.Warn("base-cleanup history verification refused to proceed: " + ex);
+            message = "Cleanup journal history unreadable; no new edits allowed: " + ex.Message;
             return true;
         }
-        if (WorldData.TryGet<CleanupLedger>(PreviousLedgerKeyFor(altar), out var previous) &&
-            !string.IsNullOrEmpty(previous.Packed) && !SettledPreviousJournal(previous))
-        {
-            message = $"Prior v0.3 cleanup needs recovery ({previous.Phase}; " +
-                      $"edited {previous.Removed}, restored {previous.Restored}, " +
-                      $"conflicts {previous.Conflicted}). Undo first; do not overwrite its journal.";
-            return true;
-        }
-        if (WorldData.TryGet<CleanupLedger>(LedgerKeyFor(altar), out var legacy) &&
-            !string.IsNullOrEmpty(legacy.Packed) && !SettledPreviousJournal(legacy))
-        {
-            message = $"Older v0.2 cleanup needs recovery ({legacy.Phase}; " +
-                      $"edited {legacy.Removed}, restored {legacy.Restored}, " +
-                      $"conflicts {legacy.Conflicted}). Undo before new cleanup.";
-            return true;
-        }
-        return false;
     }
 
     private void BeginPreparation(EntityId player, byte options)
