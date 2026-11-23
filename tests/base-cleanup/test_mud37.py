@@ -125,12 +125,14 @@ class Mud37Tests(unittest.TestCase):
         self.assertIn("WorldData.Set(journalKey, journal)",STAGE)
         self.assertNotIn("WorldData.Set(PreviousLedgerKeyFor",STAGE)
 
-    def test_journal_before_write_no_world_backup_and_undo_only_on_air(self):
+    def test_journal_and_backup_before_write_and_undo_only_on_air(self):
         self.assertLess(STAGE.index("WorldData.Set(journalKey, journal)"),
                         STAGE.index("Build.WriteIfUnchanged(chunk.Box, desired, expected, options, mask)"))
         self.assertLess(STAGE.index("WorldData.Set(HistoryKeyFor(plan.Altar), history)"),
                         STAGE.index("Build.WriteIfUnchanged(chunk.Box, desired, expected, options, mask)"))
-        self.assertNotIn("await Saves.Backup(",STAGE)
+        self.assertIn("await Saves.Backup(CleanupBackups.Label)",STAGE)
+        self.assertLess(STAGE.index("await Saves.Backup(CleanupBackups.Label)"),
+                        STAGE.index("Build.WriteIfUnchanged(chunk.Box, desired, expected, options, mask)"))
         self.assertNotIn("Saves.Request(",STAGE)
         self.assertIn("CleanupCore.EditedValue(cell.Raw)",STAGE)
         self.assertIn("expected[cell.Index].Raw != CleanupCore.EditedValue(cell.Raw).Raw",STAGE)
@@ -139,9 +141,9 @@ class Mud37Tests(unittest.TestCase):
         self.assertIn('ConfirmUndo = "UNDO"',STAGE)
 
     def test_test_package_is_separate_version_not_release(self):
-        self.assertIn("<Version>0.3.5</Version>",PROJ)
-        self.assertIn("base-cleanup-0.3.5.zip",FLOW)
-        self.assertIn("base-cleanup-selective-0.3.5-test",FLOW)
+        self.assertIn("<Version>0.3.6</Version>",PROJ)
+        self.assertIn("base-cleanup-0.3.6.zip",FLOW)
+        self.assertIn("base-cleanup-precommit-backups-0.3.6-test",FLOW)
         self.assertIn("github.event_name == 'push'",FLOW)
         self.assertIn("github.ref == 'refs/heads/main'",FLOW)
         self.assertIn("  pull_request:",FLOW)

@@ -125,7 +125,9 @@ class MultiStepSafety(unittest.TestCase):
                         CODE.index("Build.WriteIfUnchanged(chunk.Box, desired, expected, options, mask)"))
         self.assertLess(CODE.index("WorldData.Set(HistoryKeyFor(plan.Altar), history);"),
                         CODE.index("Build.WriteIfUnchanged(chunk.Box, desired, expected, options, mask)"))
-        self.assertNotIn("await Saves.Backup(",CODE)
+        self.assertIn("await Saves.Backup(CleanupBackups.Label)",CODE)
+        self.assertLess(CODE.index("CleanupBackups.Prune(backup)"),
+                        CODE.index("Build.WriteIfUnchanged(chunk.Box, desired, expected, options, mask)"))
         self.assertNotIn("Saves.Request(",CODE)
         self.assertIn("journal.Phase = journal.Removed > 0 ? \"partial\" : \"undone\"",CODE)
         self.assertIn("MaxHistory = 32",CODE)
@@ -151,7 +153,7 @@ class MultiStepSafety(unittest.TestCase):
         self.assertIn('journal.Phase = "partial"',CODE)
 
     def test_no_release_on_pr(self):
-        self.assertIn("base-cleanup-selective-0.3.5-test",FLOW)
+        self.assertIn("base-cleanup-precommit-backups-0.3.6-test",FLOW)
         self.assertIn("github.event_name == 'push'",FLOW)
         self.assertIn("github.ref == 'refs/heads/main'",FLOW)
         self.assertIn("  pull_request:",FLOW)

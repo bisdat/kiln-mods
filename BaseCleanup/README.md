@@ -1,4 +1,4 @@
-# Base Cleanup v0.3.5 — selective categories, no forced world saves, journal purge
+# Base Cleanup v0.3.6 — pre-REMOVE world backups, ten-copy retention, selective Undo
 
 **Draft experimental test candidate only. Not merged or released.**
 The stable GitHub release remains v0.3.2. This version builds on
@@ -36,28 +36,67 @@ purging the current keys, and neither the mod's uninstall nor
 contain data for other mods/worlds/players. A true uninstall-time
 purge of all retained generations requires Kiln launcher support.
 
-## No forced whole-world backups or saves
+## Automatic backup BEFORE each REMOVE
 
-**New in v0.3.5:** Base Cleanup no longer calls `Saves.Backup`,
-`Saves.Request`, or any restore API. It does not create a whole-world
-backup or force a world save, avoiding the extra save impact on
-unrelated multiplayer bases.
+**Restored in v0.3.6:** After a complete Scan → Options → Prepare,
+typing **REMOVE** first calls `Saves.Backup("bisdat-base-cleanup")`
+on the authoritative host. Kiln saves the **entire world** now and
+copies the matching world file and Kiln mod-data generation to a
+timestamped folder. The operation **waits for a verified successful
+backup** before changing even one voxel. If saving, verification,
+retention or current-world validation fails, **NO voxels are edited**.
+A backup is not created by Scan, Prepare, or UNDO.
 
-Each confirmed REMOVE instead registers its own immutable original-
-voxel Undo journal and separate per-altar history entry with Kiln
-`WorldData` **before editing any voxels**. Kiln's normal game save
-persists the journal and terrain as a matching generation; no special
-save is required by this mod. Until the next ordinary world save,
-the journal and edits may exist only in memory. A crash restores
-the last *consistent* saved generation, as documented by Kiln's
-save-data API. These normal game saves are controlled by Enshrouded,
-not Base Cleanup.
+The original per-operation WorldData Undo journal and its index are
+registered **before** the backup, so the backup contains that
+pre-REMOVE journal and the world's pre-cleanup terrain. A completed
+REMOVE still retains its selective compare-and-write UNDO journal.
+The mod does not request a second save after editing: the game's
+normal subsequent saves persist the changed terrain and journal.
 
-`Build.WriteIfUnchanged` and Undo continue to compare exact original
-and expected raw voxels; external edits are never overwritten.
-Full-world backup restore is not a Base Cleanup feature and no longer
-part of its normal procedure. Previously created backup files
-remain under Kiln ownership and are not touched.
+**Backup location (Kiln-controlled, not a mod ZIP or a game-save
+slot):**
+
+```text
+<Enshrouded game directory>/kiln/backups/
+  YYYYMMDD-HHmmss-bisdat-base-cleanup/
+    backup.json                 # includes per-file SHA256
+    savegame/world<N>.ksd        # complete world save
+    worlds/<world GUID>/         # matching Kiln mod-data manifest and blobs
+```
+
+On the usual Bazzite Steam install, the root is:
+`~/.local/share/Steam/steamapps/common/Enshrouded/kiln/backups/`.
+The authoritative Kiln API path is `Saves.BackupDirectory`, so
+dedicated-server or alternative game installs may differ. Each
+backup's full timestamped folder name is reported in `kiln.log`
+and the cleanup status.
+
+**Retention:** At each successful pre-REMOVE backup, Base Cleanup
+retains the **10 newest** backup folders with the exact
+`bisdat-base-cleanup` backup label **for that same world GUID**.
+Only its older matching folders are recursively deleted, after
+checking each is a real directory directly below Kiln's backup root
+(not a link), with the expected timestamped filename and valid
+Kiln backup metadata. Backups for other worlds/mods, older legacy
+`journal-op...` archives, manually made snapshots, and Kiln
+restore files are **never pruned**. If rotation cannot be performed
+safely, REMOVE refuses to edit terrain; a completed fresh backup
+may still remain for inspection.
+
+**No restore UI:** The mod provides no full-world restore button or
+automatic restore action. The existing **UNDO** remains the
+recommended selective rollback. Full-world restoration requires a
+separate, deliberate manual recovery with the game stopped and
+matching Steam/local world-save plus Kiln sidecar data; Kiln's
+`Saves.RestoreOnNextStart` is **not supported on client-hosted
+worlds**. Do not copy files over an active world or assume replacing
+only the `.ksd` file restores mod data. Preserve a separate backup
+outside Kiln's retention policy for irreplaceable saves.
+
+**Impact:** `Saves.Backup` forces an actual world save of all
+players' bases and may temporarily stall the authoritative host.
+That is intentional for this requested pre-commit safety gate.
 
 ## Every cleanup category is selectable
 
@@ -89,7 +128,7 @@ complete 3-D altar scan with zero unreadable voxels.
 1. **Scan** the current Flame Altar (read-only).
 2. Choose the four category checkboxes.
 3. **Prepare** the selected options (read-only), inspect counts.
-4. Type **REMOVE** to commit (separate persistent journal).
+4. Type **REMOVE** to save a full timestamped world backup, then commit (separate persistent journal).
 5. Type **UNDO** for selective rollback, or choose a fresh Scan for
    the next operation. Undo success returns to Scan.
 
@@ -139,19 +178,24 @@ may still contain old records, as described above. If the mod is
 already uninstalled, reinstall it in the same world to run this
 command; simply deleting the mod ZIP is not a data purge.
 
-## Test v0.3.5 on a COPIED world
+## Test v0.3.6 on a COPIED world
 
-1. Install the Actions test package `base-cleanup-0.3.5.zip`
-   extracted from artifact `base-cleanup-selective-0.3.5-test`.
+1. Install the Actions test package `base-cleanup-0.3.6.zip`
+   extracted from artifact `base-cleanup-precommit-backups-0.3.6-test`.
 2. Survey a test Flame Altar. Untick Mud, Mycelium and Decay;
    confirm **rubble-only** Prepare/REMOVE edits only rubble.
 3. UNDO and verify complete restoration and zero conflicts.
 4. Repeat with **mud-only**, if that volume is acceptable;
    verify separate operation and independent Undo.
-5. Observe normal gameplay save timing; ensure **no Base Cleanup
-   whole-world backup** is generated. Logout/re-enter, check the
-   independent Undo persists and still restores selected voxels.
-6. After *fully undoing* tests and on a dispensable copied world,
+5. On **REMOVE**, verify a new timestamped
+   `kiln/backups/YYYYMMDD-HHmmss-bisdat-base-cleanup/` folder exists
+   before any voxel changes. Confirm its `backup.json`, world save and
+   matching Kiln sidecar; logout/re-enter and confirm independent Undo.
+6. Perform 11 small independent REMOVE operations (UNDO/re-scan
+   between them as needed), checking that exactly the newest 10
+   `bisdat-base-cleanup` backups remain for this world, and other
+   world/legacy backups remain untouched.
+7. After *fully undoing* tests and on a dispensable copied world,
    run the **two-step chat purge**. Verify the journal count becomes
    zero, Undo reports no saved journal, and the count stays zero
    after the next natural save/restart.
@@ -166,9 +210,9 @@ Built with the checksum-pinned official Kiln dev.30.6 SDK and .NET 10.
 From the repository root:
 `bash build-stage1.sh`.
 
-CI runs the existing scanner/cleanup tests and the additional
-independent-category, no-save and two-step-purge tests before
-compilation and KilnPack ZIP verification.
+CI runs the scanner/cleanup and independent-category tests, plus
+pre-REMOVE backup ordering, ten-copy retention scoping and two-step
+journal purge tests before compilation and KilnPack ZIP verification.
 
-**PR #74 stays draft until user acceptance. No upstream changes,
-merge, tag or release is performed by a PR build.**
+This is a test candidate until in-game acceptance. The PR does not
+merge, tag or release the mod automatically.
