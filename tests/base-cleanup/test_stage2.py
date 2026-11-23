@@ -92,7 +92,7 @@ class SafetyTests(unittest.TestCase):
         self.assertNotIn("Build.BlockAt(",CODE)
         self.assertNotIn("Build.FindWall(",CODE)
 
-    def test_world_data_journal_always_precedes_any_write_no_save_requested(self):
+    def test_world_data_journal_and_world_backup_precede_any_write(self):
         journal=CODE.index("WorldData.Set(journalKey, journal);")
         history=CODE.index("WorldData.Set(HistoryKeyFor(plan.Altar), history);")
         edit=CODE.index("Build.WriteIfUnchanged(chunk.Box, desired, expected, options, mask)")
@@ -100,7 +100,10 @@ class SafetyTests(unittest.TestCase):
         self.assertLess(history,edit)
         self.assertIn("WorldData.Contains(journalKey)",CODE)
         self.assertIn("journal.Phase = journal.Removed > 0",CODE)
-        for forbidden in ("await Saves.Backup(", "Saves.Request(", "Saves.RestoreOnNextStart(", "Saves.Restore("):
+        self.assertIn("await Saves.Backup(CleanupBackups.Label)", CODE)
+        self.assertLess(CODE.index("await Saves.Backup(CleanupBackups.Label)"),edit)
+        self.assertLess(CODE.index("CleanupBackups.Prune(backup)"),edit)
+        for forbidden in ("Saves.Request(", "Saves.RestoreOnNextStart(", "Saves.Restore("):
             self.assertNotIn(forbidden,CODE)
         self.assertNotIn("backupCompleted",CODE)
 
