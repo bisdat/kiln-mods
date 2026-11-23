@@ -113,10 +113,19 @@ internal sealed class CleanupChunk(CellBox box)
     internal List<CleanupCell> Cells { get; } = [];
 }
 
-// WorldData serializes public properties. There is only one active ledger per
-// world: a new cleanup is refused until a previous rollback is dealt with.
+// Each REMOVE gets a separate immutable backup/journal key. The index retains
+// the operation order; Undo works newest-first so overlapping operations are
+// never restored out of order. WorldData serializes public properties.
+public sealed class CleanupHistory
+{
+    public int NextSequence { get; set; } = 1;
+    public List<int> Sequences { get; set; } = new();
+}
+
 public sealed class CleanupLedger
 {
+    public int OperationNumber { get; set; } // 0 for legacy journals
+    public byte Options { get; set; }
     public string WorldId { get; set; } = "";
     public string BackupName { get; set; } = "";
     public string Phase { get; set; } = "prepared";
@@ -166,6 +175,7 @@ internal static class CleanupSafety
 
     internal static CleanupLedger Ledger(CleanupPlan plan, string backupName) => new()
     {
+        Options = plan.Options,
         WorldId = plan.WorldId,
         BackupName = backupName,
         Phase = "prepared",
