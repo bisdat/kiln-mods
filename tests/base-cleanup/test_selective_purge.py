@@ -40,7 +40,7 @@ class SelectiveTests(unittest.TestCase):
         self.assertIn("options == 0 || (options & ~CleanupCore.AllowedOptions) != 0",STAGE)
         self.assertIn("selectedOptions != p.Options",STAGE)
 
-    def test_journals_persist_with_natural_game_save_only(self):
+    def test_journals_persist_with_verified_precommit_save(self):
         self.assertIn("WorldData.Set(journalKey, journal)",STAGE)
         self.assertIn("WorldData.Set(HistoryKeyFor(plan.Altar), history)",STAGE)
         self.assertIn("Build.WriteIfUnchanged(chunk.Box, desired, expected, options, mask)",STAGE)
@@ -48,7 +48,10 @@ class SelectiveTests(unittest.TestCase):
                         STAGE.index("Build.WriteIfUnchanged(chunk.Box, desired, expected, options, mask)"))
         self.assertLess(STAGE.index("WorldData.Set(HistoryKeyFor(plan.Altar), history)"),
                         STAGE.index("Build.WriteIfUnchanged(chunk.Box, desired, expected, options, mask)"))
-        for forbidden in ("Saves.Backup(", "Saves.Request(", "Saves.RestoreOnNextStart(",
+        self.assertIn("await Saves.Backup(CleanupBackups.Label)", STAGE)
+        self.assertLess(STAGE.index("CleanupBackups.Prune(backup)"),
+                        STAGE.index("Build.WriteIfUnchanged(chunk.Box, desired, expected, options, mask)"))
+        for forbidden in ("Saves.Request(", "Saves.RestoreOnNextStart(",
                           "Saves.Restore(", "File.Delete(", "Directory.Delete(", "File.WriteAll"):
             self.assertNotIn(forbidden,STAGE)
         self.assertIn("WorldData.Loaded != DataMatch.Exact",STAGE)
