@@ -248,6 +248,49 @@ public sealed partial class BaseCleanupMod
     private void CleanupReceive(CleanupStatus status)
     {
         Volatile.Write(ref _viewCleanup, status);
+        var step = Volatile.Read(ref _uiStage);
+        // Status may be refreshed when opening the panel. A previously
+        // completed cleanup does not jump past Step 1 on a fresh session.
+        switch (status.Phase)
+        {
+            case "planning":
+                Volatile.Write(ref _uiStage, 2);
+                break;
+            case "prepared":
+                Volatile.Write(ref _uiStage, 3);
+                break;
+            case "backup":
+            case "applying":
+            case "undoing":
+                Volatile.Write(ref _uiStage, 4);
+                break;
+            case "complete":
+            case "partial":
+                if (step is 3 or 4) Volatile.Write(ref _uiStage, 5);
+                break;
+            case "undone":
+                // A completed Undo consumes the operation's rollback step.
+                // The next REMOVE must always start from a fresh scan.
+                if (step is 4 or 5)
+                {
+                    Volatile.Write(ref _uiStage, 0);
+                    Volatile.Write(ref _viewReport, null);
+                    Volatile.Write(ref _viewProgress, null);
+                    _cleanupConfirm = "";
+                    _undoConfirm = "";
+                }
+                break;
+            case "cancelled":
+                Volatile.Write(ref _uiStage,
+                    Volatile.Read(ref _viewReport) is { UnreadableCells: 0 } ? 1 : 0);
+                break;
+            case "failed":
+                // An invalid/expired plan must not leave REMOVE visible.
+                if (step == 3) Volatile.Write(ref _uiStage, 1);
+                else if (step == 2) Volatile.Write(ref _uiStage, 1);
+                else if (step == 4) Volatile.Write(ref _uiStage, 5);
+                break;
+        }
         if (status.Phase is "failed" or "complete" or "cancelled" or "partial" or "undone")
             Hud.Toast(status.Message, status.Phase is "complete" or "undone" ? ToastKind.Success : ToastKind.Warning);
     }
@@ -784,58 +827,127 @@ public sealed partial class BaseCleanupMod
 
     private void DrawCleanup(UiDraw ui)
     {
-        ui.Separator("STAGE 2 - CONFIRMED CLEANUP");
-        ui.TextWrapped("Rubble is always included and is removed throughout the Flame Altar, " +
-            "including buried rubble (no support/surface filter). " +
-            "Optional decay only clears the weathering bit of building blocks: " +
-            "it preserves overgrowth state, material, geometry and other paint.");
-        ui.TextWrapped("MUD-37 TEST: removing this material excavates ALL matching terrain " +
-            "inside the 3-D altar, even buried cells. It may leave deep holes. " +
-            "Check the planned mud count and test on a copied save.");
-        ui.Checkbox("Include creek/ditch mud (material 37) — TEST", ref _includeMud);
-        ui.Checkbox("Include mineable mycelium", ref _includeMycelium);
-        ui.Checkbox("Repair cosmetic decay (ON by default)", ref _includeDecay);
-        ui.TextDisabled("Ivy/overgrowth cleanup is excluded. Level 7 also appears on clean walls.");
+        var step = Volatile.Read(ref _uiStage);
+        var status = Volatile.Read(ref _viewCleanup);
         var flags = (byte)((_includeMud ? CleanupCore.IncludeMud : 0) |
                            (_includeMycelium ? CleanupCore.IncludeMycelium : 0) |
                            (_includeDecay ? CleanupCore.IncludeDecay : 0));
-        if (ui.Button("1. Prepare removal plan (read-only)"))
-            Client.Post(() => CleanupRequestLocal(1, flags));
-        ui.SameLine();
-        if (ui.Button("Cancel")) Client.Post(() => CleanupRequestLocal(4));
-        ui.TextWrapped("A FULL-WORLD backup and persistent selective-undo journal are REQUIRED " +
-            "before any removal. The backup may roll the entire world back if restored later.");
-        ui.InputText("Type REMOVE to commit", ref _cleanupConfirm, 20);
-        if (ui.Button("2. CONFIRM: save backup and remove"))
+
+        if (step == 1)
         {
-            if (_cleanupConfirm == ConfirmRemove)
+            ui.TextWrapped("Rubble is always included, even buried rubble. " +
+                "Choose the additional materials to remove in this operation.");
+            ui.TextWrapped("MUD-37 TEST: the mud choice digs ALL matching terrain in this " +
+                "3-D Flame Altar, including buried cells. It may create deep holes. " +
+                "Review the plan on a copied save.");
+            ui.Checkbox("Include creek/ditch mud (material 37) — TEST", ref _includeMud);
+            ui.Checkbox("Include mineable mycelium", ref _includeMycelium);
+            ui.Checkbox("Repair cosmetic decay (ON by default)", ref _includeDecay);
+            ui.TextDisabled("Building decay clears weather bit only; ivy/overgrowth is excluded.");
+            if (ui.Button("2. Prepare selected options (read-only)"))
+            {
+                Volatile.Write(ref _uiStage, 2);
+                Client.Post(() => CleanupRequestLocal(1, flags));
+            }
+            ui.SameLine();
+            if (ui.Button("Rescan instead"))
+            {
+                Volatile.Write(ref _uiStage, 0);
+                Client.Post(() => Request(1));
+            }
+            if (status?.Phase == "failed")
+                ui.TextWrapped("Previous request: " + status.Message);
+            return;
+        }
+
+        if (step == 2)
+        {
+            ui.Separator("3 / 5 - Preparing read-only plan");
+            ui.TextWrapped(status?.Message ?? "Waiting for the host to prepare the plan.");
+            if (status is { Total: > 0 })
+                ui.Progress((float)(status.Done / (double)status.Total),
+                    $"{status.Done:N0} / {status.Total:N0} voxels inspected");
+            if (ui.Button("Cancel this plan")) Client.Post(() => CleanupRequestLocal(4));
+            return;
+        }
+
+        if (step == 3)
+        {
+            ui.Separator("4 / 5 - Review plan and confirm REMOVE");
+            if (status?.Phase != "prepared")
+            {
+                ui.TextWrapped("Awaiting a valid server-side plan. REMOVE is not yet available.");
+                return;
+            }
+            ui.TextWrapped(status.Message);
+            ui.Text($"Rubble {status.Rubble:N0} | Mud 37 {status.Mud:N0} | " +
+                $"Mycelium {status.Mycelium:N0} | Decay {status.Decay:N0}");
+            ui.TextWrapped("The prepared plan is valid for 10 minutes. A complete world " +
+                "backup and new permanent Undo journal are required before any edit.");
+            ui.InputText("Type REMOVE to commit", ref _cleanupConfirm, 20);
+            if (ui.Button("4. REMOVE this prepared operation"))
+            {
+                if (_cleanupConfirm == ConfirmRemove)
+                {
+                    _cleanupConfirm = "";
+                    Volatile.Write(ref _uiStage, 4);
+                    Client.Post(() => CleanupRequestLocal(2, flags));
+                }
+                else Hud.Toast("Type REMOVE exactly to confirm this operation.", ToastKind.Warning);
+            }
+            ui.SameLine();
+            if (ui.Button("Back: change options"))
             {
                 _cleanupConfirm = "";
-                Client.Post(() => CleanupRequestLocal(2, flags));
+                Volatile.Write(ref _uiStage, 1);
+                Client.Post(() => CleanupRequestLocal(4));
             }
-            else Hud.Toast("Type REMOVE exactly before confirming.", ToastKind.Warning);
+            return;
         }
-        ui.InputText("Type UNDO to restore", ref _undoConfirm, 20);
-        if (ui.Button("Undo previous cleanup"))
+
+        if (step == 4)
         {
-            if (_undoConfirm == ConfirmUndo)
+            ui.Separator("Operation in progress");
+            ui.TextWrapped(status?.Message ?? "Awaiting operation status...");
+            if (status is { Total: > 0 })
+                ui.Progress((float)(status.Done / (double)status.Total),
+                    $"{status.Done:N0} / {status.Total:N0}");
+            if (!string.IsNullOrEmpty(status?.Backup))
+                ui.TextWrapped("World backup: " + status.Backup);
+            if (ui.Button("Request cancellation"))
+                Client.Post(() => CleanupRequestLocal(4));
+            return;
+        }
+
+        if (step == 5)
+        {
+            ui.Separator("5 / 5 - Roll back this operation");
+            ui.TextWrapped(status?.Message ?? "Review the latest saved operation before Undo.");
+            if (!string.IsNullOrEmpty(status?.Backup))
+                ui.TextWrapped("Operation backup: " + status.Backup);
+            ui.TextWrapped("Each REMOVE has its own saved Undo journal. " +
+                "Undo restores only voxels still in this operation's edited state. " +
+                "Later operations must be undone before earlier ones.");
+            ui.InputText("Type UNDO to restore", ref _undoConfirm, 20);
+            if (ui.Button("5. UNDO latest eligible operation"))
+            {
+                if (_undoConfirm == ConfirmUndo)
+                {
+                    _undoConfirm = "";
+                    Volatile.Write(ref _uiStage, 4);
+                    Client.Post(() => CleanupRequestLocal(3));
+                }
+                else Hud.Toast("Type UNDO exactly to restore.", ToastKind.Warning);
+            }
+            ui.SameLine();
+            if (ui.Button("Start another operation (fresh scan)"))
             {
                 _undoConfirm = "";
-                Client.Post(() => CleanupRequestLocal(3));
+                Volatile.Write(ref _uiStage, 0);
+                Client.Post(() => Request(1));
             }
-            else Hud.Toast("Type UNDO exactly before reverting.", ToastKind.Warning);
+            return;
         }
-        var status = Volatile.Read(ref _viewCleanup);
-        if (status is null) return;
-        ui.TextWrapped($"Cleanup [{status.Phase}]: {status.Message}");
-        if (status.Total > 0)
-            ui.Progress((float)(status.Done / (double)status.Total),
-                $"{status.Done:N0} / {status.Total:N0} cells");
-        if (status.Phase is "prepared" or "planning")
-            ui.Text($"Selected rubble {status.Rubble:N0}; mud {status.Mud:N0}; " +
-                $"mycelium {status.Mycelium:N0}; cosmetic decay {status.Decay:N0}");
-        if (!string.IsNullOrEmpty(status.Backup))
-            ui.TextWrapped("Full-world backup: " + status.Backup);
     }
 
     private void CleanupStopped()
