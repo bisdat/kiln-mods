@@ -108,7 +108,7 @@ class MultiStepSafety(unittest.TestCase):
         self.assertIn("Volatile.Write(ref _uiStage, 0)",CODE)
         self.assertIn("Volatile.Write(ref _viewReport, null)",CODE)
 
-    def test_each_commit_gets_unique_record_and_backup_before_edit(self):
+    def test_each_commit_gets_unique_journal_before_edit(self):
         self.assertIn("public sealed class CleanupHistory",CORE)
         self.assertIn("List<int> Sequences",CORE)
         self.assertIn("OperationNumber",CORE)
@@ -122,13 +122,12 @@ class MultiStepSafety(unittest.TestCase):
         self.assertIn("WorldData.Set(journalKey, journal);",CODE)
         self.assertIn("WorldData.Set(HistoryKeyFor(plan.Altar), history);",CODE)
         self.assertLess(CODE.index("WorldData.Set(journalKey, journal);"),
-                        CODE.index("await Saves.Backup(name)"))
-        self.assertLess(CODE.index("WorldData.Set(HistoryKeyFor(plan.Altar), history);"),
-                        CODE.index("await Saves.Backup(name)"))
-        self.assertLess(CODE.index("backupCompleted = true;"),
                         CODE.index("Build.WriteIfUnchanged(chunk.Box, desired, expected, options, mask)"))
-        self.assertIn("WorldData.Remove(journalKey)",CODE)
-        self.assertIn("history.Sequences.Remove(journal.OperationNumber);",CODE)
+        self.assertLess(CODE.index("WorldData.Set(HistoryKeyFor(plan.Altar), history);"),
+                        CODE.index("Build.WriteIfUnchanged(chunk.Box, desired, expected, options, mask)"))
+        self.assertNotIn("await Saves.Backup(",CODE)
+        self.assertNotIn("Saves.Request(",CODE)
+        self.assertIn("journal.Phase = journal.Removed > 0 ? \"partial\" : \"undone\"",CODE)
         self.assertIn("MaxHistory = 32",CODE)
         self.assertIn("Refusing to proceed",CODE)
 
@@ -152,7 +151,7 @@ class MultiStepSafety(unittest.TestCase):
         self.assertIn('journal.Phase = "partial"',CODE)
 
     def test_no_release_on_pr(self):
-        self.assertIn("base-cleanup-staged-0.3.4-test",FLOW)
+        self.assertIn("base-cleanup-selective-0.3.5-test",FLOW)
         self.assertIn("github.event_name == 'push'",FLOW)
         self.assertIn("github.ref == 'refs/heads/main'",FLOW)
         self.assertIn("  pull_request:",FLOW)
