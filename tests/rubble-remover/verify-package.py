@@ -26,8 +26,10 @@ def main() -> int:
                 "rubble-remover output item not found at runtime"
             )
         tables = json.loads(z.read(tables_path))
-        if tables.get("mod") != "rubble-remover":
-            raise AssertionError(f"Wrong baked mod id: {tables.get('mod')!r}")
+        # Kiln's Baker.WorldTablesNative deliberately strips the mod name from
+        # blocks.tables.json: the owning mod comes from the containing package.
+        if tables.get("format") != 1 or "comment" not in tables:
+            raise AssertionError("Not a Kiln-generated world-table document")
         shapes = tables.get("toolBrushShapes")
         if not isinstance(shapes, dict) or set(shapes) != set(EXPECTED_RADII):
             raise AssertionError(f"Expected three baked brush shapes; found {shapes!r}")
