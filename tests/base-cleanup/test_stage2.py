@@ -93,7 +93,7 @@ class SafetyTests(unittest.TestCase):
         self.assertLess(journal,backup)
         self.assertLess(backup,checked)
         self.assertLess(checked,edit)
-        self.assertIn("WorldData.Remove(LedgerKeyFor(plan.Altar))",CODE)
+        self.assertIn("WorldData.Remove(CurrentLedgerKeyFor(plan.Altar))",CODE)
         self.assertIn("backup.DataBundles == 0", CODE)
         self.assertIn("if (!backupCompleted)",CODE)
 
@@ -102,7 +102,7 @@ class SafetyTests(unittest.TestCase):
         self.assertIn("SHA256.HashData", CODE)
         self.assertIn("HasOutstandingLedger(p.Altar, out reason)", CODE)
         self.assertIn("WorldData.TryGet<CleanupLedger>(LedgerKeyFor(altar)", CODE)
-        self.assertIn("WorldData.Set(LedgerKeyFor(plan.Altar), journal)", CODE)
+        self.assertIn("WorldData.Set(CurrentLedgerKeyFor(plan.Altar), journal)", CODE)
 
     def test_two_step_explicit_confirmation_and_server_authority(self):
         self.assertIn('ConfirmRemove = "REMOVE"',CODE)
@@ -118,10 +118,10 @@ class SafetyTests(unittest.TestCase):
         self.assertIn("Saves.WorldId != journal.WorldId",CODE)
         self.assertIn("CleanupCore.Decode(journal.Packed)",CODE)
         self.assertIn("Volatile.Write(ref _viewCleanup, status)",CODE)
-        self.assertIn('Network.Channel(Channel, "2"',SCAN)
+        self.assertIn('Network.Channel(Channel, "3"',SCAN)
 
     def test_rollback_never_writes_into_non_air(self):
-        self.assertIn("expected[cell.Index].Raw != Voxel.Air.Raw",CODE)
+        self.assertIn("expected[cell.Index].Raw != CleanupCore.EditedValue(cell.Raw).Raw",CODE)
         self.assertIn("desired[cell.Index] = new Voxel(cell.Raw)",CODE)
         self.assertIn("Build.WriteIfUnchanged(chunk.Box, desired, expected, options, mask)",CODE)
         original={0:0xff17,1:0x2a43,2:0xff42}
