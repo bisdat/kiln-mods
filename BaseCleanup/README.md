@@ -1,11 +1,11 @@
-# Base Cleanup v0.3.0 — experimental candidate, optional cosmetic decay
+# Base Cleanup v0.3.1 — experimental candidate, cosmetic decay enabled by default
 
 Standalone Kiln mod for Enshrouded, developed in bisdat/kiln-mods only.
 **Draft PR test candidate, not a published release.** Stable v0.2.0 is unchanged.
 
 ## What's new
 
-An explicit **Repair cosmetic decay (OFF by default)** checkbox has been
+An explicit **Repair cosmetic decay (ON by default)** checkbox has been
 added to the existing Stage 2 Base Cleanup UI. It is an additional target
 in the existing **read-only plan → type REMOVE → mandatory world backup →
 guarded cleanup → persistent selective UNDO** workflow. It does NOT
@@ -35,7 +35,7 @@ repair missing roofs, remove vegetation entities or recreate props.
   filtering; existing rubble is always included in the plan.
 - Optional underwater mud (material 91), ON by default.
 - Optional mineable mycelium (14, 33, 65, 72), ON by default.
-- **Optional cosmetic building decay, OFF by default.**
+- **Optional cosmetic building decay, ON by default.**
 - Client/server checks, progress/cancel, actor authorization, world and
   altar identity checks and a 10-minute plan expiry.
 - Exact per-cell original voxel values in an altar-specific compressed
@@ -53,34 +53,38 @@ repair missing roofs, remove vegetation entities or recreate props.
 ## Compatibility with existing v0.2.0 journals
 
 The v0.2.0 per-altar recovery journal remains at its original
-`cleanup-rollback-v1-...` world-data key. The v0.3.0 candidate writes
+`cleanup-rollback-v1-...` world-data key. The v0.3.1 candidate writes
 a separate `cleanup-rollback-v2-...` key and **never overwrites v0.2
 journal content**.
 
 If an old cleanup has been fully undone (`phase=undone`, at least one
 edit committed, total restored >= total committed, zero conflicts),
-v0.3.0 permits a new plan in the same altar while preserving the old
+v0.3.1 permits a new plan in the same altar while preserving the old
 record. Otherwise the old outstanding journal **blocks new cleanup**
 until its recovery is resolved. Undo prefers the new journal if one
 exists and otherwise still supports the old format.
 
-v0.3.0 also refuses a second cleanup in an altar while a new journal
+v0.3.1 also refuses a second cleanup in an altar while a new journal
 exists, even if it has been undone: the first v0.3 journal cannot be
 silently discarded or replaced. The backup remains available.
 
 ## Install and test on a copied world
 
 1. Download the test artifact from this PR's successful
-   **Test Base Cleanup v0.3.0 optional decay** GitHub Actions run:
-   `base-cleanup-decay-0.3.0-test`. Extract its inner
-   `base-cleanup-0.3.0.zip` and install through Kiln Launcher.
+   **Test Base Cleanup v0.3.1 optional decay** GitHub Actions run:
+   `base-cleanup-decay-0.3.1-test`. Extract its inner
+   `base-cleanup-0.3.1.zip` and install through Kiln Launcher.
    This **replaces v0.2.0** for the test (the ID is unchanged).
 2. Keep a separate copy of the save before the test. Use a Flame Altar
    with visible weathering. The current in-game evidence was captured on
    Kiln dev.30.6; this candidate is compiled against that SDK.
-3. Press **Ctrl+Shift+F10** to open the existing Base Cleanup panel.
-4. The cosmetic decay checkbox is initially **OFF**. Tick
-   **Repair cosmetic decay**. Mud and mycelium retain their own toggles.
+3. Press **Shift+ScrollLock** to open the Base Cleanup panel. Kiln explicitly
+   supports this chord. If you previously remapped this binding, the saved
+   choice takes precedence: use **Insert → Keys** (Base Cleanup) or edit the
+   profile's `keybinds.json` to change it. On some keyboard/Proton setups the
+   physical key press still needs checking in-game.
+4. The cosmetic decay checkbox is initially **ON**, but can be unticked.
+   Mud and mycelium retain their own toggles.
 5. Click **Prepare removal plan**. The server scans the complete altar
    and reports **cosmetic decay** count separately from rubble, mud and
    mycelium. Planning itself makes NO world edits.
@@ -102,10 +106,12 @@ silently discarded or replaced. The backup remains available.
 
 - `/basescan`, `/basescan status`, `/basescan cancel`,
   `/basescan report`, `/basescan materials [page]` — Stage 1.
-- `/baseclean prepare` — old behavior, rubble+mud+mycelium;
-  **decay is NOT enabled by default** for legacy scripts.
-- `/baseclean preparedecay` — explicit opt-in to include decay in
-  the same plan; also includes rubble, mud and mycelium.
+- `/baseclean prepare` — default plan now includes rubble, mud, mycelium
+  **and cosmetic decay**; the operation is still read-only until confirmed.
+- `/baseclean preparedecay` — explicit decay-including synonym retained
+  from v0.3.0 for compatibility.
+- `/baseclean preparenodecay` — explicitly exclude cosmetic decay while
+  keeping rubble, mud and mycelium.
 - `/baseclean confirm REMOVE` — backup and commit the exact
   options of the server-side prepared plan.
 - `/baseclean undo UNDO` — conflict-safe selective rollback.
@@ -129,7 +135,7 @@ limitation of the original Stage 2 journal.
 From repo root with .NET 10, run `bash build-stage1.sh`.
 The script uses SHA256-verified official Kiln dev.30.6 SDK assets,
 runs all offline Python regression suites, builds and packs
-`bin/Release/base-cleanup-0.3.0.zip`.
+`bin/Release/base-cleanup-0.3.1.zip`.
 
 The PR workflow is intentionally test-only: **no automatic publication,
 no merge, no upstream Kiln change**. Green CI is not an in-game PASS.
