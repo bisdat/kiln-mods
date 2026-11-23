@@ -113,14 +113,14 @@ public sealed partial class BaseCleanupMod : Mod
             {
                 Width = 680, Height = 710, StartOpen = false,
             });
-            _key = KeyBindings.Register(Binding, "Ctrl+Shift+F10", () =>
+            _key = KeyBindings.Register(Binding, "Shift+ScrollLock", () =>
             {
                 _window.Show();
                 Request(3); // Opening the panel never removes blocks.
                 CleanupRequestLocal(5);
             }, "Open Base Cleanup preview", "Base Cleanup");
         }
-        Log.Info("Base Cleanup v0.3.0 TEST loaded: Stage 1 survey; Stage 2 backup-first terrain cleanup plus opt-in weathering repair, persistent undo.");
+        Log.Info("Base Cleanup v0.3.1 TEST loaded: Stage 1 survey; Stage 2 backup-first terrain cleanup plus opt-in weathering repair, persistent undo.");
     }
 
     private void Request(byte op)
