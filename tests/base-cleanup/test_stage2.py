@@ -86,15 +86,23 @@ class SafetyTests(unittest.TestCase):
         self.assertNotIn("Build.FindWall(",CODE)
 
     def test_backup_and_saved_ledger_always_precede_any_write(self):
-        journal=CODE.index("WorldData.Set(LedgerKey, journal);")
+        journal=CODE.index("WorldData.Set(LedgerKeyFor(plan.Altar), journal);")
         backup=CODE.index("await Saves.Backup(name)")
         checked=CODE.index("backupCompleted = true")
         edit=CODE.index("Build.WriteIfUnchanged(chunk.Box, desired, expected, options, mask)")
         self.assertLess(journal,backup)
         self.assertLess(backup,checked)
         self.assertLess(checked,edit)
-        self.assertIn("WorldData.Remove(LedgerKey)",CODE)
+        self.assertIn("WorldData.Remove(LedgerKeyFor(plan.Altar))",CODE)
+        self.assertIn("backup.DataBundles == 0", CODE)
         self.assertIn("if (!backupCompleted)",CODE)
+
+    def test_rollback_journal_key_is_individual_to_altar(self):
+        self.assertIn("LedgerKeyFor(PlayerBase altar)", CODE)
+        self.assertIn("SHA256.HashData", CODE)
+        self.assertIn("HasOutstandingLedger(p.Altar, out reason)", CODE)
+        self.assertIn("WorldData.TryGet<CleanupLedger>(LedgerKeyFor(altar)", CODE)
+        self.assertIn("WorldData.Set(LedgerKeyFor(plan.Altar), journal)", CODE)
 
     def test_two_step_explicit_confirmation_and_server_authority(self):
         self.assertIn('ConfirmRemove = "REMOVE"',CODE)
