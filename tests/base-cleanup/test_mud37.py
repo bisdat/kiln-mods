@@ -74,8 +74,8 @@ class Mud37Tests(unittest.TestCase):
         self.assertIn('PreviousLedgerPrefix = "cleanup-rollback-v2-"',STAGE)
         self.assertIn('CurrentLedgerPrefix = "cleanup-rollback-v3-"',STAGE)
         self.assertIn("PreviousLedgerKeyFor(PlayerBase altar)",STAGE)
-        self.assertIn("WorldData.Set(CurrentLedgerKeyFor(plan.Altar), journal)",STAGE)
-        self.assertIn("WorldData.Remove(CurrentLedgerKeyFor(plan.Altar))",STAGE)
+        self.assertIn("WorldData.Set(journalKey, journal)",STAGE)
+        self.assertIn("WorldData.Remove(journalKey)",STAGE)
         self.assertNotIn("WorldData.Set(PreviousLedgerKeyFor",STAGE)
         self.assertNotIn("WorldData.Remove(PreviousLedgerKeyFor",STAGE)
         self.assertNotIn("WorldData.Set(LedgerKeyFor(",STAGE)
@@ -116,11 +116,11 @@ class Mud37Tests(unittest.TestCase):
         self.assertIn("previous.Restored == 0 && previous.Conflicted == 0",STAGE)
         self.assertIn("!SettledPreviousJournal(previous)",STAGE)
         self.assertIn("!SettledPreviousJournal(legacy)",STAGE)
-        self.assertIn("WorldData.Set(CurrentLedgerKeyFor(plan.Altar), journal)",STAGE)
+        self.assertIn("WorldData.Set(journalKey, journal)",STAGE)
         self.assertNotIn("WorldData.Set(PreviousLedgerKeyFor",STAGE)
 
     def test_backup_before_write_and_undo_only_on_air(self):
-        self.assertLess(STAGE.index("WorldData.Set(CurrentLedgerKeyFor(plan.Altar), journal)"),
+        self.assertLess(STAGE.index("WorldData.Set(journalKey, journal)"),
                         STAGE.index("await Saves.Backup(name)"))
         self.assertLess(STAGE.index("backupCompleted = true"),
                         STAGE.index("Build.WriteIfUnchanged(chunk.Box, desired, expected, options, mask)"))
@@ -131,9 +131,9 @@ class Mud37Tests(unittest.TestCase):
         self.assertIn('ConfirmUndo = "UNDO"',STAGE)
 
     def test_test_package_is_separate_version_not_release(self):
-        self.assertIn("<Version>0.3.3</Version>",PROJ)
-        self.assertIn("base-cleanup-0.3.3.zip",FLOW)
-        self.assertIn("base-cleanup-mud37-0.3.3-test",FLOW)
+        self.assertIn("<Version>0.3.4</Version>",PROJ)
+        self.assertIn("base-cleanup-0.3.4.zip",FLOW)
+        self.assertIn("base-cleanup-staged-0.3.4-test",FLOW)
         self.assertIn("github.event_name == 'push'",FLOW)
         self.assertIn("github.ref == 'refs/heads/main'",FLOW)
         self.assertIn("  pull_request:",FLOW)
