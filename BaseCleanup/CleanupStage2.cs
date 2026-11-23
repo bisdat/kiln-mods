@@ -667,6 +667,9 @@ public sealed partial class BaseCleanupMod
             "including buried rubble (no support/surface filter). " +
             "Optional decay only clears the weathering bit of building blocks: " +
             "it preserves overgrowth state, material, geometry and other paint.");
+        ui.TextWrapped("MUD-37 TEST: removing this material excavates ALL matching terrain " +
+            "inside the 3-D altar, even buried cells. It may leave deep holes. " +
+            "Check the planned mud count and test on a copied save.");
         ui.Checkbox("Include creek/ditch mud (material 37) — TEST", ref _includeMud);
         ui.Checkbox("Include mineable mycelium", ref _includeMycelium);
         ui.Checkbox("Repair cosmetic decay (ON by default)", ref _includeDecay);
