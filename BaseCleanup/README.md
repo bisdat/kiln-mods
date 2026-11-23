@@ -61,11 +61,22 @@ Previously published journal keys are NEVER overwritten:
 - `cleanup-rollback-v3-...`: **this v0.3.3 test only**.
 
 The same stable Flame Altar geometry hash is used across all generations.
-The test permits another cleanup in the same altar after the previously
-recorded cleanup was **fully undone** (restored >= removed with zero
-conflicts). If an older cleanup still has unresolved edits, preparation
-is refused: use Undo to resolve them first. Undo prefers an **outstanding**
-journal in newest-to-oldest order, retaining older recovery access.
+The test permits another cleanup in the same altar after a prior journal
+has either been **fully undone** (restored >= removed, no conflicts), OR
+is a **fully completed and verified cleanup** (phase complete, planned
+equals removed, restored zero, no conflicts). A completed cleanup does
+not need to be undone: the experiment will save a separate v3 journal
+without overwriting or reverting accepted v0.3.2 rubble/decay work.
+
+This was specifically verified against the user's real report on 23 Nov:
+prior v0.3.2 journal **88,057 edits**, phase **complete**, **0 restored**,
+**0 conflicts**. The previous v0.3.3 candidate incorrectly refused the
+read-only preparation; this revision corrects the journal gate.
+
+A prior partial, interrupted, conflicted, or partly undone cleanup
+**still blocks** new preparation, preserving the ability to recover it
+first. Undo prefers an outstanding journal in newest-to-oldest order;
+older recovery records remain available.
 
 A completed v0.3.3 test journal is never overwritten by another test
 in the same altar, even if fully undone. The backups and old recovery
