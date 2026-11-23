@@ -1,4 +1,4 @@
-"""Optional cosmetic decay v0.3.0 policy and journal compatibility tests.
+"""Optional cosmetic decay v0.3.1 policy and journal compatibility tests.
 
 Pure/offline tests model before/after raw values and require safety
 invariants in source. They are not a substitute for in-game confirmation.
@@ -32,14 +32,15 @@ def undo(current, original):
     return original if current == after(original) else current
 
 class DecayTests(unittest.TestCase):
-    def test_default_off_and_console_default_stays_off(self):
+    def test_default_on_and_console_opt_out_stays_available(self):
         self.assertIn("IncludeDecay = 4", CORE)
         self.assertIn("AllowedOptions = IncludeMud | IncludeMycelium | IncludeDecay", CORE)
-        self.assertIn("_includeDecay = false", CODE)
-        self.assertIn('ui.Checkbox("Repair cosmetic decay (OFF by default)", ref _includeDecay)', CODE)
+        self.assertIn("_includeDecay = true", CODE)
+        self.assertIn('ui.Checkbox("Repair cosmetic decay (ON by default)", ref _includeDecay)', CODE)
         self.assertIn("(_includeDecay ? CleanupCore.IncludeDecay : 0)", CODE)
         self.assertIn("BeginPreparation(c.Source.Player, CleanupCore.IncludeMud | CleanupCore.IncludeMycelium)", CODE)
         self.assertIn('Command("baseclean preparedecay"', CODE)
+        self.assertIn('Command("baseclean preparenodecay"', CODE)
         self.assertIn("BeginPreparation(c.Source.Player, CleanupCore.AllowedOptions)", CODE)
 
     def test_observed_decay_tool_voxels_repair_only_weathering(self):
@@ -135,8 +136,9 @@ class DecayTests(unittest.TestCase):
         self.assertIn("Ivy/overgrowth cleanup is excluded", CODE)
 
     def test_v03_package_and_network(self):
-        self.assertIn("<Version>0.3.0</Version>", PROJECT)
+        self.assertIn("<Version>0.3.1</Version>", PROJECT)
         self.assertIn('Network.Channel(Channel, "3"', MOD)
+        self.assertIn('KeyBindings.Register(Binding, "Shift+ScrollLock"', MOD)
         self.assertIn(".String(Backup).Int64(Decay)", CODE)
         self.assertIn("return status with { Decay = r.Int64() };", CODE)
         self.assertIn("p.Player != player", CODE)
