@@ -87,7 +87,7 @@ class DecayTests(unittest.TestCase):
         self.assertEqual(undo(0, 0xff17), 0xff17)
         self.assertEqual(undo(0x008a, 0xff17), 0x008a)
 
-    def test_journal_registered_before_any_write_without_saves(self):
+    def test_journal_registered_and_backup_verified_before_any_write(self):
         self.assertLess(CODE.index("WorldData.Set(journalKey, journal);"),
                         CODE.index("Build.WriteIfUnchanged(chunk.Box, desired, expected, options, mask)"))
         self.assertLess(CODE.index("WorldData.Set(HistoryKeyFor(plan.Altar), history);"),
@@ -98,7 +98,11 @@ class DecayTests(unittest.TestCase):
         self.assertIn("BuildFlags.InBases | BuildFlags.RespectZones", CODE)
         self.assertIn("result.Refused || !result.Verified || result.CellsChanged != toWrite", CODE)
         self.assertIn("if (result.Refusal == BuildRefusal.Changed)", CODE)
-        self.assertNotIn("await Saves.Backup(", CODE)
+        self.assertIn("await Saves.Backup(CleanupBackups.Label)", CODE)
+        self.assertIn("CleanupBackups.Verify(backup, plan.WorldId)", CODE)
+        self.assertIn("CleanupBackups.Prune(backup)", CODE)
+        self.assertLess(CODE.index("CleanupBackups.Prune(backup)"),
+                        CODE.index("Build.WriteIfUnchanged(chunk.Box, desired, expected, options, mask)"))
         self.assertNotIn("Saves.Request(", CODE)
         self.assertNotIn("Saves.Restore", CODE)
         self.assertIn('ConfirmRemove = "REMOVE"', CODE)
@@ -141,7 +145,7 @@ class DecayTests(unittest.TestCase):
         self.assertIn("ivy/overgrowth is excluded", CODE)
 
     def test_v03_package_and_network(self):
-        self.assertIn("<Version>0.3.5</Version>", PROJECT)
+        self.assertIn("<Version>0.3.6</Version>", PROJECT)
         self.assertIn("<KilnModName>Base Cleanup</KilnModName>", PROJECT)
         self.assertNotIn("Base Cleanup - Confirmed Cleanup and Optional Decay", PROJECT)
         self.assertIn('Network.Channel(Channel, "3"', MOD)
