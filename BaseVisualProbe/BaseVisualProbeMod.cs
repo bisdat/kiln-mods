@@ -81,7 +81,7 @@ public sealed record VisualDifference(
 /// whole altar, or compares a 12 m local cube against a RAM snapshot.
 /// No world edits, no persistent data writes, no entity removals.
 /// </summary>
-public sealed class BaseVisualProbeMod : Mod
+public sealed partial class BaseVisualProbeMod : Mod
 {
     private const string Channel = "base-visual-probe:read";
     private const string Permission = "base-visual-probe.command.vprobe";
@@ -139,17 +139,18 @@ public sealed class BaseVisualProbeMod : Mod
 
     public override void OnLoad()
     {
-        _network = Network.Channel(Channel, "1", required: false)
+        _network = Network.Channel(Channel, "2", required: false)
             .Register<VisualRequest>(OnRequest, NetDirection.ToServer)
             .Register<VisualProgress>((m, _) => Receive(m), NetDirection.ToClient)
             .Register<VisualCensus>((m, _) => Receive(m), NetDirection.ToClient)
-            .Register<VisualDifference>((m, _) => Receive(m), NetDirection.ToClient);
+            .Register<VisualDifference>((m, _) => Receive(m), NetDirection.ToClient)
+            .Register<VisualSurfaceReport>((m, _) => Receive(m), NetDirection.ToClient);
 
         if (Client.Available && Client.IsClient && Ui.Available)
         {
             _window = Ui.Window("Base Visual Metadata Probe - READ ONLY", Draw, new UiWindowOptions
             {
-                Width = 690, Height = 590, StartOpen = false,
+                Width = 740, Height = 780, StartOpen = false,
             });
             _key = KeyBindings.Register("base-visual-probe.open", "Ctrl+Shift+F11", () =>
             {
@@ -200,6 +201,10 @@ public sealed class BaseVisualProbeMod : Mod
             case 5:
                 _cancel = true;
                 Send(player, new VisualProgress("cancel", "Cancellation requested; no changes were made.", 0, 0));
+                break;
+            case 6:
+            case 7:
+                StartSpot(player, operation);
                 break;
             default: Send(player, new VisualProgress("failed", "Unknown read-only command.", 0, 0)); break;
         }
@@ -544,6 +549,7 @@ public sealed class BaseVisualProbeMod : Mod
                 ui.Progress((float)(status.Read / (double)status.Total),
                     $"{status.Read:N0} / {status.Total:N0}");
         }
+        DrawSurfaceSpot(ui);
         if (Volatile.Read(ref _censusView) is { } census)
         {
             ui.Separator("Entire Flame Altar - building appearance");
@@ -629,6 +635,7 @@ public sealed class BaseVisualProbeMod : Mod
         _baseline = null;
         _lastDiff = null;
         _lastCensus = null;
+        ResetSurfaceSpot();
         _decayAttempts = _decayDone = _decayDoneInSample = 0;
         _growthAttempts = _growthDone = _growthDoneInSample = 0;
         _loggedToolActions = 0;
