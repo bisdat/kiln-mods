@@ -21,12 +21,18 @@ public sealed record CleanupRequest(byte Operation, byte Options) : INetMessage<
 public sealed record CleanupStatus(string Phase, string Message, long Done, long Total,
     long Rubble, long Mud, long Mycelium, string Backup) : INetMessage<CleanupStatus>
 {
+    // Separate count for opt-in decay repair. Old status fields stay intact.
+    public long Decay { get; init; }
+
     public void Encode(NetWriter w) => w.String(Phase).String(Message).Int64(Done).Int64(Total)
-        .Int64(Rubble).Int64(Mud).Int64(Mycelium).String(Backup);
-    public static CleanupStatus Decode(ref NetReader r) =>
-        new(r.String(32) ?? "", r.String(512) ?? "", r.Int64(), r.Int64(),
-            r.Int64(), r.Int64(), r.Int64(), r.String(160) ?? "");
-}
+        .Int64(Rubble).Int64(Mud).Int64(Mycelium).String(Backup).Int64(Decay);
+    public static CleanupStatus Decode(ref NetReader r)
+    {
+        var status = new CleanupStatus(r.String(32) ?? "", r.String(512) ?? "",
+            r.Int64(), r.Int64(), r.Int64(), r.Int64(), r.Int64(), r.String(160) ?? "");
+        return status with { Decay = r.Int64() };
+    }
+
 
 /// <summary>
 /// Stage 2 runs only on the authoritative server. A confirmed plan is
@@ -38,6 +44,7 @@ public sealed record CleanupStatus(string Phase, string Message, long Done, long
 public sealed partial class BaseCleanupMod
 {
     private const string LedgerPrefix = "cleanup-rollback-v1-";
+    private const string CurrentLedgerPrefix = "cleanup-rollback-v2-";
     // One stable per-altar WorldData key; a second altar cannot overwrite
     // a previous altar's recovery record. GUIDs derived from ephemeral
     // entity IDs would be wrong across hosted world restarts.
@@ -52,6 +59,33 @@ public sealed partial class BaseCleanupMod
         return LedgerPrefix + Convert.ToHexString(
             SHA256.HashData(Encoding.UTF8.GetBytes(normalized))).ToLowerInvariant()[..32];
     }
+    // New journals never overwrite the accepted v0.2.0 journal. An old
+    // journal may coexist only when every prior edit was safely undone.
+    private static string CurrentLedgerKeyFor(PlayerBase altar) =>
+        CurrentLedgerPrefix + LedgerKeyFor(altar)[LedgerPrefix.Length..];
+
+    private static bool FullyUndone(CleanupLedger old) =>
+        old.Phase == "undone" && old.Removed > 0 &&
+        old.Restored >= old.Removed && old.Conflicted == 0;
+
+    private static bool TryGetJournal(PlayerBase altar, out CleanupLedger journal)
+    {
+        if (WorldData.TryGet<CleanupLedger>(CurrentLedgerKeyFor(altar), out var current) &&
+            !string.IsNullOrEmpty(current.Packed))
+        {
+            journal = current;
+            return true;
+        }
+        if (WorldData.TryGet<CleanupLedger>(LedgerKeyFor(altar), out var previous) &&
+            !string.IsNullOrEmpty(previous.Packed))
+        {
+            journal = previous;
+            return true;
+        }
+        journal = null!;
+        return false;
+    }
+
     private const string CleanupPermission = "base-cleanup.command.baseclean";
     private const string ConfirmRemove = "REMOVE";
     private const string ConfirmUndo = "UNDO";
@@ -67,6 +101,7 @@ public sealed partial class BaseCleanupMod
     private string _undoConfirm = "";
     private bool _includeMud = true;
     private bool _includeMycelium = true;
+    private bool _includeDecay = false; // Explicit opt-in, never silently enabled.
 
     private void CleanupRequestLocal(byte operation, byte options = 0)
     {
@@ -111,10 +146,11 @@ public sealed partial class BaseCleanupMod
         if (_preparedCleanup is { } p)
             return PlanStatus(p, "prepared", "Plan ready. Inspect the counts and type REMOVE to confirm.");
         if (Saves.Available && Saves.WorldDataReady && AltarAt(player) is { } here &&
-            WorldData.TryGet<CleanupLedger>(LedgerKeyFor(here), out var l) && l.Packed.Length != 0)
-            return new(l.Phase, $"Saved undo journal: {l.Planned:N0} voxels; removed {l.Removed:N0}; " +
-                $"restored {l.Restored:N0}; conflicts {l.Conflicted:N0}. Select UNDO to restore unchanged air cells.",
-                l.Removed + l.Restored, l.Planned, 0, 0, 0, l.BackupName);
+            TryGetJournal(here, out var l))
+            return new(l.Phase, $"Saved undo journal: {l.Planned:N0} voxels " +
+                $"(decay {l.DecayPlanned:N0}); edited {l.Removed:N0}; restored {l.Restored:N0}; " +
+                $"conflicts {l.Conflicted:N0}. Select UNDO for selective rollback.",
+                l.Removed + l.Restored, l.Planned, 0, 0, 0, l.BackupName) { Decay = l.DecayPlanned };
         return new("idle", "No cleanup prepared. Stage 1 scan remains available above.", 0, 0, 0, 0, 0, "");
     }
 
@@ -122,7 +158,7 @@ public sealed partial class BaseCleanupMod
         new(phase, message, p.Read, p.Total,
             BaseScanCore.PlaceableRubble.Sum(x => p.Materials[x]) + BaseScanCore.WorldRubble.Sum(x => p.Materials[x]),
             p.Materials[BaseScanCore.UnderwaterMud],
-            BaseScanCore.MineableMycelium.Sum(x => p.Materials[x]), "");
+            BaseScanCore.MineableMycelium.Sum(x => p.Materials[x]), "") { Decay = p.DecayHits };
 
     private void CleanupPublish(EntityId recipient, CleanupStatus message)
     {
@@ -175,11 +211,19 @@ public sealed partial class BaseCleanupMod
     private bool HasOutstandingLedger(PlayerBase altar, out string message)
     {
         message = "";
-        if (WorldData.TryGet<CleanupLedger>(LedgerKeyFor(altar), out var journal) &&
-            journal.Packed.Length != 0)
+        if (WorldData.TryGet<CleanupLedger>(CurrentLedgerKeyFor(altar), out var current) &&
+            !string.IsNullOrEmpty(current.Packed))
         {
-            message = $"A cleanup journal already exists ({journal.Phase}; backup {journal.BackupName}). " +
-                      "Use Undo instead of overwriting that recovery record.";
+            message = $"A v0.3 journal already exists ({current.Phase}; backup " +
+                      $"{current.BackupName}). Use Undo; this recovery record is never overwritten.";
+            return true;
+        }
+        if (WorldData.TryGet<CleanupLedger>(LedgerKeyFor(altar), out var legacy) &&
+            !string.IsNullOrEmpty(legacy.Packed) && !FullyUndone(legacy))
+        {
+            message = $"Older cleanup needs recovery ({legacy.Phase}; " +
+                      $"edited {legacy.Removed}, restored {legacy.Restored}, " +
+                      $"conflicts {legacy.Conflicted}). Undo before new cleanup.";
             return true;
         }
         return false;
@@ -252,7 +296,10 @@ public sealed partial class BaseCleanupMod
                     if (!CleanupCore.Target(v, plan.Options)) continue;
                     chunk ??= new CleanupChunk(box);
                     chunk.Cells.Add(new CleanupCell(i, v.Raw));
-                    plan.Materials[v.Material]++;
+                    if (CleanupCore.DecayTarget(v, plan.Options))
+                        plan.DecayHits++;
+                    else
+                        plan.Materials[v.Material]++;
                     plan.Hits++;
                 }
                 if (chunk is not null) plan.Chunks.Add(chunk);
@@ -270,8 +317,9 @@ public sealed partial class BaseCleanupMod
             plan.PreparedAtUtc = DateTime.UtcNow;
             _preparedCleanup = plan;
             CleanupPublish(plan.Player, PlanStatus(plan, "prepared",
-                $"Plan complete: {plan.Hits:N0} cells across {plan.Chunks.Count:N0} batches. " +
-                "No edits yet. Review counts, then type REMOVE to back up and commit."));
+                $"Plan complete: {plan.Hits:N0} cells (decay repair {plan.DecayHits:N0}) " +
+                $"across {plan.Chunks.Count:N0} batches. No edits yet. " +
+                "Review counts, then type REMOVE to back up and commit."));
         }
         catch (Exception ex)
         {
