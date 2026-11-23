@@ -39,6 +39,19 @@ designed to verify those changes before any cleanup implementation.
   The compare summary includes counts since baseline and the state of
   the gameplay build hook. An accepted tool action is distinct from a
   verified change in voxel metadata.
+- **Targeted clean-versus-overgrown wall profiling:** two new buttons
+  collect separate **~5 metre cubes** around the player's current location.
+  Reference A is chosen by the player on a visually CLEAN wall; reference B
+  is chosen on a visibly IVY-COVERED wall. These are separate positions,
+  NOT an automated ivy detector. Read-only results include building
+  material/paint values, zero-paint buildings, the 0..7 growth levels,
+  the most common exact 16-bit values, and *air-adjacent* building blocks.
+  A block is only classified air-adjacent if all six neighbour voxels
+  were read within the sample and at least one is air; other cells are
+  counted separately as enclosed or boundary-unknown. Being air-adjacent
+  does NOT prove that ivy is rendered. A and B results are logged and
+  compared only when they belong to the same world and Flame Altar.
+  **No full-altar rescan is needed for these samples.**
 - Cancel: stop a current read-only operation. Snapshots automatically expire
   on world switch, shutdown or mod unload.
 
@@ -51,18 +64,28 @@ The probe never writes world state or stores the snapshot in save files.
    It has a separate mod ID and can run alongside Base Cleanup v0.2.0.
 2. Stand in an existing Flame Altar containing weathered or ivy-covered walls.
    Press **Ctrl+Shift+F11** (remappable via Insert > Keys).
-3. Select **Census full Flame Altar**. Its full material/flag histogram goes
+3. **NEW: To investigate the unexpectedly large growth-level-7 count,
+   skip the full-altar census.** Stand right next to a visually clean
+   building wall (within ~1 metre), click **A. Sample CLEAN wall**.
+   Then stand right next to an ivy-covered wall, click
+   **B. Sample OVERGROWN wall**. Compare the two summaries in the UI,
+   and inspect the exact raw samples and surface counts in kiln.log.
+   Ideally choose walls made from the SAME building material and similar
+   structure geometry. Take one screenshot of each so we know what
+   each sample represents.
+4. The older **Census full Flame Altar** remains optional. Its full
+   material/flag histogram goes
    to kiln.log. Missing tiles abort the census instead of reporting zero.
-4. Stand close to a wall where you will manually remove ivy.
+5. Stand close to a wall where you will manually remove ivy.
    Select **Capture nearby ~12 m cube**.
-5. Use the game's **Overgrowth Tool** on that wall, then choose
+6. Use the game's **Overgrowth Tool** on that wall, then choose
    **Compare same cube**. The cube stays fixed at the capture location.
-6. Capture again before using the **Decay Tool** on a wall; compare again.
-7. Ideally repeat on a roof, since the roof pathway is not confirmed.
-8. If zero voxels change, check the new TOOL-SUMMARY in kiln.log for
+7. Capture again before using the **Decay Tool** on a wall; compare again.
+8. Ideally repeat on a roof, since the roof pathway is not confirmed.
+9. If zero voxels change, check the new TOOL-SUMMARY in kiln.log for
    accepted/denied tool actions and whether their impact hit the cube.
    No tool events can be caused by a not-yet-active event hook.
-9. Upload a Kiln support report ZIP, and state whether each comparison was
+10. Upload a Kiln support report ZIP, and state whether each comparison was
    Overgrowth or Decay and whether you used a wall or roof.
 
 ### Admin chat / console commands
@@ -72,6 +95,12 @@ The probe never writes world state or stores the snapshot in save files.
 - /vprobe compare
 - /vprobe report
 - /vprobe cancel
+
+**Local samples use the UI buttons** (Ctrl+Shift+F11): A. Sample CLEAN
+wall and B. Sample OVERGROWN wall. You may also use the read-only
+commands /vprobe spotclean and /vprobe spotivy where player chat is
+available. These samples don't overwrite the separate 12m baseline for
+before/after tool actions.
 
 In-world UI and joined clients use the authoritative host, requiring admin
 permission. Exact per-cell examples are in kiln.log rather than on a
