@@ -77,7 +77,8 @@ public sealed partial class BaseCleanupMod
         CurrentLedgerPrefix + LedgerKeyFor(altar)[LedgerPrefix.Length..];
 
     private static bool FullyUndone(CleanupLedger old) =>
-        old.Phase == "undone" && old.Removed > 0 &&
+        old.Phase == "undone" && old.Planned > 0 &&
+        (old.Removed > 0 || old.OperationNumber > 0) &&
         old.Restored >= old.Removed && old.Conflicted == 0;
 
     // A *successful* earlier cleanup is also safe to retain without undoing:
@@ -292,6 +293,9 @@ public sealed partial class BaseCleanupMod
                     Volatile.Write(ref _viewProgress, null);
                     _cleanupConfirm = "";
                     _undoConfirm = "";
+                    // Refresh the history so an EARLIER independently saved
+                    // operation can be offered for its own Undo.
+                    Client.Post(() => CleanupRequestLocal(5));
                 }
                 break;
             case "cancelled":
@@ -302,7 +306,10 @@ public sealed partial class BaseCleanupMod
                 // An invalid/expired plan must not leave REMOVE visible.
                 if (step == 3) Volatile.Write(ref _uiStage, 1);
                 else if (step == 2) Volatile.Write(ref _uiStage, 1);
-                else if (step == 4) Volatile.Write(ref _uiStage, 5);
+                else if (step == 4)
+                    Volatile.Write(ref _uiStage,
+                        status.Message.Contains("NO VOXELS CHANGED", StringComparison.Ordinal)
+                            ? 1 : 5);
                 break;
         }
         if (status.Phase is "failed" or "complete" or "cancelled" or "partial" or "undone")
