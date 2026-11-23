@@ -172,6 +172,12 @@ public sealed partial class BaseCleanupMod
     private const string ConfirmRemove = "REMOVE";
     private const string ConfirmUndo = "UNDO";
     private const int PreviewMinutes = 10;
+    private const string ConfirmDeleteJournals = "DELETE_ALL_JOURNALS";
+    private const int PurgeMinutes = 2;
+    private EntityId _journalPurgePlayer = EntityId.None;
+    private string? _journalPurgeWorldId;
+    private string[]? _journalPurgeKeys;
+    private DateTime _journalPurgeAtUtc;
 
     private CleanupPlan? _preparedCleanup;
     private CleanupPlan? _activeCleanup;
@@ -984,6 +990,9 @@ public sealed partial class BaseCleanupMod
         _preparedCleanup = null;
         _activeCleanup = null;
         _cleanupBusy = false;
+        _journalPurgeKeys = null;
+        _journalPurgeWorldId = null;
+        _journalPurgePlayer = EntityId.None;
         _lastSurveyWorldId = null;
         _lastSurveyAltar = null;
         _latest = null;
@@ -1011,6 +1020,92 @@ public sealed partial class BaseCleanupMod
     {
         if (Client.IsHosting && Client.HasLocalPlayer)
             CleanupPublish(Client.LocalPlayer, CleanupCurrentStatus(Client.LocalPlayer));
+    }
+
+    private static string[] JournalKeysInWorld() =>
+        WorldData.Keys.Where(k =>
+            k.StartsWith("cleanup-rollback-", StringComparison.Ordinal))
+            .OrderBy(k => k, StringComparer.Ordinal)
+            .ToArray();
+
+    [Command("baseclean journals", Description =
+        "Preview Base Cleanup Undo journal keys in the currently loaded world (no changes)",
+        Permission = CommandPermission.Admin)]
+    private void JournalsCommand(CommandContext c)
+    {
+        _journalPurgeKeys = null;
+        _journalPurgeWorldId = null;
+        _journalPurgePlayer = EntityId.None;
+        if (c.Source.Player.IsNone || !Saves.Available || !Saves.WorldDataReady ||
+            Saves.WorldId is null || WorldData.Loaded != DataMatch.Exact)
+            throw new CommandException("Enter a loaded world with matching Kiln WorldData first.");
+        if (_cleanupBusy || _running is not null)
+            throw new CommandException("A scan/cleanup/Undo is running. Finish it before reviewing journals.");
+        var keys = JournalKeysInWorld();
+        c.Reply($"Base Cleanup journals: {keys.Length} keys in CURRENT world {Saves.WorldId}.");
+        if (keys.Length == 0)
+        {
+            c.Reply("Nothing to delete. Kiln may still retain historical save generations elsewhere.");
+            return;
+        }
+        c.Reply("Deleting these keys PERMANENTLY loses ALL Base Cleanup Undo history " +
+            "for every altar in this world, including older v0.2/v0.3.2/v0.3.3 journals. " +
+            "Terrain already changed is NOT restored.");
+        c.Reply("It does NOT remove old Kiln save generations, world backups, " +
+            "or anything belonging to other mods. No world save is requested.");
+        _journalPurgeKeys = keys;
+        _journalPurgeWorldId = Saves.WorldId;
+        _journalPurgePlayer = c.Source.Player;
+        _journalPurgeAtUtc = DateTime.UtcNow;
+        c.Reply("For the next TWO minutes only, confirm in game chat: " +
+            "/baseclean journals delete DELETE_ALL_JOURNALS");
+    }
+
+    [Command("baseclean journals delete", Description =
+        "Permanently erase Base Cleanup journals in this world after an exact preview and confirmation",
+        Permission = CommandPermission.Admin)]
+    private void DeleteJournalsCommand(CommandContext c, string confirmation)
+    {
+        if (confirmation != ConfirmDeleteJournals)
+            throw new CommandException("Exact confirmation required: DELETE_ALL_JOURNALS.");
+        if (c.Source.Player.IsNone || !Saves.Available || !Saves.WorldDataReady ||
+            Saves.WorldId is null || WorldData.Loaded != DataMatch.Exact)
+            throw new CommandException("Current-world Kiln mod data is not ready; nothing deleted.");
+        if (_cleanupBusy || _running is not null)
+            throw new CommandException("Cannot delete journal history during a scan, cleanup or Undo.");
+        if (_journalPurgeKeys is not { Length: > 0 } snapshot ||
+            _journalPurgePlayer != c.Source.Player ||
+            _journalPurgeWorldId != Saves.WorldId ||
+            _journalPurgeAtUtc.AddMinutes(PurgeMinutes) < DateTime.UtcNow)
+            throw new CommandException("Missing/expired journal preview. Run /baseclean journals again.");
+        var current = JournalKeysInWorld();
+        if (!current.SequenceEqual(snapshot, StringComparer.Ordinal))
+            throw new CommandException("Journal keys changed after preview; nothing deleted. Preview again.");
+        // Invalidate confirmation BEFORE any mutation so duplicate commands
+        // cannot use the same preview. One mod, one current world; no files.
+        _journalPurgeKeys = null;
+        _journalPurgeWorldId = null;
+        _journalPurgePlayer = EntityId.None;
+        var removed = 0;
+        foreach (var key in snapshot)
+            if (WorldData.Remove(key)) removed++;
+        _preparedCleanup = null;
+        _latest = null;
+        _lastSurveyWorldId = null;
+        _lastSurveyAltar = null;
+        if (Client.Available && Client.IsClient)
+            Client.Post(() =>
+            {
+                Volatile.Write(ref _uiStage, 0);
+                Volatile.Write(ref _viewReport, null);
+                Volatile.Write(ref _viewCleanup, null);
+            });
+        Log.Warn($"base-cleanup: ADMIN DELETE ALL JOURNALS in current world: " +
+            $"removed={removed}/{snapshot.Length} keys. No terrain modified; no save requested.");
+        c.Reply($"Deleted {removed} Base Cleanup journal keys in the CURRENT world only. " +
+            "No voxel edits or world save requested. Undo history is gone; " +
+            "the change persists at the next game's normal save. " +
+            "To remove the mod, uninstall its package separately in Kiln.");
     }
 
     [Command("baseclean prepare", Description = "Read-only plan of rubble/mud/mycelium and cosmetic decay in current Flame Altar",
