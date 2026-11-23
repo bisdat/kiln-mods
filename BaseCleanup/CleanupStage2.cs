@@ -44,7 +44,11 @@ public sealed record CleanupStatus(string Phase, string Message, long Done, long
 public sealed partial class BaseCleanupMod
 {
     private const string LedgerPrefix = "cleanup-rollback-v1-";
-    private const string CurrentLedgerPrefix = "cleanup-rollback-v2-";
+    // Preserve the v0.3.1/0.3.2 journal intact, even if fully undone.
+    private const string PreviousLedgerPrefix = "cleanup-rollback-v2-";
+    // Independent test journal for the material-37 experiment. No recovery
+    // record from any released version is overwritten.
+    private const string CurrentLedgerPrefix = "cleanup-rollback-v3-";
     // One stable per-altar WorldData key; a second altar cannot overwrite
     // a previous altar's recovery record. GUIDs derived from ephemeral
     // entity IDs would be wrong across hosted world restarts.
@@ -59,8 +63,11 @@ public sealed partial class BaseCleanupMod
         return LedgerPrefix + Convert.ToHexString(
             SHA256.HashData(Encoding.UTF8.GetBytes(normalized))).ToLowerInvariant()[..32];
     }
-    // New journals never overwrite the accepted v0.2.0 journal. An old
-    // journal may coexist only when every prior edit was safely undone.
+    // Journal keys use the same stable altar geometry hash across generations.
+    // Only the prefix changes; v0.2 and v0.3.2 histories remain recoverable.
+    private static string PreviousLedgerKeyFor(PlayerBase altar) =>
+        PreviousLedgerPrefix + LedgerKeyFor(altar)[LedgerPrefix.Length..];
+
     private static string CurrentLedgerKeyFor(PlayerBase altar) =>
         CurrentLedgerPrefix + LedgerKeyFor(altar)[LedgerPrefix.Length..];
 
@@ -76,10 +83,16 @@ public sealed partial class BaseCleanupMod
             journal = current;
             return true;
         }
-        if (WorldData.TryGet<CleanupLedger>(LedgerKeyFor(altar), out var previous) &&
+        if (WorldData.TryGet<CleanupLedger>(PreviousLedgerKeyFor(altar), out var previous) &&
             !string.IsNullOrEmpty(previous.Packed))
         {
             journal = previous;
+            return true;
+        }
+        if (WorldData.TryGet<CleanupLedger>(LedgerKeyFor(altar), out var legacy) &&
+            !string.IsNullOrEmpty(legacy.Packed))
+        {
+            journal = legacy;
             return true;
         }
         journal = null!;
@@ -214,14 +227,22 @@ public sealed partial class BaseCleanupMod
         if (WorldData.TryGet<CleanupLedger>(CurrentLedgerKeyFor(altar), out var current) &&
             !string.IsNullOrEmpty(current.Packed))
         {
-            message = $"A v0.3 journal already exists ({current.Phase}; backup " +
-                      $"{current.BackupName}). Use Undo; this recovery record is never overwritten.";
+            message = $"The v0.3.3 test journal already exists ({current.Phase}; backup " +
+                      $"{current.BackupName}). Use Undo; the test journal is never overwritten.";
+            return true;
+        }
+        if (WorldData.TryGet<CleanupLedger>(PreviousLedgerKeyFor(altar), out var previous) &&
+            !string.IsNullOrEmpty(previous.Packed) && !FullyUndone(previous))
+        {
+            message = $"Prior v0.3 cleanup needs recovery ({previous.Phase}; " +
+                      $"edited {previous.Removed}, restored {previous.Restored}, " +
+                      $"conflicts {previous.Conflicted}). Undo first; do not overwrite its journal.";
             return true;
         }
         if (WorldData.TryGet<CleanupLedger>(LedgerKeyFor(altar), out var legacy) &&
             !string.IsNullOrEmpty(legacy.Packed) && !FullyUndone(legacy))
         {
-            message = $"Older cleanup needs recovery ({legacy.Phase}; " +
+            message = $"Older v0.2 cleanup needs recovery ({legacy.Phase}; " +
                       $"edited {legacy.Removed}, restored {legacy.Restored}, " +
                       $"conflicts {legacy.Conflicted}). Undo before new cleanup.";
             return true;
