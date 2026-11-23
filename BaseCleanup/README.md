@@ -1,7 +1,12 @@
-# Base Cleanup v0.3.1 — experimental candidate, cosmetic decay enabled by default
+# Base Cleanup v0.3.2 — short Kiln display name
 
 Standalone Kiln mod for Enshrouded, developed in bisdat/kiln-mods only.
 **Draft PR test candidate, not a published release.** Stable v0.2.0 is unchanged.
+
+The Kiln mod list now shows **Base Cleanup**, not the longer description.
+The internal mod ID remains `base-cleanup`; no save or settings migration is necessary.
+This patch changes metadata only (and the version string); cleanup behavior
+remains identical to the accepted v0.3.1 release.
 
 ## What's new
 
@@ -53,27 +58,27 @@ repair missing roofs, remove vegetation entities or recreate props.
 ## Compatibility with existing v0.2.0 journals
 
 The v0.2.0 per-altar recovery journal remains at its original
-`cleanup-rollback-v1-...` world-data key. The v0.3.1 candidate writes
+`cleanup-rollback-v1-...` world-data key. The v0.3.2 candidate writes
 a separate `cleanup-rollback-v2-...` key and **never overwrites v0.2
 journal content**.
 
 If an old cleanup has been fully undone (`phase=undone`, at least one
 edit committed, total restored >= total committed, zero conflicts),
-v0.3.1 permits a new plan in the same altar while preserving the old
+v0.3.2 permits a new plan in the same altar while preserving the old
 record. Otherwise the old outstanding journal **blocks new cleanup**
 until its recovery is resolved. Undo prefers the new journal if one
 exists and otherwise still supports the old format.
 
-v0.3.1 also refuses a second cleanup in an altar while a new journal
+v0.3.2 also refuses a second cleanup in an altar while a new journal
 exists, even if it has been undone: the first v0.3 journal cannot be
 silently discarded or replaced. The backup remains available.
 
 ## Install and test on a copied world
 
 1. Download the test artifact from this PR's successful
-   **Test Base Cleanup v0.3.1 optional decay** GitHub Actions run:
-   `base-cleanup-decay-0.3.1-test`. Extract its inner
-   `base-cleanup-0.3.1.zip` and install through Kiln Launcher.
+   **Test Base Cleanup v0.3.2 optional decay** GitHub Actions run:
+   `base-cleanup-decay-0.3.2-test`. Extract its inner
+   `base-cleanup-0.3.2.zip` and install through Kiln Launcher.
    This **replaces v0.2.0** for the test (the ID is unchanged).
 2. Keep a separate copy of the save before the test. Use a Flame Altar
    with visible weathering. The current in-game evidence was captured on
@@ -135,7 +140,7 @@ limitation of the original Stage 2 journal.
 From repo root with .NET 10, run `bash build-stage1.sh`.
 The script uses SHA256-verified official Kiln dev.30.6 SDK assets,
 runs all offline Python regression suites, builds and packs
-`bin/Release/base-cleanup-0.3.1.zip`.
+`bin/Release/base-cleanup-0.3.2.zip`.
 
 The PR workflow is intentionally test-only: **no automatic publication,
 no merge, no upstream Kiln change**. Green CI is not an in-game PASS.
