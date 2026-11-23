@@ -1,7 +1,14 @@
-name: Test Base Cleanup v0.3.1 optional decay (candidate only)
+name: Test and publish accepted Base Cleanup v0.3.1
 
 on:
   pull_request:
+    paths:
+      - 'BaseCleanup/**'
+      - 'tests/base-cleanup/**'
+      - 'build-stage1.sh'
+      - '.github/workflows/base-cleanup-stage1.yml'
+  push:
+    branches: [main]
     paths:
       - 'BaseCleanup/**'
       - 'tests/base-cleanup/**'
@@ -46,3 +53,96 @@ jobs:
           if-no-files-found: error
           retention-days: 90
 
+
+  release:
+    name: Tag and publish accepted Base Cleanup v0.3.1
+    # PR builds never publish. Only the exact tested main commit may be tagged.
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: build
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    concurrency:
+      group: base-cleanup-v0.3.1-release
+      cancel-in-progress: false
+    steps:
+      - name: Checkout exact accepted main commit
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Download artifact from this verified workflow run
+        uses: actions/download-artifact@v4
+        with:
+          name: base-cleanup-decay-0.3.1-test
+          path: dist
+      - name: Verify release version and installable ZIP
+        run: |
+          grep -Fq '<Version>0.3.1</Version>' BaseCleanup/BaseCleanup.csproj
+          test -s dist/base-cleanup-0.3.1.zip
+          unzip -t dist/base-cleanup-0.3.1.zip
+          sha256sum dist/base-cleanup-0.3.1.zip
+      - name: Create annotated tag if absent, refuse conflicting tag
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          tag='base-cleanup-v0.3.1'
+          # Do not force-push or retag a published release.
+          if git rev-parse --verify "refs/tags/$tag" >/dev/null 2>&1; then
+            existing="$(git rev-list -n 1 "$tag")"
+            if [ "$existing" != "$GITHUB_SHA" ]; then
+              echo "::error::Tag $tag exists at $existing, expected $GITHUB_SHA"
+              exit 1
+            fi
+            echo "Tag already points to accepted commit."
+          else
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git tag -a "$tag" "$GITHUB_SHA" -m 'Base Cleanup v0.3.1 — decay on by default'
+            git push origin "refs/tags/$tag"
+          fi
+      - name: Publish verified package if release absent
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          tag='base-cleanup-v0.3.1'
+          if gh release view "$tag" >/dev/null 2>&1; then
+            echo "Release already exists; never overwrite assets."
+            exit 0
+          fi
+          cat > release-notes.md <<'NOTES'
+          ## Base Cleanup v0.3.1
+
+          Accepted in-game on Enshrouded with Kiln dev.30.6.
+
+          - Stage 1: read-only, full 3-D Flame Altar building/terrain inventory.
+          - Stage 2: confirmed rubble removal, optional underwater mud and mycelium.
+          - Cosmetic decay repair **ON by default**, with a toggle to disable it.
+          - Decay repair clears only the building weathering flag, preserving
+            materials, ivy/overgrowth, tint and geometry. Ivy removal is excluded.
+          - Default hotkey: **Shift+ScrollLock** (tested in-game), replacing
+            Ctrl+Shift+F10 to avoid the Ctrl evade key.
+          - Mandatory full-world backup, persistent per-altar undo journal,
+            guarded compare-and-write and selective UNDO.
+          - Accepted in-game: **88,062 voxels cleaned** (48,183 decay and
+            39,879 rubble); selective Undo restored 88,062 with zero conflicts.
+          - Preserves earlier v0.2.0 recovery journals.
+
+          Install attached **base-cleanup-0.3.1.zip** in Kiln.
+          Built against Kiln dev.30.6; a compatible runtime is required.
+
+          **Safety:** Take a separate save copy before making world edits.
+          Preview is read-only and commit requires explicit REMOVE confirmation.
+          On hosted Steam/Proton games, complete world-backup restore is manual
+          with the game closed; selective Undo is available in-game.
+          NOTES
+          gh release create "$tag" dist/base-cleanup-0.3.1.zip \
+            --verify-tag --target "$GITHUB_SHA" \
+            --title 'Base Cleanup v0.3.1 — Cosmetic Decay and Confirmed Removal' \
+            --notes-file release-notes.md
+          gh release view "$tag" --json url,assets --jq '{url: .url, assets: [.assets[].name]}'
