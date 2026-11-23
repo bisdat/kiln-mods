@@ -13,7 +13,7 @@ internal static class CleanupCore
 {
     internal const byte IncludeMud = 1;
     internal const byte IncludeMycelium = 2;
-    // Opt-in only: this flag is never enabled by the old console command.
+    // The mud flag targets exactly one terrain material: BaseScanCore.MudTerrain.
     internal const byte IncludeDecay = 4;
     internal const byte AllowedOptions = IncludeMud | IncludeMycelium | IncludeDecay;
 
@@ -38,7 +38,7 @@ internal static class CleanupCore
         DecayTarget(voxel, options) ||
         (!voxel.IsAir &&
          (BaseScanCore.IsRubble(voxel.Material)
-          || (voxel.Material == BaseScanCore.UnderwaterMud && (options & IncludeMud) != 0)
+          || (voxel.Material == BaseScanCore.MudTerrain && (options & IncludeMud) != 0)
           || (BaseScanCore.IsMycelium(voxel.Material) && (options & IncludeMycelium) != 0)));
 
     internal static string Encode(IReadOnlyList<CleanupChunk> chunks)
