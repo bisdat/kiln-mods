@@ -67,7 +67,7 @@ public sealed record VisualDifference(
         var compared = r.Int64(); var changed = r.Int64(); var material = r.Int64();
         var growthAdded = r.Int64(); var growthCleared = r.Int64(); var growthChanged = r.Int64();
         var weatherAdded = r.Int64(); var weatherCleared = r.Int64(); var tint = r.Int64();
-        var n = Math.Min(24, r.Byte());
+        var n = Math.Min(24, (int)r.Byte());
         var samples = new string[n];
         for (var i = 0; i < n; i++) samples[i] = r.String(256) ?? "";
         return new(compared, changed, material,
