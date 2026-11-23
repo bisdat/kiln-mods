@@ -387,7 +387,7 @@ public sealed partial class BaseCleanupMod
             journal = CleanupSafety.Ledger(plan, name);
             // The entire original voxel journal is included in a real
             // game SAVE before the first write, and in the backup sidecar.
-            WorldData.Set(LedgerKeyFor(plan.Altar), journal);
+            WorldData.Set(CurrentLedgerKeyFor(plan.Altar), journal);
             CleanupPublish(plan.Player, PlanStatus(plan, "backup",
                 "Saving undo journal and creating a full-world backup BEFORE the first voxel edit."));
             var backup = await Saves.Backup(name);
@@ -398,7 +398,8 @@ public sealed partial class BaseCleanupMod
             journal.BackupName = backup.Name;
             journal.Phase = "applying";
             CleanupPublish(plan.Player, new("applying",
-                $"World backup {backup.Name} verified; removing selected materials. Cancel remains available.",
+                $"World backup {backup.Name} verified; editing selected terrain and cosmetic decay " +
+                $"({plan.DecayHits:N0} weathered building voxels). Cancel remains available.",
                 0, plan.Hits, 0, 0, 0, backup.Name));
 
             var completed = 0L;
@@ -409,7 +410,7 @@ public sealed partial class BaseCleanupMod
                 Flags = BuildFlags.InBases | BuildFlags.RespectZones,
                 Actor = plan.Player,
                 Journal = false, // Persistent WorldData journal, not 64-entry session history.
-                Label = "Base Cleanup Stage 2 rubble/mud",
+                Label = "Base Cleanup v0.3 terrain / cosmetic decay",
             };
             foreach (var chunk in plan.Chunks)
             {
@@ -430,7 +431,7 @@ public sealed partial class BaseCleanupMod
                         conflicts++;
                         continue;
                     }
-                    desired[cell.Index] = Voxel.Air;
+                    desired[cell.Index] = CleanupCore.EditedValue(cell.Raw);
                     mask[cell.Index] = true;
                     toWrite++;
                 }
@@ -449,17 +450,17 @@ public sealed partial class BaseCleanupMod
                 journal.Conflicted = conflicts;
                 if (++chunks % 20 == 0 || completed == plan.Hits)
                     CleanupPublish(plan.Player, new("applying",
-                        $"Removal: processed {completed:N0}/{plan.Hits:N0} cells; removed {journal.Removed:N0}, " +
-                        $"skipped {conflicts:N0}. No surface/support checks.",
+                        $"Cleanup: processed {completed:N0}/{plan.Hits:N0} cells; edited {journal.Removed:N0}, " +
+                        $"skipped {conflicts:N0}. Only weather bit changes for buildings.",
                         completed, plan.Hits, 0, 0, 0, journal.BackupName));
                 await Context.Scheduler.NextTick();
             }
 
             journal.Phase = StopRequested(plan) || conflicts > 0 ? "partial" : "complete";
             CleanupPublish(plan.Player, new(journal.Phase,
-                $"{(StopRequested(plan) ? "Stopped" : "Finished")}: removed {journal.Removed:N0}; " +
-                $"skipped {conflicts:N0}. Backup {journal.BackupName}. " +
-                "Type UNDO to restore matching air cells from the persistent journal.",
+                $"{(StopRequested(plan) ? "Stopped" : "Finished")}: edited {journal.Removed:N0} voxels " +
+                $"(decay planned {plan.DecayHits:N0}); skipped {conflicts:N0}. " +
+                $"Backup {journal.BackupName}. Type UNDO to restore only unchanged cells.",
                 completed, plan.Hits, 0, 0, 0, journal.BackupName));
             Log.Info($"base-cleanup: removal {journal.Phase}; removed={journal.Removed}, conflicts={conflicts}, backup={journal.BackupName}");
         }
@@ -471,7 +472,7 @@ public sealed partial class BaseCleanupMod
                 if (!backupCompleted)
                 {
                     // No writes were permitted without a successful backup.
-                    WorldData.Remove(LedgerKeyFor(plan.Altar));
+                    WorldData.Remove(CurrentLedgerKeyFor(plan.Altar));
                 }
                 else
                 {
@@ -508,8 +509,7 @@ public sealed partial class BaseCleanupMod
                 0, 0, 0, 0, 0, ""));
             return;
         }
-        if (!WorldData.TryGet<CleanupLedger>(LedgerKeyFor(altar), out var journal) ||
-            string.IsNullOrEmpty(journal.Packed))
+        if (!TryGetJournal(altar, out var journal))
         {
             CleanupPublish(player, new("failed", "No saved cleanup journal for this altar.",
                 0, 0, 0, 0, 0, ""));
@@ -544,7 +544,7 @@ public sealed partial class BaseCleanupMod
             var options = new BuildOptions
             {
                 Flags = BuildFlags.InBases | BuildFlags.RespectZones,
-                Actor = player, Journal = false, Label = "Base Cleanup Stage 2 undo",
+                Actor = player, Journal = false, Label = "Base Cleanup v0.3 selective undo",
             };
             foreach (var chunk in chunks)
             {
@@ -561,9 +561,11 @@ public sealed partial class BaseCleanupMod
                 var restoreCount = 0;
                 foreach (var cell in chunk.Cells)
                 {
-                    if (expected[cell.Index].Raw != Voxel.Air.Raw)
+                    if (expected[cell.Index].Raw != CleanupCore.EditedValue(cell.Raw).Raw)
                     {
-                        // A player changed it, or it was already put back.
+                        // Terrain must still be air; cosmetic repair must
+                        // retain the exact post-edit material and paint bits.
+                        // Never overwrite unrelated changes.
                         conflicts++;
                         continue;
                     }
@@ -593,7 +595,7 @@ public sealed partial class BaseCleanupMod
             journal.Conflicted = conflicts;
             journal.Phase = _cleanupCancel || generation != _cleanupEpoch ? "partial" : "undone";
             CleanupPublish(player, new(journal.Phase,
-                $"Undo: restored {restored:N0} voxels; left {conflicts:N0} non-air/already-restored cells unchanged. " +
+                $"Undo: restored {restored:N0} voxels; skipped {conflicts:N0} changed/already-restored cells. " +
                 $"World backup remains available: {journal.BackupName}.",
                 visited, journal.Planned, 0, 0, 0, journal.BackupName));
         }
@@ -628,15 +630,18 @@ public sealed partial class BaseCleanupMod
 
     private void DrawCleanup(UiDraw ui)
     {
-        ui.Separator("STAGE 2 - CONFIRMED RUBBLE REMOVAL");
-        ui.TextWrapped("Warning: this is a permanent world edit until undone. ALL matching rubble " +
-            "voxels are removed anywhere in the altar volume, including buried rubble. " +
-            "There are no structural or surface-exposure filters.");
+        ui.Separator("STAGE 2 - CONFIRMED CLEANUP");
+        ui.TextWrapped("Rubble is always included and is removed throughout the Flame Altar, " +
+            "including buried rubble (no support/surface filter). " +
+            "Optional decay only clears the weathering bit of building blocks: " +
+            "it preserves overgrowth state, material, geometry and other paint.");
         ui.Checkbox("Include underwater mud (material 91)", ref _includeMud);
         ui.Checkbox("Include mineable mycelium", ref _includeMycelium);
-        ui.TextDisabled("Overgrowth/decay are NOT supported yet.");
+        ui.Checkbox("Repair cosmetic decay (OFF by default)", ref _includeDecay);
+        ui.TextDisabled("Ivy/overgrowth cleanup is excluded. Level 7 also appears on clean walls.");
         var flags = (byte)((_includeMud ? CleanupCore.IncludeMud : 0) |
-                           (_includeMycelium ? CleanupCore.IncludeMycelium : 0));
+                           (_includeMycelium ? CleanupCore.IncludeMycelium : 0) |
+                           (_includeDecay ? CleanupCore.IncludeDecay : 0));
         if (ui.Button("1. Prepare removal plan (read-only)"))
             Client.Post(() => CleanupRequestLocal(1, flags));
         ui.SameLine();
@@ -670,7 +675,8 @@ public sealed partial class BaseCleanupMod
             ui.Progress((float)(status.Done / (double)status.Total),
                 $"{status.Done:N0} / {status.Total:N0} cells");
         if (status.Phase is "prepared" or "planning")
-            ui.Text($"Selected rubble {status.Rubble:N0}; mud {status.Mud:N0}; mycelium {status.Mycelium:N0}");
+            ui.Text($"Selected rubble {status.Rubble:N0}; mud {status.Mud:N0}; " +
+                $"mycelium {status.Mycelium:N0}; cosmetic decay {status.Decay:N0}");
         if (!string.IsNullOrEmpty(status.Backup))
             ui.TextWrapped("Full-world backup: " + status.Backup);
     }
@@ -702,8 +708,19 @@ public sealed partial class BaseCleanupMod
     private void CleanupPrepareCommand(CommandContext c)
     {
         if (c.Source.Player.IsNone) throw new CommandException("run as a player in the world");
-        BeginPreparation(c.Source.Player, CleanupCore.AllowedOptions);
+        // Preserve the old console default: never silently opt in to decay.
+        BeginPreparation(c.Source.Player, CleanupCore.IncludeMud | CleanupCore.IncludeMycelium);
         c.Reply("Preparing read-only removal plan; inspect the Base Cleanup UI or /baseclean status.");
+    }
+
+    [Command("baseclean preparedecay",
+        Description = "Read-only plan including cosmetic decay (explicit opt-in)",
+        Permission = CommandPermission.Admin)]
+    private void CleanupPrepareDecayCommand(CommandContext c)
+    {
+        if (c.Source.Player.IsNone) throw new CommandException("run as a player in the world");
+        BeginPreparation(c.Source.Player, CleanupCore.AllowedOptions);
+        c.Reply("Preparing plan INCLUDING decay; confirm only after inspecting counts.");
     }
 
     [Command("baseclean confirm", Description = "Explicitly confirm backup and cleanup (requires REMOVE)",
@@ -732,7 +749,7 @@ public sealed partial class BaseCleanupMod
     {
         var s = CleanupCurrentStatus(c.Source.Player);
         c.Reply($"[{s.Phase}] {s.Message}");
-        c.Reply($"rubble={s.Rubble} mud={s.Mud} mycelium={s.Mycelium} backup={s.Backup}");
+        c.Reply($"rubble={s.Rubble} mud={s.Mud} mycelium={s.Mycelium} decay={s.Decay} backup={s.Backup}");
     }
 
     [Command("baseclean cancel", Description = "Request cancellation",
