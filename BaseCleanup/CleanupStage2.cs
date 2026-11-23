@@ -101,7 +101,7 @@ public sealed partial class BaseCleanupMod
     private string _undoConfirm = "";
     private bool _includeMud = true;
     private bool _includeMycelium = true;
-    private bool _includeDecay = false; // Explicit opt-in, never silently enabled.
+    private bool _includeDecay = true; // Default ON; remains independently user-toggleable.
 
     private void CleanupRequestLocal(byte operation, byte options = 0)
     {
@@ -644,7 +644,7 @@ public sealed partial class BaseCleanupMod
             "it preserves overgrowth state, material, geometry and other paint.");
         ui.Checkbox("Include underwater mud (material 91)", ref _includeMud);
         ui.Checkbox("Include mineable mycelium", ref _includeMycelium);
-        ui.Checkbox("Repair cosmetic decay (OFF by default)", ref _includeDecay);
+        ui.Checkbox("Repair cosmetic decay (ON by default)", ref _includeDecay);
         ui.TextDisabled("Ivy/overgrowth cleanup is excluded. Level 7 also appears on clean walls.");
         var flags = (byte)((_includeMud ? CleanupCore.IncludeMud : 0) |
                            (_includeMycelium ? CleanupCore.IncludeMycelium : 0) |
@@ -710,14 +710,15 @@ public sealed partial class BaseCleanupMod
             CleanupPublish(Client.LocalPlayer, CleanupCurrentStatus(Client.LocalPlayer));
     }
 
-    [Command("baseclean prepare", Description = "Read-only plan of rubble/mud/mycelium removal inside current Flame Altar",
+    [Command("baseclean prepare", Description = "Read-only plan of rubble/mud/mycelium and cosmetic decay in current Flame Altar",
         Permission = CommandPermission.Admin)]
     private void CleanupPrepareCommand(CommandContext c)
     {
         if (c.Source.Player.IsNone) throw new CommandException("run as a player in the world");
-        // Preserve the old console default: never silently opt in to decay.
-        BeginPreparation(c.Source.Player, CleanupCore.IncludeMud | CleanupCore.IncludeMycelium);
-        c.Reply("Preparing read-only removal plan; inspect the Base Cleanup UI or /baseclean status.");
+        // Match the UI defaults. This is only a READ-ONLY plan;
+        // edits still require a reviewed count and explicit REMOVE.
+        BeginPreparation(c.Source.Player, CleanupCore.AllowedOptions);
+        c.Reply("Preparing read-only cleanup plan including decay; inspect /baseclean status before REMOVE.");
     }
 
     [Command("baseclean preparedecay",
@@ -728,6 +729,16 @@ public sealed partial class BaseCleanupMod
         if (c.Source.Player.IsNone) throw new CommandException("run as a player in the world");
         BeginPreparation(c.Source.Player, CleanupCore.AllowedOptions);
         c.Reply("Preparing plan INCLUDING decay; confirm only after inspecting counts.");
+    }
+
+    [Command("baseclean preparenodecay",
+        Description = "Read-only plan excluding cosmetic decay (explicit opt-out)",
+        Permission = CommandPermission.Admin)]
+    private void CleanupPrepareNoDecayCommand(CommandContext c)
+    {
+        if (c.Source.Player.IsNone) throw new CommandException("run as a player in the world");
+        BeginPreparation(c.Source.Player, CleanupCore.IncludeMud | CleanupCore.IncludeMycelium);
+        c.Reply("Preparing plan EXCLUDING decay; inspect /baseclean status before REMOVE.");
     }
 
     [Command("baseclean confirm", Description = "Explicitly confirm backup and cleanup (requires REMOVE)",
