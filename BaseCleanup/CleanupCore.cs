@@ -13,9 +13,10 @@ internal static class CleanupCore
 {
     internal const byte IncludeMud = 1;
     internal const byte IncludeMycelium = 2;
-    // The mud flag targets exactly one terrain material: BaseScanCore.MudTerrain.
     internal const byte IncludeDecay = 4;
-    internal const byte AllowedOptions = IncludeMud | IncludeMycelium | IncludeDecay;
+    internal const byte IncludeRubble = 8;
+    // Every category is an opt-in bit, allowing distinct operations/Undo.
+    internal const byte AllowedOptions = IncludeMud | IncludeMycelium | IncludeDecay | IncludeRubble;
 
     // EMF/Kiln building paint high byte: bit 7 = weathering; bits 4..6
     // represent growth state and MUST NOT be modified by decay repair.
@@ -37,7 +38,7 @@ internal static class CleanupCore
     internal static bool Target(Voxel voxel, byte options) =>
         DecayTarget(voxel, options) ||
         (!voxel.IsAir &&
-         (BaseScanCore.IsRubble(voxel.Material)
+         ((BaseScanCore.IsRubble(voxel.Material) && (options & IncludeRubble) != 0)
           || (voxel.Material == BaseScanCore.MudTerrain && (options & IncludeMud) != 0)
           || (BaseScanCore.IsMycelium(voxel.Material) && (options & IncludeMycelium) != 0)));
 
