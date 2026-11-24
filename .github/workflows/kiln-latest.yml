@@ -2,7 +2,7 @@ name: Follow latest Kiln development release
 
 # One daily SDK-compatibility check; per-mod workflows handle ordinary source
 # changes. Runtime/launcher-only upstream patches have no SDK to test.
-# Full four-mod builds run on a new SDK, compatible tooling PRs, or manual force.
+# Full eight-mod checks run on a new SDK, compatible tooling PRs, or manual force.
 on:
   push:
     branches: [main]
@@ -24,7 +24,7 @@ on:
   workflow_dispatch:
     inputs:
       force:
-        description: Rebuild all four mods even if this SDK release already passed
+        description: Rebuild all eight mods even if this SDK release already passed
         type: boolean
         default: false
 
@@ -76,7 +76,7 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: .kiln-release-success.txt
-          key: kiln-sdk-verified-${{ steps.release.outputs.version }}
+          key: kiln-sdk-verified-all8-v1-${{ steps.release.outputs.version }}
           lookup-only: true
 
       - name: Build on compatibility PR, new SDK, or force
@@ -89,7 +89,7 @@ jobs:
             echo 'build=true' >> "$GITHUB_OUTPUT"
           else
             echo 'build=false' >> "$GITHUB_OUTPUT"
-            echo 'This Kiln SDK release already passed the four-mod compatibility build.'
+            echo 'This Kiln SDK release already passed the eight-mod compatibility checks.'
           fi
 
   package:
@@ -99,7 +99,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        mod: [SurvivalQoL, EndlessChests, NoClipToggle, BaseStationMagicStorage]
+        mod: [SurvivalQoL, EndlessChests, NoClipToggle, BaseStationMagicStorage, GemForgeStorage, BaseCleanup]
     runs-on: ubuntu-24.04
     env:
       GITHUB_TOKEN: ${{ github.token }}
@@ -135,6 +135,14 @@ jobs:
             BaseStationMagicStorage)
               python3 -m unittest discover -s tests/base-station-magic-storage -p 'test_*.py' -v
               ;;
+            GemForgeStorage)
+              python3 -m unittest discover -s tests/gemforge-storage -p 'test_*.py' -v
+              ;;
+            BaseCleanup)
+              python3 -m unittest discover -s tests/base-cleanup -p 'test_*.py' -v
+              dotnet run --project tests/base-cleanup/BackupRetentionHarness.csproj -c Release
+              ;;
+            *) exit 1 ;;
           esac
 
       - name: Package using checksum-verified official release SDK
@@ -171,10 +179,35 @@ jobs:
           if-no-files-found: error
           retention-days: 90
 
+  fishing-rod:
+    needs: check
+    if: needs.check.outputs.build == 'true'
+    name: Enhanced Fishing Rod data-pack checks
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.check.outputs.source_sha }}
+      - run: python3 -m unittest discover -s EnhancedFishingRod/tests -v
+      - run: python3 EnhancedFishingRod/package.py
+      - run: unzip -t dist/enhanced-fishing-rod-0.1.0.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: compatibility-enhanced-fishing-rod
+          path: dist/enhanced-fishing-rod-*.zip
+          if-no-files-found: error
+
+  building-tools:
+    needs: check
+    if: needs.check.outputs.build == 'true'
+    uses: ./.github/workflows/buildingtools-kiln-native-adapter.yml
+    with:
+      source_sha: ${{ needs.check.outputs.source_sha }}
+
   publish:
     name: Publish exact compatibility prerelease
-    needs: [check, package]
-    if: github.event_name != 'pull_request' && needs.check.outputs.build == 'true' && needs.package.result == 'success'
+    needs: [check, package, fishing-rod, building-tools]
+    if: github.event_name != 'pull_request' && needs.check.outputs.build == 'true' && needs.package.result == 'success' && needs.fishing-rod.result == 'success' && needs.building-tools.result == 'success'
     runs-on: ubuntu-24.04
     permissions:
       contents: write
@@ -184,7 +217,7 @@ jobs:
       KILN_RELEASE_VERSION: ${{ needs.check.outputs.release_version }}
       EXPECTED_SOURCE_SHA: ${{ needs.check.outputs.source_sha }}
     steps:
-      - name: Download all four completed, verified packages
+      - name: Download all six completed, verified SDK packages
         uses: actions/download-artifact@v4
         with:
           pattern: kiln-${{ needs.check.outputs.release_version }}-*
@@ -207,6 +240,8 @@ jobs:
               "EndlessChests": "endless-chests-kiln-*.zip",
               "NoClipToggle": "noclip-toggle-*.zip",
               "BaseStationMagicStorage": "base-station-magic-storage-*.zip",
+              "GemForgeStorage": "gemforge-magic-storage-*.zip",
+              "BaseCleanup": "base-cleanup-*.zip",
           }
           version = os.environ["KILN_RELEASE_VERSION"]
           tag = os.environ["KILN_RELEASE_TAG"]
@@ -259,7 +294,7 @@ jobs:
                   raise SystemExit(f"Duplicate distribution asset: {name}")
               copy2(asset, dest)
               published.append(name)
-          if len(published) != 10:
+          if len(published) != 2 * len(specs) + len(endless_assets):
               raise SystemExit(f"Incorrect asset count: {published}")
           print(f"Verified official Kiln {tag}@{kiln_sha} for mod source {source_sha}")
           for asset in published:
@@ -280,16 +315,16 @@ jobs:
           body: |
             Automated compatibility build for **official Kiln ${{ needs.check.outputs.release_tag }}**.
 
-            - **Mods built:** Survival QoL, Endless Chests, NoClip Toggle and Base Station Magic Storage. Cross-base Storage research is archived, not shipped.
+            - **Mods built:** Survival QoL, Endless Chests, NoClip Toggle, Base Station Magic Storage, Gem Forge Magic Storage and Base Cleanup. Enhanced Fishing Rod and Building Tools passed their separate packaging checks (workflow artifacts only). Rubble Remover is excluded.
             - **Mod source:** ${{ needs.check.outputs.source_sha }}
-            - **Checks:** release tag matches its published Git commit, official NuGet checksums verified, all four mod builds and contract tests passed. Endless Chests canonical JSON item IDs and the 100 audited repairs were validated against this exact Kiln source.
+            - **Checks:** release tag matches its published Git commit, official NuGet checksums verified, all six managed builds and contract tests passed; data-only and native packaging checks passed. Endless Chests canonical JSON item IDs and the 100 audited repairs were validated against this exact Kiln source.
             - **Provenance:** separate kiln-sdk-provenance-<mod>.json per mod, including the exact Kiln release, Git SHA and official SDK hashes.
 
             These are development compatibility prereleases, **not stable mod version upgrades or in-game acceptance**. Install manually through Kiln Library and back up saves before testing.
 
   mark-success:
     name: Cache verified Kiln SDK compatibility after publication
-    needs: [check, package, publish]
+    needs: [check, package, fishing-rod, building-tools, publish]
     if: github.event_name != 'pull_request' && needs.check.outputs.build == 'true' && needs.check.outputs.cache_hit != 'true' && needs.package.result == 'success' && needs.publish.result == 'success'
     runs-on: ubuntu-24.04
     steps:
@@ -298,4 +333,4 @@ jobs:
       - uses: actions/cache/save@v4
         with:
           path: .kiln-release-success.txt
-          key: kiln-sdk-verified-${{ needs.check.outputs.release_version }}
+          key: kiln-sdk-verified-all8-v1-${{ needs.check.outputs.release_version }}
