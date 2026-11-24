@@ -8,6 +8,12 @@ on:
       - 'BuildingToolsKiln/**'
       - '.github/workflows/buildingtools-kiln-native-adapter.yml'
   workflow_dispatch:
+  workflow_call:
+    inputs:
+      source_sha:
+        description: Exact mod source commit for compatibility checks
+        required: true
+        type: string
 
 permissions:
   contents: read
@@ -17,6 +23,8 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.source_sha || github.sha }}
       - name: Packaging and upstream-update regression tests
         run: python3 -m unittest discover -s BuildingToolsKiln/tests -p 'test_*.py' -v
       - name: Load reviewed release profile

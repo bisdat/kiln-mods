@@ -38,18 +38,28 @@ class CompatibilityWorkflowContracts(unittest.TestCase):
         self.assertNotIn("validate-endless-ini.py", s)
         self.assertNotIn("test-endless-item-ids.py", s)
         # Helper-script changes trigger Endless Chests' own CI. The SDK
-        # watcher must not run an unrelated four-mod build for those edits.
+        # watcher must not run an unrelated eight-mod build for those edits.
         self.assertIn("'scripts/**'", self.normal)
         trigger_scope = s.split("\npermissions:", 1)[0]
         for name in ("validate-endless-*.py", "test-endless-*.py", "test-chest-*.py"):
             self.assertNotIn(f"'scripts/{name}'", trigger_scope)
 
-    def test_four_mod_compatibility_matrix(self):
+    def test_all_mod_compatibility_matrix(self):
         s = self.source
-        self.assertIn("mod: [SurvivalQoL, EndlessChests, NoClipToggle, BaseStationMagicStorage]", s)
+        self.assertIn("mod: [SurvivalQoL, EndlessChests, NoClipToggle, BaseStationMagicStorage, GemForgeStorage, BaseCleanup]", s)
         self.assertIn('"BaseStationMagicStorage": "base-station-magic-storage-*.zip"', s)
         self.assertIn("tests/base-station-magic-storage", s)
-        self.assertIn("all four mod builds and contract tests passed", s)
+        self.assertIn("all six managed builds and contract tests passed", s)
+        self.assertIn('"GemForgeStorage": "gemforge-magic-storage-*.zip"', s)
+        self.assertIn('"BaseCleanup": "base-cleanup-*.zip"', s)
+        self.assertIn("tests/gemforge-storage", s)
+        self.assertIn("tests/base-cleanup", s)
+        self.assertIn("BackupRetentionHarness.csproj", s)
+        self.assertIn("EnhancedFishingRod/package.py", s)
+        self.assertIn("uses: ./.github/workflows/buildingtools-kiln-native-adapter.yml", s)
+        self.assertIn("needs: [check, package, fishing-rod, building-tools]", s)
+        self.assertNotIn("RubbleRemover", s)
+        self.assertNotIn("feature/rubble-remover", s)
 
     def test_sdk_watcher_is_not_an_hourly_every_source_rebuild(self):
         # The mod-specific CI workflows already build normal mod changes.
@@ -61,8 +71,8 @@ class CompatibilityWorkflowContracts(unittest.TestCase):
         for project in ("SurvivalQoL", "EndlessChests", "NoClipToggle",
                         "BaseStationMagicStorage"):
             self.assertNotIn(f"'{project}/**'", triggers)
-        self.assertIn("key: kiln-sdk-verified-${{ steps.release.outputs.version }}", s)
-        self.assertIn("key: kiln-sdk-verified-${{ needs.check.outputs.release_version }}", s)
+        self.assertIn("key: kiln-sdk-verified-all8-v1-${{ steps.release.outputs.version }}", s)
+        self.assertIn("key: kiln-sdk-verified-all8-v1-${{ needs.check.outputs.release_version }}", s)
         self.assertNotIn("key: kiln-release-verified-", s)
         self.assertIn("needs.check.outputs.build == 'true'", s)
         self.assertIn("github.event_name != 'pull_request'", s)
@@ -74,7 +84,7 @@ class CompatibilityWorkflowContracts(unittest.TestCase):
         self.assertIn(f"cp EndlessChests/defaults/catalogue.json bin/Release/{filename}", s)
         self.assertIn(f"bin/Release/{filename}", s)
         self.assertIn(f"endless_assets = (\"endless-chests.defaults.ini\", \"{filename}\")", s)
-        self.assertIn("if len(published) != 10:", s)
+        self.assertIn("if len(published) != 2 * len(specs) + len(endless_assets):", s)
         self.assertIn("python3 scripts/validate-endless-catalogue.py", self.normal)
         self.assertIn(f"bin/Release/{filename}", self.normal)
 
