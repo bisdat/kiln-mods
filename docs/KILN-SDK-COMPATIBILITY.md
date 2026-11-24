@@ -16,14 +16,13 @@ remain the required CI gates for their own mod releases.
 
 The SDK build matrix contains Survival QoL, Endless Chests, NoClip Toggle,
 Base Station Magic Storage, Gem Forge Magic Storage and Base Cleanup.
-Enhanced Fishing Rod runs its data-only contract tests and packages its ZIP;
-Building Tools runs its existing reusable native-adapter validation workflow
-against the same mod commit. Those two packages remain workflow artifacts,
-not SDK-built prerelease assets. Both checks must pass before publication
-or caching. Rubble Remover (draft) and archived projects are excluded.
-The cache namespace is bumped to `kiln-sdk-verified-all8-v1-` so an old
-four-mod success cannot suppress the expanded checks. Native packaging and
-data-only checks are not proof of runtime or ABI compatibility.
+Enhanced Fishing Rod runs its data-only contract tests and packages its ZIP
+as a workflow artifact, not an SDK-built prerelease asset. This check must
+pass before publication or caching. BuildingToolsKiln is retired; Rubble
+Remover (draft) and archived projects remain excluded.
+The cache namespace is `kiln-sdk-verified-all7-v1-` to distinguish the
+seven active projects from previous coverage. Data-only checks are not
+proof of runtime or ABI compatibility.
 
 ## Why this watcher is deliberately lean
 
@@ -44,10 +43,10 @@ so neither a six-managed-mod rebuild nor a failure was warranted.
 
 | Trigger | Behaviour |
 | --- | --- |
-| Daily at 05:17 UTC | Light SDK resolution and cache lookup. Check all eight mods **only** when a previously unverified SDK version appears |
-| PR changing shared SDK-compatibility tooling/tests | Revalidate and check all eight against newest official SDK; no GitHub prerelease |
+| Daily at 05:17 UTC | Light SDK resolution and cache lookup. Check all seven mods **only** when a previously unverified SDK version appears |
+| PR changing shared SDK-compatibility tooling/tests | Revalidate and check all seven against newest official SDK; no GitHub prerelease |
 | Push to `main` changing shared compatibility tooling/tests | Check new SDK and cache; ordinary mod updates do not start this watcher |
-| Manual `workflow_dispatch` | Reuse the SDK cache by default; use `force=true` for a complete six-managed-mod rebuild |
+| Manual `workflow_dispatch` | Reuse the SDK cache by default; use `force=true` for a complete seven-project check |
 
 The resolver selects the newest **published, version-matching SDK-bearing**
 Kiln development release, not necessarily the newest launcher/runtime release.
@@ -64,7 +63,7 @@ appears or an operator forces the check.
 
 On a genuinely new SDK version, all six managed mod packages still run with checksum
 verification, and a source-and-SDK-specific GitHub compatibility **prerelease**
-is produced only if all six SDK packages and both independent packaging checks pass. These prereleases are test candidates,
+is produced only if all six SDK packages and the independent data-pack check passes. These prereleases are test candidates,
 **not** stable mod releases, installation instructions, or gameplay approval.
 
 ## When to remove the schedule altogether
