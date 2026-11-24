@@ -4,13 +4,26 @@
 
 The `Follow latest Kiln development release` workflow is **optional
 compatibility smoke testing**, not the build or release path for normal mods.
-It checks that all four active mods still compile/package against a new official
+It checks that all six managed mods still compile/package against a new official
 Kiln SDK and captures exact source, upstream tag, commit and SHA256 provenance.
 It **cannot** establish in-game compatibility or replace acceptance testing.
 
 Per-mod workflows (`build.yml`, `endless-chests.yml`, `noclip-toggle.yml`,
 `base-station-magic-storage.yml`) build and test ordinary mod changes. They
 remain the required CI gates for their own mod releases.
+
+## Coverage
+
+The SDK build matrix contains Survival QoL, Endless Chests, NoClip Toggle,
+Base Station Magic Storage, Gem Forge Magic Storage and Base Cleanup.
+Enhanced Fishing Rod runs its data-only contract tests and packages its ZIP;
+Building Tools runs its existing reusable native-adapter validation workflow
+against the same mod commit. Those two packages remain workflow artifacts,
+not SDK-built prerelease assets. Both checks must pass before publication
+or caching. Rubble Remover (draft) and archived projects are excluded.
+The cache namespace is bumped to `kiln-sdk-verified-all8-v1-` so an old
+four-mod success cannot suppress the expanded checks. Native packaging and
+data-only checks are not proof of runtime or ABI compatibility.
 
 ## Why this watcher is deliberately lean
 
@@ -25,16 +38,16 @@ failed because official Kiln `v0.2.0-dev.29.23` lacked the
 `Kiln.Api`/`Kiln.Sdk` NuGet packages. [That release](https://github.com/frostdev-ops/kiln/releases/tag/v0.2.0-dev.29.23)
 modified only the launcher's save editor: the developers explicitly state that
 its game-side code was unchanged from dev.29.22. It was **not an SDK release**,
-so neither a four-mod rebuild nor a failure was warranted.
+so neither a six-managed-mod rebuild nor a failure was warranted.
 
 ## Trigger and selection policy
 
 | Trigger | Behaviour |
 | --- | --- |
-| Daily at 05:17 UTC | Light SDK resolution and cache lookup. Build four mods **only** when a previously unverified SDK version appears |
-| PR changing shared SDK-compatibility tooling/tests | Revalidate and build all four against newest official SDK; no GitHub prerelease |
+| Daily at 05:17 UTC | Light SDK resolution and cache lookup. Check all eight mods **only** when a previously unverified SDK version appears |
+| PR changing shared SDK-compatibility tooling/tests | Revalidate and check all eight against newest official SDK; no GitHub prerelease |
 | Push to `main` changing shared compatibility tooling/tests | Check new SDK and cache; ordinary mod updates do not start this watcher |
-| Manual `workflow_dispatch` | Reuse the SDK cache by default; use `force=true` for a complete four-mod rebuild |
+| Manual `workflow_dispatch` | Reuse the SDK cache by default; use `force=true` for a complete six-managed-mod rebuild |
 
 The resolver selects the newest **published, version-matching SDK-bearing**
 Kiln development release, not necessarily the newest launcher/runtime release.
@@ -49,9 +62,9 @@ candidates always record the exact mod source SHA used in their provenance.
 The per-mod CI handles later mod-source revisions until another SDK release
 appears or an operator forces the check.
 
-On a genuinely new SDK version, all four mod packages still run with checksum
+On a genuinely new SDK version, all six managed mod packages still run with checksum
 verification, and a source-and-SDK-specific GitHub compatibility **prerelease**
-is produced only if all packages pass. These prereleases are test candidates,
+is produced only if all six SDK packages and both independent packaging checks pass. These prereleases are test candidates,
 **not** stable mod releases, installation instructions, or gameplay approval.
 
 ## When to remove the schedule altogether
