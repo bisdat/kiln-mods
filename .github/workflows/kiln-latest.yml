@@ -8,6 +8,7 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/kiln-latest.yml'
+      - '.github/workflows/buildingtools-kiln-native-adapter.yml'
       - 'scripts/resolve-kiln-release.py'
       - 'scripts/build-compat.sh'
       - 'scripts/build-compat.py'
@@ -15,6 +16,7 @@ on:
   pull_request:
     paths:
       - '.github/workflows/kiln-latest.yml'
+      - '.github/workflows/buildingtools-kiln-native-adapter.yml'
       - 'scripts/resolve-kiln-release.py'
       - 'scripts/build-compat.sh'
       - 'scripts/build-compat.py'
@@ -325,7 +327,7 @@ jobs:
   mark-success:
     name: Cache verified Kiln SDK compatibility after publication
     needs: [check, package, fishing-rod, building-tools, publish]
-    if: github.event_name != 'pull_request' && needs.check.outputs.build == 'true' && needs.check.outputs.cache_hit != 'true' && needs.package.result == 'success' && needs.publish.result == 'success'
+    if: github.event_name != 'pull_request' && needs.check.outputs.build == 'true' && needs.check.outputs.cache_hit != 'true' && needs.package.result == 'success' && needs.fishing-rod.result == 'success' && needs.building-tools.result == 'success' && needs.publish.result == 'success'
     runs-on: ubuntu-24.04
     steps:
       - name: Save verified SDK and source provenance
