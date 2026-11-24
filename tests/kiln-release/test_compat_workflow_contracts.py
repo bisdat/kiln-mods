@@ -38,7 +38,7 @@ class CompatibilityWorkflowContracts(unittest.TestCase):
         self.assertNotIn("validate-endless-ini.py", s)
         self.assertNotIn("test-endless-item-ids.py", s)
         # Helper-script changes trigger Endless Chests' own CI. The SDK
-        # watcher must not run an unrelated eight-mod build for those edits.
+        # watcher must not run an unrelated seven-mod build for those edits.
         self.assertIn("'scripts/**'", self.normal)
         trigger_scope = s.split("\npermissions:", 1)[0]
         for name in ("validate-endless-*.py", "test-endless-*.py", "test-chest-*.py"):
@@ -56,8 +56,13 @@ class CompatibilityWorkflowContracts(unittest.TestCase):
         self.assertIn("tests/base-cleanup", s)
         self.assertIn("BackupRetentionHarness.csproj", s)
         self.assertIn("EnhancedFishingRod/package.py", s)
-        self.assertIn("uses: ./.github/workflows/buildingtools-kiln-native-adapter.yml", s)
-        self.assertIn("needs: [check, package, fishing-rod, building-tools]", s)
+        self.assertNotIn("buildingtools-kiln-native-adapter.yml", s)
+        self.assertNotIn("needs.building-tools", s)
+        self.assertFalse((ROOT / "BuildingToolsKiln").exists())
+        self.assertFalse((ROOT / ".github/workflows/buildingtools-upstream-watch.yml").exists())
+        self.assertIn("needs: [check, package, fishing-rod]", s)
+        self.assertIn("needs: [check, package, fishing-rod, publish]", s)
+        self.assertIn("needs.fishing-rod.result == 'success'", s)
         self.assertNotIn("RubbleRemover", s)
         self.assertNotIn("feature/rubble-remover", s)
 
@@ -71,8 +76,8 @@ class CompatibilityWorkflowContracts(unittest.TestCase):
         for project in ("SurvivalQoL", "EndlessChests", "NoClipToggle",
                         "BaseStationMagicStorage"):
             self.assertNotIn(f"'{project}/**'", triggers)
-        self.assertIn("key: kiln-sdk-verified-all8-v1-${{ steps.release.outputs.version }}", s)
-        self.assertIn("key: kiln-sdk-verified-all8-v1-${{ needs.check.outputs.release_version }}", s)
+        self.assertIn("key: kiln-sdk-verified-all7-v1-${{ steps.release.outputs.version }}", s)
+        self.assertIn("key: kiln-sdk-verified-all7-v1-${{ needs.check.outputs.release_version }}", s)
         self.assertNotIn("key: kiln-release-verified-", s)
         self.assertIn("needs.check.outputs.build == 'true'", s)
         self.assertIn("github.event_name != 'pull_request'", s)

@@ -1,7 +1,8 @@
 # Archive: Cross-base Storage experiments
 
 The pre-production native Cross-base Storage implementation has been
-**retired** in favour of the **working Kiln native Building Tools wrapper**.
+**retired** in favour of the Kiln native Building Tools wrapper, which has
+itself since been retired in favour of the original author's native package.
 
 Snapshot commit:
 **78e129d201f2e5e54b86c861a4bdfc0ac4adac4d**
@@ -19,8 +20,7 @@ as tested in-game crafting functionality.
 
 Do **not** install the experimental replacement kiln-rules.dll or
 kiln-items.dll together with Building Tools. The hooks overlap.
-No old experimental source is built or packaged in the production
-adapter's branch or release.
+No old experimental source is built or packaged on main.
 
 Current user documentation:
-[Building Tools for Kiln](../BuildingToolsKiln/README.md).
+[Building Tools migration and retirement](BUILDINGTOOLS-KILN-ADAPTER.md).

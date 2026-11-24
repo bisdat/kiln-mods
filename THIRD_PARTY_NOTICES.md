@@ -12,10 +12,11 @@ owned by third parties.
 - License: MIT, as published by the upstream author.
 
 The original Building Tools C++ source is **not** part of this repository.
-The BuildingToolsKiln packaging workflow obtains the author's official
-release and preserves its unchanged DLL, licence and credits in the
-distributed package. The adapter's independently authored scripts are
-covered by this repository's MIT licence.
+The retired BuildingToolsKiln adapter obtained the author's official
+release and preserved its unchanged DLL, licence and credits in the
+historical distributed packages. The adapter's independently authored scripts
+remain covered by this repository's MIT licence. The original native package
+is now distributed directly by its author; see [migration instructions](docs/BUILDINGTOOLS-KILN-ADAPTER.md).
 
 ## Endless Chests original catalogue
 

@@ -22,33 +22,11 @@ An independent Kiln-native Magic Chest refill mod. **v0.6.0** adds **ten dedicat
 
 **Upgrade:** `endless-chests.ini` is now for runtime settings, group exclusions by name, and individual exclusions by **decimal game item ID**; old `[Groups]` sections are ignored. No legacy item-name aliasing or suffix compatibility is retained. Existing `chests.json` bindings and canonical group names continue working. Automatic rename-to-recognised-group clears previous inventory; renaming to an unknown name leaves contents untouched; `Empty` still clears destructively. Back up the world before testing.
 
-## Building Tools for Kiln — cross-base Magic Chests
+## Building Tools for Kiln — retired
 
-**Kiln adapter v1.0.0 · upstream Building Tools v0.31.2**
+The wrapper is no longer maintained. Use the author's [original native Building Tools package](https://github.com/AleksanderWojtal-CC/Enshrouded-BuildingTools/releases) directly in Kiln, not the ShroudForge variant. Version 0.34.0 passed in-game testing with Kiln dev.31, including cross-base Magic Chests and backpack/storage scrolling with the camera service enabled.
 
-[Building Tools for Kiln source and documentation](BuildingToolsKiln/README.md) |
-[Packaging workflow](.github/workflows/buildingtools-kiln-native-adapter.yml) |
-[Releases](https://github.com/bisdat/kiln-mods/releases)
-
-An **MIT-licensed upstream Building Tools DLL**, packaged unchanged
-as a **Kiln-native mod**. Does **not** replace Kiln's dinput8.dll.
-The user confirmed that the in-game menu and **Magic Chests from all
-Flame Altar bases** work under Kiln on Linux Steam/Proton.
-
-Enable with **Home → Options → Magic chests of all bases → On**.
-Alternatively set GlobalMagicChests=1 under [Chests] in the
-game-root BuildingTools.ini while the game is closed, then restart.
-The upstream binary is preserved byte-for-byte with its original MIT
-licence and translations; the production build pins upstream release
-0.31.2 to its verified SHA256. Existing user INI configuration
-survives upgrades.
-
-Previous custom native Cross-base Storage implementation and all
-related research were **archived**, not merged:
-[archived research](docs/ARCHIVED-CROSS-BASE-RESEARCH.md).
-Do not install its experimental kiln-rules/kiln-items DLLs.
-Remote ingredient debit/save-reload conservation still deserves
-separate acceptance testing; see the user guide.
+[Migration instructions and historical releases](docs/BUILDINGTOOLS-KILN-ADAPTER.md) | [Archived cross-base research](docs/ARCHIVED-CROSS-BASE-RESEARCH.md).
 
 ## Enhanced Fishing Rod — stronger Excellent Fishing Rod
 

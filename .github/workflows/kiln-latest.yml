@@ -2,13 +2,12 @@ name: Follow latest Kiln development release
 
 # One daily SDK-compatibility check; per-mod workflows handle ordinary source
 # changes. Runtime/launcher-only upstream patches have no SDK to test.
-# Full eight-mod checks run on a new SDK, compatible tooling PRs, or manual force.
+# Full seven-mod checks run on a new SDK, compatible tooling PRs, or manual force.
 on:
   push:
     branches: [main]
     paths:
       - '.github/workflows/kiln-latest.yml'
-      - '.github/workflows/buildingtools-kiln-native-adapter.yml'
       - 'scripts/resolve-kiln-release.py'
       - 'scripts/build-compat.sh'
       - 'scripts/build-compat.py'
@@ -16,7 +15,6 @@ on:
   pull_request:
     paths:
       - '.github/workflows/kiln-latest.yml'
-      - '.github/workflows/buildingtools-kiln-native-adapter.yml'
       - 'scripts/resolve-kiln-release.py'
       - 'scripts/build-compat.sh'
       - 'scripts/build-compat.py'
@@ -26,7 +24,7 @@ on:
   workflow_dispatch:
     inputs:
       force:
-        description: Rebuild all eight mods even if this SDK release already passed
+        description: Rebuild all seven mods even if this SDK release already passed
         type: boolean
         default: false
 
@@ -78,7 +76,7 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: .kiln-release-success.txt
-          key: kiln-sdk-verified-all8-v1-${{ steps.release.outputs.version }}
+          key: kiln-sdk-verified-all7-v1-${{ steps.release.outputs.version }}
           lookup-only: true
 
       - name: Build on compatibility PR, new SDK, or force
@@ -91,7 +89,7 @@ jobs:
             echo 'build=true' >> "$GITHUB_OUTPUT"
           else
             echo 'build=false' >> "$GITHUB_OUTPUT"
-            echo 'This Kiln SDK release already passed the eight-mod compatibility checks.'
+            echo 'This Kiln SDK release already passed the seven-mod compatibility checks.'
           fi
 
   package:
@@ -199,17 +197,10 @@ jobs:
           path: dist/enhanced-fishing-rod-*.zip
           if-no-files-found: error
 
-  building-tools:
-    needs: check
-    if: needs.check.outputs.build == 'true'
-    uses: ./.github/workflows/buildingtools-kiln-native-adapter.yml
-    with:
-      source_sha: ${{ needs.check.outputs.source_sha }}
-
   publish:
     name: Publish exact compatibility prerelease
-    needs: [check, package, fishing-rod, building-tools]
-    if: github.event_name != 'pull_request' && needs.check.outputs.build == 'true' && needs.package.result == 'success' && needs.fishing-rod.result == 'success' && needs.building-tools.result == 'success'
+    needs: [check, package, fishing-rod]
+    if: github.event_name != 'pull_request' && needs.check.outputs.build == 'true' && needs.package.result == 'success' && needs.fishing-rod.result == 'success'
     runs-on: ubuntu-24.04
     permissions:
       contents: write
@@ -317,17 +308,17 @@ jobs:
           body: |
             Automated compatibility build for **official Kiln ${{ needs.check.outputs.release_tag }}**.
 
-            - **Mods built:** Survival QoL, Endless Chests, NoClip Toggle, Base Station Magic Storage, Gem Forge Magic Storage and Base Cleanup. Enhanced Fishing Rod and Building Tools passed their separate packaging checks (workflow artifacts only). Rubble Remover is excluded.
+            - **Mods built:** Survival QoL, Endless Chests, NoClip Toggle, Base Station Magic Storage, Gem Forge Magic Storage and Base Cleanup. Enhanced Fishing Rod passed its separate data-only packaging check (workflow artifact only). BuildingToolsKiln is retired; Rubble Remover is excluded.
             - **Mod source:** ${{ needs.check.outputs.source_sha }}
-            - **Checks:** release tag matches its published Git commit, official NuGet checksums verified, all six managed builds and contract tests passed; data-only and native packaging checks passed. Endless Chests canonical JSON item IDs and the 100 audited repairs were validated against this exact Kiln source.
+            - **Checks:** release tag matches its published Git commit, official NuGet checksums verified, all six managed builds and contract tests passed; data-only packaging checks passed. Endless Chests canonical JSON item IDs and the 100 audited repairs were validated against this exact Kiln source.
             - **Provenance:** separate kiln-sdk-provenance-<mod>.json per mod, including the exact Kiln release, Git SHA and official SDK hashes.
 
             These are development compatibility prereleases, **not stable mod version upgrades or in-game acceptance**. Install manually through Kiln Library and back up saves before testing.
 
   mark-success:
     name: Cache verified Kiln SDK compatibility after publication
-    needs: [check, package, fishing-rod, building-tools, publish]
-    if: github.event_name != 'pull_request' && needs.check.outputs.build == 'true' && needs.check.outputs.cache_hit != 'true' && needs.package.result == 'success' && needs.fishing-rod.result == 'success' && needs.building-tools.result == 'success' && needs.publish.result == 'success'
+    needs: [check, package, fishing-rod, publish]
+    if: github.event_name != 'pull_request' && needs.check.outputs.build == 'true' && needs.check.outputs.cache_hit != 'true' && needs.package.result == 'success' && needs.fishing-rod.result == 'success' && needs.publish.result == 'success'
     runs-on: ubuntu-24.04
     steps:
       - name: Save verified SDK and source provenance
@@ -335,4 +326,4 @@ jobs:
       - uses: actions/cache/save@v4
         with:
           path: .kiln-release-success.txt
-          key: kiln-sdk-verified-all8-v1-${{ needs.check.outputs.release_version }}
+          key: kiln-sdk-verified-all7-v1-${{ needs.check.outputs.release_version }}
