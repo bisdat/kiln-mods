@@ -18,8 +18,8 @@ The SDK build matrix contains Survival QoL, Endless Chests, NoClip Toggle,
 Base Station Magic Storage, Gem Forge Magic Storage and Base Cleanup.
 Enhanced Fishing Rod runs its data-only contract tests and packages its ZIP
 as a workflow artifact, not an SDK-built prerelease asset. This check must
-pass before publication or caching. BuildingToolsKiln is retired; Rubble
-Remover (draft) and archived projects remain excluded.
+pass before publication or caching. BuildingToolsKiln and Rubble Remover are retired; archived projects remain
+excluded.
 The cache namespace is `kiln-sdk-verified-all7-v1-` to distinguish the
 seven active projects from previous coverage. Data-only checks are not
 proof of runtime or ABI compatibility.
