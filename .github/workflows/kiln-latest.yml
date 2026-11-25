@@ -308,7 +308,7 @@ jobs:
           body: |
             Automated compatibility build for **official Kiln ${{ needs.check.outputs.release_tag }}**.
 
-            - **Mods built:** Survival QoL, Endless Chests, NoClip Toggle, Base Station Magic Storage, Gem Forge Magic Storage and Base Cleanup. Enhanced Fishing Rod passed its separate data-only packaging check (workflow artifact only). BuildingToolsKiln is retired; Rubble Remover is excluded.
+            - **Mods built:** Survival QoL, Endless Chests, NoClip Toggle, Base Station Magic Storage, Gem Forge Magic Storage and Base Cleanup. Enhanced Fishing Rod passed its separate data-only packaging check (workflow artifact only). BuildingToolsKiln and Rubble Remover are retired.
             - **Mod source:** ${{ needs.check.outputs.source_sha }}
             - **Checks:** release tag matches its published Git commit, official NuGet checksums verified, all six managed builds and contract tests passed; data-only packaging checks passed. Endless Chests canonical JSON item IDs and the 100 audited repairs were validated against this exact Kiln source.
             - **Provenance:** separate kiln-sdk-provenance-<mod>.json per mod, including the exact Kiln release, Git SHA and official SDK hashes.
