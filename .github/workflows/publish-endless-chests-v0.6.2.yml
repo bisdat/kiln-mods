@@ -1,0 +1,112 @@
+name: Publish accepted Endless Chests v0.6.2
+
+# GitHub connector lacks tag-ref creation. A GITHUB_TOKEN-created tag does
+# not trigger another workflow, so this one also publishes validated assets.
+on:
+  push:
+    branches: [main]
+    paths: [.github/workflows/publish-endless-chests-v0.6.2.yml]
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: write
+
+jobs:
+  publish:
+    name: Create release tag and publish accepted v0.6.2 build
+    runs-on: ubuntu-24.04
+    env:
+      GH_TOKEN: ${{ github.token }}
+      RELEASE_TAG: endless-chests-v0.6.2
+      MERGE_SHA: 5ec855482bf6c48bc1473bddbbe1d391c305a74f
+      ACCEPTED_HEAD: 29d566479f8fb137a880136638d0cfff1c6751ce
+      VERIFIED_RUN: 45953818247
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Verify accepted merge and successful package provenance
+        shell: bash
+        run: |
+          set -euo pipefail
+          git cat-file -e "${MERGE_SHA}^{commit}"
+          git merge-base --is-ancestor "$MERGE_SHA" HEAD
+          git merge-base --is-ancestor "$ACCEPTED_HEAD" "$MERGE_SHA"
+          git diff --quiet "$ACCEPTED_HEAD" "$MERGE_SHA" -- EndlessChests scripts
+          version="$(git show "$MERGE_SHA:EndlessChests/EndlessChests.csproj" | awk -F'[<>]' '/<Version>/ {print $3; exit}')"
+          test "$version" = "0.6.2"
+          test "$RELEASE_TAG" = "endless-chests-v$version"
+          test "$(gh run view "$VERIFIED_RUN" --repo "$GITHUB_REPOSITORY" --json conclusion --jq '.conclusion')" = "success"
+          test "$(gh run view "$VERIFIED_RUN" --repo "$GITHUB_REPOSITORY" --json headSha --jq '.headSha')" = "$ACCEPTED_HEAD"
+
+      - name: Download the already tested 0.6.2 package
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh run download "$VERIFIED_RUN" --repo "$GITHUB_REPOSITORY" \
+            --name endless-chests-kiln-package --dir dist
+          test -s dist/endless-chests-kiln-0.6.2.zip
+          test -s dist/endless-chests.defaults.ini
+          test -s dist/endless-chests.catalogue.json
+          cmp dist/endless-chests.defaults.ini EndlessChests/defaults/endless-chests.defaults.ini
+          cmp dist/endless-chests.catalogue.json EndlessChests/defaults/catalogue.json
+
+      - name: Check installable package and identity catalogue
+        shell: bash
+        run: |
+          set -euo pipefail
+          unzip -tq dist/endless-chests-kiln-0.6.2.zip
+          entry="$(unzip -Z1 dist/endless-chests-kiln-0.6.2.zip | grep -E '(^|/)kiln\.mod\.json$' | head -n 1)"
+          test -n "$entry"
+          unzip -p dist/endless-chests-kiln-0.6.2.zip "$entry" > /tmp/endless-chests-manifest.json
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          manifest=json.loads(Path('/tmp/endless-chests-manifest.json').read_text())
+          assert manifest['id']=='endless-chests-kiln', manifest
+          assert manifest['version']=='0.6.2', manifest
+          cat=json.loads(Path('dist/endless-chests.catalogue.json').read_text())
+          assert cat['schemaVersion']==2
+          assert len(cat['groups'])==231 and len(cat['items'])==3481
+          assert sum(map(len,cat['groups'].values()))==5255
+          assert not any(isinstance(v,dict) and 'unresolved' in v
+                         for group in cat['groups'].values() for v in group)
+          print('Validated accepted v0.6.2 package and fully resolved catalogue')
+          PY
+
+      - name: Create immutable release tag at the accepted merge commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          actual=""
+          if fetched="$(gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$RELEASE_TAG" --jq '.object.sha' 2>/dev/null)"; then
+            actual="$fetched"
+          fi
+          if [[ -n "$actual" && "$actual" != "$MERGE_SHA" ]]; then
+            echo "::error::Existing release tag has unexpected commit: $actual"
+            exit 1
+          fi
+          if [[ -z "$actual" ]]; then
+            gh api "repos/$GITHUB_REPOSITORY/git/refs" --method POST \
+              -f ref="refs/tags/$RELEASE_TAG" -f sha="$MERGE_SHA"
+          fi
+
+      - name: Publish GitHub release and three validated assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          assets=(dist/endless-chests-kiln-0.6.2.zip dist/endless-chests.defaults.ini dist/endless-chests.catalogue.json)
+          if gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release upload "$RELEASE_TAG" "${assets[@]}" --repo "$GITHUB_REPOSITORY" --clobber
+          else
+            gh release create "$RELEASE_TAG" "${assets[@]}" \
+              --repo "$GITHUB_REPOSITORY" --verify-tag \
+              --title 'Endless Chests v0.6.2 — Consolidated Chest Groups' \
+              --notes 'Includes Blocks and Blocks 2 from PR #79 and all 24 consolidated groups from PR #80. All 24 consolidated groups fit a 72-slot Magic Chest. Catalogue: 231 groups, 5255 positions, 3481 verified item IDs, zero unresolved entries. All previous groups preserved; packaging CI passed.'
+          fi
+          gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" \
+            --json tagName,assets,url \
+            --jq '{tag:.tagName,url:.url,assets:[.assets[].name]}'
