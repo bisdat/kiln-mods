@@ -27,7 +27,7 @@ for line in SDK.read_text(encoding="utf-8").splitlines():
         registry[int(id_)] = (debug, display, category)
 
 items, groups = data["items"], data["groups"]
-assert len(groups) == 207
+assert len(groups) == 231
 assert len(items) == 3481
 assert len(groups) == len(set(name.casefold() for name in groups)), "case-colliding groups"
 
@@ -70,8 +70,8 @@ for group, members in groups.items():
                     assert isinstance(entry["candidates"], list)
                     assert all(isinstance(x, int) and x in registry for x in entry["candidates"])
                 unresolved += 1
-assert total == 4103, total
-assert resolved == 4103, resolved
+assert total == 5255, total
+assert resolved == 5255, resolved
 assert unresolved == 0, unresolved
 assert variants == 11 and variant_refs == 39, (variants, variant_refs)
 assert all(
@@ -87,6 +87,43 @@ assert len(block_ids) == 82
 assert groups["Blocks"] == block_ids
 assert groups["Blocks 2"] == block_ids[72:]
 assert len(groups["Blocks 2"]) == 10
+# Consolidated groups must be exact ordered unions of their original sources.
+consolidations = {
+    "Seedlings": ("Seedlings 1", "Seedlings 2"),
+    "Fences": ("Fences 1", "Fences 2"),
+    "Flower Pots": ("Flower Pots 1", "Flower Pots 2"),
+    "Illumination": ("Illumination 1", "Illumination 2"),
+    "Secret Doors": ("Secret Doors 1", "Secret Doors 2"),
+    "Wall Decorations": ("Wall Decorations 1", "Wall Decorations 2"),
+    "Animal Husbandry": ("Animal Bait", "Animal Food", "Animal Housing", "Animals", "Baby Animals", "Pets"),
+    "Chests": ("Magic Chests", "Storage Chests", "Special Chests"),
+    "Stations": ("Cooking Stations", "Crafting Stations", "Farming Stations", "More Stations", "Processing Stations", "Production Places"),
+    "Fishing": ("Fishing Rods", "Fishing Bait", "Raw Fish", "Fish"),
+    "Medical Supplies": ("Health Potions", "Mana Potions", "Other Potions", "Antidotes", "Shroud Flasks", "Bandages", "Potions"),
+    "Plants": ("Fruits", "Vegetables", "Herbs", "Grains", "Mushrooms", "Night Plants"),
+    "Building Materials": ("Soil and Dirt", "Terrain Materials", "Roof Materials", "Rubble Materials", "Overgrowth Materials"),
+    "All Tools": ("Tools", "Tools & Components", "Rakes"),
+    "Travel Equipment": ("Gliders", "Grappling Hooks", "Traversal"),
+    "Utilities": ("Water & Power", "Water Utilities", "World Utilities"),
+    "All Doors": ("Doors", "Secret Doors 1", "Secret Doors 2"),
+    "Wall Furnishings": ("Banners", "Wall Tapestry", "Paintings", "Mirrors & Signs", "Alchemist Wall Hanging"),
+    "Storage Furniture": ("Cupboards", "Shelves", "Display Showcases", "Dividers"),
+    "Food Ingredients": ("Cooking Ingredients", "Uncooked Foods", "Meats", "Egg Foods"),
+    "Pyrotechnics": ("Fireworks", "Sparkworks"),
+    "Collectibles": ("Artifacts", "Fossils", "Treasure Maps", "Keys"),
+    "Music": ("Songs", "Instruments"),
+    "Levelled Spells": ("Spells Level 1", "Spells Level 2", "Spells Level 3", "Spells Level 4", "Spells Level 5", "Spells Level 6", "Spells Level 7", "Spells Level 8"),
+}
+expected_counts = {"Seedlings":63,"Fences":66,"Flower Pots":71,"Illumination":60,"Secret Doors":29,"Wall Decorations":67,"Animal Husbandry":55,"Chests":11,"Stations":41,"Fishing":57,"Medical Supplies":41,"Plants":68,"Building Materials":70,"All Tools":40,"Travel Equipment":11,"Utilities":26,"All Doors":65,"Wall Furnishings":40,"Storage Furniture":57,"Food Ingredients":60,"Pyrotechnics":27,"Collectibles":36,"Music":30,"Levelled Spells":61}
+assert list(groups)[207:] == list(consolidations)
+for name, sources in consolidations.items():
+    expected = list(dict.fromkeys(
+        item_id for source in sources for entry in groups[source]
+        for item_id in ([entry] if type(entry) is int else entry["variants"])
+    ))
+    assert groups[name] == expected, name
+    assert len(expected) == expected_counts[name] <= 72, name
+
 assert set(items) == used, "Unreferenced item definitions or missing IDs"
 
 def contains(group, item_id):
