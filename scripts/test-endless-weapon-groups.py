@@ -68,9 +68,14 @@ def slot_text(value):
     assert set(value) == {"variants"} and len(value["variants"]) >= 2
     return ",".join(map(str, value["variants"]))
 
-assert len(groups) == 207 and len(items) == 3481
-assert sum(len(x) for x in groups.values()) == 4103
+assert len(groups) == 231 and len(items) == 3481
+assert sum(len(x) for x in groups.values()) == 5255
 assert tuple(list(groups)[195:205]) == ORDER, "Append ten class groups after the original groups"
+
+assert fnv_codepoints(
+    name + "\t" + "|".join(map(slot_text, entries)) + "\n"
+    for name, entries in list(groups.items())[:207]
+) == "a2290908d57e623a", "The 207 pre-consolidation groups changed"
 
 original_groups = list(groups.items())[:195]
 assert sum(map(lambda g: len(g[1]), original_groups)) == 3464
