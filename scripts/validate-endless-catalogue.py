@@ -27,7 +27,7 @@ for line in SDK.read_text(encoding="utf-8").splitlines():
         registry[int(id_)] = (debug, display, category)
 
 items, groups = data["items"], data["groups"]
-assert len(groups) == 231
+assert len(groups) == 230
 assert len(items) == 3481
 assert len(groups) == len(set(name.casefold() for name in groups)), "case-colliding groups"
 
@@ -70,23 +70,27 @@ for group, members in groups.items():
                     assert isinstance(entry["candidates"], list)
                     assert all(isinstance(x, int) and x in registry for x in entry["candidates"])
                 unresolved += 1
-assert total == 5255, total
-assert resolved == 5255, resolved
+assert total == 5232, total
+assert resolved == 5232, resolved
 assert unresolved == 0, unresolved
 assert variants == 11 and variant_refs == 39, (variants, variant_refs)
 assert all(
     sum(len(e["variants"]) if isinstance(e, dict) and "variants" in e else 1 for e in members) <= 72
-    for name, members in groups.items() if name != "Blocks"
+    for members in groups.values()
 ), "Group exceeds maximum 72 Magic Chest slots"
-# Blocks is deliberately the full union; Blocks 2 is its 72-slot overflow.
+# Blocks excludes roof materials, which are already in Building Materials.
 block_ids = list(dict.fromkeys(
     item_id for name, members in groups.items() if name.endswith(" Blocks")
     for entry in members for item_id in ([entry] if type(entry) is int else entry["variants"])
 ))
 assert len(block_ids) == 82
-assert groups["Blocks"] == block_ids
-assert groups["Blocks 2"] == block_ids[72:]
-assert len(groups["Blocks 2"]) == 10
+roof_ids = set(groups["Roof Materials"])
+assert len(roof_ids) == 13
+assert set(block_ids) & set(groups["Building Materials"]) == roof_ids
+assert groups["Blocks"] == [id_ for id_ in block_ids if id_ not in roof_ids]
+assert len(groups["Blocks"]) == 69
+assert not set(groups["Blocks"]) & set(groups["Building Materials"])
+assert "Blocks 2" not in groups
 # Consolidated groups must be exact ordered unions of their original sources.
 consolidations = {
     "Seedlings": ("Seedlings 1", "Seedlings 2"),
@@ -115,7 +119,7 @@ consolidations = {
     "Levelled Spells": ("Spells Level 1", "Spells Level 2", "Spells Level 3", "Spells Level 4", "Spells Level 5", "Spells Level 6", "Spells Level 7", "Spells Level 8"),
 }
 expected_counts = {"Seedlings":63,"Fences":66,"Flower Pots":71,"Illumination":60,"Secret Doors":29,"Wall Decorations":67,"Animal Husbandry":55,"Chests":11,"Stations":41,"Fishing":57,"Medical Supplies":41,"Plants":68,"Building Materials":70,"All Tools":40,"Travel Equipment":11,"Utilities":26,"All Doors":65,"Wall Furnishings":40,"Storage Furniture":57,"Food Ingredients":60,"Pyrotechnics":27,"Collectibles":36,"Music":30,"Levelled Spells":61}
-assert list(groups)[207:] == list(consolidations)
+assert list(groups)[206:] == list(consolidations)
 for name, sources in consolidations.items():
     expected = list(dict.fromkeys(
         item_id for source in sources for entry in groups[source]
