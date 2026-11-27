@@ -94,7 +94,7 @@ assert not is_ascii_case_of("Starter Blocks", fnv("Starter Block"))
 
 path = Path(__file__).resolve().parents[1] / "EndlessChests/defaults/catalogue.json"
 groups = json.loads(path.read_text(encoding="utf-8"))["groups"]
-assert len(groups) == 205
+assert len(groups) == 207
 for name in groups:
     # Explicitly verify that every canonical group can be matched with
     # ANY ASCII case permutation (not just lower/upper/title case).

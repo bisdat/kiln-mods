@@ -68,9 +68,9 @@ def slot_text(value):
     assert set(value) == {"variants"} and len(value["variants"]) >= 2
     return ",".join(map(str, value["variants"]))
 
-assert len(groups) == 205 and len(items) == 3481
-assert sum(len(x) for x in groups.values()) == 4011
-assert tuple(list(groups)[195:]) == ORDER, "Append ten class groups after the original groups"
+assert len(groups) == 207 and len(items) == 3481
+assert sum(len(x) for x in groups.values()) == 4103
+assert tuple(list(groups)[195:205]) == ORDER, "Append ten class groups after the original groups"
 
 original_groups = list(groups.items())[:195]
 assert sum(map(lambda g: len(g[1]), original_groups)) == 3464
