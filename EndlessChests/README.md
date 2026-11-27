@@ -1,8 +1,12 @@
-# Endless Chests (Kiln) — v0.6.2 (experimental)
+# Endless Chests (Kiln) — v0.6.3 (experimental)
 
 An independent C# implementation through the Kiln SDK, retaining the original Endless Chests group defaults (attributed to HipShot808) and adding dedicated weapon groups. It does **not** load or redistribute the Windows ShroudForge DLL or use undocumented native memory offsets.
 
 **v0.6.0 — dedicated weapon groups ([issue #45](https://github.com/bisdat/kiln-mods/issues/45)):** Adds **489 verified weapon IDs and 58 equipable shields** across **10 new chest-sized groups**, covering one-handed melee, two-handed melee, daggers, bows, wands, staffs and shields. All 195 existing groups, 3,464 original positions and 2,934 pre-existing item identities are retained. Total: **205 groups, 4,011 entries and 3,481 distinct item IDs**, with zero unresolved entries. Weapon identities come from the Kiln SDK's internal class/debug names, not ambiguous display names. Older tier variants and craft/loot entries remain individually identifiable. The mod's runtime and settings INI are unchanged; only the embedded canonical JSON, version and tests change.
+
+### Block consolidation correction (v0.6.3)
+
+`Blocks` now contains 69 distinct non-roof block types from the 15 original block groups. All 13 roof block types remain in `Roof Materials` and `Building Materials` (70 items). `Blocks 2` is removed. Both combined groups fit separately in a 72-slot Magic Chest, with no overlapping IDs. All other groups and item definitions are unchanged. Existing chests retain their contents on initial observation; to clear and refill an existing `Blocks` chest, use the normal rename workflow on a disposable or backed-up chest. An old `Blocks 2` name is no longer recognised; remove any obsolete manual binding if applicable.
 
 ### Consolidated groups (v0.6.2)
 
@@ -35,11 +39,11 @@ All 24 groups below fit into a 72-slot Magic Chest. Each is an ordered union of 
 | Music | Songs, Instruments | 30 |
 | Levelled Spells | Spells Level 1, Spells Level 2, Spells Level 3, Spells Level 4, Spells Level 5, Spells Level 6, Spells Level 7, Spells Level 8 | 61 |
 
-The catalogue now contains 231 groups and 5,255 logical entries. CI checks the exact ordered union, slot capacity and preservation of all prior groups.
+At v0.6.2 the catalogue contained 231 groups and 5,255 logical entries. CI checks the exact ordered union, slot capacity and preservation of all prior groups.
 
 ### Combined block groups (v0.6.1)
 
-`Blocks` contains all 82 distinct item IDs from the 15 existing block groups, deduplicated in original catalogue order. A 72-slot Magic Chest receives the first 72; rename a second chest `Blocks 2` for the remaining ten. All original groups and item identities remain unchanged. No INI changes are required. The catalogue now contains 207 groups and 4,103 logical entries.
+At v0.6.1, `Blocks` contained all 82 distinct item IDs from the 15 existing block groups, deduplicated in original catalogue order. A 72-slot Magic Chest receives the first 72; rename a second chest `Blocks 2` for the remaining ten. All original groups and item identities remain unchanged. No INI changes are required. That release contained 207 groups and 4,103 logical entries; see the v0.6.3 correction above.
 
 ### Dedicated weapon groups
 
@@ -102,7 +106,7 @@ Automatic processing runs on the next scan (every 4 seconds by default). Renames
 
 Enshrouded exposes only an **FNV-1a64 fingerprint** of each custom chest name through its 8-byte `CustomPlayerString` component. A fingerprint by itself cannot simply be lowercased. The mod therefore compares the hash against variations of every canonical group, alias and unique item label:
 
-- All **231 canonical group names** (including the original 195) and all **2 aliases** accept **any ASCII uppercase/lowercase mixture** (for example `sTaRtEr bLoCkS` or `animalS`), including multiword names. Any recognised rename triggers the normal clear-and-refill.
+- All **230 canonical group names** (including the original 195) and all **2 aliases** accept **any ASCII uppercase/lowercase mixture** (for example `sTaRtEr bLoCkS` or `animalS`), including multiword names. Any recognised rename triggers the normal clear-and-refill.
 - For unique individual item labels with **30 or fewer ASCII letters**, the same arbitrary mixed-case matching is supported. For longer labels, original spelling, all-lowercase, ALL-UPPERCASE and title-case variants are covered, but arbitrary mixed-case letters are not yet guaranteed.
 - Unicode characters, including non-ASCII letter case variations, may need an exact or common-case spelling. Spaces, punctuation and apostrophes are unchanged by case-insensitive matching. FNV name collisions are rejected when detected.
 - All **32 ASCII capitalisations of `Empty`** are recognised independently and remain destructive.
@@ -111,12 +115,12 @@ No private string-store reads or Windows-client DLLs are required. The original 
 
 ## Canonical catalogue and user settings
 
-- [`defaults/catalogue.json`](defaults/catalogue.json) is **embedded into the mod and authoritative**. It defines 231 named groups, 5,255 logical entry positions and 3,481 verified item IDs with no unresolved entries; the original 195 groups and their 3,464 positions are unchanged. Eleven original positions expand to multiple explicitly listed physical variants. Group selection no longer reads display-name lists from an INI.
+- [`defaults/catalogue.json`](defaults/catalogue.json) is **embedded into the mod and authoritative**. It defines 230 named groups, 5,232 logical entry positions and 3,481 verified item IDs with no unresolved entries; the original 195 groups and their 3,464 positions are unchanged. Eleven original positions expand to multiple explicitly listed physical variants. Group selection no longer reads display-name lists from an INI.
 - [`defaults/endless-chests.defaults.ini`](defaults/endless-chests.defaults.ini) contains only `[Options]`, `[Aliases]`, `[DisabledGroups]`, and `[DisabledItems]`. The runtime copies it to its writable `endless-chests.ini` on first installation; an existing file remains in place, but any old `[Groups]` entries are ignored with a logged warning. To clean up an old file, back it up and replace its settings with the new small defaults, then `echest reload`.
 - `[DisabledItems]` uses **numeric game IDs**, for example `3509012331=1`. Disabled groups exclude their item IDs globally even if another group includes them. Ambiguous plain display names are no longer valid exclusion keys. Two original aliases remain; the obsolete Diver's Endurance Flask alias was removed because its target is absent from the pinned catalogue.
 - To curate uncertain identities, edit the tracked JSON catalogue in the repository and rebuild; do not edit the packaged binary or attempt display-name substitutions. The CI contract validates every explicit ID against the pinned Kiln registry.
 
-The **tagged GitHub Release** publishes `endless-chests-kiln-0.6.2.zip`, standalone `endless-chests.catalogue.json` (reference), and `endless-chests.defaults.ini` (settings template). **Neither JSON nor INI is a Kiln-installable mod.**
+The **tagged GitHub Release** publishes `endless-chests-kiln-0.6.3.zip`, standalone `endless-chests.catalogue.json` (reference), and `endless-chests.defaults.ini` (settings template). **Neither JSON nor INI is a Kiln-installable mod.**
 
 The active `chests.json` file (typically in `kiln/data/endless-chests-kiln/`) stores existing manual chest bindings and settings:
 
@@ -145,7 +149,7 @@ Gear level/rarity/perk upgrades and gem-level special items from ShroudForge are
 1. **Back up the world**, especially chests with valuables.
 2. Use a compatible Kiln runtime (this repo pins published Kiln `v0.2.0-dev.15`).
 3. From a successful [Endless Chests packaging run](https://github.com/bisdat/kiln-mods/actions/workflows/endless-chests.yml), download the `endless-chests-kiln-package` artifact, or use the [tagged GitHub Releases](https://github.com/bisdat/kiln-mods/releases) page for the individual ZIP and JSON catalogue and INI settings assets.
-4. Extract the Actions artifact (if downloaded) and import the enclosed **`endless-chests-kiln-0.6.2.zip`** into Kiln's Library. Enable v0.6.2 in the active profile and restart Enshrouded. The accompanying JSON and settings INI are separate reference downloads, **not** an installable Kiln package.
+4. Extract the Actions artifact (if downloaded) and import the enclosed **`endless-chests-kiln-0.6.3.zip`** into Kiln's Library. Enable v0.6.3 in the active profile and restart Enshrouded. The accompanying JSON and settings INI are separate reference downloads, **not** an installable Kiln package.
 5. Try **`TOOLS → starter blocks → My Storage → Empty`** on a throwaway chest. The unrecognised name must **not** delete the blocks; Empty **must** clear them without confirmation.
 
 ## Kiln console commands (optional)
@@ -178,7 +182,7 @@ cat kiln/control/console/probe.result.json
 
 ## CI and development
 
-The GitHub Actions workflow validates all 231 groups and 5,255 entry positions, verifies all 3,481 item IDs against the pinned Kiln SDK and independently classifies all 489 weapons and 58 equipable shields into the ten dedicated groups. It also verifies that all 195 original groups and 2,934 previous identities remain exactly unchanged, checks the 100 v0.5.1 repairs, final 27 reconciliations and 11 explicit variant sets, and tests Mycelium, Indigo, Basalt, Grasshopper, Scarab, Torch, Oven, loot armour and historical fixes. It also tests INI settings, 32 Empty case variants and game-name FNV fingerprints. Release assets include the compiled mod, catalogue JSON and settings INI.
+The GitHub Actions workflow validates all 230 groups and 5,232 entry positions, verifies all 3,481 item IDs against the pinned Kiln SDK and independently classifies all 489 weapons and 58 equipable shields into the ten dedicated groups. It also verifies that all 195 original groups and 2,934 previous identities remain exactly unchanged, checks the 100 v0.5.1 repairs, final 27 reconciliations and 11 explicit variant sets, and tests Mycelium, Indigo, Basalt, Grasshopper, Scarab, Torch, Oven, loot armour and historical fixes. It also tests INI settings, 32 Empty case variants and game-name FNV fingerprints. Release assets include the compiled mod, catalogue JSON and settings INI.
 
 Local Linux build:
 
@@ -188,4 +192,4 @@ KILN_SDK_VERSION=0.2.0-dev.local.20261107.61500 \
 bash scripts/build.sh EndlessChests
 ```
 
-Output: `bin/Release/endless-chests-kiln-0.6.2.zip`. After merging this change into `main`, publishing tag **`endless-chests-v0.6.2`** triggers all three release assets automatically. New weapon-group in-game acceptance is tracked in [issue #45](https://github.com/bisdat/kiln-mods/issues/45). Catalogue resolution issue #38 was closed after v0.5.2 acceptance; other gameplay parity checks remain in [issue #4](https://github.com/bisdat/kiln-mods/issues/4).
+Output: `bin/Release/endless-chests-kiln-0.6.3.zip`. After merging this change into `main`, publishing tag **`endless-chests-v0.6.3`** triggers all three release assets automatically. New weapon-group in-game acceptance is tracked in [issue #45](https://github.com/bisdat/kiln-mods/issues/45). Catalogue resolution issue #38 was closed after v0.5.2 acceptance; other gameplay parity checks remain in [issue #4](https://github.com/bisdat/kiln-mods/issues/4).
