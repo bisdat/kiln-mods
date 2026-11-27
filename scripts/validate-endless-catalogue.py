@@ -27,7 +27,7 @@ for line in SDK.read_text(encoding="utf-8").splitlines():
         registry[int(id_)] = (debug, display, category)
 
 items, groups = data["items"], data["groups"]
-assert len(groups) == 205
+assert len(groups) == 207
 assert len(items) == 3481
 assert len(groups) == len(set(name.casefold() for name in groups)), "case-colliding groups"
 
@@ -70,14 +70,23 @@ for group, members in groups.items():
                     assert isinstance(entry["candidates"], list)
                     assert all(isinstance(x, int) and x in registry for x in entry["candidates"])
                 unresolved += 1
-assert total == 4011, total
-assert resolved == 4011, resolved
+assert total == 4103, total
+assert resolved == 4103, resolved
 assert unresolved == 0, unresolved
 assert variants == 11 and variant_refs == 39, (variants, variant_refs)
 assert all(
     sum(len(e["variants"]) if isinstance(e, dict) and "variants" in e else 1 for e in members) <= 72
-    for members in groups.values()
+    for name, members in groups.items() if name != "Blocks"
 ), "Group exceeds maximum 72 Magic Chest slots"
+# Blocks is deliberately the full union; Blocks 2 is its 72-slot overflow.
+block_ids = list(dict.fromkeys(
+    item_id for name, members in groups.items() if name.endswith(" Blocks")
+    for entry in members for item_id in ([entry] if type(entry) is int else entry["variants"])
+))
+assert len(block_ids) == 82
+assert groups["Blocks"] == block_ids
+assert groups["Blocks 2"] == block_ids[72:]
+assert len(groups["Blocks 2"]) == 10
 assert set(items) == used, "Unreferenced item definitions or missing IDs"
 
 def contains(group, item_id):
